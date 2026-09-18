@@ -74,7 +74,10 @@ def uyar(mesaj: str):
 # VERI CEKME
 # ------------------------------------------------------------------------------------
 def fetch_recent_klines(symbol: str, interval: str, limit: int) -> pd.DataFrame:
-    url = "https://api.binance.com/api/v3/klines"
+    # NOT: api.binance.com bazi bulut sunucu bolgelerinden (orn. GitHub Actions'in
+    # ABD merkezli sunuculari) 451 hatasiyla engellenebiliyor. data-api.binance.vision,
+    # Binance'in ayni veriyi sunan, bu tur kisitlamaya takilmayan genel-veri adresidir.
+    url = "https://data-api.binance.vision/api/v3/klines"
     headers = {
         "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 "
                       "(KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36",
