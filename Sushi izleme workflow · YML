@@ -1,0 +1,38 @@
+name: SUSHI Izleme Botu
+
+on:
+  schedule:
+    - cron: "*/15 * * * *"
+  workflow_dispatch: {}
+
+permissions:
+  contents: write
+
+jobs:
+  izle:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Repoyu al
+        uses: actions/checkout@v4
+
+      - name: Python kur
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Kutuphaneleri kur
+        run: pip install pandas numpy requests
+
+      - name: Scripti calistir
+        env:
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+        run: python sushi_izleme_bulut.py
+
+      - name: Durumu repoya geri kaydet (degistiyse)
+        run: |
+          git config user.name "sushi-bot"
+          git config user.email "sushi-bot@users.noreply.github.com"
+          git add sushi_izleme_state.json
+          git diff --quiet --cached || git commit -m "durum guncellendi [skip ci]"
+          git push || true
