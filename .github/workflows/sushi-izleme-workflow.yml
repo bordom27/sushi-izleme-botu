@@ -2,11 +2,19 @@ name: SUSHI Izleme Botu
 
 on:
   schedule:
+    # Her 15 dakikada bir calisir (GitHub'in sunucu saatine gore, UTC).
+    # Not: GitHub Actions'ta zamanlanmis gorevler yogunlukta birkac dakika
+    # gecikebilir, bu strateji icin (4 saatlik mumlar) sorun degil.
     - cron: "*/15 * * * *"
-  workflow_dispatch: {}
+  workflow_dispatch:
+    inputs:
+      test_mesaji:
+        description: "true yaparsan gercek sinyal beklemeden Telegram'a bir test mesaji gonderir"
+        type: boolean
+        default: false
 
 permissions:
-  contents: write
+  contents: write   # durum dosyasini (state) repoya geri commit edebilmek icin gerekli
 
 jobs:
   izle:
@@ -27,6 +35,7 @@ jobs:
         env:
           TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
           TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+          TEST_MODE: ${{ github.event.inputs.test_mesaji }}
         run: python sushi_izleme_bulut.py
 
       - name: Durumu repoya geri kaydet (degistiyse)
