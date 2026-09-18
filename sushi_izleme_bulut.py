@@ -206,6 +206,12 @@ def check_once(cfg: dict, state: dict):
 
 def main():
     cfg = CONFIG
+
+    if os.environ.get("TEST_MODE") == "true":
+        uyar("SUSHI izleme botu: bu bir TEST mesajidir. Bu mesaji goruyorsan Telegram "
+             "baglantisi dogru calisiyor demektir.")
+        return
+
     state = load_state(cfg)
     try:
         check_once(cfg, state)
