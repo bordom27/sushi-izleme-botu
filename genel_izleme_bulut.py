@@ -85,25 +85,66 @@ CONFIG = {
         "KRIPTO": 6, "ABD HISSE": 4, "BIST": 4,
     },
 
-    # BILDIRIM KALITESI: coklu_varlik_backtest.py sonucundan alinan, varlik basina
-    # gecmis performans (win_rate%, getiri%). Telegram mesajina eklenir, baglam verir.
-    # Bu sozluk elle guncellenir - yeni bir coklu_varlik_backtest.py calistirmasindan
-    # sonra buradaki sayilari guncel sonuclarla degistirebilirsin.
-    # Guncelleme: 19 Eylul 2026, ATR-bazli stop+trailing ile 220 varlik taramasi.
+    # BILDIRIM KALITESI: varlik bazinda optimize edilmis parametrelerle elde
+    # edilen gecmis performans (win_rate%, getiri%). Guncelleme: 19 Eylul 2026,
+    # varlik_bazinda_optimizasyon.py sonucu.
     "BACKTEST_ISTATISTIK": {
-        "NEARUSDT": (50.0, 19.7), "TRXUSDT": (60.9, 15.1), "RAYUSDT": (41.7, 12.7),
-        "SUSDT": (38.1, 11.6), "ENAUSDT": (45.5, 10.3), "ZAMAUSDT": (50.0, 9.7),
-        "CAKEUSDT": (42.3, 9.5), "CUSDT": (42.9, 9.3), "ZENUSDT": (40.9, 8.7),
-        "ESPUSDT": (41.2, 8.2), "ETHFIUSDT": (43.5, 7.3), "ZECUSDT": (43.5, 6.0),
-        "MORPHOUSDT": (38.1, 5.9), "XRPUSDT": (47.4, 5.0), "PEPEUSDT": (37.0, 4.9),
-        "ARBUSDT": (47.6, 4.8), "XTZUSDT": (42.9, 4.5), "APTUSDT": (45.8, 4.4),
-        "DOTUSDT": (38.1, 4.3), "FUSDT": (46.2, 3.3), "PAXGUSDT": (44.4, 1.7),
-        "FILUSDT": (30.4, 1.6), "SAGAUSDT": (31.8, 0.2), "AAVEUSDT": (31.2, 0.2),
-        "DASHUSDT": (34.8, 0.1),
-        "EREGL.IS": (55.6, 12.7), "YKBNK.IS": (62.5, 7.4), "ECILC.IS": (50.0, 2.9),
-        "TUPRS.IS": (37.5, 2.7), "SISE.IS": (44.4, 2.6), "TTKOM.IS": (50.0, 1.8),
-        "KCHOL.IS": (44.4, 1.2), "ALARK.IS": (25.0, 1.2), "PETKM.IS": (40.0, 1.1),
-        "ENKAI.IS": (37.5, 0.1), "ASTOR.IS": (37.5, 0.1),
+        "ZECUSDT": (57.6, 34.9), "NEARUSDT": (49.0, 32.1), "ZAMAUSDT": (61.3, 26.4),
+        "SUSDT": (40.0, 25.6), "ENAUSDT": (44.2, 24.9), "ARBUSDT": (44.2, 24.5),
+        "CUSDT": (56.8, 24.0), "PAXGUSDT": (48.9, 24.0), "DOTUSDT": (44.4, 22.1),
+        "TRXUSDT": (41.9, 21.7), "ESPUSDT": (41.9, 21.3), "CAKEUSDT": (54.8, 16.1),
+        "ZENUSDT": (39.4, 15.9), "RAYUSDT": (53.1, 15.3), "ETHFIUSDT": (56.0, 14.7),
+        "MORPHOUSDT": (51.5, 13.8), "SAGAUSDT": (34.2, 10.6), "XRPUSDT": (40.0, 10.6),
+        "APTUSDT": (63.6, 9.7), "FUSDT": (40.0, 9.4), "XTZUSDT": (38.1, 8.6),
+        "DASHUSDT": (36.8, 8.5), "PEPEUSDT": (48.1, 7.3), "FILUSDT": (50.0, 6.2),
+        "AAVEUSDT": (35.9, 4.9),
+        "TUPRS.IS": (66.7, 18.4), "EREGL.IS": (55.6, 14.6), "PETKM.IS": (41.7, 14.5),
+        "ENKAI.IS": (70.0, 11.5), "ECILC.IS": (60.0, 11.1), "ASTOR.IS": (54.5, 10.7),
+        "YKBNK.IS": (62.5, 10.6), "SISE.IS": (33.3, 6.2), "KCHOL.IS": (30.8, 5.9),
+        "TTKOM.IS": (50.0, 2.8), "ALARK.IS": (25.0, 2.0),
+    },
+
+    # VARLIK BAZINDA PARAMETRELER: her varligin kendi en iyi RSI/ATR-stop/TP2
+    # kombinasyonu (varlik_bazinda_optimizasyon.py sonucu, 19 Eylul 2026).
+    # Burada olmayan bir sembol icin asagidaki genel RSI_MAX_ENTRY/ATR_STOP_MULT/
+    # TP2_R degerleri (varsayilan) kullanilir.
+    "VARLIK_PARAMETRELERI": {
+        "ZECUSDT": {"RSI_MAX_ENTRY": 75, "ATR_STOP_MULT": 2.5, "TP2_R": 3.0},
+        "NEARUSDT": {"RSI_MAX_ENTRY": 75, "ATR_STOP_MULT": 1.5, "TP2_R": 2.0},
+        "ZAMAUSDT": {"RSI_MAX_ENTRY": 75, "ATR_STOP_MULT": 2.0, "TP2_R": 1.5},
+        "SUSDT": {"RSI_MAX_ENTRY": 75, "ATR_STOP_MULT": 1.5, "TP2_R": 2.5},
+        "ENAUSDT": {"RSI_MAX_ENTRY": 75, "ATR_STOP_MULT": 1.5, "TP2_R": 2.0},
+        "ARBUSDT": {"RSI_MAX_ENTRY": 75, "ATR_STOP_MULT": 1.5, "TP2_R": 2.0},
+        "CUSDT": {"RSI_MAX_ENTRY": 70, "ATR_STOP_MULT": 1.5, "TP2_R": 1.5},
+        "PAXGUSDT": {"RSI_MAX_ENTRY": 75, "ATR_STOP_MULT": 1.5, "TP2_R": 2.0},
+        "DOTUSDT": {"RSI_MAX_ENTRY": 75, "ATR_STOP_MULT": 1.5, "TP2_R": 2.0},
+        "TRXUSDT": {"RSI_MAX_ENTRY": 75, "ATR_STOP_MULT": 1.5, "TP2_R": 3.0},
+        "ESPUSDT": {"RSI_MAX_ENTRY": 75, "ATR_STOP_MULT": 2.0, "TP2_R": 2.5},
+        "CAKEUSDT": {"RSI_MAX_ENTRY": 65, "ATR_STOP_MULT": 1.5, "TP2_R": 1.5},
+        "ZENUSDT": {"RSI_MAX_ENTRY": 70, "ATR_STOP_MULT": 2.0, "TP2_R": 2.5},
+        "RAYUSDT": {"RSI_MAX_ENTRY": 70, "ATR_STOP_MULT": 2.0, "TP2_R": 1.5},
+        "ETHFIUSDT": {"RSI_MAX_ENTRY": 65, "ATR_STOP_MULT": 1.5, "TP2_R": 1.5},
+        "MORPHOUSDT": {"RSI_MAX_ENTRY": 70, "ATR_STOP_MULT": 2.5, "TP2_R": 1.5},
+        "SAGAUSDT": {"RSI_MAX_ENTRY": 75, "ATR_STOP_MULT": 1.5, "TP2_R": 2.5},
+        "XRPUSDT": {"RSI_MAX_ENTRY": 75, "ATR_STOP_MULT": 1.5, "TP2_R": 3.0},
+        "APTUSDT": {"RSI_MAX_ENTRY": 60, "ATR_STOP_MULT": 2.0, "TP2_R": 1.5},
+        "FUSDT": {"RSI_MAX_ENTRY": 70, "ATR_STOP_MULT": 2.5, "TP2_R": 3.0},
+        "XTZUSDT": {"RSI_MAX_ENTRY": 65, "ATR_STOP_MULT": 1.5, "TP2_R": 2.5},
+        "DASHUSDT": {"RSI_MAX_ENTRY": 75, "ATR_STOP_MULT": 2.0, "TP2_R": 2.5},
+        "PEPEUSDT": {"RSI_MAX_ENTRY": 65, "ATR_STOP_MULT": 2.0, "TP2_R": 1.5},
+        "FILUSDT": {"RSI_MAX_ENTRY": 60, "ATR_STOP_MULT": 1.5, "TP2_R": 2.0},
+        "AAVEUSDT": {"RSI_MAX_ENTRY": 70, "ATR_STOP_MULT": 1.5, "TP2_R": 2.0},
+        "TUPRS.IS": {"RSI_MAX_ENTRY": 75, "ATR_STOP_MULT": 1.5, "TP2_R": 2.0},
+        "EREGL.IS": {"RSI_MAX_ENTRY": 65, "ATR_STOP_MULT": 2.0, "TP2_R": 3.0},
+        "PETKM.IS": {"RSI_MAX_ENTRY": 70, "ATR_STOP_MULT": 1.5, "TP2_R": 3.0},
+        "ENKAI.IS": {"RSI_MAX_ENTRY": 75, "ATR_STOP_MULT": 2.5, "TP2_R": 1.5},
+        "ECILC.IS": {"RSI_MAX_ENTRY": 75, "ATR_STOP_MULT": 1.5, "TP2_R": 1.5},
+        "ASTOR.IS": {"RSI_MAX_ENTRY": 75, "ATR_STOP_MULT": 2.5, "TP2_R": 3.0},
+        "YKBNK.IS": {"RSI_MAX_ENTRY": 65, "ATR_STOP_MULT": 1.5, "TP2_R": 3.0},
+        "SISE.IS": {"RSI_MAX_ENTRY": 70, "ATR_STOP_MULT": 1.5, "TP2_R": 3.0},
+        "KCHOL.IS": {"RSI_MAX_ENTRY": 75, "ATR_STOP_MULT": 1.5, "TP2_R": 2.5},
+        "TTKOM.IS": {"RSI_MAX_ENTRY": 75, "ATR_STOP_MULT": 2.0, "TP2_R": 2.0},
+        "ALARK.IS": {"RSI_MAX_ENTRY": 65, "ATR_STOP_MULT": 2.0, "TP2_R": 2.5},
     },
 }
 
@@ -298,6 +339,12 @@ def islem_logla(state: dict, label: str, sonuc: str, pnl_pct: float):
 # TEK SEMBOL KONTROLU
 # ------------------------------------------------------------------------------------
 def check_symbol(symbol: str, kategori: str, df: pd.DataFrame, cfg: dict, state: dict):
+    # VARLIK BAZINDA PARAMETRE: bu sembol icin ozel ayarlar varsa genel ayarlarin
+    # uzerine yaz (RSI_MAX_ENTRY, ATR_STOP_MULT, TP2_R). Yoksa genel ayarlar kalir.
+    ozel_parametreler = cfg.get("VARLIK_PARAMETRELERI", {}).get(symbol)
+    if ozel_parametreler:
+        cfg = {**cfg, **ozel_parametreler}
+
     label = f"[{kategori}] {symbol}"
     now = pd.Timestamp.now()
     if len(df) and df.iloc[-1]["close_time"] > now:
