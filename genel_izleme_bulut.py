@@ -28,21 +28,25 @@ import requests
 # AYARLAR
 # ------------------------------------------------------------------------------------
 CONFIG = {
-    # KRIPTO: coklu_varlik_backtest.py'nin genisletilmis (160 varlik) taramasinda
-    # GERCEKTEN pozitif ve yeterli islem sayisina (8+) sahip ciktigi dogrulanan liste.
+    # KRIPTO: coklu_varlik_backtest.py'nin ATR-bazli stop+trailing ile yapilan
+    # 220 varlik taramasinda GERCEKTEN pozitif ve yeterli islem sayisina (8+)
+    # sahip ciktigi dogrulanan liste (guncelleme: 19 Eylul 2026).
     "CRYPTO_SYMBOLS": [
-        "ZECUSDT", "RAYUSDT", "DASHUSDT", "REZUSDT", "ZAMAUSDT", "TRXUSDT",
-        "PAXGUSDT", "ETHUSDT", "BNBUSDT", "DOTUSDT", "ENAUSDT", "CAKEUSDT",
-        "BTCUSDT", "AVAUSDT", "PUMPUSDT", "SPCXBUSDT", "LINKUSDT",
+        "NEARUSDT", "TRXUSDT", "RAYUSDT", "SUSDT", "ENAUSDT", "ZAMAUSDT",
+        "CAKEUSDT", "CUSDT", "ZENUSDT", "ESPUSDT", "ETHFIUSDT", "ZECUSDT",
+        "MORPHOUSDT", "XRPUSDT", "PEPEUSDT", "ARBUSDT", "XTZUSDT", "APTUSDT",
+        "DOTUSDT", "FUSDT", "PAXGUSDT", "FILUSDT", "SAGAUSDT", "AAVEUSDT",
+        "DASHUSDT",
     ],
     "CRYPTO_INTERVAL": "4h",
     "CRYPTO_CANDLE_LIMIT": 200,
 
-    # HISSE: ayni sekilde dogrulanmis liste.
-    "US_STOCKS": ["CSCO", "GS", "ABNB", "UPS", "GE", "INTC"],
+    # HISSE: bu turda hicbir ABD hissesi 8+ islemle esigi gecemedi (ATR bazli
+    # siki stop, gunluk mumlarda islem sayisini ciddi azaltti) - liste bos birakildi.
+    "US_STOCKS": [],
     "BIST_STOCKS": [
-        "PETKM.IS", "KRDMD.IS", "TOASO.IS", "HALKB.IS", "YKBNK.IS", "AKSA.IS",
-        "ODAS.IS", "SASA.IS", "BERA.IS", "GESAN.IS", "SISE.IS", "MGROS.IS",
+        "EREGL.IS", "YKBNK.IS", "ECILC.IS", "TUPRS.IS", "SISE.IS", "TTKOM.IS",
+        "KCHOL.IS", "ALARK.IS", "PETKM.IS", "ENKAI.IS", "ASTOR.IS",
     ],
     "STOCK_INTERVAL": "1d",       # hisseler icin gunluk mum
     "STOCK_RANGE": "2y",          # yeterli gecmis veri icin
@@ -58,6 +62,12 @@ CONFIG = {
     "TP1_R": 1.5,
     "TP1_FRACTION": 0.5,
     "TP2_R": 2.0,
+
+    "USE_VOLUME_FILTER": True,
+    "VOLUME_LOOKBACK": 20,
+    "VOLUME_MULT": 1.2,
+    "USE_TREND_FILTER": True,
+    "TREND_EMA_LEN": 50,
 
     "STATE_FILE": "izleme_state.json",
     "REQUEST_DELAY": 0.35,   # ardisik istekler arasi bekleme (nazik olmak icin)
@@ -79,19 +89,21 @@ CONFIG = {
     # gecmis performans (win_rate%, getiri%). Telegram mesajina eklenir, baglam verir.
     # Bu sozluk elle guncellenir - yeni bir coklu_varlik_backtest.py calistirmasindan
     # sonra buradaki sayilari guncel sonuclarla degistirebilirsin.
+    # Guncelleme: 19 Eylul 2026, ATR-bazli stop+trailing ile 220 varlik taramasi.
     "BACKTEST_ISTATISTIK": {
-        "ZECUSDT": (56.5, 23.3), "RAYUSDT": (44.4, 18.4), "DASHUSDT": (38.5, 12.5),
-        "REZUSDT": (39.4, 11.4), "ZAMAUSDT": (35.3, 9.6), "TRXUSDT": (44.4, 9.5),
-        "PAXGUSDT": (46.7, 7.7), "ETHUSDT": (39.1, 6.9), "BNBUSDT": (40.0, 5.8),
-        "DOTUSDT": (36.7, 5.6), "ENAUSDT": (38.5, 4.1), "CAKEUSDT": (35.5, 3.9),
-        "BTCUSDT": (31.6, 3.0), "AVAUSDT": (32.1, 2.0), "PUMPUSDT": (30.3, 1.3),
-        "SPCXBUSDT": (25.0, 1.1), "LINKUSDT": (34.8, 0.1),
-        "CSCO": (62.5, 8.6), "GS": (37.5, 5.5), "ABNB": (37.5, 5.5),
-        "UPS": (37.5, 2.7), "GE": (33.3, 1.2), "INTC": (37.5, 0.1),
-        "PETKM.IS": (55.6, 9.8), "KRDMD.IS": (44.4, 5.5), "TOASO.IS": (37.5, 5.5),
-        "HALKB.IS": (44.4, 5.5), "YKBNK.IS": (44.4, 5.5), "AKSA.IS": (37.5, 5.5),
-        "ODAS.IS": (50.0, 4.3), "SASA.IS": (25.0, 4.0), "BERA.IS": (37.5, 2.8),
-        "GESAN.IS": (37.5, 2.8), "SISE.IS": (40.0, 1.2), "MGROS.IS": (37.5, 0.1),
+        "NEARUSDT": (50.0, 19.7), "TRXUSDT": (60.9, 15.1), "RAYUSDT": (41.7, 12.7),
+        "SUSDT": (38.1, 11.6), "ENAUSDT": (45.5, 10.3), "ZAMAUSDT": (50.0, 9.7),
+        "CAKEUSDT": (42.3, 9.5), "CUSDT": (42.9, 9.3), "ZENUSDT": (40.9, 8.7),
+        "ESPUSDT": (41.2, 8.2), "ETHFIUSDT": (43.5, 7.3), "ZECUSDT": (43.5, 6.0),
+        "MORPHOUSDT": (38.1, 5.9), "XRPUSDT": (47.4, 5.0), "PEPEUSDT": (37.0, 4.9),
+        "ARBUSDT": (47.6, 4.8), "XTZUSDT": (42.9, 4.5), "APTUSDT": (45.8, 4.4),
+        "DOTUSDT": (38.1, 4.3), "FUSDT": (46.2, 3.3), "PAXGUSDT": (44.4, 1.7),
+        "FILUSDT": (30.4, 1.6), "SAGAUSDT": (31.8, 0.2), "AAVEUSDT": (31.2, 0.2),
+        "DASHUSDT": (34.8, 0.1),
+        "EREGL.IS": (55.6, 12.7), "YKBNK.IS": (62.5, 7.4), "ECILC.IS": (50.0, 2.9),
+        "TUPRS.IS": (37.5, 2.7), "SISE.IS": (44.4, 2.6), "TTKOM.IS": (50.0, 1.8),
+        "KCHOL.IS": (44.4, 1.2), "ALARK.IS": (25.0, 1.2), "PETKM.IS": (40.0, 1.1),
+        "ENKAI.IS": (37.5, 0.1), "ASTOR.IS": (37.5, 0.1),
     },
 }
 
@@ -233,6 +245,9 @@ def add_indicators(df: pd.DataFrame, cfg: dict) -> pd.DataFrame:
         (df["low"] - prev_close).abs(),
     ], axis=1).max(axis=1)
     df["atr"] = tr.rolling(cfg["ATR_PERIOD"]).mean().shift(1)
+
+    df["vol_avg"] = df["volume"].rolling(cfg["VOLUME_LOOKBACK"]).mean().shift(1)
+    df["trend_ema"] = df["close"].ewm(span=cfg["TREND_EMA_LEN"], adjust=False).mean()
     return df
 
 
@@ -288,7 +303,7 @@ def check_symbol(symbol: str, kategori: str, df: pd.DataFrame, cfg: dict, state:
     if len(df) and df.iloc[-1]["close_time"] > now:
         df = df.iloc[:-1]
 
-    if len(df) < max(cfg["MACD_SLOW"], cfg["RESISTANCE_LOOKBACK"], cfg["ATR_PERIOD"]) + 5:
+    if len(df) < max(cfg["MACD_SLOW"], cfg["RESISTANCE_LOOKBACK"], cfg["ATR_PERIOD"], cfg["TREND_EMA_LEN"]) + 5:
         return
 
     df = add_indicators(df, cfg)
@@ -339,7 +354,17 @@ def check_symbol(symbol: str, kategori: str, df: pd.DataFrame, cfg: dict, state:
         atr_ok = (not cfg["USE_ATR_STOP"]) or pd.notna(row["atr"])
         support_ok = cfg["USE_ATR_STOP"] or pd.notna(row["support"])
 
-        if breakout and macd_bullish and rsi_ok and atr_ok and support_ok:
+        if cfg["USE_VOLUME_FILTER"] and pd.notna(row["vol_avg"]):
+            volume_ok = row["volume"] > row["vol_avg"] * cfg["VOLUME_MULT"]
+        else:
+            volume_ok = not cfg["USE_VOLUME_FILTER"]
+
+        if cfg["USE_TREND_FILTER"] and pd.notna(row["trend_ema"]):
+            trend_ok = row["close"] > row["trend_ema"]
+        else:
+            trend_ok = not cfg["USE_TREND_FILTER"]
+
+        if breakout and macd_bullish and rsi_ok and atr_ok and support_ok and volume_ok and trend_ok:
             entry = row["close"]
             stop = entry - cfg["ATR_STOP_MULT"] * row["atr"] if cfg["USE_ATR_STOP"] else row["support"]
             risk = entry - stop
