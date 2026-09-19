@@ -1,0 +1,39 @@
+name: Aylik Yeniden Dogrulama
+
+on:
+  schedule:
+    - cron: "0 3 1 * *"
+  workflow_dispatch: {}
+
+permissions:
+  contents: write
+
+jobs:
+  yeniden-dogrula:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - name: Repoyu al
+        uses: actions/checkout@v4
+
+      - name: Python kur
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Kutuphaneleri kur
+        run: pip install pandas numpy requests
+
+      - name: Coklu varlik backtest'i calistir
+        env:
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+        run: python coklu_varlik_backtest.py
+
+      - name: Sonuc CSV'sini repoya geri kaydet
+        run: |
+          git config user.name "izleme-bot"
+          git config user.email "izleme-bot@users.noreply.github.com"
+          git add coklu_varlik_sonuclari.csv
+          git diff --quiet --cached || git commit -m "aylik yeniden-dogrulama sonucu guncellendi [skip ci]"
+          git push || true
