@@ -61,6 +61,38 @@ CONFIG = {
 
     "STATE_FILE": "izleme_state.json",
     "REQUEST_DELAY": 0.35,   # ardisik istekler arasi bekleme (nazik olmak icin)
+
+    # RISK YONETIMI (coklu_varlik_backtest.py ile ayni mantik)
+    "ATR_PERIOD": 14,
+    "USE_ATR_STOP": True,
+    "ATR_STOP_MULT": 2.0,
+    "USE_TRAILING_STOP": True,
+    "TRAIL_ATR_MULT": 2.5,
+
+    # KORELASYON / CESITLILIK KONTROLU: ayni anda acik olabilecek pozisyon sayisi
+    "MAX_CONCURRENT_TOTAL": 10,     # tum varliklarda toplamda en fazla bu kadar acik pozisyon
+    "MAX_CONCURRENT_PER_KATEGORI": {
+        "KRIPTO": 6, "ABD HISSE": 4, "BIST": 4,
+    },
+
+    # BILDIRIM KALITESI: coklu_varlik_backtest.py sonucundan alinan, varlik basina
+    # gecmis performans (win_rate%, getiri%). Telegram mesajina eklenir, baglam verir.
+    # Bu sozluk elle guncellenir - yeni bir coklu_varlik_backtest.py calistirmasindan
+    # sonra buradaki sayilari guncel sonuclarla degistirebilirsin.
+    "BACKTEST_ISTATISTIK": {
+        "ZECUSDT": (56.5, 23.3), "RAYUSDT": (44.4, 18.4), "DASHUSDT": (38.5, 12.5),
+        "REZUSDT": (39.4, 11.4), "ZAMAUSDT": (35.3, 9.6), "TRXUSDT": (44.4, 9.5),
+        "PAXGUSDT": (46.7, 7.7), "ETHUSDT": (39.1, 6.9), "BNBUSDT": (40.0, 5.8),
+        "DOTUSDT": (36.7, 5.6), "ENAUSDT": (38.5, 4.1), "CAKEUSDT": (35.5, 3.9),
+        "BTCUSDT": (31.6, 3.0), "AVAUSDT": (32.1, 2.0), "PUMPUSDT": (30.3, 1.3),
+        "SPCXBUSDT": (25.0, 1.1), "LINKUSDT": (34.8, 0.1),
+        "CSCO": (62.5, 8.6), "GS": (37.5, 5.5), "ABNB": (37.5, 5.5),
+        "UPS": (37.5, 2.7), "GE": (33.3, 1.2), "INTC": (37.5, 0.1),
+        "PETKM.IS": (55.6, 9.8), "KRDMD.IS": (44.4, 5.5), "TOASO.IS": (37.5, 5.5),
+        "HALKB.IS": (44.4, 5.5), "YKBNK.IS": (44.4, 5.5), "AKSA.IS": (37.5, 5.5),
+        "ODAS.IS": (50.0, 4.3), "SASA.IS": (25.0, 4.0), "BERA.IS": (37.5, 2.8),
+        "GESAN.IS": (37.5, 2.8), "SISE.IS": (40.0, 1.2), "MGROS.IS": (37.5, 0.1),
+    },
 }
 
 HEADERS = {
@@ -193,6 +225,14 @@ def add_indicators(df: pd.DataFrame, cfg: dict) -> pd.DataFrame:
 
     df["resistance"] = df["high"].rolling(cfg["RESISTANCE_LOOKBACK"]).max().shift(1)
     df["support"] = df["low"].rolling(cfg["SUPPORT_LOOKBACK"]).min().shift(1)
+
+    prev_close = df["close"].shift(1)
+    tr = pd.concat([
+        df["high"] - df["low"],
+        (df["high"] - prev_close).abs(),
+        (df["low"] - prev_close).abs(),
+    ], axis=1).max(axis=1)
+    df["atr"] = tr.rolling(cfg["ATR_PERIOD"]).mean().shift(1)
     return df
 
 
@@ -212,14 +252,43 @@ def save_state(state: dict, cfg: dict):
 
 
 # ------------------------------------------------------------------------------------
+# YARDIMCI: kategori bazinda acik pozisyon sayisi
+# ------------------------------------------------------------------------------------
+def acik_pozisyon_sayilari(state: dict) -> dict:
+    positions = state.get("positions", {})
+    sayilar = {"KRIPTO": 0, "ABD HISSE": 0, "BIST": 0, "TOPLAM": 0}
+    for label, pos in positions.items():
+        if pos is None:
+            continue
+        sayilar["TOPLAM"] += 1
+        for kategori in ("KRIPTO", "ABD HISSE", "BIST"):
+            if label.startswith(f"[{kategori}]"):
+                sayilar[kategori] += 1
+    return sayilar
+
+
+def islem_logla(state: dict, label: str, sonuc: str, pnl_pct: float):
+    log = state.setdefault("trade_log", [])
+    log.append({
+        "zaman": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+        "varlik": label,
+        "sonuc": sonuc,
+        "pnl_pct": round(pnl_pct, 2),
+    })
+    if len(log) > 500:   # dosya sonsuza kadar buyumesin
+        state["trade_log"] = log[-500:]
+
+
+# ------------------------------------------------------------------------------------
 # TEK SEMBOL KONTROLU
 # ------------------------------------------------------------------------------------
-def check_symbol(label: str, df: pd.DataFrame, cfg: dict, state: dict):
+def check_symbol(symbol: str, kategori: str, df: pd.DataFrame, cfg: dict, state: dict):
+    label = f"[{kategori}] {symbol}"
     now = pd.Timestamp.now()
     if len(df) and df.iloc[-1]["close_time"] > now:
         df = df.iloc[:-1]
 
-    if len(df) < max(cfg["MACD_SLOW"], cfg["RESISTANCE_LOOKBACK"]) + 5:
+    if len(df) < max(cfg["MACD_SLOW"], cfg["RESISTANCE_LOOKBACK"], cfg["ATR_PERIOD"]) + 5:
         return
 
     df = add_indicators(df, cfg)
@@ -229,29 +298,50 @@ def check_symbol(label: str, df: pd.DataFrame, cfg: dict, state: dict):
 
     if position is not None:
         if row["low"] <= position["stop"]:
+            pnl_pct = (position["stop"] / position["entry"] - 1) * 100
             uyar(f"{label}: STOP-LOSS tetiklendi ({position['stop']:.4f}). "
-                 f"Giris: {position['entry']:.4f}")
+                 f"Giris: {position['entry']:.4f} | Sonuc: %{pnl_pct:.2f}")
+            islem_logla(state, label, "STOP", pnl_pct)
             positions[label] = None
 
         elif (not position["tp1_done"]) and row["high"] >= position["tp1_price"]:
             uyar(f"{label}: TP1 tetiklendi ({position['tp1_price']:.4f}). "
-                 f"Stop basabasa cekildi.")
+                 f"Stop basabasa cekildi, trailing stop devreye girdi.")
             position["tp1_done"] = True
             position["stop"] = position["entry"]
             positions[label] = position
 
         elif row["high"] >= position["tp2_price"]:
-            uyar(f"{label}: TP2 (final) tetiklendi ({position['tp2_price']:.4f}).")
+            pnl_pct = (position["tp2_price"] / position["entry"] - 1) * 100
+            uyar(f"{label}: TP2 (final) tetiklendi ({position['tp2_price']:.4f}). "
+                 f"Sonuc: %{pnl_pct:.2f}")
+            islem_logla(state, label, "TP2_FINAL", pnl_pct)
             positions[label] = None
 
+        else:
+            # TRAILING STOP: TP1 sonrasi, ATR bazli olarak stop'u yukari cek (sadece kilitler)
+            if position["tp1_done"] and cfg["USE_TRAILING_STOP"] and pd.notna(row["atr"]):
+                trail_candidate = row["close"] - cfg["TRAIL_ATR_MULT"] * row["atr"]
+                if trail_candidate > position["stop"]:
+                    position["stop"] = trail_candidate
+                    positions[label] = position
+
     else:
+        # KORELASYON KONTROLU: kategori ve toplam limitlerini asiyorsak yeni giris ACMA
+        sayilar = acik_pozisyon_sayilari(state)
+        kategori_limit = cfg["MAX_CONCURRENT_PER_KATEGORI"].get(kategori, 999)
+        if sayilar["TOPLAM"] >= cfg["MAX_CONCURRENT_TOTAL"] or sayilar[kategori] >= kategori_limit:
+            return
+
         breakout = pd.notna(row["resistance"]) and row["close"] > row["resistance"]
         macd_bullish = (row["macd_hist"] > 0) and (row["macd"] > row["macd_signal"])
         rsi_ok = pd.notna(row["rsi"]) and row["rsi"] < cfg["RSI_MAX_ENTRY"]
+        atr_ok = (not cfg["USE_ATR_STOP"]) or pd.notna(row["atr"])
+        support_ok = cfg["USE_ATR_STOP"] or pd.notna(row["support"])
 
-        if breakout and macd_bullish and rsi_ok and pd.notna(row["support"]):
+        if breakout and macd_bullish and rsi_ok and atr_ok and support_ok:
             entry = row["close"]
-            stop = row["support"]
+            stop = entry - cfg["ATR_STOP_MULT"] * row["atr"] if cfg["USE_ATR_STOP"] else row["support"]
             risk = entry - stop
             if risk > 0:
                 new_position = {
@@ -263,9 +353,13 @@ def check_symbol(label: str, df: pd.DataFrame, cfg: dict, state: dict):
                     "tp1_done": False,
                 }
                 positions[label] = new_position
+
+                istat = cfg["BACKTEST_ISTATISTIK"].get(symbol)
+                istat_metni = (f" | Gecmis backtest: %{istat[0]:.0f} kazanma, %{istat[1]:.1f} getiri"
+                                if istat else " | Gecmis backtest verisi yok (dogrulanmamis)")
                 uyar(f"{label}: GIRIS SINYALI (LONG). Fiyat {entry:.4f}'te direnci kirdi. "
                      f"Stop: {stop:.4f} | TP1: {new_position['tp1_price']:.4f} | "
-                     f"TP2: {new_position['tp2_price']:.4f}")
+                     f"TP2: {new_position['tp2_price']:.4f}{istat_metni}")
 
 
 # ------------------------------------------------------------------------------------
@@ -283,7 +377,7 @@ def main():
     for symbol in crypto_symbols:
         try:
             df = fetch_binance_klines(symbol, cfg["CRYPTO_INTERVAL"], cfg["CRYPTO_CANDLE_LIMIT"])
-            check_symbol(f"[KRIPTO] {symbol}", df, cfg, state)
+            check_symbol(symbol, "KRIPTO", df, cfg, state)
             taranan += 1
         except Exception as exc:
             print(f"{symbol} taranirken hata: {exc}")
@@ -291,13 +385,13 @@ def main():
         time.sleep(cfg["REQUEST_DELAY"])
 
     # --- HISSELER (ABD + BIST) ---
-    tum_hisseler = [(s, "[ABD HISSE]") for s in cfg["US_STOCKS"]] + \
-                   [(s, "[BIST]") for s in cfg["BIST_STOCKS"]]
+    tum_hisseler = [(s, "ABD HISSE") for s in cfg["US_STOCKS"]] + \
+                   [(s, "BIST") for s in cfg["BIST_STOCKS"]]
     print(f"{len(tum_hisseler)} hisse taranacak.")
-    for symbol, etiket in tum_hisseler:
+    for symbol, kategori in tum_hisseler:
         try:
             df = fetch_yahoo_klines(symbol, cfg["STOCK_INTERVAL"], cfg["STOCK_RANGE"])
-            check_symbol(f"{etiket} {symbol}", df, cfg, state)
+            check_symbol(symbol, kategori, df, cfg, state)
             taranan += 1
         except Exception as exc:
             print(f"{symbol} taranirken hata: {exc}")
