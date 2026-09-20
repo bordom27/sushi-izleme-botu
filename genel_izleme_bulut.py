@@ -463,12 +463,13 @@ def check_symbol(symbol: str, kategori: str, df: pd.DataFrame, cfg: dict, state:
             stop = entry - cfg["ATR_STOP_MULT"] * row["atr"] if cfg["USE_ATR_STOP"] else row["support"]
             risk = entry - stop
             if risk > 0:
+                tp2_r_etkin = max(cfg["TP2_R"], cfg["TP1_R"] + 0.5)  # TP2 her zaman TP1'den >=0.5R yukarida
                 new_position = {
                     "entry_time": str(row["open_time"]),
                     "entry": entry,
                     "stop": stop,
                     "tp1_price": entry + cfg["TP1_R"] * risk,
-                    "tp2_price": entry + cfg["TP2_R"] * risk,
+                    "tp2_price": entry + tp2_r_etkin * risk,
                     "tp1_done": False,
                 }
                 positions[label] = new_position
