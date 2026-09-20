@@ -48,7 +48,7 @@ def send_telegram(mesaj: str):
         print(f"Telegram gonderim hatasi: {exc}")
 
 CONFIG = {
-    "CRYPTO_TOP_N": 80,
+    "CRYPTO_TOP_N": 150,
     "CRYPTO_INTERVAL": "4h",
     "CRYPTO_LOOKBACK_DAYS": 365,
 
@@ -61,6 +61,13 @@ CONFIG = {
         "PLTR", "COIN", "SNOW", "CRWD", "PANW",
         "WMT", "XOM", "CVX", "PFE", "MRK", "ABT", "TMO", "LIN", "ACN", "NOW",
         "INTU", "AMAT", "MU", "LRCX", "ADI", "REGN", "VRTX", "ISRG", "BKNG", "GILD",
+        "T", "VZ", "CMCSA", "NEE", "DUK", "SO", "D", "AEP", "SPGI", "ICE",
+        "CME", "SCHW", "AXP", "C", "WFC", "USB", "PNC", "TFC", "BK", "MET",
+        "PRU", "AIG", "TRV", "ALL", "CB", "PGR", "ETN", "EMR", "ITW", "PH",
+        "ROP", "DOV", "XYL", "IEX", "AME", "ROK", "FTV", "GD", "LMT", "RTX",
+        "NOC", "LHX", "TDG", "HII", "MMM", "DE", "PCAR", "CMI", "PAYX", "ADP",
+        "FIS", "GPN", "JKHY", "WU", "EFX", "VRSK", "MSCI", "FDS", "NDAQ", "CBOE",
+        "TROW", "BEN", "IVZ", "AMP", "STT", "NTRS", "RF", "KEY", "CFG", "HBAN",
     ],
     "BIST_STOCKS": [
         "THYAO.IS", "ASELS.IS", "GARAN.IS", "AKBNK.IS", "ISCTR.IS", "KCHOL.IS",
@@ -76,6 +83,14 @@ CONFIG = {
         "ASTOR.IS", "EKGYO.IS", "ALFAS.IS", "IPEKE.IS", "GWIND.IS", "SELEC.IS",
         "MPARK.IS", "TTRAK.IS", "ANSGR.IS", "TURSG.IS", "BRSAN.IS", "BRYAT.IS",
         "CANTE.IS", "VESBE.IS",
+        "PARSN.IS", "KLGYO.IS", "TATGD.IS", "YATAS.IS", "BAGFS.IS", "BFREN.IS",
+        "CEMTS.IS", "DEVA.IS", "DOHOL.IS", "EGEEN.IS", "EUREN.IS", "GENIL.IS",
+        "GOLTS.IS", "GSDHO.IS", "HLGYO.IS", "ICBCT.IS", "INDES.IS", "IZMDC.IS",
+        "JANTS.IS", "KARTN.IS", "KATMR.IS", "KLMSN.IS", "KORDS.IS", "LOGO.IS",
+        "NETAS.IS", "NTHOL.IS", "NUGYO.IS", "ORGE.IS", "PAPIL.IS", "POLHO.IS",
+        "PSGYO.IS", "QNBFB.IS", "SANEL.IS", "SARKY.IS", "SELVA.IS", "SKBNK.IS",
+        "SNGYO.IS", "TEKTU.IS", "TMSN.IS", "TSPOR.IS", "ULUUN.IS", "VAKKO.IS",
+        "VKGYO.IS", "YESIL.IS", "YUNSA.IS",
     ],
     "STOCK_INTERVAL": "1d",
     "STOCK_RANGE": "2y",
