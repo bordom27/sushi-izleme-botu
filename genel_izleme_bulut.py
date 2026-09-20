@@ -405,8 +405,17 @@ def check_symbol(symbol: str, kategori: str, df: pd.DataFrame, cfg: dict, state:
     positions = state.setdefault("positions", {})
     position = positions.get(label)
 
+    # Giris mumunun KENDISINDE stop/TP kontrolu YAPILMAZ - kontrol bir sonraki
+    # mumdan itibaren baslar (aksi halde giris kapanistan hesaplanir ama ayni
+    # mumun dusugu zaten stop'un altinda olabilir, mantiksiz bir durum olusur).
+    giris_mumunda_miyiz = (position is not None
+                            and position.get("entry_time") == str(row["open_time"]))
+
     if position is not None:
-        if row["low"] <= position["stop"]:
+        if giris_mumunda_miyiz:
+            pass  # bu mumda henuz kontrol yapma, bir sonraki calistirmada devam et
+
+        elif row["low"] <= position["stop"]:
             pnl_pct = (position["stop"] / position["entry"] - 1) * 100
             uyar(f"{label}: STOP-LOSS tetiklendi ({position['stop']:.4f}). "
                  f"Giris: {position['entry']:.4f} | Sonuc: %{pnl_pct:.2f}")
