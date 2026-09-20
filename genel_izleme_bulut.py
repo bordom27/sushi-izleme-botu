@@ -83,6 +83,20 @@ CONFIG = {
     "USE_TRAILING_STOP": True,
     "TRAIL_ATR_MULT": 2.5,
 
+    # ASIRI UZAMIS MUM FILTRESI: kirilim muminin (high-low) araligi ATR'nin bu
+    # katindan buyukse, bu bir "tukenme/parabolik" mumu sayilir ve GIRIS YAPILMAZ.
+    # Amac: devasa, aninda geri donme riski yuksek mumlara "kirildi" diye korku
+    # icinde girmeyi onlemek.
+    "USE_EXTENDED_CANDLE_FILTER": True,
+    "MAX_CANDLE_RANGE_ATR": 2.0,
+
+    # COOLDOWN: bir varlik stop olduktan sonra, ayni varliga tekrar giris
+    # yapabilmek icin gecmesi gereken minimum mum sayisi. Amac: stop-loss
+    # sonrasi ayni sikisik bolgede art arda giris/stop dongusune girmeyi
+    # onlemek (kirilma hemen ardindan tekrar denemek yerine biraz "sogumasini"
+    # beklemek).
+    "COOLDOWN_BARS_AFTER_STOP": 3,
+
     # KORELASYON / CESITLILIK KONTROLU: ayni anda acik olabilecek pozisyon sayisi
     "MAX_CONCURRENT_TOTAL": 16,     # tum varliklarda toplamda en fazla bu kadar acik pozisyon
     "MAX_CONCURRENT_PER_KATEGORI": {
@@ -421,6 +435,7 @@ def check_symbol(symbol: str, kategori: str, df: pd.DataFrame, cfg: dict, state:
                  f"Giris: {position['entry']:.4f} | Sonuc: %{pnl_pct:.2f}")
             islem_logla(state, label, "STOP", pnl_pct)
             positions[label] = None
+            state.setdefault("son_stop", {})[label] = str(row["open_time"])
 
         elif (not position["tp1_done"]) and row["high"] >= position["tp1_price"]:
             uyar(f"{label}: TP1 tetiklendi ({position['tp1_price']:.4f}). "
@@ -451,6 +466,16 @@ def check_symbol(symbol: str, kategori: str, df: pd.DataFrame, cfg: dict, state:
         if sayilar["TOPLAM"] >= cfg["MAX_CONCURRENT_TOTAL"] or sayilar[kategori] >= kategori_limit:
             return
 
+        # COOLDOWN KONTROLU: bu varlik yakin zamanda stop olduysa, belirli bir
+        # mum sayisi gecmeden tekrar giris yapma (art arda whipsaw'i onler).
+        son_stop_zamani = state.get("son_stop", {}).get(label)
+        if son_stop_zamani is not None:
+            interval_td = (pd.Timedelta(hours=4) if kategori == "KRIPTO"
+                            else pd.Timedelta(days=1))
+            cooldown_td = interval_td * cfg["COOLDOWN_BARS_AFTER_STOP"]
+            if row["open_time"] - pd.Timestamp(son_stop_zamani) < cooldown_td:
+                return  # cooldown suresi dolmadi, bu turda giris denenmez
+
         breakout = pd.notna(row["resistance"]) and row["close"] > row["resistance"]
         macd_bullish = (row["macd_hist"] > 0) and (row["macd"] > row["macd_signal"])
         rsi_ok = pd.notna(row["rsi"]) and row["rsi"] < cfg["RSI_MAX_ENTRY"]
@@ -467,7 +492,14 @@ def check_symbol(symbol: str, kategori: str, df: pd.DataFrame, cfg: dict, state:
         else:
             trend_ok = not cfg["USE_TREND_FILTER"]
 
-        if breakout and macd_bullish and rsi_ok and atr_ok and support_ok and volume_ok and trend_ok:
+        if cfg["USE_EXTENDED_CANDLE_FILTER"] and pd.notna(row["atr"]) and row["atr"] > 0:
+            candle_range = row["high"] - row["low"]
+            asiri_mum_degil = candle_range <= cfg["MAX_CANDLE_RANGE_ATR"] * row["atr"]
+        else:
+            asiri_mum_degil = True
+
+        if (breakout and macd_bullish and rsi_ok and atr_ok and support_ok
+                and volume_ok and trend_ok and asiri_mum_degil):
             entry = row["close"]
             stop = entry - cfg["ATR_STOP_MULT"] * row["atr"] if cfg["USE_ATR_STOP"] else row["support"]
             risk = entry - stop
