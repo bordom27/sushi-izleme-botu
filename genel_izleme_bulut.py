@@ -350,6 +350,34 @@ def add_indicators(df: pd.DataFrame, cfg: dict) -> pd.DataFrame:
 
     df["vol_avg"] = df["volume"].rolling(cfg["VOLUME_LOOKBACK"]).mean().shift(1)
     df["trend_ema"] = df["close"].ewm(span=cfg["TREND_EMA_LEN"], adjust=False).mean()
+
+    # ---------------- SINYAL GUCU SKORU (0-100) ----------------
+    # Sabit sayilarla olcekleme yerine, her bileseni SON 100 BARIN kendi
+    # arasindaki goreceli konumuna gore (rolling min-max) 0-100'e yayariz.
+    # Boylece skor gercekten tum araligi kullanir, "hicbir zaman 75'i gecmiyor"
+    # gibi kalibrasyon sorunlari olusmaz.
+    pencere = 100
+    min_periods = 20
+
+    def _rolling_skor(seri):
+        roll_min = seri.rolling(pencere, min_periods=min_periods).min()
+        roll_max = seri.rolling(pencere, min_periods=min_periods).max()
+        span = (roll_max - roll_min).replace(0, np.nan)
+        skor = (seri - roll_min) / span * 100
+        return skor.clip(0, 100)
+
+    rsi_ters = cfg["RSI_MAX_ENTRY"] - df["rsi"]           # dusuk RSI = daha fazla "alan" = yuksek skor
+    vol_orani = df["volume"] / df["vol_avg"].replace(0, np.nan)
+    trend_mesafe = (df["close"] - df["trend_ema"]) / df["atr"].replace(0, np.nan)
+
+    rsi_skor = _rolling_skor(rsi_ters)
+    macd_skor = _rolling_skor(df["macd_hist"])
+    hacim_skor = _rolling_skor(vol_orani)
+    trend_skor = _rolling_skor(trend_mesafe)
+
+    df["sinyal_gucu"] = (rsi_skor * 0.25 + macd_skor * 0.30 + hacim_skor * 0.25 + trend_skor * 0.20).round(1)
+    df["sinyal_gucu"] = df["sinyal_gucu"].fillna(50.0)  # yeterli gecmis yoksa notr deger
+
     return df
 
 
@@ -371,28 +399,6 @@ def save_state(state: dict, cfg: dict):
 # ------------------------------------------------------------------------------------
 # YARDIMCI: kategori bazinda acik pozisyon sayisi
 # ------------------------------------------------------------------------------------
-# ------------------------------------------------------------------------------------
-# SINYAL GUC SKORU (0-100): RSI, MACD momentumu, hacim ve trend gucunu birlestirir.
-# NOT: Bu skorun gercekten kazanma oraniyla iliskili oldugu sinyal_gucu_dogrulama.py
-# ile ayrica test edildi - asagidaki bilgi notuna bak.
-# ------------------------------------------------------------------------------------
-def sinyal_gucu_skoru(row: pd.Series, cfg: dict) -> float:
-    atr = row["atr"] if pd.notna(row["atr"]) and row["atr"] > 0 else None
-
-    rsi_skor = max(0, min(100, (cfg["RSI_MAX_ENTRY"] - row["rsi"]) / cfg["RSI_MAX_ENTRY"] * 100)) \
-        if pd.notna(row["rsi"]) else 50
-
-    macd_skor = max(0, min(100, (row["macd_hist"] / atr) * 200)) if atr and pd.notna(row["macd_hist"]) else 50
-
-    hacim_orani = (row["volume"] / row["vol_avg"]) if pd.notna(row["vol_avg"]) and row["vol_avg"] > 0 else 1
-    hacim_skor = max(0, min(100, (hacim_orani - 1) / 2 * 100))
-
-    trend_skor = max(0, min(100, ((row["close"] - row["trend_ema"]) / atr) * 25)) \
-        if atr and pd.notna(row["trend_ema"]) else 50
-
-    toplam = rsi_skor * 0.25 + macd_skor * 0.30 + hacim_skor * 0.25 + trend_skor * 0.20
-    return round(toplam, 1)
-
 
 def acik_pozisyon_sayilari(state: dict) -> dict:
     positions = state.get("positions", {})
@@ -541,7 +547,7 @@ def check_symbol(symbol: str, kategori: str, df: pd.DataFrame, cfg: dict, state:
                 istat = cfg["BACKTEST_ISTATISTIK"].get(symbol)
                 istat_metni = (f" | Gecmis backtest: %{istat[0]:.0f} kazanma, %{istat[1]:.1f} getiri"
                                 if istat else " | Gecmis backtest verisi yok (dogrulanmamis)")
-                guc_skoru = sinyal_gucu_skoru(row, cfg)
+                guc_skoru = row["sinyal_gucu"]
                 uyar(f"{label}: GIRIS SINYALI (LONG). Fiyat {entry:.4f}'te direnci kirdi. "
                      f"Sinyal gucu: {guc_skoru}/100 | "
                      f"Stop: {stop:.4f} | TP1: {new_position['tp1_price']:.4f} | "
