@@ -125,6 +125,12 @@ CONFIG = {
     "ATR_STOP_MULT": 2.0,      # stop = giris - ATR_STOP_MULT * ATR
     "USE_TRAILING_STOP": True,
     "TRAIL_ATR_MULT": 2.5,     # TP1'den sonra stop, (kapanis - TRAIL_ATR_MULT*ATR) takip eder
+
+    # ASIRI UZAMIS MUM FILTRESI: kirilim muminin araligi (high-low) ATR'nin bu
+    # katindan buyukse, "tukenme/parabolik" mumu sayilir, giris YAPILMAZ.
+    "USE_EXTENDED_CANDLE_FILTER": True,
+    "MAX_CANDLE_RANGE_ATR": 2.0,
+    "COOLDOWN_BARS_AFTER_STOP": 3,
 }
 
 HEADERS = {
@@ -247,6 +253,7 @@ def run_backtest(df: pd.DataFrame, cfg: dict):
     capital = cfg["INITIAL_CAPITAL"]
     trades = []
     position = None
+    son_stop_i = None   # cooldown icin: en son hangi barda stop oldu
 
     for i in range(max(cfg["RESISTANCE_LOOKBACK"], cfg["MACD_SLOW"], cfg["TREND_EMA_LEN"]) + 1, len(df)):
         row = df.iloc[i]
@@ -262,6 +269,7 @@ def run_backtest(df: pd.DataFrame, cfg: dict):
                 capital += pnl - fee
                 trades.append({"exit_reason": "STOP", "pnl": pnl - fee})
                 position = None
+                son_stop_i = i
             else:
                 if hit_tp1:
                     qty_close = position["qty_initial"] * cfg["TP1_FRACTION"]
@@ -306,7 +314,16 @@ def run_backtest(df: pd.DataFrame, cfg: dict):
             atr_ok = (not cfg["USE_ATR_STOP"]) or pd.notna(row["atr"])
             support_ok = (cfg["USE_ATR_STOP"]) or pd.notna(row["support"])
 
-            if breakout and macd_bullish and rsi_ok and volume_ok and trend_ok and atr_ok and support_ok:
+            if cfg["USE_EXTENDED_CANDLE_FILTER"] and pd.notna(row["atr"]) and row["atr"] > 0:
+                candle_range = row["high"] - row["low"]
+                asiri_mum_degil = candle_range <= cfg["MAX_CANDLE_RANGE_ATR"] * row["atr"]
+            else:
+                asiri_mum_degil = True
+
+            cooldown_gecti = (son_stop_i is None) or (i - son_stop_i >= cfg["COOLDOWN_BARS_AFTER_STOP"])
+
+            if (breakout and macd_bullish and rsi_ok and volume_ok and trend_ok
+                    and atr_ok and support_ok and asiri_mum_degil and cooldown_gecti):
                 entry = row["close"]
                 if cfg["USE_ATR_STOP"]:
                     stop = entry - cfg["ATR_STOP_MULT"] * row["atr"]
