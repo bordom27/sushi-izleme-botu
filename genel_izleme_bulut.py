@@ -29,24 +29,28 @@ import requests
 # ------------------------------------------------------------------------------------
 CONFIG = {
     # KRIPTO: coklu_varlik_backtest.py'nin ATR-bazli stop+trailing ile yapilan
-    # 220 varlik taramasinda GERCEKTEN pozitif ve yeterli islem sayisina (8+)
-    # sahip ciktigi dogrulanan liste (guncelleme: 19 Eylul 2026).
+    # 399 varlik taramasinda GERCEKTEN pozitif ve yeterli islem sayisina (8+)
+    # sahip ciktigi dogrulanan liste (guncelleme: 20 Eylul 2026).
     "CRYPTO_SYMBOLS": [
-        "NEARUSDT", "TRXUSDT", "RAYUSDT", "SUSDT", "ENAUSDT", "ZAMAUSDT",
-        "CAKEUSDT", "CUSDT", "ZENUSDT", "ESPUSDT", "ETHFIUSDT", "ZECUSDT",
-        "MORPHOUSDT", "XRPUSDT", "PEPEUSDT", "ARBUSDT", "XTZUSDT", "APTUSDT",
-        "DOTUSDT", "FUSDT", "PAXGUSDT", "FILUSDT", "SAGAUSDT", "AAVEUSDT",
-        "DASHUSDT",
+        "JSTUSDT", "ALGOUSDT", "NEARUSDT", "KAITOUSDT", "DEXEUSDT", "TRXUSDT",
+        "RAYUSDT", "SUSDT", "AVAUSDT", "CAKEUSDT", "ENAUSDT", "ALLOUSDT",
+        "JTOUSDT", "ZAMAUSDT", "CUSDT", "CHZUSDT", "SKLUSDT", "ZENUSDT",
+        "PYTHUSDT", "SOPHUSDT", "ETHFIUSDT", "ZECUSDT", "PHAUSDT", "MORPHOUSDT",
+        "NILUSDT", "PLUMEUSDT", "XRPUSDT", "PEPEUSDT", "ARBUSDT", "MINAUSDT",
+        "XTZUSDT", "APTUSDT", "DOTUSDT", "SKYUSDT", "HFTUSDT", "FUSDT",
+        "AGLDUSDT", "NFPUSDT", "METUSDT", "CTSIUSDT", "ACEUSDT", "PROMUSDT",
+        "TUSDT", "PAXGUSDT", "FILUSDT", "EPICUSDT", "GUNUSDT", "ZILUSDT",
+        "BERAUSDT", "SAGAUSDT", "AAVEUSDT", "DASHUSDT",
     ],
     "CRYPTO_INTERVAL": "4h",
     "CRYPTO_CANDLE_LIMIT": 200,
 
-    # HISSE: bu turda hicbir ABD hissesi 8+ islemle esigi gecemedi (ATR bazli
-    # siki stop, gunluk mumlarda islem sayisini ciddi azaltti) - liste bos birakildi.
+    # HISSE: bu turda da hicbir ABD hissesi 8+ islemle esigi gecemedi - liste bos.
     "US_STOCKS": [],
     "BIST_STOCKS": [
-        "EREGL.IS", "YKBNK.IS", "ECILC.IS", "TUPRS.IS", "SISE.IS", "TTKOM.IS",
-        "KCHOL.IS", "ALARK.IS", "PETKM.IS", "ENKAI.IS", "ASTOR.IS",
+        "EREGL.IS", "YKBNK.IS", "IZMDC.IS", "ICBCT.IS", "SARKY.IS", "NUGYO.IS",
+        "INDES.IS", "ECILC.IS", "TUPRS.IS", "SISE.IS", "TTKOM.IS", "ALARK.IS",
+        "KCHOL.IS", "PETKM.IS", "LOGO.IS", "ENKAI.IS", "ASTOR.IS",
     ],
     "STOCK_INTERVAL": "1d",       # hisseler icin gunluk mum
     "STOCK_RANGE": "2y",          # yeterli gecmis veri icin
@@ -80,9 +84,9 @@ CONFIG = {
     "TRAIL_ATR_MULT": 2.5,
 
     # KORELASYON / CESITLILIK KONTROLU: ayni anda acik olabilecek pozisyon sayisi
-    "MAX_CONCURRENT_TOTAL": 10,     # tum varliklarda toplamda en fazla bu kadar acik pozisyon
+    "MAX_CONCURRENT_TOTAL": 16,     # tum varliklarda toplamda en fazla bu kadar acik pozisyon
     "MAX_CONCURRENT_PER_KATEGORI": {
-        "KRIPTO": 6, "ABD HISSE": 4, "BIST": 4,
+        "KRIPTO": 10, "ABD HISSE": 4, "BIST": 6,
     },
 
     # BILDIRIM KALITESI: varlik bazinda optimize edilmis parametrelerle elde
@@ -102,6 +106,21 @@ CONFIG = {
         "ENKAI.IS": (70.0, 11.5), "ECILC.IS": (60.0, 11.1), "ASTOR.IS": (54.5, 10.7),
         "YKBNK.IS": (62.5, 10.6), "SISE.IS": (33.3, 6.2), "KCHOL.IS": (30.8, 5.9),
         "TTKOM.IS": (50.0, 2.8), "ALARK.IS": (25.0, 2.0),
+
+        # 20 Eylul 2026'da genisletilen taramada eklenen yeni varliklar
+        # (henuz varlik bazinda optimize edilmedi, genel parametrelerle sonuc):
+        "JSTUSDT": (78.9, 35.7), "ALGOUSDT": (47.6, 21.1), "KAITOUSDT": (52.6, 18.6),
+        "DEXEUSDT": (61.5, 15.1), "AVAUSDT": (43.5, 11.4), "ALLOUSDT": (43.8, 10.0),
+        "JTOUSDT": (44.0, 9.9), "CHZUSDT": (45.0, 8.9), "SKLUSDT": (38.1, 8.7),
+        "PYTHUSDT": (46.4, 7.8), "SOPHUSDT": (36.8, 7.5), "IZMDC.IS": (55.6, 6.9),
+        "PHAUSDT": (40.0, 6.0), "NILUSDT": (41.7, 5.8), "PLUMEUSDT": (40.0, 5.5),
+        "ICBCT.IS": (30.0, 5.0), "MINAUSDT": (40.0, 4.7), "SARKY.IS": (50.0, 4.3),
+        "NUGYO.IS": (50.0, 4.2), "INDES.IS": (50.0, 4.0), "SKYUSDT": (38.5, 3.9),
+        "HFTUSDT": (41.2, 3.9), "AGLDUSDT": (38.1, 3.1), "NFPUSDT": (40.0, 2.9),
+        "METUSDT": (36.0, 2.7), "CTSIUSDT": (37.5, 2.5), "ACEUSDT": (36.8, 2.2),
+        "PROMUSDT": (42.9, 2.0), "TUSDT": (41.7, 1.9), "EPICUSDT": (38.5, 1.2),
+        "LOGO.IS": (40.0, 1.1), "GUNUSDT": (31.2, 0.4), "ZILUSDT": (35.0, 0.4),
+        "BERAUSDT": (35.7, 0.3),
     },
 
     # VARLIK BAZINDA PARAMETRELER: her varligin kendi en iyi RSI/ATR-stop/TP2
