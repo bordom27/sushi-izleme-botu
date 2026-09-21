@@ -207,6 +207,82 @@ CONFIG = {
         "ENKAI.IS": {"RSI_MAX_ENTRY": 75, "ATR_STOP_MULT": 2.5, "TP2_R": 1.5},
         "ASTOR.IS": {"RSI_MAX_ENTRY": 75, "ATR_STOP_MULT": 2.5, "TP2_R": 3.0},
     },
+
+    # ISTATISTIKSEL ANLAMLILIK KATEGORISI: istatistiksel_anlamlilik.py sonucu
+    # (20 Eylul 2026). GUCLU = p<0.05 (tesaduf olma ihtimali <%5), ORTA = p<0.15,
+    # BELIRSIZ = mevcut islem sayisiyla "gercek edge" kanitlanamadi (bu "zarar
+    # ediyor" demek DEGIL, sadece "henuz istatistiksel olarak kanitlanmadi" demek).
+    "ANLAMLILIK_KATEGORISI": {
+        "JSTUSDT": "GUCLU",
+        "IZMDC.IS": "GUCLU",
+        "ALGOUSDT": "ORTA",
+        "NILUSDT": "ORTA",
+        "DOTUSDT": "ORTA",
+        "ENKAI.IS": "ORTA",
+        "ZAMAUSDT": "ORTA",
+        "TRXUSDT": "ORTA",
+        "TUPRS.IS": "ORTA",
+        "ENAUSDT": "ORTA",
+        "SUSDT": "ORTA",
+        "PETKM.IS": "ORTA",
+        "PHAUSDT": "BELIRSIZ",
+        "APTUSDT": "BELIRSIZ",
+        "PAXGUSDT": "BELIRSIZ",
+        "ALLOUSDT": "BELIRSIZ",
+        "CUSDT": "BELIRSIZ",
+        "DEXEUSDT": "BELIRSIZ",
+        "ECILC.IS": "BELIRSIZ",
+        "METUSDT": "BELIRSIZ",
+        "CAKEUSDT": "BELIRSIZ",
+        "KAITOUSDT": "BELIRSIZ",
+        "YKBNK.IS": "BELIRSIZ",
+        "ACEUSDT": "BELIRSIZ",
+        "PEPEUSDT": "BELIRSIZ",
+        "ZECUSDT": "BELIRSIZ",
+        "NEARUSDT": "BELIRSIZ",
+        "PLUMEUSDT": "BELIRSIZ",
+        "ETHFIUSDT": "BELIRSIZ",
+        "SKLUSDT": "BELIRSIZ",
+        "ICBCT.IS": "BELIRSIZ",
+        "ARBUSDT": "BELIRSIZ",
+        "RAYUSDT": "BELIRSIZ",
+        "SISE.IS": "BELIRSIZ",
+        "SARKY.IS": "BELIRSIZ",
+        "NUGYO.IS": "BELIRSIZ",
+        "EREGL.IS": "BELIRSIZ",
+        "AGLDUSDT": "BELIRSIZ",
+        "ASTOR.IS": "BELIRSIZ",
+        "HFTUSDT": "BELIRSIZ",
+        "MORPHOUSDT": "BELIRSIZ",
+        "SOPHUSDT": "BELIRSIZ",
+        "KCHOL.IS": "BELIRSIZ",
+        "PROMUSDT": "BELIRSIZ",
+        "EPICUSDT": "BELIRSIZ",
+        "BERAUSDT": "BELIRSIZ",
+        "XTZUSDT": "BELIRSIZ",
+        "GUNUSDT": "BELIRSIZ",
+        "FILUSDT": "BELIRSIZ",
+        "TTKOM.IS": "BELIRSIZ",
+        "CHZUSDT": "BELIRSIZ",
+        "ZENUSDT": "BELIRSIZ",
+        "MINAUSDT": "BELIRSIZ",
+        "INDES.IS": "BELIRSIZ",
+        "XRPUSDT": "BELIRSIZ",
+        "LOGO.IS": "BELIRSIZ",
+        "ALARK.IS": "BELIRSIZ",
+        "PYTHUSDT": "BELIRSIZ",
+        "ZILUSDT": "BELIRSIZ",
+        "AVAUSDT": "BELIRSIZ",
+        "TUSDT": "BELIRSIZ",
+        "NFPUSDT": "BELIRSIZ",
+        "JTOUSDT": "BELIRSIZ",
+        "FUSDT": "BELIRSIZ",
+        "SKYUSDT": "BELIRSIZ",
+        "CTSIUSDT": "BELIRSIZ",
+        "AAVEUSDT": "BELIRSIZ",
+        "DASHUSDT": "BELIRSIZ",
+        "SAGAUSDT": "BELIRSIZ",
+    },
 }
 
 HEADERS = {
@@ -548,7 +624,14 @@ def check_symbol(symbol: str, kategori: str, df: pd.DataFrame, cfg: dict, state:
                 istat_metni = (f" | Gecmis backtest: %{istat[0]:.0f} kazanma, %{istat[1]:.1f} getiri"
                                 if istat else " | Gecmis backtest verisi yok (dogrulanmamis)")
                 guc_skoru = row["sinyal_gucu"]
+                anlamlilik = cfg["ANLAMLILIK_KATEGORISI"].get(symbol, "BELIRSIZ")
+                anlamlilik_aciklama = {
+                    "GUCLU": "GUCLU (istatistiksel olarak kanitlanmis edge)",
+                    "ORTA": "ORTA (zayif ama var olan bir egilim)",
+                    "BELIRSIZ": "BELIRSIZ (kucuk orneklem, tesaduf olabilir - dikkatli ol)",
+                }[anlamlilik]
                 uyar(f"{label}: GIRIS SINYALI (LONG). Fiyat {entry:.4f}'te direnci kirdi. "
+                     f"Guvenilirlik: {anlamlilik_aciklama} | "
                      f"Sinyal gucu: {guc_skoru}/100 | "
                      f"Stop: {stop:.4f} | TP1: {new_position['tp1_price']:.4f} | "
                      f"TP2: {new_position['tp2_price']:.4f}{istat_metni}")
