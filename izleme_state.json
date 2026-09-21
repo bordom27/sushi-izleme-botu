@@ -1,3 +1,28 @@
 {
-  "positions": {}
+  "positions": {
+    "[KRIPTO] CHZUSDT": {
+      "entry_time": "2026-09-21 08:00:00",
+      "entry": 0.01573,
+      "stop": 0.015239285714285716,
+      "tp1_price": 0.016466071428571427,
+      "tp2_price": 0.01671142857142857,
+      "tp1_done": false
+    },
+    "[KRIPTO] PYTHUSDT": {
+      "entry_time": "2026-09-21 08:00:00",
+      "entry": 0.064,
+      "stop": 0.06120035714285715,
+      "tp1_price": 0.06819946428571429,
+      "tp2_price": 0.06959928571428571,
+      "tp1_done": false
+    },
+    "[KRIPTO] PLUMEUSDT": {
+      "entry_time": "2026-09-21 08:00:00",
+      "entry": 0.01462,
+      "stop": 0.013112857142857141,
+      "tp1_price": 0.016880714285714287,
+      "tp2_price": 0.017634285714285713,
+      "tp1_done": false
+    }
+  }
 }
