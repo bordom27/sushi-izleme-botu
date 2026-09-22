@@ -1,13 +1,6 @@
 {
   "positions": {
-    "[KRIPTO] CHZUSDT": {
-      "entry_time": "2026-09-21 08:00:00",
-      "entry": 0.01573,
-      "stop": 0.01573,
-      "tp1_price": 0.016466071428571427,
-      "tp2_price": 0.01671142857142857,
-      "tp1_done": true
-    },
+    "[KRIPTO] CHZUSDT": null,
     "[KRIPTO] PYTHUSDT": null,
     "[KRIPTO] PLUMEUSDT": {
       "entry_time": "2026-09-21 08:00:00",
@@ -40,6 +33,12 @@
       "varlik": "[KRIPTO] PYTHUSDT",
       "sonuc": "STOP",
       "pnl_pct": 0.0
+    },
+    {
+      "zaman": "2026-09-22 21:03:50",
+      "varlik": "[KRIPTO] CHZUSDT",
+      "sonuc": "TP2_FINAL",
+      "pnl_pct": 6.24
     }
   ],
   "son_stop": {
