@@ -8,14 +8,7 @@
       "tp2_price": 0.01671142857142857,
       "tp1_done": false
     },
-    "[KRIPTO] PYTHUSDT": {
-      "entry_time": "2026-09-21 08:00:00",
-      "entry": 0.064,
-      "stop": 0.064,
-      "tp1_price": 0.06819946428571429,
-      "tp2_price": 0.06959928571428571,
-      "tp1_done": true
-    },
+    "[KRIPTO] PYTHUSDT": null,
     "[KRIPTO] PLUMEUSDT": {
       "entry_time": "2026-09-21 08:00:00",
       "entry": 0.01462,
@@ -32,5 +25,16 @@
       "tp2_price": 169.41428048270092,
       "tp1_done": false
     }
+  },
+  "trade_log": [
+    {
+      "zaman": "2026-09-22 17:03:44",
+      "varlik": "[KRIPTO] PYTHUSDT",
+      "sonuc": "STOP",
+      "pnl_pct": 0.0
+    }
+  ],
+  "son_stop": {
+    "[KRIPTO] PYTHUSDT": "2026-09-22 12:00:00"
   }
 }
