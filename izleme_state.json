@@ -3,10 +3,10 @@
     "[KRIPTO] CHZUSDT": {
       "entry_time": "2026-09-21 08:00:00",
       "entry": 0.01573,
-      "stop": 0.015239285714285716,
+      "stop": 0.01573,
       "tp1_price": 0.016466071428571427,
       "tp2_price": 0.01671142857142857,
-      "tp1_done": false
+      "tp1_done": true
     },
     "[KRIPTO] PYTHUSDT": null,
     "[KRIPTO] PLUMEUSDT": {
@@ -23,6 +23,14 @@
       "stop": 134.1428506033761,
       "tp1_price": 163.5357088361468,
       "tp2_price": 169.41428048270092,
+      "tp1_done": false
+    },
+    "[KRIPTO] KAITOUSDT": {
+      "entry_time": "2026-09-22 16:00:00",
+      "entry": 0.3622,
+      "stop": 0.33545,
+      "tp1_price": 0.40232500000000004,
+      "tp2_price": 0.4157,
       "tp1_done": false
     }
   },
