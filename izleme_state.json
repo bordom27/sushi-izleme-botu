@@ -2,14 +2,7 @@
   "positions": {
     "[KRIPTO] CHZUSDT": null,
     "[KRIPTO] PYTHUSDT": null,
-    "[KRIPTO] PLUMEUSDT": {
-      "entry_time": "2026-09-21 08:00:00",
-      "entry": 0.01462,
-      "stop": 0.015409285714285716,
-      "tp1_price": 0.016880714285714287,
-      "tp2_price": 0.017634285714285713,
-      "tp1_done": true
-    },
+    "[KRIPTO] PLUMEUSDT": null,
     "[BIST] LOGO.IS": {
       "entry_time": "2026-09-22 06:30:00",
       "entry": 145.89999389648438,
@@ -18,30 +11,9 @@
       "tp2_price": 169.41428048270092,
       "tp1_done": false
     },
-    "[KRIPTO] KAITOUSDT": {
-      "entry_time": "2026-09-22 16:00:00",
-      "entry": 0.3622,
-      "stop": 0.33545,
-      "tp1_price": 0.40232500000000004,
-      "tp2_price": 0.4157,
-      "tp1_done": false
-    },
-    "[KRIPTO] DEXEUSDT": {
-      "entry_time": "2026-09-22 20:00:00",
-      "entry": 1.982,
-      "stop": 1.9101428571428571,
-      "tp1_price": 2.089785714285714,
-      "tp2_price": 2.1257142857142854,
-      "tp1_done": false
-    },
-    "[KRIPTO] ARBUSDT": {
-      "entry_time": "2026-09-23 00:00:00",
-      "entry": 0.2491,
-      "stop": 0.229075,
-      "tp1_price": 0.2791375,
-      "tp2_price": 0.28914999999999996,
-      "tp1_done": false
-    }
+    "[KRIPTO] KAITOUSDT": null,
+    "[KRIPTO] DEXEUSDT": null,
+    "[KRIPTO] ARBUSDT": null
   },
   "trade_log": [
     {
@@ -55,9 +27,37 @@
       "varlik": "[KRIPTO] CHZUSDT",
       "sonuc": "TP2_FINAL",
       "pnl_pct": 6.24
+    },
+    {
+      "zaman": "2026-09-23 16:04:12",
+      "varlik": "[KRIPTO] KAITOUSDT",
+      "sonuc": "STOP",
+      "pnl_pct": -7.39
+    },
+    {
+      "zaman": "2026-09-23 16:04:13",
+      "varlik": "[KRIPTO] DEXEUSDT",
+      "sonuc": "STOP",
+      "pnl_pct": -3.63
+    },
+    {
+      "zaman": "2026-09-23 16:04:34",
+      "varlik": "[KRIPTO] PLUMEUSDT",
+      "sonuc": "STOP",
+      "pnl_pct": 5.4
+    },
+    {
+      "zaman": "2026-09-23 16:04:37",
+      "varlik": "[KRIPTO] ARBUSDT",
+      "sonuc": "STOP",
+      "pnl_pct": -8.04
     }
   ],
   "son_stop": {
-    "[KRIPTO] PYTHUSDT": "2026-09-22 12:00:00"
+    "[KRIPTO] PYTHUSDT": "2026-09-22 12:00:00",
+    "[KRIPTO] KAITOUSDT": "2026-09-23 12:00:00",
+    "[KRIPTO] DEXEUSDT": "2026-09-23 12:00:00",
+    "[KRIPTO] PLUMEUSDT": "2026-09-23 12:00:00",
+    "[KRIPTO] ARBUSDT": "2026-09-23 12:00:00"
   }
 }
