@@ -5,10 +5,10 @@
     "[KRIPTO] PLUMEUSDT": {
       "entry_time": "2026-09-21 08:00:00",
       "entry": 0.01462,
-      "stop": 0.013112857142857141,
+      "stop": 0.01462,
       "tp1_price": 0.016880714285714287,
       "tp2_price": 0.017634285714285713,
-      "tp1_done": false
+      "tp1_done": true
     },
     "[BIST] LOGO.IS": {
       "entry_time": "2026-09-22 06:30:00",
@@ -32,6 +32,14 @@
       "stop": 1.9101428571428571,
       "tp1_price": 2.089785714285714,
       "tp2_price": 2.1257142857142854,
+      "tp1_done": false
+    },
+    "[KRIPTO] ARBUSDT": {
+      "entry_time": "2026-09-23 00:00:00",
+      "entry": 0.2491,
+      "stop": 0.229075,
+      "tp1_price": 0.2791375,
+      "tp2_price": 0.28914999999999996,
       "tp1_done": false
     }
   },
