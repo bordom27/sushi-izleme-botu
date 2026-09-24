@@ -13,7 +13,15 @@
     },
     "[KRIPTO] KAITOUSDT": null,
     "[KRIPTO] DEXEUSDT": null,
-    "[KRIPTO] ARBUSDT": null
+    "[KRIPTO] ARBUSDT": null,
+    "[KRIPTO] CAKEUSDT": {
+      "entry_time": "2026-09-24 12:00:00",
+      "entry": 2.764,
+      "stop": 2.611428571428571,
+      "tp1_price": 2.992857142857143,
+      "tp2_price": 3.069142857142857,
+      "tp1_done": false
+    }
   },
   "trade_log": [
     {
