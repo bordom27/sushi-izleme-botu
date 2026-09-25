@@ -1,7 +1,14 @@
 {
   "positions": {
     "[KRIPTO] CHZUSDT": null,
-    "[KRIPTO] PYTHUSDT": null,
+    "[KRIPTO] PYTHUSDT": {
+      "entry_time": "2026-09-25 12:00:00",
+      "entry": 0.07296,
+      "stop": 0.06471178571428571,
+      "tp1_price": 0.08533232142857143,
+      "tp2_price": 0.08945642857142858,
+      "tp1_done": false
+    },
     "[KRIPTO] PLUMEUSDT": null,
     "[BIST] LOGO.IS": {
       "entry_time": "2026-09-22 06:30:00",
@@ -36,6 +43,14 @@
       "stop": 0.11152142857142858,
       "tp1_price": 0.12496785714285714,
       "tp2_price": 0.12765714285714286,
+      "tp1_done": false
+    },
+    "[KRIPTO] AGLDUSDT": {
+      "entry_time": "2026-09-25 12:00:00",
+      "entry": 0.2253,
+      "stop": 0.2134,
+      "tp1_price": 0.24314999999999998,
+      "tp2_price": 0.2491,
       "tp1_done": false
     }
   },
