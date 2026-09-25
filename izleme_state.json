@@ -29,6 +29,14 @@
       "tp1_price": 0.12102428571428572,
       "tp2_price": 0.12260571428571429,
       "tp1_done": false
+    },
+    "[KRIPTO] ALGOUSDT": {
+      "entry_time": "2026-09-25 08:00:00",
+      "entry": 0.1169,
+      "stop": 0.11152142857142858,
+      "tp1_price": 0.12496785714285714,
+      "tp2_price": 0.12765714285714286,
+      "tp1_done": false
     }
   },
   "trade_log": [
