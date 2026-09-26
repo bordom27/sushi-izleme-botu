@@ -45,6 +45,14 @@
       "tp1_price": 0.24314999999999998,
       "tp2_price": 0.2491,
       "tp1_done": false
+    },
+    "[KRIPTO] SKLUSDT": {
+      "entry_time": "2026-09-26 04:00:00",
+      "entry": 0.00472,
+      "stop": 0.0045000000000000005,
+      "tp1_price": 0.00505,
+      "tp2_price": 0.00516,
+      "tp1_done": false
     }
   },
   "trade_log": [
