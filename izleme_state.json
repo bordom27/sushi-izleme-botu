@@ -1,6 +1,13 @@
 {
   "positions": {
-    "[KRIPTO] CHZUSDT": null,
+    "[KRIPTO] CHZUSDT": {
+      "entry_time": "2026-09-26 12:00:00",
+      "entry": 0.017,
+      "stop": 0.015885714285714288,
+      "tp1_price": 0.01867142857142857,
+      "tp2_price": 0.02034285714285714,
+      "tp1_done": false
+    },
     "[KRIPTO] PYTHUSDT": {
       "entry_time": "2026-09-25 12:00:00",
       "entry": 0.07296,
