@@ -32,10 +32,10 @@
     "[KRIPTO] JSTUSDT": {
       "entry_time": "2026-09-25 00:00:00",
       "entry": 0.11628,
-      "stop": 0.11311714285714285,
+      "stop": 0.11628,
       "tp1_price": 0.12102428571428572,
       "tp2_price": 0.12260571428571429,
-      "tp1_done": false
+      "tp1_done": true
     },
     "[KRIPTO] ALGOUSDT": null,
     "[KRIPTO] AGLDUSDT": {
