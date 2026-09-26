@@ -29,14 +29,7 @@
       "tp2_price": 3.069142857142857,
       "tp1_done": false
     },
-    "[KRIPTO] JSTUSDT": {
-      "entry_time": "2026-09-25 00:00:00",
-      "entry": 0.11628,
-      "stop": 0.11628,
-      "tp1_price": 0.12102428571428572,
-      "tp2_price": 0.12260571428571429,
-      "tp1_done": true
-    },
+    "[KRIPTO] JSTUSDT": null,
     "[KRIPTO] ALGOUSDT": null,
     "[KRIPTO] AGLDUSDT": {
       "entry_time": "2026-09-25 12:00:00",
@@ -89,6 +82,12 @@
       "varlik": "[KRIPTO] ALGOUSDT",
       "sonuc": "STOP",
       "pnl_pct": -4.6
+    },
+    {
+      "zaman": "2026-09-26 01:03:14",
+      "varlik": "[KRIPTO] JSTUSDT",
+      "sonuc": "TP2_FINAL",
+      "pnl_pct": 5.44
     }
   ],
   "son_stop": {
