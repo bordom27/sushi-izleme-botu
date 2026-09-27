@@ -11,10 +11,10 @@
     "[KRIPTO] PYTHUSDT": {
       "entry_time": "2026-09-25 12:00:00",
       "entry": 0.07296,
-      "stop": 0.06471178571428571,
+      "stop": 0.07296,
       "tp1_price": 0.08533232142857143,
       "tp2_price": 0.08945642857142858,
-      "tp1_done": false
+      "tp1_done": true
     },
     "[KRIPTO] PLUMEUSDT": null,
     "[BIST] LOGO.IS": {
@@ -27,7 +27,14 @@
     },
     "[KRIPTO] KAITOUSDT": null,
     "[KRIPTO] DEXEUSDT": null,
-    "[KRIPTO] ARBUSDT": null,
+    "[KRIPTO] ARBUSDT": {
+      "entry_time": "2026-09-27 04:00:00",
+      "entry": 0.2348,
+      "stop": 0.22210357142857143,
+      "tp1_price": 0.25384464285714287,
+      "tp2_price": 0.26019285714285717,
+      "tp1_done": false
+    },
     "[KRIPTO] CAKEUSDT": {
       "entry_time": "2026-09-24 12:00:00",
       "entry": 2.764,
