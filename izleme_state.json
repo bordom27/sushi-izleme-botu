@@ -27,14 +27,7 @@
     },
     "[KRIPTO] KAITOUSDT": null,
     "[KRIPTO] DEXEUSDT": null,
-    "[KRIPTO] ARBUSDT": {
-      "entry_time": "2026-09-27 04:00:00",
-      "entry": 0.2348,
-      "stop": 0.22210357142857143,
-      "tp1_price": 0.25384464285714287,
-      "tp2_price": 0.26019285714285717,
-      "tp1_done": false
-    },
+    "[KRIPTO] ARBUSDT": null,
     "[KRIPTO] CAKEUSDT": {
       "entry_time": "2026-09-24 12:00:00",
       "entry": 2.764,
@@ -117,6 +110,12 @@
       "varlik": "[KRIPTO] JSTUSDT",
       "sonuc": "TP2_FINAL",
       "pnl_pct": 5.44
+    },
+    {
+      "zaman": "2026-09-27 16:04:23",
+      "varlik": "[KRIPTO] ARBUSDT",
+      "sonuc": "STOP",
+      "pnl_pct": -5.41
     }
   ],
   "son_stop": {
@@ -124,7 +123,7 @@
     "[KRIPTO] KAITOUSDT": "2026-09-23 12:00:00",
     "[KRIPTO] DEXEUSDT": "2026-09-23 12:00:00",
     "[KRIPTO] PLUMEUSDT": "2026-09-23 12:00:00",
-    "[KRIPTO] ARBUSDT": "2026-09-23 12:00:00",
+    "[KRIPTO] ARBUSDT": "2026-09-27 12:00:00",
     "[KRIPTO] ALGOUSDT": "2026-09-25 16:00:00"
   }
 }
