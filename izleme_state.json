@@ -1,21 +1,7 @@
 {
   "positions": {
-    "[KRIPTO] CHZUSDT": {
-      "entry_time": "2026-09-26 12:00:00",
-      "entry": 0.017,
-      "stop": 0.015885714285714288,
-      "tp1_price": 0.01867142857142857,
-      "tp2_price": 0.02034285714285714,
-      "tp1_done": false
-    },
-    "[KRIPTO] PYTHUSDT": {
-      "entry_time": "2026-09-25 12:00:00",
-      "entry": 0.07296,
-      "stop": 0.07948035714285714,
-      "tp1_price": 0.08533232142857143,
-      "tp2_price": 0.08945642857142858,
-      "tp1_done": true
-    },
+    "[KRIPTO] CHZUSDT": null,
+    "[KRIPTO] PYTHUSDT": null,
     "[KRIPTO] PLUMEUSDT": null,
     "[BIST] LOGO.IS": {
       "entry_time": "2026-09-22 06:30:00",
@@ -45,22 +31,8 @@
       "tp1_done": true
     },
     "[KRIPTO] ALGOUSDT": null,
-    "[KRIPTO] AGLDUSDT": {
-      "entry_time": "2026-09-25 12:00:00",
-      "entry": 0.2253,
-      "stop": 0.2134,
-      "tp1_price": 0.24314999999999998,
-      "tp2_price": 0.2491,
-      "tp1_done": false
-    },
-    "[KRIPTO] SKLUSDT": {
-      "entry_time": "2026-09-26 04:00:00",
-      "entry": 0.00472,
-      "stop": 0.0045000000000000005,
-      "tp1_price": 0.00505,
-      "tp2_price": 0.00516,
-      "tp1_done": false
-    }
+    "[KRIPTO] AGLDUSDT": null,
+    "[KRIPTO] SKLUSDT": null
   },
   "trade_log": [
     {
@@ -116,14 +88,41 @@
       "varlik": "[KRIPTO] ARBUSDT",
       "sonuc": "STOP",
       "pnl_pct": -5.41
+    },
+    {
+      "zaman": "2026-09-28 08:06:31",
+      "varlik": "[KRIPTO] CHZUSDT",
+      "sonuc": "STOP",
+      "pnl_pct": -6.55
+    },
+    {
+      "zaman": "2026-09-28 08:06:33",
+      "varlik": "[KRIPTO] SKLUSDT",
+      "sonuc": "STOP",
+      "pnl_pct": -4.66
+    },
+    {
+      "zaman": "2026-09-28 08:06:35",
+      "varlik": "[KRIPTO] PYTHUSDT",
+      "sonuc": "STOP",
+      "pnl_pct": 8.94
+    },
+    {
+      "zaman": "2026-09-28 08:06:54",
+      "varlik": "[KRIPTO] AGLDUSDT",
+      "sonuc": "STOP",
+      "pnl_pct": -5.28
     }
   ],
   "son_stop": {
-    "[KRIPTO] PYTHUSDT": "2026-09-22 12:00:00",
+    "[KRIPTO] PYTHUSDT": "2026-09-28 04:00:00",
     "[KRIPTO] KAITOUSDT": "2026-09-23 12:00:00",
     "[KRIPTO] DEXEUSDT": "2026-09-23 12:00:00",
     "[KRIPTO] PLUMEUSDT": "2026-09-23 12:00:00",
     "[KRIPTO] ARBUSDT": "2026-09-27 12:00:00",
-    "[KRIPTO] ALGOUSDT": "2026-09-25 16:00:00"
+    "[KRIPTO] ALGOUSDT": "2026-09-25 16:00:00",
+    "[KRIPTO] CHZUSDT": "2026-09-28 04:00:00",
+    "[KRIPTO] SKLUSDT": "2026-09-28 04:00:00",
+    "[KRIPTO] AGLDUSDT": "2026-09-28 04:00:00"
   }
 }
