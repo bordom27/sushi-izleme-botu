@@ -18,7 +18,14 @@
     "[KRIPTO] JSTUSDT": null,
     "[KRIPTO] ALGOUSDT": null,
     "[KRIPTO] AGLDUSDT": null,
-    "[KRIPTO] SKLUSDT": null,
+    "[KRIPTO] SKLUSDT": {
+      "entry_time": "2026-09-30 08:00:00",
+      "entry": 0.00474,
+      "stop": 0.004461428571428572,
+      "tp1_price": 0.005157857142857143,
+      "tp2_price": 0.005297142857142857,
+      "tp1_done": false
+    },
     "[KRIPTO] TRXUSDT": {
       "entry_time": "2026-09-30 04:00:00",
       "entry": 0.3383,
@@ -33,6 +40,22 @@
       "stop": 0.06788571428571429,
       "tp1_price": 0.09317142857142857,
       "tp2_price": 0.09822857142857143,
+      "tp1_done": false
+    },
+    "[KRIPTO] NEARUSDT": {
+      "entry_time": "2026-09-30 08:00:00",
+      "entry": 5.3,
+      "stop": 4.630535714285713,
+      "tp1_price": 6.30419642857143,
+      "tp2_price": 7.308392857142859,
+      "tp1_done": false
+    },
+    "[KRIPTO] NILUSDT": {
+      "entry_time": "2026-09-30 08:00:00",
+      "entry": 0.09655,
+      "stop": 0.08126428571428572,
+      "tp1_price": 0.1194785714285714,
+      "tp2_price": 0.14240714285714284,
       "tp1_done": false
     }
   },
