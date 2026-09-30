@@ -11,7 +11,14 @@
       "tp2_price": 169.41428048270092,
       "tp1_done": false
     },
-    "[KRIPTO] KAITOUSDT": null,
+    "[KRIPTO] KAITOUSDT": {
+      "entry_time": "2026-09-30 12:00:00",
+      "entry": 0.3512,
+      "stop": 0.3225928571428571,
+      "tp1_price": 0.3941107142857143,
+      "tp2_price": 0.4084142857142858,
+      "tp1_done": false
+    },
     "[KRIPTO] DEXEUSDT": null,
     "[KRIPTO] ARBUSDT": null,
     "[KRIPTO] CAKEUSDT": null,
@@ -56,6 +63,30 @@
       "stop": 0.08126428571428572,
       "tp1_price": 0.1194785714285714,
       "tp2_price": 0.14240714285714284,
+      "tp1_done": false
+    },
+    "[KRIPTO] AVAUSDT": {
+      "entry_time": "2026-09-30 12:00:00",
+      "entry": 0.2526,
+      "stop": 0.24084642857142857,
+      "tp1_price": 0.27023035714285715,
+      "tp2_price": 0.27610714285714283,
+      "tp1_done": false
+    },
+    "[KRIPTO] ZENUSDT": {
+      "entry_time": "2026-09-30 12:00:00",
+      "entry": 7.52,
+      "stop": 6.800178571428571,
+      "tp1_price": 8.599732142857142,
+      "tp2_price": 9.679464285714285,
+      "tp1_done": false
+    },
+    "[KRIPTO] PROMUSDT": {
+      "entry_time": "2026-09-30 12:00:00",
+      "entry": 6.624,
+      "stop": 5.962392857142857,
+      "tp1_price": 7.616410714285714,
+      "tp2_price": 7.947214285714286,
       "tp1_done": false
     }
   },
