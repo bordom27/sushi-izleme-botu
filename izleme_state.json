@@ -75,12 +75,13 @@
       "tp2_price": 7.947214285714286,
       "tp1_done": false
     },
-    "[KRIPTO] SUSDT": {
-      "entry_time": "2026-09-30 20:00:00",
-      "entry": 0.04078,
-      "stop": 0.03872071428571428,
-      "tp1_price": 0.04386892857142857,
-      "tp2_price": 0.04489857142857143,
+    "[KRIPTO] SUSDT": null,
+    "[KRIPTO] CUSDT": {
+      "entry_time": "2026-10-01 16:00:00",
+      "entry": 0.0953,
+      "stop": 0.09210714285714286,
+      "tp1_price": 0.1000892857142857,
+      "tp2_price": 0.10168571428571427,
       "tp1_done": false
     }
   },
@@ -186,6 +187,12 @@
       "varlik": "[KRIPTO] NILUSDT",
       "sonuc": "STOP",
       "pnl_pct": -15.83
+    },
+    {
+      "zaman": "2026-10-01 20:04:20",
+      "varlik": "[KRIPTO] SUSDT",
+      "sonuc": "STOP",
+      "pnl_pct": -5.05
     }
   ],
   "son_stop": {
@@ -200,6 +207,7 @@
     "[KRIPTO] AGLDUSDT": "2026-09-28 04:00:00",
     "[KRIPTO] CAKEUSDT": "2026-09-28 12:00:00",
     "[KRIPTO] TRXUSDT": "2026-10-01 08:00:00",
-    "[KRIPTO] NILUSDT": "2026-10-01 12:00:00"
+    "[KRIPTO] NILUSDT": "2026-10-01 12:00:00",
+    "[KRIPTO] SUSDT": "2026-10-01 16:00:00"
   }
 }
