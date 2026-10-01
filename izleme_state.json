@@ -33,14 +33,7 @@
       "tp2_price": 0.005297142857142857,
       "tp1_done": false
     },
-    "[KRIPTO] TRXUSDT": {
-      "entry_time": "2026-09-30 04:00:00",
-      "entry": 0.3383,
-      "stop": 0.33455,
-      "tp1_price": 0.3439249999999999,
-      "tp2_price": 0.34767499999999996,
-      "tp1_done": false
-    },
+    "[KRIPTO] TRXUSDT": null,
     "[KRIPTO] PHAUSDT": {
       "entry_time": "2026-09-30 04:00:00",
       "entry": 0.078,
@@ -188,6 +181,12 @@
       "varlik": "[KRIPTO] CAKEUSDT",
       "sonuc": "STOP",
       "pnl_pct": -5.52
+    },
+    {
+      "zaman": "2026-10-01 12:07:42",
+      "varlik": "[KRIPTO] TRXUSDT",
+      "sonuc": "STOP",
+      "pnl_pct": -1.11
     }
   ],
   "son_stop": {
@@ -200,6 +199,7 @@
     "[KRIPTO] CHZUSDT": "2026-09-28 04:00:00",
     "[KRIPTO] SKLUSDT": "2026-09-28 04:00:00",
     "[KRIPTO] AGLDUSDT": "2026-09-28 04:00:00",
-    "[KRIPTO] CAKEUSDT": "2026-09-28 12:00:00"
+    "[KRIPTO] CAKEUSDT": "2026-09-28 12:00:00",
+    "[KRIPTO] TRXUSDT": "2026-10-01 08:00:00"
   }
 }
