@@ -1,13 +1,6 @@
 {
   "positions": {
-    "[KRIPTO] CHZUSDT": {
-      "entry_time": "2026-10-02 08:00:00",
-      "entry": 0.01701,
-      "stop": 0.016086785714285713,
-      "tp1_price": 0.018394821428571434,
-      "tp2_price": 0.019779642857142864,
-      "tp1_done": false
-    },
+    "[KRIPTO] CHZUSDT": null,
     "[KRIPTO] PYTHUSDT": null,
     "[KRIPTO] PLUMEUSDT": null,
     "[BIST] LOGO.IS": {
@@ -18,28 +11,14 @@
       "tp2_price": 169.41428048270092,
       "tp1_done": false
     },
-    "[KRIPTO] KAITOUSDT": {
-      "entry_time": "2026-09-30 12:00:00",
-      "entry": 0.3512,
-      "stop": 0.3225928571428571,
-      "tp1_price": 0.3941107142857143,
-      "tp2_price": 0.4084142857142858,
-      "tp1_done": false
-    },
+    "[KRIPTO] KAITOUSDT": null,
     "[KRIPTO] DEXEUSDT": null,
     "[KRIPTO] ARBUSDT": null,
     "[KRIPTO] CAKEUSDT": null,
     "[KRIPTO] JSTUSDT": null,
     "[KRIPTO] ALGOUSDT": null,
     "[KRIPTO] AGLDUSDT": null,
-    "[KRIPTO] SKLUSDT": {
-      "entry_time": "2026-09-30 08:00:00",
-      "entry": 0.00474,
-      "stop": 0.004461428571428572,
-      "tp1_price": 0.005157857142857143,
-      "tp2_price": 0.005297142857142857,
-      "tp1_done": false
-    },
+    "[KRIPTO] SKLUSDT": null,
     "[KRIPTO] TRXUSDT": null,
     "[KRIPTO] PHAUSDT": {
       "entry_time": "2026-09-30 04:00:00",
@@ -49,31 +28,10 @@
       "tp2_price": 0.09822857142857143,
       "tp1_done": false
     },
-    "[KRIPTO] NEARUSDT": {
-      "entry_time": "2026-09-30 08:00:00",
-      "entry": 5.3,
-      "stop": 4.630535714285713,
-      "tp1_price": 6.30419642857143,
-      "tp2_price": 7.308392857142859,
-      "tp1_done": false
-    },
+    "[KRIPTO] NEARUSDT": null,
     "[KRIPTO] NILUSDT": null,
-    "[KRIPTO] AVAUSDT": {
-      "entry_time": "2026-09-30 12:00:00",
-      "entry": 0.2526,
-      "stop": 0.2526,
-      "tp1_price": 0.27023035714285715,
-      "tp2_price": 0.27610714285714283,
-      "tp1_done": true
-    },
-    "[KRIPTO] ZENUSDT": {
-      "entry_time": "2026-09-30 12:00:00",
-      "entry": 7.52,
-      "stop": 6.800178571428571,
-      "tp1_price": 8.599732142857142,
-      "tp2_price": 9.679464285714285,
-      "tp1_done": false
-    },
+    "[KRIPTO] AVAUSDT": null,
+    "[KRIPTO] ZENUSDT": null,
     "[KRIPTO] PROMUSDT": {
       "entry_time": "2026-09-30 12:00:00",
       "entry": 6.624,
@@ -91,14 +49,7 @@
       "tp2_price": 0.10168571428571427,
       "tp1_done": false
     },
-    "[KRIPTO] GUNUSDT": {
-      "entry_time": "2026-10-02 00:00:00",
-      "entry": 0.00308,
-      "stop": 0.00308,
-      "tp1_price": 0.003287857142857143,
-      "tp2_price": 0.0034957142857142865,
-      "tp1_done": true
-    },
+    "[KRIPTO] GUNUSDT": null,
     "[BIST] INDES.IS": {
       "entry_time": "2026-10-02 06:30:00",
       "entry": 11.609999656677246,
@@ -216,21 +167,67 @@
       "varlik": "[KRIPTO] SUSDT",
       "sonuc": "STOP",
       "pnl_pct": -5.05
+    },
+    {
+      "zaman": "2026-10-02 20:04:06",
+      "varlik": "[KRIPTO] NEARUSDT",
+      "sonuc": "STOP",
+      "pnl_pct": -12.63
+    },
+    {
+      "zaman": "2026-10-02 20:04:08",
+      "varlik": "[KRIPTO] KAITOUSDT",
+      "sonuc": "STOP",
+      "pnl_pct": -8.15
+    },
+    {
+      "zaman": "2026-10-02 20:04:13",
+      "varlik": "[KRIPTO] AVAUSDT",
+      "sonuc": "STOP",
+      "pnl_pct": 0.0
+    },
+    {
+      "zaman": "2026-10-02 20:04:20",
+      "varlik": "[KRIPTO] CHZUSDT",
+      "sonuc": "STOP",
+      "pnl_pct": -5.43
+    },
+    {
+      "zaman": "2026-10-02 20:04:22",
+      "varlik": "[KRIPTO] SKLUSDT",
+      "sonuc": "STOP",
+      "pnl_pct": -5.88
+    },
+    {
+      "zaman": "2026-10-02 20:04:23",
+      "varlik": "[KRIPTO] ZENUSDT",
+      "sonuc": "STOP",
+      "pnl_pct": -9.57
+    },
+    {
+      "zaman": "2026-10-02 20:04:50",
+      "varlik": "[KRIPTO] GUNUSDT",
+      "sonuc": "STOP",
+      "pnl_pct": 0.0
     }
   ],
   "son_stop": {
     "[KRIPTO] PYTHUSDT": "2026-09-28 04:00:00",
-    "[KRIPTO] KAITOUSDT": "2026-09-23 12:00:00",
+    "[KRIPTO] KAITOUSDT": "2026-10-02 16:00:00",
     "[KRIPTO] DEXEUSDT": "2026-09-23 12:00:00",
     "[KRIPTO] PLUMEUSDT": "2026-09-23 12:00:00",
     "[KRIPTO] ARBUSDT": "2026-09-27 12:00:00",
     "[KRIPTO] ALGOUSDT": "2026-09-25 16:00:00",
-    "[KRIPTO] CHZUSDT": "2026-09-28 04:00:00",
-    "[KRIPTO] SKLUSDT": "2026-09-28 04:00:00",
+    "[KRIPTO] CHZUSDT": "2026-10-02 16:00:00",
+    "[KRIPTO] SKLUSDT": "2026-10-02 16:00:00",
     "[KRIPTO] AGLDUSDT": "2026-09-28 04:00:00",
     "[KRIPTO] CAKEUSDT": "2026-09-28 12:00:00",
     "[KRIPTO] TRXUSDT": "2026-10-01 08:00:00",
     "[KRIPTO] NILUSDT": "2026-10-01 12:00:00",
-    "[KRIPTO] SUSDT": "2026-10-01 16:00:00"
+    "[KRIPTO] SUSDT": "2026-10-01 16:00:00",
+    "[KRIPTO] NEARUSDT": "2026-10-02 16:00:00",
+    "[KRIPTO] AVAUSDT": "2026-10-02 16:00:00",
+    "[KRIPTO] ZENUSDT": "2026-10-02 16:00:00",
+    "[KRIPTO] GUNUSDT": "2026-10-02 16:00:00"
   }
 }
