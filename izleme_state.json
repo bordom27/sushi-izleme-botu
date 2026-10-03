@@ -30,7 +30,14 @@
     },
     "[KRIPTO] NEARUSDT": null,
     "[KRIPTO] NILUSDT": null,
-    "[KRIPTO] AVAUSDT": null,
+    "[KRIPTO] AVAUSDT": {
+      "entry_time": "2026-10-03 08:00:00",
+      "entry": 0.2744,
+      "stop": 0.262625,
+      "tp1_price": 0.29206249999999995,
+      "tp2_price": 0.29794999999999994,
+      "tp1_done": false
+    },
     "[KRIPTO] ZENUSDT": null,
     "[KRIPTO] PROMUSDT": {
       "entry_time": "2026-09-30 12:00:00",
