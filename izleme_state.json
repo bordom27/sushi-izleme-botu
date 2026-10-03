@@ -50,7 +50,15 @@
       "tp1_done": false
     },
     "[KRIPTO] GUNUSDT": null,
-    "[BIST] INDES.IS": null
+    "[BIST] INDES.IS": null,
+    "[KRIPTO] CTSIUSDT": {
+      "entry_time": "2026-10-03 00:00:00",
+      "entry": 0.03037,
+      "stop": 0.028662857142857146,
+      "tp1_price": 0.032930714285714285,
+      "tp2_price": 0.03378428571428571,
+      "tp1_done": false
+    }
   },
   "trade_log": [
     {
