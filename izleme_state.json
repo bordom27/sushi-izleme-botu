@@ -51,10 +51,10 @@
     "[KRIPTO] CUSDT": {
       "entry_time": "2026-10-01 16:00:00",
       "entry": 0.0953,
-      "stop": 0.09210714285714286,
+      "stop": 0.0953,
       "tp1_price": 0.1000892857142857,
       "tp2_price": 0.10168571428571427,
-      "tp1_done": false
+      "tp1_done": true
     },
     "[KRIPTO] GUNUSDT": null,
     "[BIST] INDES.IS": null,
@@ -64,6 +64,14 @@
       "stop": 0.028662857142857146,
       "tp1_price": 0.032930714285714285,
       "tp2_price": 0.03378428571428571,
+      "tp1_done": false
+    },
+    "[KRIPTO] ETHFIUSDT": {
+      "entry_time": "2026-10-04 12:00:00",
+      "entry": 0.7487,
+      "stop": 0.7073857142857143,
+      "tp1_price": 0.8106714285714287,
+      "tp2_price": 0.8726428571428573,
       "tp1_done": false
     }
   },
