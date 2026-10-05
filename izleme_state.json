@@ -73,6 +73,14 @@
       "tp1_price": 0.8106714285714287,
       "tp2_price": 0.8726428571428573,
       "tp1_done": false
+    },
+    "[KRIPTO] XRPUSDT": {
+      "entry_time": "2026-10-04 20:00:00",
+      "entry": 1.5206,
+      "stop": 1.4771892857142856,
+      "tp1_price": 1.5857160714285714,
+      "tp2_price": 1.6508321428571429,
+      "tp1_done": false
     }
   },
   "trade_log": [
