@@ -36,14 +36,7 @@
       "tp1_done": false
     },
     "[KRIPTO] NEARUSDT": null,
-    "[KRIPTO] NILUSDT": {
-      "entry_time": "2026-10-04 16:00:00",
-      "entry": 0.09128,
-      "stop": 0.09128,
-      "tp1_price": 0.10573625,
-      "tp2_price": 0.12019250000000002,
-      "tp1_done": true
-    },
+    "[KRIPTO] NILUSDT": null,
     "[KRIPTO] AVAUSDT": null,
     "[KRIPTO] ZENUSDT": null,
     "[KRIPTO] PROMUSDT": {
@@ -251,6 +244,12 @@
       "varlik": "[KRIPTO] CUSDT",
       "sonuc": "TP2_FINAL",
       "pnl_pct": 6.7
+    },
+    {
+      "zaman": "2026-10-05 05:18:26",
+      "varlik": "[KRIPTO] NILUSDT",
+      "sonuc": "STOP",
+      "pnl_pct": 0.0
     }
   ],
   "son_stop": {
@@ -265,7 +264,7 @@
     "[KRIPTO] AGLDUSDT": "2026-09-28 04:00:00",
     "[KRIPTO] CAKEUSDT": "2026-09-28 12:00:00",
     "[KRIPTO] TRXUSDT": "2026-10-01 08:00:00",
-    "[KRIPTO] NILUSDT": "2026-10-01 12:00:00",
+    "[KRIPTO] NILUSDT": "2026-10-05 00:00:00",
     "[KRIPTO] SUSDT": "2026-10-01 16:00:00",
     "[KRIPTO] NEARUSDT": "2026-10-02 16:00:00",
     "[KRIPTO] AVAUSDT": "2026-10-04 00:00:00",
