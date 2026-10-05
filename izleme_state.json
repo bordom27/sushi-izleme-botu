@@ -87,10 +87,10 @@
     "[KRIPTO] FILUSDT": {
       "entry_time": "2026-10-05 08:00:00",
       "entry": 1.0876,
-      "stop": 1.0472142857142857,
+      "stop": 1.0876,
       "tp1_price": 1.1481785714285713,
       "tp2_price": 1.1683714285714284,
-      "tp1_done": false
+      "tp1_done": true
     }
   },
   "trade_log": [
