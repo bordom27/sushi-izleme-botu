@@ -39,10 +39,10 @@
     "[KRIPTO] NILUSDT": {
       "entry_time": "2026-10-04 16:00:00",
       "entry": 0.09128,
-      "stop": 0.08164249999999999,
+      "stop": 0.09128,
       "tp1_price": 0.10573625,
       "tp2_price": 0.12019250000000002,
-      "tp1_done": false
+      "tp1_done": true
     },
     "[KRIPTO] AVAUSDT": null,
     "[KRIPTO] ZENUSDT": null,
