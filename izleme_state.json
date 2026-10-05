@@ -38,7 +38,14 @@
     "[KRIPTO] NEARUSDT": null,
     "[KRIPTO] NILUSDT": null,
     "[KRIPTO] AVAUSDT": null,
-    "[KRIPTO] ZENUSDT": null,
+    "[KRIPTO] ZENUSDT": {
+      "entry_time": "2026-10-05 04:00:00",
+      "entry": 7.171,
+      "stop": 6.884392857142857,
+      "tp1_price": 7.600910714285715,
+      "tp2_price": 8.030821428571429,
+      "tp1_done": false
+    },
     "[KRIPTO] PROMUSDT": {
       "entry_time": "2026-09-30 12:00:00",
       "entry": 6.624,
@@ -73,6 +80,22 @@
       "stop": 1.4771892857142856,
       "tp1_price": 1.5857160714285714,
       "tp2_price": 1.6508321428571429,
+      "tp1_done": false
+    },
+    "[KRIPTO] BERAUSDT": {
+      "entry_time": "2026-10-05 04:00:00",
+      "entry": 0.2328,
+      "stop": 0.2236714285714286,
+      "tp1_price": 0.24649285714285712,
+      "tp2_price": 0.2510571428571428,
+      "tp1_done": false
+    },
+    "[KRIPTO] DASHUSDT": {
+      "entry_time": "2026-10-05 04:00:00",
+      "entry": 60.59,
+      "stop": 59.16285714285715,
+      "tp1_price": 62.730714285714285,
+      "tp2_price": 63.44428571428571,
       "tp1_done": false
     }
   },
