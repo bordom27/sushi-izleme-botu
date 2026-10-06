@@ -46,14 +46,7 @@
     "[KRIPTO] NILUSDT": null,
     "[KRIPTO] AVAUSDT": null,
     "[KRIPTO] ZENUSDT": null,
-    "[KRIPTO] PROMUSDT": {
-      "entry_time": "2026-09-30 12:00:00",
-      "entry": 6.624,
-      "stop": 5.962392857142857,
-      "tp1_price": 7.616410714285714,
-      "tp2_price": 7.947214285714286,
-      "tp1_done": false
-    },
+    "[KRIPTO] PROMUSDT": null,
     "[KRIPTO] SUSDT": null,
     "[KRIPTO] CUSDT": null,
     "[KRIPTO] GUNUSDT": null,
@@ -293,6 +286,12 @@
       "varlik": "[KRIPTO] FILUSDT",
       "sonuc": "STOP",
       "pnl_pct": 0.0
+    },
+    {
+      "zaman": "2026-10-06 16:07:11",
+      "varlik": "[KRIPTO] PROMUSDT",
+      "sonuc": "STOP",
+      "pnl_pct": -9.99
     }
   ],
   "son_stop": {
@@ -315,6 +314,7 @@
     "[KRIPTO] GUNUSDT": "2026-10-02 16:00:00",
     "[BIST] INDES.IS": "2026-10-01 06:30:00",
     "[KRIPTO] DASHUSDT": "2026-10-05 12:00:00",
-    "[KRIPTO] FILUSDT": "2026-10-05 16:00:00"
+    "[KRIPTO] FILUSDT": "2026-10-05 16:00:00",
+    "[KRIPTO] PROMUSDT": "2026-10-06 12:00:00"
   }
 }
