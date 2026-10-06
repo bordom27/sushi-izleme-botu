@@ -35,7 +35,14 @@
       "tp2_price": 0.09822857142857143,
       "tp1_done": false
     },
-    "[KRIPTO] NEARUSDT": null,
+    "[KRIPTO] NEARUSDT": {
+      "entry_time": "2026-10-05 20:00:00",
+      "entry": 5.294,
+      "stop": 4.857392857142856,
+      "tp1_price": 5.948910714285715,
+      "tp2_price": 6.60382142857143,
+      "tp1_done": false
+    },
     "[KRIPTO] NILUSDT": null,
     "[KRIPTO] AVAUSDT": null,
     "[KRIPTO] ZENUSDT": null,
