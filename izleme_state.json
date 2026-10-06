@@ -91,7 +91,15 @@
       "tp1_done": false
     },
     "[KRIPTO] DASHUSDT": null,
-    "[KRIPTO] FILUSDT": null
+    "[KRIPTO] FILUSDT": null,
+    "[KRIPTO] PAXGUSDT": {
+      "entry_time": "2026-10-06 08:00:00",
+      "entry": 4179.51,
+      "stop": 4136.567142857143,
+      "tp1_price": 4243.924285714285,
+      "tp2_price": 4265.395714285714,
+      "tp1_done": false
+    }
   },
   "trade_log": [
     {
