@@ -52,26 +52,12 @@
       "tp2_price": 0.03378428571428571,
       "tp1_done": false
     },
-    "[KRIPTO] ETHFIUSDT": {
-      "entry_time": "2026-10-04 12:00:00",
-      "entry": 0.7487,
-      "stop": 0.7073857142857143,
-      "tp1_price": 0.8106714285714287,
-      "tp2_price": 0.8726428571428573,
-      "tp1_done": false
-    },
+    "[KRIPTO] ETHFIUSDT": null,
     "[KRIPTO] XRPUSDT": null,
     "[KRIPTO] BERAUSDT": null,
     "[KRIPTO] DASHUSDT": null,
     "[KRIPTO] FILUSDT": null,
-    "[KRIPTO] PAXGUSDT": {
-      "entry_time": "2026-10-06 08:00:00",
-      "entry": 4179.51,
-      "stop": 4136.567142857143,
-      "tp1_price": 4243.924285714285,
-      "tp2_price": 4265.395714285714,
-      "tp1_done": false
-    }
+    "[KRIPTO] PAXGUSDT": null
   },
   "trade_log": [
     {
@@ -289,6 +275,18 @@
       "varlik": "[KRIPTO] PHAUSDT",
       "sonuc": "STOP",
       "pnl_pct": -12.97
+    },
+    {
+      "zaman": "2026-10-07 12:07:49",
+      "varlik": "[KRIPTO] ETHFIUSDT",
+      "sonuc": "STOP",
+      "pnl_pct": -5.52
+    },
+    {
+      "zaman": "2026-10-07 12:08:09",
+      "varlik": "[KRIPTO] PAXGUSDT",
+      "sonuc": "STOP",
+      "pnl_pct": -1.03
     }
   ],
   "son_stop": {
@@ -315,6 +313,8 @@
     "[KRIPTO] PROMUSDT": "2026-10-06 12:00:00",
     "[KRIPTO] XRPUSDT": "2026-10-07 00:00:00",
     "[KRIPTO] BERAUSDT": "2026-10-07 00:00:00",
-    "[KRIPTO] PHAUSDT": "2026-10-07 04:00:00"
+    "[KRIPTO] PHAUSDT": "2026-10-07 04:00:00",
+    "[KRIPTO] ETHFIUSDT": "2026-10-07 08:00:00",
+    "[KRIPTO] PAXGUSDT": "2026-10-07 08:00:00"
   }
 }
