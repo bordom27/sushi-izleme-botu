@@ -44,14 +44,7 @@
     "[KRIPTO] CUSDT": null,
     "[KRIPTO] GUNUSDT": null,
     "[BIST] INDES.IS": null,
-    "[KRIPTO] CTSIUSDT": {
-      "entry_time": "2026-10-03 00:00:00",
-      "entry": 0.03037,
-      "stop": 0.028662857142857146,
-      "tp1_price": 0.032930714285714285,
-      "tp2_price": 0.03378428571428571,
-      "tp1_done": false
-    },
+    "[KRIPTO] CTSIUSDT": null,
     "[KRIPTO] ETHFIUSDT": null,
     "[KRIPTO] XRPUSDT": null,
     "[KRIPTO] BERAUSDT": null,
@@ -287,6 +280,12 @@
       "varlik": "[KRIPTO] PAXGUSDT",
       "sonuc": "STOP",
       "pnl_pct": -1.03
+    },
+    {
+      "zaman": "2026-10-07 16:09:20",
+      "varlik": "[KRIPTO] CTSIUSDT",
+      "sonuc": "STOP",
+      "pnl_pct": -5.62
     }
   ],
   "son_stop": {
@@ -315,6 +314,7 @@
     "[KRIPTO] BERAUSDT": "2026-10-07 00:00:00",
     "[KRIPTO] PHAUSDT": "2026-10-07 04:00:00",
     "[KRIPTO] ETHFIUSDT": "2026-10-07 08:00:00",
-    "[KRIPTO] PAXGUSDT": "2026-10-07 08:00:00"
+    "[KRIPTO] PAXGUSDT": "2026-10-07 08:00:00",
+    "[KRIPTO] CTSIUSDT": "2026-10-07 12:00:00"
   }
 }
