@@ -28,14 +28,7 @@
     "[KRIPTO] SKLUSDT": null,
     "[KRIPTO] TRXUSDT": null,
     "[KRIPTO] PHAUSDT": null,
-    "[KRIPTO] NEARUSDT": {
-      "entry_time": "2026-10-05 20:00:00",
-      "entry": 5.294,
-      "stop": 4.857392857142856,
-      "tp1_price": 5.948910714285715,
-      "tp2_price": 6.60382142857143,
-      "tp1_done": false
-    },
+    "[KRIPTO] NEARUSDT": null,
     "[KRIPTO] NILUSDT": null,
     "[KRIPTO] AVAUSDT": null,
     "[KRIPTO] ZENUSDT": null,
@@ -286,6 +279,12 @@
       "varlik": "[KRIPTO] CTSIUSDT",
       "sonuc": "STOP",
       "pnl_pct": -5.62
+    },
+    {
+      "zaman": "2026-10-08 16:07:44",
+      "varlik": "[KRIPTO] NEARUSDT",
+      "sonuc": "STOP",
+      "pnl_pct": -8.25
     }
   ],
   "son_stop": {
@@ -302,7 +301,7 @@
     "[KRIPTO] TRXUSDT": "2026-10-01 08:00:00",
     "[KRIPTO] NILUSDT": "2026-10-05 00:00:00",
     "[KRIPTO] SUSDT": "2026-10-01 16:00:00",
-    "[KRIPTO] NEARUSDT": "2026-10-02 16:00:00",
+    "[KRIPTO] NEARUSDT": "2026-10-08 12:00:00",
     "[KRIPTO] AVAUSDT": "2026-10-04 00:00:00",
     "[KRIPTO] ZENUSDT": "2026-10-05 12:00:00",
     "[KRIPTO] GUNUSDT": "2026-10-02 16:00:00",
