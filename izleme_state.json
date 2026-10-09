@@ -33,7 +33,14 @@
     "[KRIPTO] AVAUSDT": null,
     "[KRIPTO] ZENUSDT": null,
     "[KRIPTO] PROMUSDT": null,
-    "[KRIPTO] SUSDT": null,
+    "[KRIPTO] SUSDT": {
+      "entry_time": "2026-10-09 04:00:00",
+      "entry": 0.04321,
+      "stop": 0.04048107142857143,
+      "tp1_price": 0.047303392857142856,
+      "tp2_price": 0.04866785714285714,
+      "tp1_done": false
+    },
     "[KRIPTO] CUSDT": null,
     "[KRIPTO] GUNUSDT": null,
     "[BIST] INDES.IS": null,
