@@ -57,6 +57,14 @@
       "tp1_price": 4274.723928571428,
       "tp2_price": 4306.518571428571,
       "tp1_done": false
+    },
+    "[KRIPTO] DOTUSDT": {
+      "entry_time": "2026-10-09 16:00:00",
+      "entry": 1.204,
+      "stop": 1.1434642857142856,
+      "tp1_price": 1.2948035714285715,
+      "tp2_price": 1.3250714285714287,
+      "tp1_done": false
     }
   },
   "trade_log": [
