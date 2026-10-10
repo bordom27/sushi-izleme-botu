@@ -24,7 +24,14 @@
       "tp1_done": false
     },
     "[KRIPTO] ALGOUSDT": null,
-    "[KRIPTO] AGLDUSDT": null,
+    "[KRIPTO] AGLDUSDT": {
+      "entry_time": "2026-10-10 00:00:00",
+      "entry": 0.2067,
+      "stop": 0.19727142857142857,
+      "tp1_price": 0.22084285714285712,
+      "tp2_price": 0.22555714285714284,
+      "tp1_done": false
+    },
     "[KRIPTO] SKLUSDT": null,
     "[KRIPTO] TRXUSDT": null,
     "[KRIPTO] PHAUSDT": null,
@@ -61,10 +68,10 @@
     "[KRIPTO] DOTUSDT": {
       "entry_time": "2026-10-09 16:00:00",
       "entry": 1.204,
-      "stop": 1.1434642857142856,
+      "stop": 1.204,
       "tp1_price": 1.2948035714285715,
       "tp2_price": 1.3250714285714287,
-      "tp1_done": false
+      "tp1_done": true
     }
   },
   "trade_log": [
