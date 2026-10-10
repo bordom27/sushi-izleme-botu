@@ -50,10 +50,10 @@
     "[KRIPTO] SUSDT": {
       "entry_time": "2026-10-09 04:00:00",
       "entry": 0.04321,
-      "stop": 0.04048107142857143,
+      "stop": 0.04321,
       "tp1_price": 0.047303392857142856,
       "tp2_price": 0.04866785714285714,
-      "tp1_done": false
+      "tp1_done": true
     },
     "[KRIPTO] CUSDT": null,
     "[KRIPTO] GUNUSDT": null,
