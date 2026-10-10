@@ -95,6 +95,14 @@
       "tp1_price": 0.0037795,
       "tp2_price": 0.003861,
       "tp1_done": false
+    },
+    "[KRIPTO] TUSDT": {
+      "entry_time": "2026-10-10 12:00:00",
+      "entry": 0.00543,
+      "stop": 0.005094285714285714,
+      "tp1_price": 0.005933571428571429,
+      "tp2_price": 0.006101428571428571,
+      "tp1_done": false
     }
   },
   "trade_log": [
