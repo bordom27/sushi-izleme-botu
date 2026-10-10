@@ -87,6 +87,14 @@
       "tp1_price": 187.17642857142854,
       "tp2_price": 200.5628571428571,
       "tp1_done": false
+    },
+    "[KRIPTO] ZILUSDT": {
+      "entry_time": "2026-10-10 08:00:00",
+      "entry": 0.003535,
+      "stop": 0.003372,
+      "tp1_price": 0.0037795,
+      "tp2_price": 0.003861,
+      "tp1_done": false
     }
   },
   "trade_log": [
