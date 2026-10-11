@@ -47,14 +47,7 @@
     "[KRIPTO] AVAUSDT": null,
     "[KRIPTO] ZENUSDT": null,
     "[KRIPTO] PROMUSDT": null,
-    "[KRIPTO] SUSDT": {
-      "entry_time": "2026-10-09 04:00:00",
-      "entry": 0.04321,
-      "stop": 0.04321,
-      "tp1_price": 0.047303392857142856,
-      "tp2_price": 0.04866785714285714,
-      "tp1_done": true
-    },
+    "[KRIPTO] SUSDT": null,
     "[KRIPTO] CUSDT": null,
     "[KRIPTO] GUNUSDT": null,
     "[BIST] INDES.IS": null,
@@ -345,6 +338,12 @@
       "varlik": "[KRIPTO] NEARUSDT",
       "sonuc": "STOP",
       "pnl_pct": -8.25
+    },
+    {
+      "zaman": "2026-10-11 00:05:55",
+      "varlik": "[KRIPTO] SUSDT",
+      "sonuc": "TP2_FINAL",
+      "pnl_pct": 12.63
     }
   ],
   "son_stop": {
