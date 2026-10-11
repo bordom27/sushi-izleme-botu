@@ -43,7 +43,14 @@
     "[KRIPTO] TRXUSDT": null,
     "[KRIPTO] PHAUSDT": null,
     "[KRIPTO] NEARUSDT": null,
-    "[KRIPTO] NILUSDT": null,
+    "[KRIPTO] NILUSDT": {
+      "entry_time": "2026-10-11 08:00:00",
+      "entry": 0.09399,
+      "stop": 0.084965,
+      "tp1_price": 0.10752750000000001,
+      "tp2_price": 0.12106500000000002,
+      "tp1_done": false
+    },
     "[KRIPTO] AVAUSDT": null,
     "[KRIPTO] ZENUSDT": null,
     "[KRIPTO] PROMUSDT": null,
