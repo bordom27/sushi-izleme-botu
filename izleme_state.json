@@ -24,14 +24,7 @@
       "tp1_done": false
     },
     "[KRIPTO] ALGOUSDT": null,
-    "[KRIPTO] AGLDUSDT": {
-      "entry_time": "2026-10-10 00:00:00",
-      "entry": 0.2067,
-      "stop": 0.19727142857142857,
-      "tp1_price": 0.22084285714285712,
-      "tp2_price": 0.22555714285714284,
-      "tp1_done": false
-    },
+    "[KRIPTO] AGLDUSDT": null,
     "[KRIPTO] SKLUSDT": null,
     "[KRIPTO] TRXUSDT": null,
     "[KRIPTO] PHAUSDT": null,
@@ -105,14 +98,7 @@
       "tp2_price": 0.6599357142857143,
       "tp1_done": false
     },
-    "[KRIPTO] ENAUSDT": {
-      "entry_time": "2026-10-12 00:00:00",
-      "entry": 0.2439,
-      "stop": 0.23432142857142857,
-      "tp1_price": 0.25826785714285716,
-      "tp2_price": 0.2630571428571429,
-      "tp1_done": false
-    }
+    "[KRIPTO] ENAUSDT": null
   },
   "trade_log": [
     {
@@ -366,6 +352,18 @@
       "varlik": "[KRIPTO] PLUMEUSDT",
       "sonuc": "TP2_FINAL",
       "pnl_pct": 20.95
+    },
+    {
+      "zaman": "2026-10-12 12:12:26",
+      "varlik": "[KRIPTO] ENAUSDT",
+      "sonuc": "STOP",
+      "pnl_pct": -3.93
+    },
+    {
+      "zaman": "2026-10-12 12:12:54",
+      "varlik": "[KRIPTO] AGLDUSDT",
+      "sonuc": "STOP",
+      "pnl_pct": -4.56
     }
   ],
   "son_stop": {
@@ -377,7 +375,7 @@
     "[KRIPTO] ALGOUSDT": "2026-09-25 16:00:00",
     "[KRIPTO] CHZUSDT": "2026-10-02 16:00:00",
     "[KRIPTO] SKLUSDT": "2026-10-02 16:00:00",
-    "[KRIPTO] AGLDUSDT": "2026-09-28 04:00:00",
+    "[KRIPTO] AGLDUSDT": "2026-10-12 08:00:00",
     "[KRIPTO] CAKEUSDT": "2026-09-28 12:00:00",
     "[KRIPTO] TRXUSDT": "2026-10-01 08:00:00",
     "[KRIPTO] NILUSDT": "2026-10-05 00:00:00",
@@ -395,6 +393,7 @@
     "[KRIPTO] PHAUSDT": "2026-10-07 04:00:00",
     "[KRIPTO] ETHFIUSDT": "2026-10-07 08:00:00",
     "[KRIPTO] PAXGUSDT": "2026-10-07 08:00:00",
-    "[KRIPTO] CTSIUSDT": "2026-10-07 12:00:00"
+    "[KRIPTO] CTSIUSDT": "2026-10-07 12:00:00",
+    "[KRIPTO] ENAUSDT": "2026-10-12 08:00:00"
   }
 }
