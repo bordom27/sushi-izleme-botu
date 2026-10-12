@@ -104,6 +104,14 @@
       "tp1_price": 0.6371767857142857,
       "tp2_price": 0.6599357142857143,
       "tp1_done": false
+    },
+    "[KRIPTO] ENAUSDT": {
+      "entry_time": "2026-10-12 00:00:00",
+      "entry": 0.2439,
+      "stop": 0.23432142857142857,
+      "tp1_price": 0.25826785714285716,
+      "tp2_price": 0.2630571428571429,
+      "tp1_done": false
     }
   },
   "trade_log": [
