@@ -29,14 +29,7 @@
     "[KRIPTO] TRXUSDT": null,
     "[KRIPTO] PHAUSDT": null,
     "[KRIPTO] NEARUSDT": null,
-    "[KRIPTO] NILUSDT": {
-      "entry_time": "2026-10-11 08:00:00",
-      "entry": 0.09399,
-      "stop": 0.084965,
-      "tp1_price": 0.10752750000000001,
-      "tp2_price": 0.12106500000000002,
-      "tp1_done": false
-    },
+    "[KRIPTO] NILUSDT": null,
     "[KRIPTO] AVAUSDT": null,
     "[KRIPTO] ZENUSDT": null,
     "[KRIPTO] PROMUSDT": null,
@@ -66,14 +59,7 @@
       "tp2_price": 1.3250714285714287,
       "tp1_done": true
     },
-    "[KRIPTO] AAVEUSDT": {
-      "entry_time": "2026-10-10 04:00:00",
-      "entry": 173.79,
-      "stop": 164.8657142857143,
-      "tp1_price": 187.17642857142854,
-      "tp2_price": 200.5628571428571,
-      "tp1_done": false
-    },
+    "[KRIPTO] AAVEUSDT": null,
     "[KRIPTO] ZILUSDT": {
       "entry_time": "2026-10-10 08:00:00",
       "entry": 0.003535,
@@ -364,6 +350,18 @@
       "varlik": "[KRIPTO] AGLDUSDT",
       "sonuc": "STOP",
       "pnl_pct": -4.56
+    },
+    {
+      "zaman": "2026-10-12 16:08:05",
+      "varlik": "[KRIPTO] NILUSDT",
+      "sonuc": "STOP",
+      "pnl_pct": -9.6
+    },
+    {
+      "zaman": "2026-10-12 16:08:27",
+      "varlik": "[KRIPTO] AAVEUSDT",
+      "sonuc": "STOP",
+      "pnl_pct": -5.14
     }
   ],
   "son_stop": {
@@ -378,7 +376,7 @@
     "[KRIPTO] AGLDUSDT": "2026-10-12 08:00:00",
     "[KRIPTO] CAKEUSDT": "2026-09-28 12:00:00",
     "[KRIPTO] TRXUSDT": "2026-10-01 08:00:00",
-    "[KRIPTO] NILUSDT": "2026-10-05 00:00:00",
+    "[KRIPTO] NILUSDT": "2026-10-12 12:00:00",
     "[KRIPTO] SUSDT": "2026-10-01 16:00:00",
     "[KRIPTO] NEARUSDT": "2026-10-08 12:00:00",
     "[KRIPTO] AVAUSDT": "2026-10-04 00:00:00",
@@ -394,6 +392,7 @@
     "[KRIPTO] ETHFIUSDT": "2026-10-07 08:00:00",
     "[KRIPTO] PAXGUSDT": "2026-10-07 08:00:00",
     "[KRIPTO] CTSIUSDT": "2026-10-07 12:00:00",
-    "[KRIPTO] ENAUSDT": "2026-10-12 08:00:00"
+    "[KRIPTO] ENAUSDT": "2026-10-12 08:00:00",
+    "[KRIPTO] AAVEUSDT": "2026-10-12 12:00:00"
   }
 }
