@@ -53,14 +53,7 @@
     },
     "[KRIPTO] DOTUSDT": null,
     "[KRIPTO] AAVEUSDT": null,
-    "[KRIPTO] ZILUSDT": {
-      "entry_time": "2026-10-10 08:00:00",
-      "entry": 0.003535,
-      "stop": 0.003372,
-      "tp1_price": 0.0037795,
-      "tp2_price": 0.003861,
-      "tp1_done": false
-    },
+    "[KRIPTO] ZILUSDT": null,
     "[KRIPTO] TUSDT": {
       "entry_time": "2026-10-10 12:00:00",
       "entry": 0.00543,
@@ -360,6 +353,12 @@
       "varlik": "[KRIPTO] DOTUSDT",
       "sonuc": "STOP",
       "pnl_pct": 0.0
+    },
+    {
+      "zaman": "2026-10-13 04:08:33",
+      "varlik": "[KRIPTO] ZILUSDT",
+      "sonuc": "STOP",
+      "pnl_pct": -4.61
     }
   ],
   "son_stop": {
@@ -393,6 +392,7 @@
     "[KRIPTO] ENAUSDT": "2026-10-12 08:00:00",
     "[KRIPTO] AAVEUSDT": "2026-10-12 12:00:00",
     "[KRIPTO] JTOUSDT": "2026-10-12 16:00:00",
-    "[KRIPTO] DOTUSDT": "2026-10-12 16:00:00"
+    "[KRIPTO] DOTUSDT": "2026-10-12 16:00:00",
+    "[KRIPTO] ZILUSDT": "2026-10-13 00:00:00"
   }
 }
