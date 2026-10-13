@@ -63,7 +63,15 @@
       "tp1_done": false
     },
     "[KRIPTO] JTOUSDT": null,
-    "[KRIPTO] ENAUSDT": null
+    "[KRIPTO] ENAUSDT": null,
+    "[KRIPTO] ACEUSDT": {
+      "entry_time": "2026-10-13 16:00:00",
+      "entry": 0.1993,
+      "stop": 0.1859,
+      "tp1_price": 0.21939999999999998,
+      "tp2_price": 0.2261,
+      "tp1_done": false
+    }
   },
   "trade_log": [
     {
