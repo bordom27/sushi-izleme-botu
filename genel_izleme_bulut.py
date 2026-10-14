@@ -93,7 +93,16 @@ def send_telegram(mesaj: str):
     if not token or not chat_id:
         return
     url = f"https://api.telegram.org/bot{token}/sendMessage"
-    for parca in [mesaj[i:i + 3900] for i in range(0, len(mesaj), 3900)]:
+    parcalar, buf = [], ""
+    for blok in mesaj.split("\n\n"):
+        if buf and len(buf) + len(blok) + 2 > 3900:
+            parcalar.append(buf)
+            buf = ""
+        buf = (buf + "\n\n" + blok) if buf else blok
+    if buf:
+        parcalar.append(buf)
+    parcalar = [p[i:i + 3900] for p in parcalar for i in range(0, len(p), 3900)]
+    for parca in parcalar:
         for deneme in range(3):
             try:
                 resp = requests.post(url, data={"chat_id": chat_id, "text": parca,
@@ -398,8 +407,18 @@ def main():
             satirlar.append(f"• {tr_saat(t + pd.Timedelta(hours=4))} — " + metin.split("\n")[0])
         satirlar.append("Güncel açık pozisyonlar akşam özetinde; acil bakmak için TradingView grafiğini aç.")
         send_telegram("\n".join(satirlar))
-    for _, metin in sorted(taze, key=lambda x: x[0]):
-        send_telegram(metin)
+    # Ayni 4 saatlik mum kapanisindaki tum olaylar TEK mesajda (onem sirasina gore)
+    oncelik = {"🟢": 0, "🔴": 0, "✅": 1, "❌": 1, "🟠": 2, "🔧": 3, "🟡": 4, "⚪": 5}
+    gruplar: dict = {}
+    for t, metin in taze:
+        gruplar.setdefault(t, []).append(metin)
+    for t in sorted(gruplar):
+        liste = sorted(gruplar[t], key=lambda m: oncelik.get(m[:1], 9))
+        giris = sum(m.startswith(("🟢", "🔴")) for m in liste)
+        kapanis = sum(m.startswith(("✅", "❌")) for m in liste)
+        baslik = (f"🕓 4s mum kapanışı {tr_saat(t + pd.Timedelta(hours=4))} — "
+                  f"{giris} giriş, {kapanis} kapanış, {len(liste) - giris - kapanis} diğer")
+        send_telegram(baslik + "\n\n" + "\n\n".join(liste) if len(liste) > 1 else liste[0])
 
     # BTC durumu
     btc_c = btc_d["close"].to_numpy(float)
@@ -423,7 +442,7 @@ def main():
         if eski:
             satir.append(f"\nEski sistemden açık {len(eski)} pozisyon kapanana kadar eski kurallarla takip edilecek "
                          f"([ESKİ SİSTEM] etiketiyle): " + ", ".join(x.split('] ')[-1] for x in eski))
-        satir.append("\nBundan sonra yeni giriş, TP1, stop ve çıkış sinyalleri tek tek gelecek; her akşam 21:00'de özet.")
+        satir.append("\nHer 4 saatlik mum kapanışındaki sinyaller tek mesajda toplu gelir; her akşam 21:00'de günlük özet.")
         send_telegram("\n".join(satir))
 
     eski_pozisyonlari_yonet(state, veriler)
