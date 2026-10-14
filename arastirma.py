@@ -135,6 +135,38 @@ SENARYOLAR = [
     ("komisyon %0.05 (vadeli)", {"komisyon_pct": 0.05}),
 ]
 
+KOMBOLAR = [
+    ("TEMEL", {}),
+    ("C1 kirilim kapanisi", {"entry_mode": "Kirilim kapanisi"}),
+    ("C2 C1+zaman30", {"entry_mode": "Kirilim kapanisi", "time_stop_bars": 30}),
+    ("C3 C2+trail3", {"entry_mode": "Kirilim kapanisi", "time_stop_bars": 30, "trail_atr_mult": 3.0}),
+    ("C4 C3+tp1%80", {"entry_mode": "Kirilim kapanisi", "time_stop_bars": 30, "trail_atr_mult": 3.0, "tp1_pct": 80.0}),
+    ("C5 C1+zamanyok", {"entry_mode": "Kirilim kapanisi", "use_time_stop": False}),
+    ("C6 C2+tp1 1.0R", {"entry_mode": "Kirilim kapanisi", "time_stop_bars": 30, "tp1_r": 1.0, "tp1_min_r": 0.8, "tp1_max_r": 1.3}),
+    ("C7 C2 sadece short", {"entry_mode": "Kirilim kapanisi", "time_stop_bars": 30, "yon": "Sadece Short"}),
+    ("C8 C2+direnc120", {"entry_mode": "Kirilim kapanisi", "time_stop_bars": 30, "resistance_len": 120}),
+    ("C9 C2+engel0.8", {"entry_mode": "Kirilim kapanisi", "time_stop_bars": 30, "min_room_r": 0.8}),
+    ("C10 C2+adx30", {"entry_mode": "Kirilim kapanisi", "time_stop_bars": 30, "adx_min": 30.0}),
+    ("C11 C2+long coin>200", {"entry_mode": "Kirilim kapanisi", "time_stop_bars": 30, "long_sart": "BTC ve coin > EMA200"}),
+    ("C12 C2+trail3+tp1 1.0R", {"entry_mode": "Kirilim kapanisi", "time_stop_bars": 30, "trail_atr_mult": 3.0, "tp1_r": 1.0, "tp1_min_r": 0.8, "tp1_max_r": 1.3}),
+]
+STOK_HARIC = {"UUSDT", "INTCBUSDT", "CRCLBUSDT", "MUBUSDT", "SKHYBUSDT", "QQQBUSDT", "SNDKBUSDT", "SPCXBUSDT"}
+
+
+def tavanli(tr, cap):
+    """Ayni yonde ayni anda en fazla 'cap' pozisyon: fazla sinyaller atlanir."""
+    if tr.empty or cap is None:
+        return tr
+    t = tr.sort_values(["giris_zaman", "symbol"]).reset_index(drop=True)
+    acik = []
+    keep = []
+    for i, r in t.iterrows():
+        acik = [(c, y) for c, y in acik if c > r.giris_zaman]
+        if sum(1 for _, y in acik if y == r.yon) < cap:
+            keep.append(i)
+            acik.append((r.cikis_zaman, r.yon))
+    return t.loc[keep]
+
 
 def main():
     os.makedirs(OUT, exist_ok=True)
@@ -219,6 +251,36 @@ def main():
         with open(f"{OUT}/evren.txt", "w") as f:
             f.write(pd.DataFrame(rows).to_string(index=False) + "\n\n" + g.to_string())
         print(rows, flush=True)
+
+    elif mod == "kombo":
+        tick = veri._get("/api/v3/ticker/24hr", {})
+        haric = set(COINLER) | STOK_HARIC | {"USDCUSDT", "FDUSDUSDT", "TUSDUSDT", "DAIUSDT", "EURUSDT", "USDPUSDT",
+                                "RLUSDUSDT", "USD1USDT", "PYUSDUSDT", "AEURUSDT", "XUSDUSDT", "BFUSDUSDT",
+                                "WBTCUSDT", "WBETHUSDT", "BNSOLUSDT", "EURIUSDT", "USDEUSDT"}
+        aday = [d for d in tick if d["symbol"].endswith("USDT") and d["symbol"] not in haric
+                and not any(x in d["symbol"] for x in ("UP", "DOWN", "BULL", "BEAR"))]
+        aday.sort(key=lambda d: float(d["quoteVolume"]), reverse=True)
+        yeni = [d["symbol"] for d in aday[:70]]
+        DATA["btc_4h"] = veri.mumlar_onbellekli("BTCUSDT", "4h", VERI_BAS)
+        DATA["4h"] = yukle(COINLER + yeni)
+        yeni = [s_ for s_ in yeni if s_ in DATA["4h"]]
+        rows = []
+        with mp.Pool(4) as hv:
+            for ad, prm in KOMBOLAR:
+                tr = calistir(prm, COINLER + yeni, "4h", hv)
+                a46 = tr[tr.symbol.isin(COINLER)]
+                ay = tr[tr.symbol.isin(yeni)]
+                for etiket, x in (("46", a46), ("YENI", ay), ("HEPSI", tr)):
+                    rows.append(satir(f"{ad} [{etiket}]", x))
+                for cap in (5, 8, 12):
+                    rows.append(satir(f"{ad} [HEPSI, tavan {cap}/yon]", tavanli(tr, cap)))
+                print(ad, flush=True)
+                if ad.startswith("C2 "):
+                    tr.to_csv(f"{OUT}/c2_islemler.csv", index=False)
+        res = pd.DataFrame(rows)
+        res.to_csv(f"{OUT}/kombo.csv", index=False)
+        with open(f"{OUT}/kombo.txt", "w") as f:
+            f.write(res.to_string(index=False))
 
 
 if __name__ == "__main__":
