@@ -40,7 +40,14 @@
     "[KRIPTO] CTSIUSDT": null,
     "[KRIPTO] ETHFIUSDT": null,
     "[KRIPTO] XRPUSDT": null,
-    "[KRIPTO] BERAUSDT": null,
+    "[KRIPTO] BERAUSDT": {
+      "entry_time": "2026-10-14 04:00:00",
+      "entry": 0.2361,
+      "stop": 0.21882857142857146,
+      "tp1_price": 0.2620071428571428,
+      "tp2_price": 0.2706428571428571,
+      "tp1_done": false
+    },
     "[KRIPTO] DASHUSDT": null,
     "[KRIPTO] FILUSDT": null,
     "[KRIPTO] PAXGUSDT": {
