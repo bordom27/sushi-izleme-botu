@@ -1,0 +1,23 @@
+v6.1 TEMEL
+CIFT tek basina
+CIFT tek, hacim sartsiz
+v6.1 + CIFT
+CIFT tek, trend serbest
+OBO tek basina
+OBO tek, hacim sartsiz
+v6.1 + OBO
+OBO tek, trend serbest
+TREND tek basina
+TREND tek, hacim sartsiz
+v6.1 + TREND
+UCGEN tek basina
+UCGEN tek, hacim sartsiz
+v6.1 + UCGEN
+BAYRAK tek basina
+BAYRAK tek, hacim sartsiz
+v6.1 + BAYRAK
+v6.1 + TUM formasyonlar
+TUM formasyonlar tek
+sikisma filtresi 6 ATR
+sikisma filtresi 8 ATR
+sikisma filtresi 10 ATR
