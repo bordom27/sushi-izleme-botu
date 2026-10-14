@@ -286,6 +286,11 @@ def gunluk_ozet(state, sonuclar, btc_bilgi) -> str:
     bek = [(s, r.bekleyen) for s, r in sonuclar.items() if r.bekleyen]
     if bek:
         satir.append("Retest bekleyen kırılımlar: " + ", ".join(f"{s} {YON[b['yon']]} @ {fmt(b['seviye'])}" for s, b in bek))
+    eski = state.get("eski_pozisyonlar") or {}
+    if eski:
+        satir.append("Eski sistemden açık: " + ", ".join(
+            f"{x.split('] ')[-1]} (stop {fmt(p['stop'])}, TP1 {fmt(p['tp1_price'])}{' ✓' if p['tp1_done'] else ''}, TP2 {fmt(p['tp2_price'])})"
+            for x, p in eski.items()))
     hazir_l = [s for s, r in sonuclar.items() if r.filtre.get("long_hazir") and not r.acik]
     hazir_s = [s for s, r in sonuclar.items() if r.filtre.get("short_hazir") and not r.acik]
     satir.append(f"Elekleri geçmiş, kırılım bekleyen: LONG {len(hazir_l)} | SHORT {len(hazir_s)}")
