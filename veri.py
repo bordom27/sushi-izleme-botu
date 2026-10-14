@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import os
 import time
 
 import pandas as pd
@@ -63,4 +64,32 @@ def mumlar(symbol: str, interval: str, baslangic: str | pd.Timestamp, sadece_kap
     if sadece_kapanmis:
         simdi = pd.Timestamp.now(tz="UTC").tz_localize(None)
         df = df[df["close_time"] < simdi].reset_index(drop=True)
+    return df
+
+
+def mumlar_onbellekli(symbol: str, interval: str, baslangic: str, klasor: str = ".veri_cache") -> pd.DataFrame:
+    """Onbellekteki mumlari yukler, sadece eksik (yeni) mumlari Binance'ten ceker.
+
+    Onbellek GitHub Actions cache ile calistirmalar arasinda korunur; yoksa bastan ceker.
+    """
+    os.makedirs(klasor, exist_ok=True)
+    yol = os.path.join(klasor, f"{symbol}_{interval}_{str(baslangic)[:10]}.csv.gz")
+    eski = None
+    if os.path.exists(yol):
+        try:
+            eski = pd.read_csv(yol, parse_dates=["open_time", "close_time"])
+        except Exception:
+            eski = None
+    if eski is not None and len(eski):
+        # son kayitli mumdan itibaren (o mum dahil) yeniden cek: duzeltmelere karsi guvenli
+        yeni = mumlar(symbol, interval, eski["open_time"].iloc[-1])
+        df = pd.concat([eski[eski["open_time"] < eski["open_time"].iloc[-1]], yeni], ignore_index=True)
+        df = df.drop_duplicates("open_time", keep="last").sort_values("open_time").reset_index(drop=True)
+    else:
+        df = mumlar(symbol, interval, baslangic)
+    df = df[df["open_time"] >= pd.Timestamp(baslangic)].reset_index(drop=True)
+    try:
+        df.to_csv(yol, index=False, compression="gzip")
+    except Exception as exc:
+        print(f"onbellek yazilamadi {yol}: {exc}")
     return df
