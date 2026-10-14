@@ -68,7 +68,7 @@ PARAMS = {
     "adx_min": 25.0,
 
     # 4) Kirilim
-    "entry_mode": "Hibrit",         # "Hibrit" | "Sadece retest" | "Kirilim kapanisi"
+    "entry_mode": "Kirilim kapanisi",  # "Hibrit" | "Sadece retest" | "Kirilim kapanisi" (Ekim 2026 testi: kapanis en iyi)
     "resistance_len": 80,
     "break_buf_atr": 0.1,
     "use_volume": True,
@@ -107,7 +107,7 @@ PARAMS = {
     "use_room": True,
     "room_pivot_len": 10,
     "min_room_r": 0.5,
-    "hesap_risk": 1.0,
+    "hesap_risk": 0.5,              # islem basi hesap riski (%) - 46 coinde max dusus ~13R
     "komisyon_pct": 0.1,
     "min_kalite": "C",
     "max_atr_pct": 0.0,

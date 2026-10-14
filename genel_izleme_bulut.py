@@ -156,7 +156,7 @@ def mesaj_giris(sym, o: k.Olay, cfg) -> str:
         f"Stop: {fmt(v['stop'])}  ({pct(v['stop'], v['giris'])})\n"
         f"TP1: {fmt(v['tp1'])}  ({tp1_r:.1f}R, {v['tp1_kay']}) → pozisyonun %70'ini kapat\n"
         f"TP2: {fmt(v['tp2'])}  ({tp2_r:.1f}R, {v['tp2_kay']}) → kalan %30\n"
-        f"Pozisyon büyüklüğü (hesabın %1'i riskte): sermayenin %{v['poz_pct']:.1f}\n"
+        f"Pozisyon büyüklüğü (hesabın %{k.PARAMS['hesap_risk']:g}'i riskte): sermayenin %{v['poz_pct']:.1f}\n"
         f"TP1 sonrası stop giriş+0.1R'ye çekilir ve 2.5 ATR iz süren stopa geçer. "
         f"20 mum (~3.3 gün) içinde TP1 gelmez ve kâr 0.5R'nin altındaysa çık.\n"
         f"{grafik_linki(sym)}" + gecikme_notu(o.zaman, cfg)
@@ -426,6 +426,21 @@ def main():
     e50 = k.ema(btc_c, 50)[-1]
     btc_bilgi = (f"BTC (günlük kapanış {fmt(btc_c[-1])}): EMA50 {'üstünde' if btc_c[-1] > e50 else 'altında'}, "
                  f"EMA200 {'üstünde → long açık' if btc_c[-1] > e200 else 'altında → yeni long yok, sadece short'}")
+
+    import hashlib
+    parmak = hashlib.md5(json.dumps(k.PARAMS, sort_keys=True).encode()).hexdigest()[:10]
+    if not ilk_calisma and state.get("ayar_parmak_izi") != parmak:
+        acik = [(s, r.acik) for s, r in sonuclar.items() if r.acik]
+        satir = ["⚙️ Sistem ayarları güncellendi. Yeni ayarlara göre şu anki durum:", btc_bilgi]
+        if acik:
+            satir.append("Açık pozisyonlar (yeni kurallara göre; giriş zamanı geçmiş olabilir, sadece bilgi):")
+            for s, a in acik:
+                satir.append(f"• {s} {YON[a['yon']]} giriş {fmt(a['giris'])} | stop {fmt(a['stop'])} | "
+                             f"TP1 {fmt(a['tp1'])}{' ✓' if a['tp1_done'] else ''} | TP2 {fmt(a['tp2'])} | anlık {a['anlik_r']:+.2f}R")
+        else:
+            satir.append("Yeni kurallara göre açık pozisyon yok.")
+        send_telegram("\n".join(satir))
+    state["ayar_parmak_izi"] = parmak
 
     if ilk_calisma:
         acik = [(s, r.acik) for s, r in sonuclar.items() if r.acik]
