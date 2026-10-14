@@ -1,0 +1,63 @@
+                       ayar  IS_n  IS_wr  IS_R  IS_Rpt  IS_L  IS_S  IS_dd  OOS_n  OOS_wr  OOS_R  OOS_Rpt  OOS_L  OOS_S  OOS_dd
+       YENI 70 coin - temel    75   73.3 15.34   0.204  3.82 11.52    4.9    173    60.1   1.42    0.008  -9.33  10.75    11.5
+YENI 70 coin - sadece short    38   81.6 11.52   0.303  0.00 11.52    2.1    137    63.5  10.75    0.078   0.00  10.75     7.5
+
+             size   sum
+symbol                 
+UUSDT           2 -8.34
+MAGICUSDT       3 -3.11
+ZKUSDT         11 -3.09
+QNTUSDT         7 -2.41
+AMPUSDT         2 -2.11
+MITOUSDT        5 -2.09
+TRUMPUSDT       5 -1.77
+BEAMXUSDT      11 -1.52
+TONUSDT         3 -1.38
+ZROUSDT         6 -1.25
+SPCXBUSDT       1 -1.08
+INTCBUSDT       1 -1.07
+CRCLBUSDT       1 -1.03
+MUBUSDT         1 -1.02
+SKHYBUSDT       1 -0.64
+ONEUSDT        12 -0.59
+WLFIUSDT        2 -0.50
+AEROUSDT        2 -0.47
+WLDUSDT         4 -0.38
+OGNUSDT         6 -0.34
+GTCUSDT         5 -0.22
+CAKEUSDT        7 -0.06
+BCHUSDT         4 -0.04
+WUSDT           4  0.07
+ONDOUSDT        5  0.09
+EPICUSDT        5  0.26
+TAOUSDT         3  0.27
+PENGUUSDT       2  0.28
+QQQBUSDT        1  0.34
+SUSDT           3  0.43
+GLMRUSDT        5  0.45
+ASTERUSDT       1  0.52
+SHIBUSDT        6  0.54
+PUMPUSDT        1  0.56
+SNDKBUSDT       1  0.61
+LDOUSDT         4  0.69
+MUBARAKUSDT     3  0.79
+DUSKUSDT        2  0.86
+PYTHUSDT       12  0.98
+RAYUSDT         1  1.02
+BLURUSDT        6  1.13
+NILUSDT         2  1.57
+NFPUSDT         5  1.57
+XRPUSDT         7  1.58
+DASHUSDT        2  1.70
+RLCUSDT         5  1.71
+XPLUSDT         3  2.13
+LUMIAUSDT       3  2.22
+CFXUSDT         4  2.25
+BATUSDT         7  2.30
+GNSUSDT         4  2.40
+PENDLEUSDT      9  2.76
+AVAUSDT         5  3.15
+STXUSDT         7  3.18
+WALUSDT         6  3.67
+STRKUSDT        6  3.79
+BONKUSDT        6  5.38
