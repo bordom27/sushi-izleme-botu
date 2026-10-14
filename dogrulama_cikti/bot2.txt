@@ -1,0 +1,13 @@
+BTC verisi aliniyor...
+------------------------------------------------------------
+📊 GÜNLÜK ÖZET — 14.10.2026 17:19
+BTC (günlük kapanış 83169.00): EMA50 üstünde, EMA200 üstünde → long açık
+
+Açık pozisyon yok.
+Elekleri geçmiş, kırılım bekleyen: LONG 0 | SHORT 0
+
+Tarama tamamlandi. Basarili: 46 | Hatali: 0 | Gonderilen mesaj: 0
+
+real	0m42.343s
+user	0m15.120s
+sys	0m0.197s

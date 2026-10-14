@@ -1,0 +1,15 @@
+BTC verisi aliniyor...
+------------------------------------------------------------
+🔄 Bot Kirilim69 PRO v6'ya güncellendi (TradingView göstergesiyle aynı mantık).
+İzlenen: 46 coin, 4 saatlik, long + short. BIST takibi kapatıldı (v6 sadece kriptoda test edildi).
+BTC (günlük kapanış 83169.00): EMA50 üstünde, EMA200 üstünde → long açık
+
+Eski sistemden açık 6 pozisyon kapanana kadar eski kurallarla takip edilecek ([ESKİ SİSTEM] etiketiyle): JSTUSDT, TRXUSDT, BERAUSDT, PAXGUSDT, TUSDT, ACEUSDT
+
+Bundan sonra yeni giriş, TP1, stop ve çıkış sinyalleri tek tek gelecek; her akşam 21:00'de özet.
+
+Tarama tamamlandi. Basarili: 46 | Hatali: 0 | Gonderilen mesaj: 0
+
+real	3m54.693s
+user	0m19.227s
+sys	0m0.370s
