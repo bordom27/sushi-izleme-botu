@@ -19,7 +19,14 @@
     "[KRIPTO] ALGOUSDT": null,
     "[KRIPTO] AGLDUSDT": null,
     "[KRIPTO] SKLUSDT": null,
-    "[KRIPTO] TRXUSDT": null,
+    "[KRIPTO] TRXUSDT": {
+      "entry_time": "2026-10-14 08:00:00",
+      "entry": 0.3335,
+      "stop": 0.3293035714285715,
+      "tp1_price": 0.33979464285714284,
+      "tp2_price": 0.3439910714285714,
+      "tp1_done": false
+    },
     "[KRIPTO] PHAUSDT": null,
     "[KRIPTO] NEARUSDT": null,
     "[KRIPTO] NILUSDT": null,
