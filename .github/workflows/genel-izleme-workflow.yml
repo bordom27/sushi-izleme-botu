@@ -2,7 +2,7 @@ name: Genel Izleme Botu
 
 on:
   schedule:
-    - cron: "0 * * * *"
+    - cron: "7 * * * *"   # saatte bir; 4 saatlik mumlar 03/07/11/15/19/23 (TR) kapanir, gecikme olsa da bot telafi eder
   workflow_dispatch:
     inputs:
       test_mesaji:
@@ -13,10 +13,14 @@ on:
 permissions:
   contents: write
 
+concurrency:
+  group: izleme-botu
+  cancel-in-progress: false
+
 jobs:
   izle:
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    timeout-minutes: 20
     steps:
       - name: Repoyu al
         uses: actions/checkout@v4
@@ -25,9 +29,18 @@ jobs:
         uses: actions/setup-python@v5
         with:
           python-version: "3.11"
+          cache: pip
+          cache-dependency-path: requirements.txt
 
       - name: Kutuphaneleri kur
-        run: pip install pandas numpy requests
+        run: pip install -r requirements.txt
+
+      - name: Mum verisi onbellegi
+        uses: actions/cache@v4
+        with:
+          path: .veri_cache
+          key: mumlar-${{ github.run_id }}
+          restore-keys: mumlar-
 
       - name: Scripti calistir
         env:
@@ -41,5 +54,10 @@ jobs:
           git config user.name "izleme-bot"
           git config user.email "izleme-bot@users.noreply.github.com"
           git add izleme_state.json
-          git diff --quiet --cached || git commit -m "durum guncellendi [skip ci]"
-          git push || true
+          if ! git diff --quiet --cached; then
+            git commit -m "durum guncellendi [skip ci]"
+            for i in 1 2 3; do
+              git pull --rebase -X theirs origin "${GITHUB_REF_NAME}" && git push && break
+              sleep 5
+            done
+          fi

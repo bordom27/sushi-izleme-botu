@@ -2,7 +2,7 @@ name: Aylik Yeniden Dogrulama
 
 on:
   schedule:
-    - cron: "0 3 1 * *"
+    - cron: "0 6 1 * *"   # her ayin 1'i 09:00 (TR)
   workflow_dispatch: {}
 
 permissions:
@@ -22,18 +22,23 @@ jobs:
           python-version: "3.11"
 
       - name: Kutuphaneleri kur
-        run: pip install pandas numpy requests
+        run: pip install -r requirements.txt
 
-      - name: Coklu varlik backtest'i calistir
+      - name: v6 backtest (botla ayni kod) + Telegram raporu
         env:
           TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
           TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
-        run: python coklu_varlik_backtest.py
+        run: python v6_backtest.py --telegram
 
       - name: Sonuc CSV'sini repoya geri kaydet
         run: |
           git config user.name "izleme-bot"
           git config user.email "izleme-bot@users.noreply.github.com"
-          git add coklu_varlik_sonuclari.csv
-          git diff --quiet --cached || git commit -m "aylik yeniden-dogrulama sonucu guncellendi [skip ci]"
-          git push || true
+          git add v6_backtest_sonuclari.csv
+          if ! git diff --quiet --cached; then
+            git commit -m "aylik v6 dogrulama sonucu [skip ci]"
+            for i in 1 2 3; do
+              git pull --rebase origin "${GITHUB_REF_NAME}" && git push && break
+              sleep 5
+            done
+          fi
