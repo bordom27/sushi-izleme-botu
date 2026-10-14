@@ -10,6 +10,6 @@ Bundan sonra yeni giriş, TP1, stop ve çıkış sinyalleri tek tek gelecek; her
 
 Tarama tamamlandi. Basarili: 46 | Hatali: 0 | Gonderilen mesaj: 0
 
-real	3m54.693s
-user	0m19.227s
-sys	0m0.370s
+real	0m47.659s
+user	0m20.676s
+sys	0m0.207s
