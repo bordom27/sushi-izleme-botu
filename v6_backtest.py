@@ -31,13 +31,13 @@ VERI_BAS_1D = "2019-06-01"
 
 
 def veri_topla(semboller, veri_bas_4h=VERI_BAS_4H):
-    btc_d = veri.mumlar("BTCUSDT", "1d", VERI_BAS_1D)
-    btc_4h = veri.mumlar("BTCUSDT", "4h", veri_bas_4h)
+    btc_d = veri.mumlar_onbellekli("BTCUSDT", "1d", VERI_BAS_1D)
+    btc_4h = veri.mumlar_onbellekli("BTCUSDT", "4h", veri_bas_4h)
     out = {}
     for s in semboller:
         try:
-            df = btc_4h if s == "BTCUSDT" else veri.mumlar(s, "4h", veri_bas_4h)
-            gd = btc_d if s == "BTCUSDT" else veri.mumlar(s, "1d", VERI_BAS_1D)
+            df = btc_4h if s == "BTCUSDT" else veri.mumlar_onbellekli(s, "4h", veri_bas_4h)
+            gd = btc_d if s == "BTCUSDT" else None
             out[s] = (df, gd)
             print(f"  {s}: {len(df)} mum ({df['open_time'].iloc[0] if len(df) else '-'} -> )", flush=True)
         except Exception as exc:

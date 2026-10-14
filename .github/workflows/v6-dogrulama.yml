@@ -3,21 +3,33 @@ name: v6 Dogrulama (gecici)
 on:
   push:
     branches: [v6-dogrulama]
+    paths-ignore: ["dogrulama_cikti/**"]
   workflow_dispatch: {}
+
+permissions:
+  contents: write
 
 jobs:
   dogrula:
     runs-on: ubuntu-latest
-    timeout-minutes: 30
+    timeout-minutes: 40
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
         with:
           python-version: "3.11"
       - run: pip install pandas numpy requests
-      - run: python v6_backtest.py --dogrulama
-      - uses: actions/upload-artifact@v4
-        if: always()
+      - uses: actions/cache@v4
         with:
-          name: dogrulama
-          path: v6_dogrulama_oos.csv
+          path: .veri_cache
+          key: dogrulama-${{ github.run_id }}
+          restore-keys: dogrulama-
+      - run: |
+          mkdir -p dogrulama_cikti
+          python v6_backtest.py --dogrulama ${DOG_ARGS} 2>&1 | grep -v " mum (" | tee dogrulama_cikti/ozet.txt
+        env:
+          DOG_ARGS: ""
+      - run: |
+          cp v6_dogrulama_oos.csv dogrulama_cikti/ || true
+          git config user.name "dogrulama"; git config user.email "d@users.noreply.github.com"
+          git add dogrulama_cikti; git commit -m "dogrulama cikti [skip ci]" && git push || true
