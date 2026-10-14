@@ -122,6 +122,13 @@ PARAMS = {
     "use_trend_exit": False,
     "erken_be_r": 0.0,
 
+    # 11) Formasyonlar (varsayilan KAPALI - acikken TradingView gostergesinde de olmali)
+    "formasyonlar": (),            # "CIFT", "OBO", "TREND", "UCGEN", "BAYRAK"
+    "form_pivot": 5,                # formasyon pivot hassasiyeti (bar)
+    "form_vol_mult": 1.5,           # formasyon kiriliminda hacim esigi (x ortalama, 0 = yok)
+    "form_trend_serbest": False,    # True: donus formasyonlarinda EMA dizilimi aranmaz (piyasa + RSI yeter)
+    "sadece_formasyon": False,      # True: yatay kirilimlar kapali (sadece formasyon sinyali) - test icin
+
     # 8) Sembol tablosu
     "use_auto_params": True,
     "def_rsi_max": 70.0,
@@ -420,6 +427,13 @@ def simule_et(symbol: str, df: pd.DataFrame, gunluk: pd.DataFrame | None,
     low_ago = np.concatenate([[0], np.nan_to_num(lb[:-1], nan=0)]).astype(int)
     high_ago = np.concatenate([[0], np.nan_to_num(hb[:-1], nan=0)]).astype(int)
 
+    FORMLAR = set(p["formasyonlar"])
+    FP = p["form_pivot"]
+    ph_f = pivot(h, FP, True) if FORMLAR else None
+    pl_f = pivot(l, FP, False) if FORMLAR else None
+    fph: list = []   # (bar, fiyat) onayli pivot tepeler
+    fpl: list = []
+    form_kullanildi: set = set()
     ph_room = pivot(h, p["room_pivot_len"], True)
     pl_room = pivot(l, p["room_pivot_len"], False)
     swing_low = lowest(l, p["stop_lookback"])
@@ -517,6 +531,104 @@ def simule_et(symbol: str, df: pd.DataFrame, gunluk: pd.DataFrame | None,
                 best = x
         return best
 
+    def cizgi(p1, p2, x):
+        (x1, y1), (x2, y2) = p1, p2
+        return y1 + (y2 - y1) * (x - x1) / (x2 - x1)
+
+    def formasyon_ara(i, a):
+        """Bar i'de (kapanista) taze formasyon kirilimi: [(yon, seviye, tip, anahtar)]"""
+        out = []
+        if not (a > 0) or i < 2:
+            return out
+        # --- CIFT TEPE / CIFT DIP
+        if "CIFT" in FORMLAR:
+            if len(fph) >= 2:
+                (b1, p1), (b2, p2) = fph[-2], fph[-1]
+                if abs(p1 - p2) <= 0.6 * a and 8 <= b2 - b1 <= 60 and i - b2 <= 30:
+                    t = float(np.min(l[b1:b2 + 1]))
+                    if min(p1, p2) - t >= 2 * a and c[i] < t and c[i - 1] >= t:
+                        out.append((-1, t, "CIFT TEPE", ("CT", b1, b2)))
+            if len(fpl) >= 2:
+                (b1, p1), (b2, p2) = fpl[-2], fpl[-1]
+                if abs(p1 - p2) <= 0.6 * a and 8 <= b2 - b1 <= 60 and i - b2 <= 30:
+                    t = float(np.max(h[b1:b2 + 1]))
+                    if t - max(p1, p2) >= 2 * a and c[i] > t and c[i - 1] <= t:
+                        out.append((1, t, "CIFT DIP", ("CD", b1, b2)))
+        # --- OBO / TOBO
+        if "OBO" in FORMLAR:
+            if len(fph) >= 3:
+                (ba, pa), (bb, pb), (bc, pc) = fph[-3:]
+                if pb > pa + 0.5 * a and pb > pc + 0.5 * a and abs(pa - pc) <= 1.5 * a \
+                        and 5 <= bb - ba <= 50 and 5 <= bc - bb <= 50 and i - bc <= 25:
+                    k1 = ba + int(np.argmin(l[ba:bb + 1])); k2 = bb + int(np.argmin(l[bb:bc + 1]))
+                    if k2 > k1:
+                        n0 = cizgi((k1, l[k1]), (k2, l[k2]), i)
+                        n1 = cizgi((k1, l[k1]), (k2, l[k2]), i - 1)
+                        if c[i] < n0 and c[i - 1] >= n1:
+                            out.append((-1, n0, "OBO", ("OBO", ba, bb, bc)))
+            if len(fpl) >= 3:
+                (ba, pa), (bb, pb), (bc, pc) = fpl[-3:]
+                if pb < pa - 0.5 * a and pb < pc - 0.5 * a and abs(pa - pc) <= 1.5 * a \
+                        and 5 <= bb - ba <= 50 and 5 <= bc - bb <= 50 and i - bc <= 25:
+                    k1 = ba + int(np.argmax(h[ba:bb + 1])); k2 = bb + int(np.argmax(h[bb:bc + 1]))
+                    if k2 > k1:
+                        n0 = cizgi((k1, h[k1]), (k2, h[k2]), i)
+                        n1 = cizgi((k1, h[k1]), (k2, h[k2]), i - 1)
+                        if c[i] > n0 and c[i - 1] <= n1:
+                            out.append((1, n0, "TOBO", ("TOBO", ba, bb, bc)))
+        # --- EGIK TREND CIZGISI ve UCGEN/KAMA
+        if "TREND" in FORMLAR or "UCGEN" in FORMLAR:
+            ust = alt = None
+            if len(fph) >= 2:
+                (b1, p1), (b2, p2) = fph[-2], fph[-1]
+                if p2 < p1 - 0.3 * a and b2 - b1 >= 8 and i - b1 <= 120:
+                    seg = c[b2 + 1:i]
+                    xs = np.arange(b2 + 1, i)
+                    if len(seg) == 0 or np.all(seg <= cizgi((b1, p1), (b2, p2), xs)):
+                        ust = ((b1, p1), (b2, p2))
+            if len(fpl) >= 2:
+                (b1, p1), (b2, p2) = fpl[-2], fpl[-1]
+                if p2 > p1 + 0.3 * a and b2 - b1 >= 8 and i - b1 <= 120:
+                    seg = c[b2 + 1:i]
+                    xs = np.arange(b2 + 1, i)
+                    if len(seg) == 0 or np.all(seg >= cizgi((b1, p1), (b2, p2), xs)):
+                        alt = ((b1, p1), (b2, p2))
+            ucgen = ust is not None and alt is not None and max(ust[0][0], alt[0][0]) >= i - 80
+            for yon, hat in ((1, ust), (-1, alt)):
+                if hat is None:
+                    continue
+                v0 = cizgi(hat[0], hat[1], i)
+                v1 = cizgi(hat[0], hat[1], i - 1)
+                kir = (c[i] > v0 + 0.1 * a and c[i - 1] <= v1) if yon == 1 else (c[i] < v0 - 0.1 * a and c[i - 1] >= v1)
+                if not kir:
+                    continue
+                if ucgen and "UCGEN" in FORMLAR:
+                    out.append((yon, v0, "UCGEN", ("UC", yon, hat[0][0], hat[1][0])))
+                elif "TREND" in FORMLAR:
+                    out.append((yon, v0, "TREND KIRILIMI", ("TR", yon, hat[0][0], hat[1][0])))
+        # --- BAYRAK / FLAMA (guclu itki + dar duzeltme + itki yonunde kirilim)
+        if "BAYRAK" in FORMLAR and i >= 40:
+            w0 = i - 25
+            hk = w0 + int(np.argmax(h[w0:i]))   # itki tepesi (bar i haric)
+            m = i - 1 - hk
+            if 4 <= m <= 20:
+                H = h[hk]
+                dip = float(np.min(l[max(0, hk - 10):hk + 1]))
+                itki = H - dip
+                kons_dip = float(np.min(l[hk + 1:i]))
+                if itki >= 4 * a and kons_dip >= H - 0.5 * itki and c[i] > H + 0.1 * a and c[i - 1] <= H:
+                    out.append((1, H, "BAYRAK", ("BY", 1, hk)))
+            lk = w0 + int(np.argmin(l[w0:i]))
+            m = i - 1 - lk
+            if 4 <= m <= 20:
+                L_ = l[lk]
+                tepe = float(np.max(h[max(0, lk - 10):lk + 1]))
+                itki = tepe - L_
+                kons_tepe = float(np.max(h[lk + 1:i]))
+                if itki >= 4 * a and kons_tepe <= L_ + 0.5 * itki and c[i] < L_ - 0.1 * a and c[i - 1] >= L_:
+                    out.append((-1, L_, "AYI BAYRAGI", ("BY", -1, lk)))
+        return out
+
     filtre_son = {}
 
     for i in range(n):
@@ -609,6 +721,8 @@ def simule_et(symbol: str, df: pd.DataFrame, gunluk: pd.DataFrame | None,
         c_oynak = max_atr_pct <= 0 or (a / c[i] * 100) <= max_atr_pct
         aday_l = bool(long_set and c_brk_l and c_vol and c_uzama_l and c_taban and c_oynak and yum_ok_l)
         aday_s = bool(short_set and c_brk_s and c_vol and c_uzama_s and c_taban and c_oynak and yum_ok_s)
+        if p["sadece_formasyon"]:
+            aday_l = aday_s = False
 
         # kalite skoru
         s1 = (not math.isnan(vol_oran)) and vol_oran >= p["strong_vol_mult"]
@@ -624,6 +738,16 @@ def simule_et(symbol: str, df: pd.DataFrame, gunluk: pd.DataFrame | None,
         mk = p["min_kalite"]
         kal_ok_l = mk == "C" or (skor_l >= 2 if mk == "B" else skor_l >= 4)
         kal_ok_s = mk == "C" or (skor_s >= 2 if mk == "B" else skor_s >= 4)
+
+        if FORMLAR:
+            if not math.isnan(ph_f[i]):
+                fph.append((i - FP, ph_f[i]))
+                if len(fph) > 10:
+                    fph.pop(0)
+            if not math.isnan(pl_f[i]):
+                fpl.append((i - FP, pl_f[i]))
+                if len(fpl) > 10:
+                    fpl.pop(0)
 
         # pivot engelleri (bu barda onaylananlar dahil)
         if not math.isnan(ph_room[i]):
@@ -747,6 +871,27 @@ def simule_et(symbol: str, df: pd.DataFrame, gunluk: pd.DataFrame | None,
                             "uc": h[i] if d == 1 else l[i], "bar": i, "kalite": harf, "zaman": ot[i]}
                     olaylar.append(Olay(ot[i], "KIRILIM", d, {"seviye": pend["seviye"], "uc": pend["uc"],
                                                               "kalite": harf, "kapanis": c[i]}))
+
+        if FORMLAR and not pos_open_basta and not giris_sinyal:
+            for f_yon, f_sev, f_tip, f_key in formasyon_ara(i, a):
+                if f_key in form_kullanildi:
+                    continue
+                form_kullanildi.add(f_key)
+                fv = p["form_vol_mult"]
+                vol_ok = fv <= 0 or (not math.isnan(vol_oran) and vol_oran >= fv)
+                donus = f_tip in ("CIFT DIP", "CIFT TEPE", "OBO", "TOBO")
+                if f_yon == 1:
+                    temel = long_izin and long_ek and L1 and L7 and e9
+                    trend_ok = L5 or (donus and p["form_trend_serbest"])
+                    mum_ok = c_mum_temel_l and c_uzama_l and c_oynak
+                else:
+                    temel = short_izin and S1 and S7 and e9
+                    trend_ok = S5 or (donus and p["form_trend_serbest"])
+                    mum_ok = c_mum_temel_s and c_uzama_s and c_oynak
+                if temel and trend_ok and mum_ok and vol_ok:
+                    giris_sinyal, g_dir, g_tip, g_kal, g_sev = True, f_yon, f_tip, "F", f_sev
+                    pend = None
+                    break
 
         if giris_sinyal and ((giris_bas is not None and ot[i] < giris_bas) or (giris_bit is not None and ot[i] > giris_bit)):
             giris_sinyal = False

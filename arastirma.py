@@ -167,6 +167,23 @@ def tavanli(tr, cap):
             acik.append((r.cikis_zaman, r.yon))
     return t.loc[keep]
 
+FORM_SENARYO = []
+for F in ["CIFT", "OBO", "TREND", "UCGEN", "BAYRAK"]:
+    FORM_SENARYO += [
+        (f"{F} tek basina", {"formasyonlar": (F,), "sadece_formasyon": True}),
+        (f"{F} tek, hacim sartsiz", {"formasyonlar": (F,), "sadece_formasyon": True, "form_vol_mult": 0.0}),
+        (f"v6.1 + {F}", {"formasyonlar": (F,)}),
+    ]
+    if F in ("CIFT", "OBO"):
+        FORM_SENARYO.append((f"{F} tek, trend serbest", {"formasyonlar": (F,), "sadece_formasyon": True, "form_trend_serbest": True}))
+FORM_SENARYO = [("v6.1 TEMEL", {})] + FORM_SENARYO + [
+    ("v6.1 + TUM formasyonlar", {"formasyonlar": ("CIFT", "OBO", "TREND", "UCGEN", "BAYRAK")}),
+    ("TUM formasyonlar tek", {"formasyonlar": ("CIFT", "OBO", "TREND", "UCGEN", "BAYRAK"), "sadece_formasyon": True}),
+    ("sikisma filtresi 6 ATR", {"use_base": True, "max_base_atr": 6.0}),
+    ("sikisma filtresi 8 ATR", {"use_base": True, "max_base_atr": 8.0}),
+    ("sikisma filtresi 10 ATR", {"use_base": True, "max_base_atr": 10.0}),
+]
+
 
 def main():
     os.makedirs(OUT, exist_ok=True)
@@ -280,6 +297,35 @@ def main():
         res = pd.DataFrame(rows)
         res.to_csv(f"{OUT}/kombo.csv", index=False)
         with open(f"{OUT}/kombo.txt", "w") as f:
+            f.write(res.to_string(index=False))
+
+    elif mod == "formasyon":
+        tick = veri._get("/api/v3/ticker/24hr", {})
+        haric = set(COINLER) | STOK_HARIC | {"USDCUSDT", "FDUSDUSDT", "TUSDUSDT", "DAIUSDT", "EURUSDT", "USDPUSDT",
+                                "RLUSDUSDT", "USD1USDT", "PYUSDUSDT", "AEURUSDT", "XUSDUSDT", "BFUSDUSDT",
+                                "WBTCUSDT", "WBETHUSDT", "BNSOLUSDT", "EURIUSDT", "USDEUSDT"}
+        aday = [d for d in tick if d["symbol"].endswith("USDT") and d["symbol"] not in haric
+                and not any(x in d["symbol"] for x in ("UP", "DOWN", "BULL", "BEAR"))]
+        aday.sort(key=lambda d: float(d["quoteVolume"]), reverse=True)
+        yeni = [d["symbol"] for d in aday[:70]]
+        DATA["btc_4h"] = veri.mumlar_onbellekli("BTCUSDT", "4h", VERI_BAS)
+        DATA["4h"] = yukle(COINLER + yeni)
+        yeni = [s_ for s_ in yeni if s_ in DATA["4h"]]
+        rows = []
+        with mp.Pool(4) as hv:
+            for ad, prm in FORM_SENARYO:
+                tr = calistir(prm, COINLER + yeni, "4h", hv)
+                for etiket, x in (("46", tr[tr.symbol.isin(COINLER)] if len(tr) else tr),
+                                  ("YENI", tr[tr.symbol.isin(yeni)] if len(tr) else tr), ("HEPSI", tr)):
+                    rows.append(satir(f"{ad} [{etiket}]", x))
+                if len(tr) and "formasyonlar" in prm:
+                    ft = tr[~tr.tip.isin(["KIRILIM", "GUCLU KIRILIM", "RETEST", "TEYIT"])]
+                    for tip, g in ft.groupby("tip"):
+                        rows.append(satir(f"   {ad} :: sadece {tip} islemleri [HEPSI]", g))
+                print(ad, flush=True)
+        res = pd.DataFrame(rows)
+        res.to_csv(f"{OUT}/formasyon.csv", index=False)
+        with open(f"{OUT}/formasyon.txt", "w") as f:
             f.write(res.to_string(index=False))
 
 

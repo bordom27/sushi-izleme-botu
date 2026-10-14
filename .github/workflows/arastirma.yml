@@ -16,7 +16,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        mod: [kombo]
+        mod: [formasyon]
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
@@ -27,7 +27,9 @@ jobs:
         with:
           path: .veri_cache
           key: arastirma-${{ matrix.mod }}-${{ github.run_id }}
-          restore-keys: arastirma-${{ matrix.mod }}-
+          restore-keys: |
+            arastirma-${{ matrix.mod }}-
+            arastirma-kombo-
       - run: python arastirma.py ${{ matrix.mod }} 2>&1 | grep -v " mum (" | tee log_${{ matrix.mod }}.txt
       - run: |
           mkdir -p arastirma_cikti && mv log_${{ matrix.mod }}.txt arastirma_cikti/
