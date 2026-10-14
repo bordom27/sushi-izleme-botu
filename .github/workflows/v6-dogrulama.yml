@@ -18,18 +18,19 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: "3.11"
-      - run: pip install pandas numpy requests
+      - run: pip install -r requirements.txt
       - uses: actions/cache@v4
         with:
           path: .veri_cache
           key: dogrulama-${{ github.run_id }}
           restore-keys: dogrulama-
-      - run: |
+      - name: Bot kuru calistirma (Telegram'siz) x2
+        run: |
           mkdir -p dogrulama_cikti
-          python v6_backtest.py --dogrulama ${DOG_ARGS} 2>&1 | grep -v " mum (" | tee dogrulama_cikti/ozet.txt
-        env:
-          DOG_ARGS: ""
+          ( time python genel_izleme_bulut.py ) > dogrulama_cikti/bot1.txt 2>&1
+          ( time OZET_ZORLA=true python genel_izleme_bulut.py ) > dogrulama_cikti/bot2.txt 2>&1
+          cp izleme_state.json dogrulama_cikti/state_sonra.json
+          git checkout izleme_state.json
       - run: |
-          cp v6_dogrulama_oos.csv dogrulama_cikti/ || true
           git config user.name "dogrulama"; git config user.email "d@users.noreply.github.com"
           git add dogrulama_cikti; git commit -m "dogrulama cikti [skip ci]" && git push || true

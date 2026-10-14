@@ -1,686 +1,304 @@
 """
-GENEL IZLEME BOTU - Kripto (Binance) + Hisse (Yahoo Finance) - Telegram Bildirimli
+KIRILIM69 PRO v6 - TELEGRAM IZLEME BOTU (Binance, 4 saatlik)
 ================================================================================
-BU SCRIPT GERCEK ISLEM ACMAZ. GitHub Actions tarafindan periyodik tetiklenir,
-asagidaki listelerdeki TUM varliklari tek tek tarar, her biri icin ayni
-kirilim + MACD + RSI mantigini uygular ve sinyal varsa Telegram'a mesaj gonderir.
+BU SCRIPT GERCEK ISLEM ACMAZ. GitHub Actions tarafindan periyodik tetiklenir.
 
-ONEMLI UYARI: Bu strateji sadece SUSHI/USDT 4 saatlik grafikte backtest edildi.
-Diger kripto ve hisselerde ayni parametrelerle calismasi bir varsayimdir,
-ayrica dogrulanmamistir - deneysel kabul et.
+TradingView'daki "Kirilim69 PRO" gostergesiyle AYNI mantik (kirilim_v6.py):
+long + short, BTC piyasa elegi (long icin BTC > gunluk EMA200), hacimli
+kirilim / retest / teyit girisi, yapisal stop, fib + engel bazli TP1/TP2,
+TP1'de %70 kar al + stop basabas+0.1R, chandelier trailing, zaman stopu.
+
+Nasil calisir:
+  Her calistirmada her coinin 4 saatlik gecmisi SABIT bir baslangictan
+  itibaren yeniden hesaplanir (gostergeyle ayni sonuc) ve sadece son
+  calistirmadan beri KAPANAN mumlardaki olaylar Telegram'a gonderilir.
+  GitHub calistirmayi geciktirse / atlasa bile sinyal kacmaz.
 
 Gerekli ortam degiskenleri (GitHub Secrets):
     TELEGRAM_BOT_TOKEN
     TELEGRAM_CHAT_ID
 """
 
+from __future__ import annotations
+
 import json
+import math
 import os
 import sys
 import time
-from datetime import datetime
+from datetime import datetime, timedelta, timezone
 
 import numpy as np
 import pandas as pd
 import requests
 
-# ------------------------------------------------------------------------------------
-# AYARLAR
-# ------------------------------------------------------------------------------------
+import kirilim_v6 as k
+import veri
+from coin_listesi import COINLER
+
 CONFIG = {
-    # KRIPTO: coklu_varlik_backtest.py'nin ATR-bazli stop+trailing ile yapilan
-    # 399 varlik taramasinda GERCEKTEN pozitif ve yeterli islem sayisina (8+)
-    # sahip ciktigi dogrulanan liste (guncelleme: 20 Eylul 2026).
-    "CRYPTO_SYMBOLS": [
-        "JSTUSDT", "ALGOUSDT", "NEARUSDT", "KAITOUSDT", "DEXEUSDT", "TRXUSDT",
-        "RAYUSDT", "SUSDT", "AVAUSDT", "CAKEUSDT", "ENAUSDT", "ALLOUSDT",
-        "JTOUSDT", "ZAMAUSDT", "CUSDT", "CHZUSDT", "SKLUSDT", "ZENUSDT",
-        "PYTHUSDT", "SOPHUSDT", "ETHFIUSDT", "ZECUSDT", "PHAUSDT", "MORPHOUSDT",
-        "NILUSDT", "PLUMEUSDT", "XRPUSDT", "PEPEUSDT", "ARBUSDT", "MINAUSDT",
-        "XTZUSDT", "APTUSDT", "DOTUSDT", "SKYUSDT", "HFTUSDT", "FUSDT",
-        "AGLDUSDT", "NFPUSDT", "METUSDT", "CTSIUSDT", "ACEUSDT", "PROMUSDT",
-        "TUSDT", "PAXGUSDT", "FILUSDT", "EPICUSDT", "GUNUSDT", "ZILUSDT",
-        "BERAUSDT", "SAGAUSDT", "AAVEUSDT", "DASHUSDT",
-    ],
-    "CRYPTO_INTERVAL": "4h",
-    "CRYPTO_CANDLE_LIMIT": 200,
-
-    # HISSE: bu turda da hicbir ABD hissesi 8+ islemle esigi gecemedi - liste bos.
-    "US_STOCKS": [],
-    "BIST_STOCKS": [
-        "EREGL.IS", "YKBNK.IS", "IZMDC.IS", "ICBCT.IS", "SARKY.IS", "NUGYO.IS",
-        "INDES.IS", "ECILC.IS", "TUPRS.IS", "SISE.IS", "TTKOM.IS", "ALARK.IS",
-        "KCHOL.IS", "PETKM.IS", "LOGO.IS", "ENKAI.IS", "ASTOR.IS",
-    ],
-    "STOCK_INTERVAL": "1d",       # hisseler icin gunluk mum
-    "STOCK_RANGE": "2y",          # yeterli gecmis veri icin
-
-    # STRATEJI PARAMETRELERI (SUSHI backtest'inden - digerlerinde dogrulanmadi)
-    "RESISTANCE_LOOKBACK": 10,
-    "SUPPORT_LOOKBACK": 10,
-    "RSI_PERIOD": 14,
-    "RSI_MAX_ENTRY": 65,
-    "MACD_FAST": 12,
-    "MACD_SLOW": 26,
-    "MACD_SIGNAL": 9,
-    "TP1_R": 1.5,
-    "TP1_FRACTION": 0.5,
-    "TP2_R": 2.0,
-
-    "USE_VOLUME_FILTER": True,
-    "VOLUME_LOOKBACK": 20,
-    "VOLUME_MULT": 1.2,
-    "USE_TREND_FILTER": True,
-    "TREND_EMA_LEN": 50,
-
+    "COINLER": COINLER,
+    "VERI_BAS_4H": "2024-06-01",     # sabit baslangic: hesap her calistirmada ayni kalir
+    "VERI_BAS_1D": "2019-06-01",
     "STATE_FILE": "izleme_state.json",
-    "REQUEST_DELAY": 0.35,   # ardisik istekler arasi bekleme (nazik olmak icin)
+    "ISTEK_BEKLEME": 0.12,
 
-    # RISK YONETIMI (coklu_varlik_backtest.py ile ayni mantik)
-    "ATR_PERIOD": 14,
-    "USE_ATR_STOP": True,
-    "ATR_STOP_MULT": 2.0,
-    "USE_TRAILING_STOP": True,
-    "TRAIL_ATR_MULT": 2.5,
-
-    # ASIRI UZAMIS MUM FILTRESI: kirilim muminin (high-low) araligi ATR'nin bu
-    # katindan buyukse, bu bir "tukenme/parabolik" mumu sayilir ve GIRIS YAPILMAZ.
-    # Amac: devasa, aninda geri donme riski yuksek mumlara "kirildi" diye korku
-    # icinde girmeyi onlemek.
-    "USE_EXTENDED_CANDLE_FILTER": True,
-    "MAX_CANDLE_RANGE_ATR": 2.0,
-
-    # COOLDOWN: bir varlik stop olduktan sonra, ayni varliga tekrar giris
-    # yapabilmek icin gecmesi gereken minimum mum sayisi. Amac: stop-loss
-    # sonrasi ayni sikisik bolgede art arda giris/stop dongusune girmeyi
-    # onlemek (kirilma hemen ardindan tekrar denemek yerine biraz "sogumasini"
-    # beklemek).
-    "COOLDOWN_BARS_AFTER_STOP": 3,
-
-    # KORELASYON / CESITLILIK KONTROLU: ayni anda acik olabilecek pozisyon sayisi
-    "MAX_CONCURRENT_TOTAL": 16,     # tum varliklarda toplamda en fazla bu kadar acik pozisyon
-    "MAX_CONCURRENT_PER_KATEGORI": {
-        "KRIPTO": 10, "ABD HISSE": 4, "BIST": 6,
-    },
-
-    # BILDIRIM KALITESI: varlik bazinda optimize edilmis (DENGELI SKOR - getiri VE
-    # kazanma orani birlikte) parametrelerle elde edilen gecmis performans
-    # (win_rate%, getiri%). Guncelleme: 20 Eylul 2026.
-    "BACKTEST_ISTATISTIK": {
-        "JSTUSDT": (55.4, 103.1),
-        "PHAUSDT": (58.1, 94.8),
-        "PAXGUSDT": (59.8, 90.2),
-        "TRXUSDT": (48.6, 97.5),
-        "TUSDT": (56.9, 53.1),
-        "AGLDUSDT": (50.9, 52.9),
-        "NEARUSDT": (48.3, 55.4),
-        "ZILUSDT": (48.7, 51.7),
-        "DEXEUSDT": (53.7, 46.8),
-        "KAITOUSDT": (63.3, 39.4),
-        "AVAUSDT": (48.9, 47.3),
-        "RAYUSDT": (58.6, 30.0),
-        "SKLUSDT": (47.6, 36.1),
-        "CHZUSDT": (50.0, 32.0),
-        "NFPUSDT": (50.7, 29.6),
-        "PEPEUSDT": (50.0, 29.2),
-        "ARBUSDT": (47.7, 30.3),
-        "EPICUSDT": (51.5, 25.7),
-        "CUSDT": (62.5, 21.0),
-        "DOTUSDT": (54.5, 24.0),
-        "ETHFIUSDT": (64.3, 20.1),
-        "ENAUSDT": (50.0, 23.7),
-        "FILUSDT": (48.2, 24.4),
-        "ZENUSDT": (47.5, 23.3),
-        "LOGO.IS": (100.0, 10.9),
-        "CTSIUSDT": (46.5, 22.6),
-        "SARKY.IS": (100.0, 10.4),
-        "DASHUSDT": (46.3, 22.0),
-        "PLUMEUSDT": (72.7, 14.0),
-        "EREGL.IS": (100.0, 9.5),
-        "AAVEUSDT": (38.3, 24.0),
-        "NILUSDT": (46.2, 19.9),
-        "HFTUSDT": (49.1, 17.9),
-        "CAKEUSDT": (38.8, 22.3),
-        "ECILC.IS": (100.0, 8.5),
-        "PETKM.IS": (75.0, 10.8),
-        "ALLOUSDT": (70.0, 11.5),
-        "MORPHOUSDT": (70.0, 11.4),
-        "PROMUSDT": (47.5, 15.1),
-        "MINAUSDT": (51.5, 13.9),
-        "KCHOL.IS": (100.0, 6.9),
-        "SISE.IS": (100.0, 6.8),
-        "ASTOR.IS": (100.0, 6.8),
-        "ALGOUSDT": (43.2, 15.6),
-        "BERAUSDT": (50.0, 12.8),
-        "ZAMAUSDT": (54.5, 11.8),
-        "ENKAI.IS": (100.0, 6.1),
-        "TUPRS.IS": (100.0, 6.1),
-        "NUGYO.IS": (100.0, 6.1),
-        "PYTHUSDT": (44.7, 11.4),
-        "XTZUSDT": (46.8, 9.9),
-        "IZMDC.IS": (100.0, 4.5),
-        "SUSDT": (52.6, 8.3),
-        "XRPUSDT": (38.6, 11.2),
-        "INDES.IS": (62.5, 6.8),
-        "ACEUSDT": (45.8, 9.1),
-        "JTOUSDT": (44.0, 9.2),
-        "ICBCT.IS": (100.0, 3.4),
-        "SOPHUSDT": (50.0, 6.6),
-        "SAGAUSDT": (39.3, 7.6),
-        "ZECUSDT": (40.9, 6.5),
-        "APTUSDT": (46.4, 5.6),
-        "METUSDT": (50.0, 5.1),
-        "YKBNK.IS": (60.0, 3.7),
-        "SKYUSDT": (44.4, 4.9),
-        "FUSDT": (44.4, 3.5),
-        "ALARK.IS": (50.0, 2.8),
-        "GUNUSDT": (35.3, 3.7),
-        "TTKOM.IS": (0.0, 0.0),
-    },
-
-    # VARLIK BAZINDA PARAMETRELER: her varligin kendi en iyi RSI/ATR-stop/TP2
-    # kombinasyonu - DENGELI SKOR (getiri x kazanma orani) ile secildi, sadece
-    # ham getiriye gore degil. Guncelleme: 20 Eylul 2026.
-    "VARLIK_PARAMETRELERI": {
-        "JSTUSDT": {"RSI_MAX_ENTRY": 75, "ATR_STOP_MULT": 2.0, "TP2_R": 1.5},
-        "PHAUSDT": {"RSI_MAX_ENTRY": 75, "ATR_STOP_MULT": 2.0, "TP2_R": 1.5},
-        "PAXGUSDT": {"RSI_MAX_ENTRY": 75, "ATR_STOP_MULT": 2.5, "TP2_R": 1.5},
-        "TRXUSDT": {"RSI_MAX_ENTRY": 75, "ATR_STOP_MULT": 2.5, "TP2_R": 2.5},
-        "TUSDT": {"RSI_MAX_ENTRY": 75, "ATR_STOP_MULT": 2.5, "TP2_R": 1.5},
-        "AGLDUSDT": {"RSI_MAX_ENTRY": 75, "ATR_STOP_MULT": 2.0, "TP2_R": 1.5},
-        "NEARUSDT": {"RSI_MAX_ENTRY": 65, "ATR_STOP_MULT": 2.5, "TP2_R": 3.0},
-        "ZILUSDT": {"RSI_MAX_ENTRY": 75, "ATR_STOP_MULT": 2.0, "TP2_R": 1.5},
-        "DEXEUSDT": {"RSI_MAX_ENTRY": 75, "ATR_STOP_MULT": 2.0, "TP2_R": 1.5},
-        "KAITOUSDT": {"RSI_MAX_ENTRY": 75, "ATR_STOP_MULT": 2.5, "TP2_R": 2.0},
-        "AVAUSDT": {"RSI_MAX_ENTRY": 75, "ATR_STOP_MULT": 1.5, "TP2_R": 1.5},
-        "RAYUSDT": {"RSI_MAX_ENTRY": 60, "ATR_STOP_MULT": 2.0, "TP2_R": 3.0},
-        "SKLUSDT": {"RSI_MAX_ENTRY": 75, "ATR_STOP_MULT": 2.0, "TP2_R": 1.5},
-        "CHZUSDT": {"RSI_MAX_ENTRY": 65, "ATR_STOP_MULT": 2.5, "TP2_R": 3.0},
-        "NFPUSDT": {"RSI_MAX_ENTRY": 70, "ATR_STOP_MULT": 1.5, "TP2_R": 1.5},
-        "PEPEUSDT": {"RSI_MAX_ENTRY": 75, "ATR_STOP_MULT": 1.5, "TP2_R": 1.5},
-        "ARBUSDT": {"RSI_MAX_ENTRY": 75, "ATR_STOP_MULT": 1.5, "TP2_R": 1.5},
-        "EPICUSDT": {"RSI_MAX_ENTRY": 75, "ATR_STOP_MULT": 1.5, "TP2_R": 2.0},
-        "CUSDT": {"RSI_MAX_ENTRY": 70, "ATR_STOP_MULT": 1.5, "TP2_R": 1.5},
-        "DOTUSDT": {"RSI_MAX_ENTRY": 60, "ATR_STOP_MULT": 1.5, "TP2_R": 1.5},
-        "ETHFIUSDT": {"RSI_MAX_ENTRY": 60, "ATR_STOP_MULT": 2.0, "TP2_R": 3.0},
-        "ENAUSDT": {"RSI_MAX_ENTRY": 70, "ATR_STOP_MULT": 1.5, "TP2_R": 1.5},
-        "FILUSDT": {"RSI_MAX_ENTRY": 65, "ATR_STOP_MULT": 2.0, "TP2_R": 1.5},
-        "ZENUSDT": {"RSI_MAX_ENTRY": 60, "ATR_STOP_MULT": 2.5, "TP2_R": 3.0},
-        "LOGO.IS": {"RSI_MAX_ENTRY": 75, "ATR_STOP_MULT": 2.0, "TP2_R": 2.0},
-        "CTSIUSDT": {"RSI_MAX_ENTRY": 75, "ATR_STOP_MULT": 2.5, "TP2_R": 1.5},
-        "SARKY.IS": {"RSI_MAX_ENTRY": 75, "ATR_STOP_MULT": 1.5, "TP2_R": 3.0},
-        "DASHUSDT": {"RSI_MAX_ENTRY": 65, "ATR_STOP_MULT": 1.5, "TP2_R": 1.5},
-        "PLUMEUSDT": {"RSI_MAX_ENTRY": 65, "ATR_STOP_MULT": 2.5, "TP2_R": 1.5},
-        "EREGL.IS": {"RSI_MAX_ENTRY": 75, "ATR_STOP_MULT": 2.5, "TP2_R": 2.0},
-        "AAVEUSDT": {"RSI_MAX_ENTRY": 65, "ATR_STOP_MULT": 2.0, "TP2_R": 3.0},
-        "NILUSDT": {"RSI_MAX_ENTRY": 75, "ATR_STOP_MULT": 2.5, "TP2_R": 3.0},
-        "HFTUSDT": {"RSI_MAX_ENTRY": 65, "ATR_STOP_MULT": 2.0, "TP2_R": 1.5},
-        "CAKEUSDT": {"RSI_MAX_ENTRY": 75, "ATR_STOP_MULT": 2.0, "TP2_R": 2.0},
-        "ECILC.IS": {"RSI_MAX_ENTRY": 60, "ATR_STOP_MULT": 2.0, "TP2_R": 3.0},
-        "PETKM.IS": {"RSI_MAX_ENTRY": 75, "ATR_STOP_MULT": 1.5, "TP2_R": 1.5},
-        "ALLOUSDT": {"RSI_MAX_ENTRY": 75, "ATR_STOP_MULT": 2.5, "TP2_R": 1.5},
-        "MORPHOUSDT": {"RSI_MAX_ENTRY": 60, "ATR_STOP_MULT": 2.5, "TP2_R": 1.5},
-        "PROMUSDT": {"RSI_MAX_ENTRY": 75, "ATR_STOP_MULT": 2.5, "TP2_R": 1.5},
-        "MINAUSDT": {"RSI_MAX_ENTRY": 60, "ATR_STOP_MULT": 2.5, "TP2_R": 1.5},
-        "KCHOL.IS": {"RSI_MAX_ENTRY": 65, "ATR_STOP_MULT": 2.0, "TP2_R": 1.5},
-        "SISE.IS": {"RSI_MAX_ENTRY": 65, "ATR_STOP_MULT": 1.5, "TP2_R": 3.0},
-        "ASTOR.IS": {"RSI_MAX_ENTRY": 60, "ATR_STOP_MULT": 1.5, "TP2_R": 3.0},
-        "ALGOUSDT": {"RSI_MAX_ENTRY": 75, "ATR_STOP_MULT": 1.5, "TP2_R": 1.5},
-        "BERAUSDT": {"RSI_MAX_ENTRY": 75, "ATR_STOP_MULT": 2.0, "TP2_R": 1.5},
-        "ZAMAUSDT": {"RSI_MAX_ENTRY": 75, "ATR_STOP_MULT": 2.0, "TP2_R": 1.5},
-        "ENKAI.IS": {"RSI_MAX_ENTRY": 70, "ATR_STOP_MULT": 2.0, "TP2_R": 2.5},
-        "TUPRS.IS": {"RSI_MAX_ENTRY": 65, "ATR_STOP_MULT": 1.5, "TP2_R": 2.5},
-        "NUGYO.IS": {"RSI_MAX_ENTRY": 75, "ATR_STOP_MULT": 2.0, "TP2_R": 2.5},
-        "PYTHUSDT": {"RSI_MAX_ENTRY": 75, "ATR_STOP_MULT": 2.5, "TP2_R": 1.5},
-        "XTZUSDT": {"RSI_MAX_ENTRY": 60, "ATR_STOP_MULT": 1.5, "TP2_R": 1.5},
-        "IZMDC.IS": {"RSI_MAX_ENTRY": 70, "ATR_STOP_MULT": 2.0, "TP2_R": 1.5},
-        "SUSDT": {"RSI_MAX_ENTRY": 65, "ATR_STOP_MULT": 1.5, "TP2_R": 1.5},
-        "XRPUSDT": {"RSI_MAX_ENTRY": 75, "ATR_STOP_MULT": 2.5, "TP2_R": 3.0},
-        "INDES.IS": {"RSI_MAX_ENTRY": 75, "ATR_STOP_MULT": 1.5, "TP2_R": 1.5},
-        "ACEUSDT": {"RSI_MAX_ENTRY": 70, "ATR_STOP_MULT": 2.0, "TP2_R": 1.5},
-        "JTOUSDT": {"RSI_MAX_ENTRY": 70, "ATR_STOP_MULT": 2.5, "TP2_R": 1.5},
-        "ICBCT.IS": {"RSI_MAX_ENTRY": 60, "ATR_STOP_MULT": 2.5, "TP2_R": 3.0},
-        "SOPHUSDT": {"RSI_MAX_ENTRY": 70, "ATR_STOP_MULT": 1.5, "TP2_R": 1.5},
-        "SAGAUSDT": {"RSI_MAX_ENTRY": 65, "ATR_STOP_MULT": 1.5, "TP2_R": 2.0},
-        "ZECUSDT": {"RSI_MAX_ENTRY": 70, "ATR_STOP_MULT": 2.5, "TP2_R": 2.5},
-        "APTUSDT": {"RSI_MAX_ENTRY": 60, "ATR_STOP_MULT": 2.0, "TP2_R": 1.5},
-        "METUSDT": {"RSI_MAX_ENTRY": 60, "ATR_STOP_MULT": 2.5, "TP2_R": 3.0},
-        "YKBNK.IS": {"RSI_MAX_ENTRY": 70, "ATR_STOP_MULT": 1.5, "TP2_R": 1.5},
-        "SKYUSDT": {"RSI_MAX_ENTRY": 65, "ATR_STOP_MULT": 1.5, "TP2_R": 2.0},
-        "FUSDT": {"RSI_MAX_ENTRY": 70, "ATR_STOP_MULT": 1.5, "TP2_R": 3.0},
-        "ALARK.IS": {"RSI_MAX_ENTRY": 75, "ATR_STOP_MULT": 1.5, "TP2_R": 1.5},
-        "GUNUSDT": {"RSI_MAX_ENTRY": 70, "ATR_STOP_MULT": 2.0, "TP2_R": 3.0},
-        "TTKOM.IS": {"RSI_MAX_ENTRY": 55, "ATR_STOP_MULT": 1.5, "TP2_R": 1.5},
-    },
-
-    # ISTATISTIKSEL ANLAMLILIK KATEGORISI: istatistiksel_anlamlilik.py sonucu
-    # (20 Eylul 2026). GUCLU = p<0.05 (tesaduf olma ihtimali <%5), ORTA = p<0.15,
-    # BELIRSIZ = mevcut islem sayisiyla "gercek edge" kanitlanamadi (bu "zarar
-    # ediyor" demek DEGIL, sadece "henuz istatistiksel olarak kanitlanmadi" demek).
-    "ANLAMLILIK_KATEGORISI": {
-        "PAXGUSDT": "GUCLU",
-        "PHAUSDT": "ORTA",
-        "LOGO.IS": "VERI_YETERSIZ",
-        "EREGL.IS": "VERI_YETERSIZ",
-        "KAITOUSDT": "ORTA",
-        "PLUMEUSDT": "VERI_YETERSIZ",
-        "JSTUSDT": "ORTA",
-        "SARKY.IS": "VERI_YETERSIZ",
-        "KCHOL.IS": "VERI_YETERSIZ",
-        "ECILC.IS": "VERI_YETERSIZ",
-        "TUSDT": "ORTA",
-        "PETKM.IS": "VERI_YETERSIZ",
-        "CUSDT": "BELIRSIZ",
-        "MORPHOUSDT": "VERI_YETERSIZ",
-        "ALLOUSDT": "VERI_YETERSIZ",
-        "ETHFIUSDT": "VERI_YETERSIZ",
-        "RAYUSDT": "BELIRSIZ",
-        "ASTOR.IS": "VERI_YETERSIZ",
-        "TUPRS.IS": "VERI_YETERSIZ",
-        "SISE.IS": "VERI_YETERSIZ",
-        "NUGYO.IS": "VERI_YETERSIZ",
-        "IZMDC.IS": "VERI_YETERSIZ",
-        "ENKAI.IS": "VERI_YETERSIZ",
-        "DEXEUSDT": "BELIRSIZ",
-        "DOTUSDT": "BELIRSIZ",
-        "INDES.IS": "VERI_YETERSIZ",
-        "ZAMAUSDT": "BELIRSIZ",
-        "AGLDUSDT": "BELIRSIZ",
-        "EPICUSDT": "BELIRSIZ",
-        "MINAUSDT": "BELIRSIZ",
-        "SUSDT": "BELIRSIZ",
-        "NFPUSDT": "BELIRSIZ",
-        "ICBCT.IS": "VERI_YETERSIZ",
-        "YKBNK.IS": "VERI_YETERSIZ",
-        "PEPEUSDT": "BELIRSIZ",
-        "CHZUSDT": "BELIRSIZ",
-        "ENAUSDT": "BELIRSIZ",
-        "BERAUSDT": "BELIRSIZ",
-        "SOPHUSDT": "BELIRSIZ",
-        "HFTUSDT": "BELIRSIZ",
-        "AVAUSDT": "BELIRSIZ",
-        "METUSDT": "VERI_YETERSIZ",
-        "ALARK.IS": "VERI_YETERSIZ",
-        "ZILUSDT": "BELIRSIZ",
-        "TRXUSDT": "BELIRSIZ",
-        "NEARUSDT": "BELIRSIZ",
-        "FILUSDT": "BELIRSIZ",
-        "ZENUSDT": "BELIRSIZ",
-        "PROMUSDT": "BELIRSIZ",
-        "APTUSDT": "BELIRSIZ",
-        "ARBUSDT": "BELIRSIZ",
-        "XTZUSDT": "BELIRSIZ",
-        "NILUSDT": "BELIRSIZ",
-        "SKLUSDT": "BELIRSIZ",
-        "FUSDT": "VERI_YETERSIZ",
-        "SKYUSDT": "BELIRSIZ",
-        "ACEUSDT": "BELIRSIZ",
-        "CTSIUSDT": "BELIRSIZ",
-        "DASHUSDT": "BELIRSIZ",
-        "PYTHUSDT": "BELIRSIZ",
-        "JTOUSDT": "BELIRSIZ",
-        "SAGAUSDT": "BELIRSIZ",
-        "GUNUSDT": "BELIRSIZ",
-        "ZECUSDT": "BELIRSIZ",
-        "ALGOUSDT": "BELIRSIZ",
-        "XRPUSDT": "BELIRSIZ",
-        "AAVEUSDT": "BELIRSIZ",
-        "CAKEUSDT": "BELIRSIZ",
-        "TTKOM.IS": "VERI_YETERSIZ",
-    },
+    "BILDIR_KIRILIM": True,          # "kirilim oldu, retest bekleniyor" on uyarilari
+    "BILDIR_TRAIL_R": 0.5,           # TP1 sonrasi iz suren stop en az bu kadar R ilerlerse bildir
+    "GUNLUK_OZET_SAAT_UTC": 18,      # 21:00 Turkiye saati
+    "GECIKME_UYARI_SAAT": 3,         # olay bu kadar saatten eskiyse mesajda belirt
+    "BAYAT_SAAT": 12,                # bundan eski olaylar tek tek degil, tek ozet mesajinda gonderilir
 }
 
-HEADERS = {
-    "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 "
-                  "(KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36",
-    "Accept": "application/json",
-}
+TR = timezone(timedelta(hours=3))
+YON = {1: "LONG", -1: "SHORT"}
+TIP_ADI = {"GUCLU KIRILIM": "GÜÇLÜ KIRILIM", "KIRILIM": "KIRILIM", "RETEST": "RETEST", "TEYIT": "TEYİT"}
+NEDEN_ADI = {"STOP": "STOP", "STOP_TP1": "STOP (TP1 sonrası iz süren stop)", "TP2": "TP2 (final)",
+             "ZAMAN": "ZAMAN STOPU", "TREND": "TREND ÇIKIŞI"}
 
 
 # ------------------------------------------------------------------------------------
-# TELEGRAM
+# YARDIMCILAR
 # ------------------------------------------------------------------------------------
+def fmt(x: float) -> str:
+    """Fiyati okunur bicimde yaz (PEPE gibi kucuk fiyatlarda yeterli basamak)."""
+    if x is None or (isinstance(x, float) and math.isnan(x)):
+        return "-"
+    ax = abs(x)
+    if ax == 0:
+        return "0"
+    basamak = max(2, min(10, 4 - int(math.floor(math.log10(ax)))))
+    return f"{x:.{basamak}f}"
+
+
+def pct(a: float, b: float) -> str:
+    return f"%{(a / b - 1) * 100:+.2f}"
+
+
+def tr_saat(ts) -> str:
+    t = pd.Timestamp(ts)
+    if t.tzinfo is None:
+        t = t.tz_localize("UTC")
+    return t.tz_convert(TR).strftime("%d.%m %H:%M")
+
+
+def grafik_linki(sym: str) -> str:
+    return f"https://www.tradingview.com/chart/?symbol=BINANCE:{sym}&interval=240"
+
+
 def send_telegram(mesaj: str):
     token = os.environ.get("TELEGRAM_BOT_TOKEN")
     chat_id = os.environ.get("TELEGRAM_CHAT_ID")
+    print("-" * 60 + "\n" + mesaj)
     if not token or not chat_id:
-        print("UYARI: Telegram ortam degiskenleri yok, sadece konsola yaziliyor.")
         return
     url = f"https://api.telegram.org/bot{token}/sendMessage"
-    try:
-        resp = requests.post(url, data={"chat_id": chat_id, "text": mesaj}, timeout=15)
-        if not resp.ok:
-            print(f"Telegram gonderim hatasi: {resp.status_code} {resp.text}")
-    except Exception as exc:
-        print(f"Telegram gonderim hatasi: {exc}")
+    for parca in [mesaj[i:i + 3900] for i in range(0, len(mesaj), 3900)]:
+        for deneme in range(3):
+            try:
+                resp = requests.post(url, data={"chat_id": chat_id, "text": parca,
+                                                 "disable_web_page_preview": "true"}, timeout=15)
+                if resp.ok:
+                    break
+                print(f"Telegram gonderim hatasi: {resp.status_code} {resp.text}")
+                if resp.status_code == 429:
+                    time.sleep(3 + deneme * 3)
+            except Exception as exc:
+                print(f"Telegram gonderim hatasi: {exc}")
+                time.sleep(2)
+        time.sleep(0.4)
 
 
-def uyar(mesaj: str):
-    satir = f"[{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}] {mesaj}"
-    print(satir)
-    send_telegram(satir)
-
-
-# ------------------------------------------------------------------------------------
-# BINANCE: en yuksek hacimli N pariteyi bul
-# ------------------------------------------------------------------------------------
-def get_top_binance_symbols(n: int) -> list:
-    url = "https://data-api.binance.vision/api/v3/ticker/24hr"
-    try:
-        resp = requests.get(url, headers=HEADERS, timeout=20)
-        resp.raise_for_status()
-        data = resp.json()
-    except Exception as exc:
-        print(f"Binance hacim listesi alinamadi: {exc}. Sabit bir yedek liste kullanilacak.")
-        return ["BTCUSDT", "ETHUSDT", "BNBUSDT", "SOLUSDT", "XRPUSDT"]
-
-    haric = ("UP", "DOWN", "BULL", "BEAR")
-    stablecoin_ciftleri = (
-        "USDCUSDT", "FDUSDUSDT", "TUSDUSDT", "DAIUSDT", "RLUSDUSDT",
-        "USD1USDT", "USDPUSDT", "PYUSDUSDT", "EURUSDT", "GBPUSDT",
-    )
-    adaylar = [
-        d for d in data
-        if d["symbol"].endswith("USDT")
-        and not any(tag in d["symbol"] for tag in haric)
-        and d["symbol"] not in stablecoin_ciftleri
-        and not d["symbol"].startswith("U")  # UUSDT, USD1USDT gibi belirsiz/stabil coinlere karsi ekstra guvenlik
-    ]
-    adaylar.sort(key=lambda d: float(d["quoteVolume"]), reverse=True)
-    return [d["symbol"] for d in adaylar[:n]]
-
-
-def fetch_binance_klines(symbol: str, interval: str, limit: int) -> pd.DataFrame:
-    url = "https://data-api.binance.vision/api/v3/klines"
-    params = {"symbol": symbol, "interval": interval, "limit": limit}
-    resp = requests.get(url, params=params, headers=HEADERS, timeout=20)
-    resp.raise_for_status()
-    rows = resp.json()
-    cols = ["open_time", "open", "high", "low", "close", "volume", "close_time",
-            "qav", "trades", "taker_base", "taker_quote", "ignore"]
-    df = pd.DataFrame(rows, columns=cols)
-    df["open_time"] = pd.to_datetime(df["open_time"], unit="ms")
-    df["close_time"] = pd.to_datetime(df["close_time"], unit="ms")
-    for c in ["open", "high", "low", "close", "volume"]:
-        df[c] = df[c].astype(float)
-    return df[["open_time", "close_time", "open", "high", "low", "close", "volume"]]
-
-
-# ------------------------------------------------------------------------------------
-# YAHOO FINANCE: hisse verisi
-# ------------------------------------------------------------------------------------
-def fetch_yahoo_klines(symbol: str, interval: str, range_: str) -> pd.DataFrame:
-    url = f"https://query1.finance.yahoo.com/v8/finance/chart/{symbol}"
-    params = {"interval": interval, "range": range_}
-    resp = requests.get(url, params=params, headers=HEADERS, timeout=20)
-    resp.raise_for_status()
-    data = resp.json()
-
-    result = data.get("chart", {}).get("result")
-    if not result:
-        raise ValueError(f"{symbol} icin veri bulunamadi (Yahoo bos donus verdi).")
-
-    r = result[0]
-    timestamps = r.get("timestamp")
-    if not timestamps:
-        raise ValueError(f"{symbol} icin zaman serisi bos.")
-
-    quote = r["indicators"]["quote"][0]
-    df = pd.DataFrame({
-        "open_time": pd.to_datetime(timestamps, unit="s"),
-        "open": quote["open"],
-        "high": quote["high"],
-        "low": quote["low"],
-        "close": quote["close"],
-        "volume": quote["volume"],
-    })
-    df["close_time"] = df["open_time"]  # gunluk veride ayrim onemli degil
-    df = df.dropna(subset=["close"]).reset_index(drop=True)
-    return df[["open_time", "close_time", "open", "high", "low", "close", "volume"]]
-
-
-# ------------------------------------------------------------------------------------
-# INDIKATORLER (ortak)
-# ------------------------------------------------------------------------------------
-def add_indicators(df: pd.DataFrame, cfg: dict) -> pd.DataFrame:
-    df = df.copy()
-    ema_fast = df["close"].ewm(span=cfg["MACD_FAST"], adjust=False).mean()
-    ema_slow = df["close"].ewm(span=cfg["MACD_SLOW"], adjust=False).mean()
-    df["macd"] = ema_fast - ema_slow
-    df["macd_signal"] = df["macd"].ewm(span=cfg["MACD_SIGNAL"], adjust=False).mean()
-    df["macd_hist"] = df["macd"] - df["macd_signal"]
-
-    delta = df["close"].diff()
-    gain = delta.clip(lower=0)
-    loss = -delta.clip(upper=0)
-    avg_gain = gain.ewm(alpha=1 / cfg["RSI_PERIOD"], adjust=False).mean()
-    avg_loss = loss.ewm(alpha=1 / cfg["RSI_PERIOD"], adjust=False).mean()
-    rs = avg_gain / avg_loss.replace(0, np.nan)
-    df["rsi"] = 100 - (100 / (1 + rs))
-
-    df["resistance"] = df["high"].rolling(cfg["RESISTANCE_LOOKBACK"]).max().shift(1)
-    df["support"] = df["low"].rolling(cfg["SUPPORT_LOOKBACK"]).min().shift(1)
-
-    prev_close = df["close"].shift(1)
-    tr = pd.concat([
-        df["high"] - df["low"],
-        (df["high"] - prev_close).abs(),
-        (df["low"] - prev_close).abs(),
-    ], axis=1).max(axis=1)
-    df["atr"] = tr.rolling(cfg["ATR_PERIOD"]).mean().shift(1)
-
-    df["vol_avg"] = df["volume"].rolling(cfg["VOLUME_LOOKBACK"]).mean().shift(1)
-    df["trend_ema"] = df["close"].ewm(span=cfg["TREND_EMA_LEN"], adjust=False).mean()
-
-    # ---------------- SINYAL GUCU SKORU (0-100) ----------------
-    # Sabit sayilarla olcekleme yerine, her bileseni SON 100 BARIN kendi
-    # arasindaki goreceli konumuna gore (rolling min-max) 0-100'e yayariz.
-    # Boylece skor gercekten tum araligi kullanir, "hicbir zaman 75'i gecmiyor"
-    # gibi kalibrasyon sorunlari olusmaz.
-    pencere = 100
-    min_periods = 20
-
-    def _rolling_skor(seri):
-        roll_min = seri.rolling(pencere, min_periods=min_periods).min()
-        roll_max = seri.rolling(pencere, min_periods=min_periods).max()
-        span = (roll_max - roll_min).replace(0, np.nan)
-        skor = (seri - roll_min) / span * 100
-        return skor.clip(0, 100)
-
-    rsi_ters = cfg["RSI_MAX_ENTRY"] - df["rsi"]           # dusuk RSI = daha fazla "alan" = yuksek skor
-    vol_orani = df["volume"] / df["vol_avg"].replace(0, np.nan)
-    trend_mesafe = (df["close"] - df["trend_ema"]) / df["atr"].replace(0, np.nan)
-
-    rsi_skor = _rolling_skor(rsi_ters)
-    macd_skor = _rolling_skor(df["macd_hist"])
-    hacim_skor = _rolling_skor(vol_orani)
-    trend_skor = _rolling_skor(trend_mesafe)
-
-    df["sinyal_gucu"] = (rsi_skor * 0.25 + macd_skor * 0.30 + hacim_skor * 0.25 + trend_skor * 0.20).round(1)
-    df["sinyal_gucu"] = df["sinyal_gucu"].fillna(50.0)  # yeterli gecmis yoksa notr deger
-
-    return df
-
-
-# ------------------------------------------------------------------------------------
-# DURUM (her sembol icin ayri tutulur)
-# ------------------------------------------------------------------------------------
-def load_state(cfg: dict) -> dict:
+def load_state(cfg) -> dict:
     if os.path.exists(cfg["STATE_FILE"]):
         with open(cfg["STATE_FILE"], "r", encoding="utf-8") as f:
             return json.load(f)
-    return {"positions": {}}
+    return {}
 
 
-def save_state(state: dict, cfg: dict):
+def save_state(state: dict, cfg):
     with open(cfg["STATE_FILE"], "w", encoding="utf-8") as f:
-        json.dump(state, f, ensure_ascii=False, indent=2)
+        json.dump(state, f, ensure_ascii=False, indent=2, default=str)
 
 
 # ------------------------------------------------------------------------------------
-# YARDIMCI: kategori bazinda acik pozisyon sayisi
+# MESAJLAR
 # ------------------------------------------------------------------------------------
+def gecikme_notu(olay_zaman, cfg) -> str:
+    kapanis = pd.Timestamp(olay_zaman) + pd.Timedelta(hours=4)
+    simdi = pd.Timestamp.now(tz="UTC").tz_localize(None)
+    saat = (simdi - kapanis).total_seconds() / 3600
+    if saat >= cfg["GECIKME_UYARI_SAAT"]:
+        return f"\n⚠️ Bu sinyal {saat:.0f} saat önce kapanan mumda oluştu (GitHub gecikmesi). Fiyatı kontrol et."
+    return ""
 
-def acik_pozisyon_sayilari(state: dict) -> dict:
-    positions = state.get("positions", {})
-    sayilar = {"KRIPTO": 0, "ABD HISSE": 0, "BIST": 0, "TOPLAM": 0}
-    for label, pos in positions.items():
-        if pos is None:
+
+def mesaj_giris(sym, o: k.Olay, cfg) -> str:
+    v = o.veri
+    d = o.yon
+    r = v["risk"]
+    tp1_r = abs(v["tp1"] - v["giris"]) / r
+    tp2_r = abs(v["tp2"] - v["giris"]) / r
+    simge = "🟢" if d == 1 else "🔴"
+    return (
+        f"{simge} {YON[d]} GİRİŞ — {sym} (4s)\n"
+        f"Tip: {TIP_ADI.get(v['tip'], v['tip'])} | Kalite: {v['kalite']}\n"
+        f"Giriş: {fmt(v['giris'])}  (mum kapanışı {tr_saat(o.zaman + pd.Timedelta(hours=4))})\n"
+        f"Stop: {fmt(v['stop'])}  ({pct(v['stop'], v['giris'])})\n"
+        f"TP1: {fmt(v['tp1'])}  ({tp1_r:.1f}R, {v['tp1_kay']}) → pozisyonun %70'ini kapat\n"
+        f"TP2: {fmt(v['tp2'])}  ({tp2_r:.1f}R, {v['tp2_kay']}) → kalan %30\n"
+        f"Pozisyon büyüklüğü (hesabın %1'i riskte): sermayenin %{v['poz_pct']:.1f}\n"
+        f"TP1 sonrası stop giriş+0.1R'ye çekilir ve 2.5 ATR iz süren stopa geçer. "
+        f"20 mum (~3.3 gün) içinde TP1 gelmez ve kâr 0.5R'nin altındaysa çık.\n"
+        f"{grafik_linki(sym)}" + gecikme_notu(o.zaman, cfg)
+    )
+
+
+def mesaj_tp1(sym, o: k.Olay, cfg) -> str:
+    v = o.veri
+    return (f"🟠 TP1 — {sym} {YON[o.yon]}\n"
+            f"TP1 {fmt(v['fiyat'])} geldi: pozisyonun %70'ini kapat.\n"
+            f"Yeni stop: {fmt(v['yeni_stop'])} (giriş {fmt(v['giris'])} + 0.1R). Kalan için TP2: {fmt(v['tp2'])}"
+            + gecikme_notu(o.zaman, cfg))
+
+
+def mesaj_cikis(sym, o: k.Olay, cfg) -> str:
+    v = o.veri
+    r = v["sonuc_r"]
+    simge = "✅" if r > 0 else "❌"
+    fiyat_deg = (v["cikis"] / v["giris"] - 1) * 100 * o.yon
+    return (f"{simge} {YON[o.yon]} KAPANDI — {sym}: {NEDEN_ADI.get(v['neden'], v['neden'])}\n"
+            f"Çıkış: {fmt(v['cikis'])} | Giriş: {fmt(v['giris'])} ({tr_saat(v['giris_zaman'] + pd.Timedelta(hours=4))})\n"
+            f"Sonuç: {r:+.2f}R (komisyon dahil){' — TP1 alınmıştı' if v['tp1_done'] else ''} | "
+            f"son kısmın fiyat değişimi %{fiyat_deg:+.2f}"
+            + gecikme_notu(o.zaman, cfg))
+
+
+def mesaj_kirilim(sym, o: k.Olay) -> str:
+    v = o.veri
+    ne = "direnç" if o.yon == 1 else "destek"
+    return (f"🟡 {YON[o.yon]} KIRILIM — {sym}: {ne} {fmt(v['seviye'])} kırıldı (kalite {v['kalite']}).\n"
+            f"Hacim/mum gücü doğrudan giriş için yetmedi; retest veya teyit mumu bekleniyor (en fazla 6 mum). "
+            f"Giriş olursa ayrıca bildirilecek.")
+
+
+def mesaj_iptal(sym, o: k.Olay) -> str:
+    neden = "sahte kırılım (fiyat seviyenin gerisine döndü)" if o.tur == "SAHTE" else "6 mumda retest/teyit gelmedi"
+    return f"⚪ {sym} {YON[o.yon]} kırılım iptal: {neden}."
+
+
+def mesaj_trail(sym, acik: dict, eski_stop: float) -> str:
+    return (f"🔧 STOP GÜNCELLE — {sym} {YON[acik['yon']]}: iz süren stop {fmt(eski_stop)} → {fmt(acik['stop'])}. "
+            f"Anlık: {acik['anlik_r']:+.2f}R")
+
+
+# ------------------------------------------------------------------------------------
+# ESKI SISTEM POZISYONLARI (v6 oncesi acilmis) - kapanana kadar eski kurallarla takip
+# ------------------------------------------------------------------------------------
+def eski_pozisyonlari_yonet(state: dict, veriler: dict):
+    eski = state.get("eski_pozisyonlar") or {}
+    for label in list(eski.keys()):
+        pos = eski[label]
+        sym = label.split("] ")[-1]
+        df = veriler.get(sym)
+        if df is None and label.startswith("[KRIPTO]"):
+            try:
+                df = veri.mumlar(sym, "4h", pd.Timestamp(pos["entry_time"]) - pd.Timedelta(days=10))
+            except Exception as exc:
+                print(f"eski pozisyon verisi alinamadi {sym}: {exc}")
+                continue
+        if df is None or not label.startswith("[KRIPTO]"):
+            if not label.startswith("[KRIPTO]"):
+                send_telegram(f"ℹ️ [ESKİ SİSTEM] {label} artık takip edilmiyor (bot sadece kripto izliyor). "
+                              f"Stop {pos['stop']:.4f}, TP1 {pos['tp1_price']:.4f}, TP2 {pos['tp2_price']:.4f}.")
+                del eski[label]
             continue
-        sayilar["TOPLAM"] += 1
-        for kategori in ("KRIPTO", "ABD HISSE", "BIST"):
-            if label.startswith(f"[{kategori}]"):
-                sayilar[kategori] += 1
-    return sayilar
-
-
-def islem_logla(state: dict, label: str, sonuc: str, pnl_pct: float):
-    log = state.setdefault("trade_log", [])
-    log.append({
-        "zaman": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
-        "varlik": label,
-        "sonuc": sonuc,
-        "pnl_pct": round(pnl_pct, 2),
-    })
-    if len(log) > 500:   # dosya sonsuza kadar buyumesin
-        state["trade_log"] = log[-500:]
+        h, l, c = df["high"].to_numpy(float), df["low"].to_numpy(float), df["close"].to_numpy(float)
+        pc = np.concatenate([[np.nan], c[:-1]])
+        tr = np.fmax(h - l, np.fmax(np.abs(h - pc), np.abs(l - pc)))
+        atr = pd.Series(tr).rolling(14).mean().shift(1).to_numpy()
+        son = pd.Timestamp(pos.get("son_kontrol") or pos["entry_time"])
+        idx = np.where(df["open_time"] > son)[0]
+        kapandi = False
+        for i in idx:
+            row_t = df["open_time"].iloc[i]
+            if l[i] <= pos["stop"]:
+                pnl = (pos["stop"] / pos["entry"] - 1) * 100
+                send_telegram(f"[ESKİ SİSTEM] {label}: STOP ({fmt(pos['stop'])}). Giriş {fmt(pos['entry'])} | Sonuç %{pnl:+.2f}")
+                state.setdefault("trade_log", []).append({"zaman": str(row_t), "varlik": label, "sonuc": "STOP", "pnl_pct": round(pnl, 2), "sistem": "eski"})
+                kapandi = True
+                break
+            elif not pos["tp1_done"] and h[i] >= pos["tp1_price"]:
+                pos["tp1_done"] = True
+                pos["stop"] = pos["entry"]
+                send_telegram(f"[ESKİ SİSTEM] {label}: TP1 ({fmt(pos['tp1_price'])}). Stop girişe çekildi.")
+            elif h[i] >= pos["tp2_price"]:
+                pnl = (pos["tp2_price"] / pos["entry"] - 1) * 100
+                send_telegram(f"[ESKİ SİSTEM] {label}: TP2 final ({fmt(pos['tp2_price'])}). Sonuç %{pnl:+.2f}")
+                state.setdefault("trade_log", []).append({"zaman": str(row_t), "varlik": label, "sonuc": "TP2_FINAL", "pnl_pct": round(pnl, 2), "sistem": "eski"})
+                kapandi = True
+                break
+            elif pos["tp1_done"] and not math.isnan(atr[i]):
+                aday = c[i] - 2.5 * atr[i]
+                if aday > pos["stop"]:
+                    pos["stop"] = aday
+            pos["son_kontrol"] = str(row_t)
+        if kapandi:
+            del eski[label]
+    state["eski_pozisyonlar"] = eski
 
 
 # ------------------------------------------------------------------------------------
-# TEK SEMBOL KONTROLU
+# GECIS: eski state -> v6 state
 # ------------------------------------------------------------------------------------
-def check_symbol(symbol: str, kategori: str, df: pd.DataFrame, cfg: dict, state: dict):
-    # VARLIK BAZINDA PARAMETRE: bu sembol icin ozel ayarlar varsa genel ayarlarin
-    # uzerine yaz (RSI_MAX_ENTRY, ATR_STOP_MULT, TP2_R). Yoksa genel ayarlar kalir.
-    ozel_parametreler = cfg.get("VARLIK_PARAMETRELERI", {}).get(symbol)
-    if ozel_parametreler:
-        cfg = {**cfg, **ozel_parametreler}
+def gecis_yap(state: dict) -> dict:
+    if state.get("versiyon") == 6:
+        return state
+    eski_poz = {k_: v for k_, v in (state.get("positions") or {}).items() if v}
+    yeni = {
+        "versiyon": 6,
+        "gecis_zamani": datetime.now(timezone.utc).isoformat(timespec="seconds"),
+        "son_bar": {},
+        "bildirilen": [],
+        "son_stop_bildirimi": {},
+        "trade_log": state.get("trade_log", []),
+        "eski_pozisyonlar": eski_poz,
+        "son_ozet_gunu": None,
+    }
+    return yeni
 
-    label = f"[{kategori}] {symbol}"
-    now = pd.Timestamp.now()
-    if len(df) and df.iloc[-1]["close_time"] > now:
-        df = df.iloc[:-1]
 
-    if len(df) < max(cfg["MACD_SLOW"], cfg["RESISTANCE_LOOKBACK"], cfg["ATR_PERIOD"], cfg["TREND_EMA_LEN"]) + 5:
-        return
-
-    df = add_indicators(df, cfg)
-    row = df.iloc[-1]
-    positions = state.setdefault("positions", {})
-    position = positions.get(label)
-
-    # Giris mumunun KENDISINDE stop/TP kontrolu YAPILMAZ - kontrol bir sonraki
-    # mumdan itibaren baslar (aksi halde giris kapanistan hesaplanir ama ayni
-    # mumun dusugu zaten stop'un altinda olabilir, mantiksiz bir durum olusur).
-    giris_mumunda_miyiz = (position is not None
-                            and position.get("entry_time") == str(row["open_time"]))
-
-    if position is not None:
-        if giris_mumunda_miyiz:
-            pass  # bu mumda henuz kontrol yapma, bir sonraki calistirmada devam et
-
-        elif row["low"] <= position["stop"]:
-            pnl_pct = (position["stop"] / position["entry"] - 1) * 100
-            uyar(f"{label}: STOP-LOSS tetiklendi ({position['stop']:.4f}). "
-                 f"Giris: {position['entry']:.4f} | Sonuc: %{pnl_pct:.2f}")
-            islem_logla(state, label, "STOP", pnl_pct)
-            positions[label] = None
-            state.setdefault("son_stop", {})[label] = str(row["open_time"])
-
-        elif (not position["tp1_done"]) and row["high"] >= position["tp1_price"]:
-            uyar(f"{label}: TP1 tetiklendi ({position['tp1_price']:.4f}). "
-                 f"Stop basabasa cekildi, trailing stop devreye girdi.")
-            position["tp1_done"] = True
-            position["stop"] = position["entry"]
-            positions[label] = position
-
-        elif row["high"] >= position["tp2_price"]:
-            pnl_pct = (position["tp2_price"] / position["entry"] - 1) * 100
-            uyar(f"{label}: TP2 (final) tetiklendi ({position['tp2_price']:.4f}). "
-                 f"Sonuc: %{pnl_pct:.2f}")
-            islem_logla(state, label, "TP2_FINAL", pnl_pct)
-            positions[label] = None
-
-        else:
-            # TRAILING STOP: TP1 sonrasi, ATR bazli olarak stop'u yukari cek (sadece kilitler)
-            if position["tp1_done"] and cfg["USE_TRAILING_STOP"] and pd.notna(row["atr"]):
-                trail_candidate = row["close"] - cfg["TRAIL_ATR_MULT"] * row["atr"]
-                if trail_candidate > position["stop"]:
-                    position["stop"] = trail_candidate
-                    positions[label] = position
-
+# ------------------------------------------------------------------------------------
+# GUNLUK OZET
+# ------------------------------------------------------------------------------------
+def gunluk_ozet(state, sonuclar, btc_bilgi) -> str:
+    satir = [f"📊 GÜNLÜK ÖZET — {datetime.now(TR).strftime('%d.%m.%Y %H:%M')}"]
+    satir.append(btc_bilgi)
+    acik = [(s, r.acik) for s, r in sonuclar.items() if r.acik]
+    if acik:
+        satir.append(f"\nAçık pozisyonlar ({len(acik)}):")
+        for s, a in sorted(acik, key=lambda x: -x[1]["anlik_r"]):
+            satir.append(f"• {s} {YON[a['yon']]} giriş {fmt(a['giris'])} | stop {fmt(a['stop'])}"
+                         f"{' (TP1 alındı)' if a['tp1_done'] else ' | TP1 ' + fmt(a['tp1'])} | TP2 {fmt(a['tp2'])} | "
+                         f"anlık {a['anlik_r']:+.2f}R")
     else:
-        # KORELASYON KONTROLU: kategori ve toplam limitlerini asiyorsak yeni giris ACMA
-        sayilar = acik_pozisyon_sayilari(state)
-        kategori_limit = cfg["MAX_CONCURRENT_PER_KATEGORI"].get(kategori, 999)
-        if sayilar["TOPLAM"] >= cfg["MAX_CONCURRENT_TOTAL"] or sayilar[kategori] >= kategori_limit:
-            return
+        satir.append("\nAçık pozisyon yok.")
+    bek = [(s, r.bekleyen) for s, r in sonuclar.items() if r.bekleyen]
+    if bek:
+        satir.append("Retest bekleyen kırılımlar: " + ", ".join(f"{s} {YON[b['yon']]} @ {fmt(b['seviye'])}" for s, b in bek))
+    hazir_l = [s for s, r in sonuclar.items() if r.filtre.get("long_hazir") and not r.acik]
+    hazir_s = [s for s, r in sonuclar.items() if r.filtre.get("short_hazir") and not r.acik]
+    satir.append(f"Elekleri geçmiş, kırılım bekleyen: LONG {len(hazir_l)} | SHORT {len(hazir_s)}")
 
-        # COOLDOWN KONTROLU: bu varlik yakin zamanda stop olduysa, belirli bir
-        # mum sayisi gecmeden tekrar giris yapma (art arda whipsaw'i onler).
-        son_stop_zamani = state.get("son_stop", {}).get(label)
-        if son_stop_zamani is not None:
-            interval_td = (pd.Timedelta(hours=4) if kategori == "KRIPTO"
-                            else pd.Timedelta(days=1))
-            cooldown_td = interval_td * cfg["COOLDOWN_BARS_AFTER_STOP"]
-            if row["open_time"] - pd.Timestamp(son_stop_zamani) < cooldown_td:
-                return  # cooldown suresi dolmadi, bu turda giris denenmez
-
-        breakout = pd.notna(row["resistance"]) and row["close"] > row["resistance"]
-        macd_bullish = (row["macd_hist"] > 0) and (row["macd"] > row["macd_signal"])
-        rsi_ok = pd.notna(row["rsi"]) and row["rsi"] < cfg["RSI_MAX_ENTRY"]
-        atr_ok = (not cfg["USE_ATR_STOP"]) or pd.notna(row["atr"])
-        support_ok = cfg["USE_ATR_STOP"] or pd.notna(row["support"])
-
-        if cfg["USE_VOLUME_FILTER"] and pd.notna(row["vol_avg"]):
-            volume_ok = row["volume"] > row["vol_avg"] * cfg["VOLUME_MULT"]
-        else:
-            volume_ok = not cfg["USE_VOLUME_FILTER"]
-
-        if cfg["USE_TREND_FILTER"] and pd.notna(row["trend_ema"]):
-            trend_ok = row["close"] > row["trend_ema"]
-        else:
-            trend_ok = not cfg["USE_TREND_FILTER"]
-
-        if cfg["USE_EXTENDED_CANDLE_FILTER"] and pd.notna(row["atr"]) and row["atr"] > 0:
-            candle_range = row["high"] - row["low"]
-            asiri_mum_degil = candle_range <= cfg["MAX_CANDLE_RANGE_ATR"] * row["atr"]
-        else:
-            asiri_mum_degil = True
-
-        if (breakout and macd_bullish and rsi_ok and atr_ok and support_ok
-                and volume_ok and trend_ok and asiri_mum_degil):
-            entry = row["close"]
-            stop = entry - cfg["ATR_STOP_MULT"] * row["atr"] if cfg["USE_ATR_STOP"] else row["support"]
-            risk = entry - stop
-            if risk > 0:
-                tp2_r_etkin = max(cfg["TP2_R"], cfg["TP1_R"] + 0.5)  # TP2 her zaman TP1'den >=0.5R yukarida
-                new_position = {
-                    "entry_time": str(row["open_time"]),
-                    "entry": entry,
-                    "stop": stop,
-                    "tp1_price": entry + cfg["TP1_R"] * risk,
-                    "tp2_price": entry + tp2_r_etkin * risk,
-                    "tp1_done": False,
-                }
-                positions[label] = new_position
-
-                istat = cfg["BACKTEST_ISTATISTIK"].get(symbol)
-                istat_metni = (f" | Gecmis backtest: %{istat[0]:.0f} kazanma, %{istat[1]:.1f} getiri"
-                                if istat else " | Gecmis backtest verisi yok (dogrulanmamis)")
-                guc_skoru = row["sinyal_gucu"]
-                anlamlilik = cfg["ANLAMLILIK_KATEGORISI"].get(symbol, "BELIRSIZ")
-                anlamlilik_aciklama = {
-                    "GUCLU": "GUCLU (istatistiksel olarak kanitlanmis edge, exact binom testi ile)",
-                    "ORTA": "ORTA (zayif ama var olan bir egilim)",
-                    "BELIRSIZ": "BELIRSIZ (yeterli islem var ama tesaduften ayirt edilemiyor)",
-                    "VERI_YETERSIZ": "VERI YETERSIZ (<15 islem - hicbir sonuca varilamaz, cok dikkatli ol)",
-                }.get(anlamlilik, "BELIRSIZ")
-                uyar(f"{label}: GIRIS SINYALI (LONG). Fiyat {entry:.4f}'te direnci kirdi. "
-                     f"Guvenilirlik: {anlamlilik_aciklama} | "
-                     f"Sinyal gucu: {guc_skoru}/100 | "
-                     f"Stop: {stop:.4f} | TP1: {new_position['tp1_price']:.4f} | "
-                     f"TP2: {new_position['tp2_price']:.4f}{istat_metni}")
+    # son 30 gun v6 istatistigi (bildirilen kapanislardan)
+    log = [t for t in state.get("trade_log", []) if t.get("sistem") == "v6"]
+    simdi = pd.Timestamp.now(tz="UTC").tz_localize(None)
+    son30 = [t for t in log if pd.Timestamp(t["zaman"]) >= simdi - pd.Timedelta(days=30)]
+    if son30:
+        rr = [t["sonuc_r"] for t in son30]
+        satir.append(f"Son 30 gün (canlı): {len(rr)} işlem | isabet %{100 * sum(x > 0 for x in rr) / len(rr):.0f} | "
+                     f"toplam {sum(rr):+.2f}R")
+    return "\n".join(satir)
 
 
 # ------------------------------------------------------------------------------------
@@ -688,43 +306,144 @@ def check_symbol(symbol: str, kategori: str, df: pd.DataFrame, cfg: dict, state:
 # ------------------------------------------------------------------------------------
 def main():
     cfg = CONFIG
-    state = load_state(cfg)
-    taranan = 0
-    hatali = 0
+    state = gecis_yap(load_state(cfg))
+    ilk_calisma = not state["son_bar"]
 
-    # --- KRIPTO (dogrulanmis sabit liste) ---
-    crypto_symbols = cfg["CRYPTO_SYMBOLS"]
-    print(f"{len(crypto_symbols)} kripto parite taranacak: {crypto_symbols}")
-    for symbol in crypto_symbols:
+    print("BTC verisi aliniyor...", flush=True)
+    btc_d = veri.mumlar_onbellekli("BTCUSDT", "1d", cfg["VERI_BAS_1D"])
+    btc_4h = veri.mumlar_onbellekli("BTCUSDT", "4h", cfg["VERI_BAS_4H"])
+    if len(btc_4h) < 200 or len(btc_d) < 250:
+        raise RuntimeError("BTC verisi yetersiz, calistirma iptal (yanlis sinyal riskine karsi).")
+
+    sonuclar: dict[str, k.Sonuc] = {}
+    veriler: dict[str, pd.DataFrame] = {}
+    mesajlar: list[tuple[pd.Timestamp, str]] = []
+    bildirilen_liste = list(state.get("bildirilen", []))
+    bildirilen = set(bildirilen_liste)
+    hatali = []
+
+    for sym in cfg["COINLER"]:
         try:
-            df = fetch_binance_klines(symbol, cfg["CRYPTO_INTERVAL"], cfg["CRYPTO_CANDLE_LIMIT"])
-            check_symbol(symbol, "KRIPTO", df, cfg, state)
-            taranan += 1
+            df = btc_4h if sym == "BTCUSDT" else veri.mumlar_onbellekli(sym, "4h", cfg["VERI_BAS_4H"])
+            gd = btc_d if sym == "BTCUSDT" else None   # coin gunlugu sadece "Coin > EMA200" ayarinda gerekir
+            if k.PARAMS["long_sart"] in ("Coin > EMA200", "BTC ve coin > EMA200") and sym != "BTCUSDT":
+                gd = veri.mumlar_onbellekli(sym, "1d", cfg["VERI_BAS_1D"])
+            veriler[sym] = df
+            if len(df) < 120:
+                print(f"{sym}: yetersiz veri ({len(df)} mum), atlandi")
+                continue
+            r = k.simule_et(sym, df, gd, btc_d, btc_4h)
+            sonuclar[sym] = r
         except Exception as exc:
-            print(f"{symbol} taranirken hata: {exc}")
-            hatali += 1
-        time.sleep(cfg["REQUEST_DELAY"])
+            print(f"{sym} hata: {exc}", flush=True)
+            hatali.append(sym)
+            continue
+        finally:
+            time.sleep(cfg["ISTEK_BEKLEME"])
 
-    # --- HISSELER (ABD + BIST) ---
-    tum_hisseler = [(s, "ABD HISSE") for s in cfg["US_STOCKS"]] + \
-                   [(s, "BIST") for s in cfg["BIST_STOCKS"]]
-    print(f"{len(tum_hisseler)} hisse taranacak.")
-    for symbol, kategori in tum_hisseler:
-        try:
-            df = fetch_yahoo_klines(symbol, cfg["STOCK_INTERVAL"], cfg["STOCK_RANGE"])
-            check_symbol(symbol, kategori, df, cfg, state)
-            taranan += 1
-        except Exception as exc:
-            print(f"{symbol} taranirken hata: {exc}")
-            hatali += 1
-        time.sleep(cfg["REQUEST_DELAY"])
+        son_bar_onceki = state["son_bar"].get(sym)
+        if son_bar_onceki is not None:
+            esik = pd.Timestamp(son_bar_onceki)
+            for o in r.olaylar:
+                if o.zaman <= esik:
+                    continue
+                anahtar = f"{sym}|{o.tur}|{o.yon}|{o.zaman}"
+                if anahtar in bildirilen:
+                    continue
+                metin = None
+                if o.tur == "GIRIS":
+                    metin = mesaj_giris(sym, o, cfg)
+                elif o.tur == "TP1":
+                    metin = mesaj_tp1(sym, o, cfg)
+                    state["son_stop_bildirimi"][sym] = o.veri["yeni_stop"]
+                elif o.tur == "CIKIS":
+                    metin = mesaj_cikis(sym, o, cfg)
+                    state.setdefault("trade_log", []).append({
+                        "zaman": str(o.zaman), "varlik": sym, "yon": YON[o.yon], "sonuc": o.veri["neden"],
+                        "sonuc_r": round(float(o.veri["sonuc_r"]), 3), "sistem": "v6"})
+                    state["son_stop_bildirimi"].pop(sym, None)
+                elif o.tur == "KIRILIM" and cfg["BILDIR_KIRILIM"]:
+                    metin = mesaj_kirilim(sym, o)
+                elif o.tur in ("SAHTE", "ZAMAN_ASIMI") and cfg["BILDIR_KIRILIM"]:
+                    metin = mesaj_iptal(sym, o)
+                if metin:
+                    mesajlar.append((o.zaman, metin))
+                    bildirilen.add(anahtar)
+                    bildirilen_liste.append(anahtar)
 
+            # TP1 sonrasi iz suren stop belirgin ilerlediyse bildir
+            a = r.acik
+            if a and a["tp1_done"]:
+                onceki = state["son_stop_bildirimi"].get(sym)
+                if onceki is not None and a["yon"] * (a["stop"] - onceki) >= cfg["BILDIR_TRAIL_R"] * a["risk"]:
+                    mesajlar.append((r.son_bar, mesaj_trail(sym, a, onceki)))
+                    state["son_stop_bildirimi"][sym] = a["stop"]
+                elif onceki is None:
+                    state["son_stop_bildirimi"][sym] = a["stop"]
+        if r.son_bar is not None:
+            state["son_bar"][sym] = str(r.son_bar)
+
+    simdi_utc = pd.Timestamp.now(tz="UTC").tz_localize(None)
+    bayat_sinir = simdi_utc - pd.Timedelta(hours=cfg["BAYAT_SAAT"] + 4)
+    taze = [m for m in mesajlar if m[0] >= bayat_sinir]
+    bayat = [m for m in mesajlar if m[0] < bayat_sinir and not m[1].startswith(("🟡", "⚪", "🔧"))]
+    if bayat:
+        satirlar = [f"⏪ Bot bir süre çalışamadı; kaçırılan {len(bayat)} olay (sadece bilgi, işlem için geç):"]
+        for t, metin in sorted(bayat, key=lambda x: x[0]):
+            satirlar.append(f"• {tr_saat(t + pd.Timedelta(hours=4))} — " + metin.split("\n")[0])
+        satirlar.append("Güncel açık pozisyonlar akşam özetinde; acil bakmak için TradingView grafiğini aç.")
+        send_telegram("\n".join(satirlar))
+    for _, metin in sorted(taze, key=lambda x: x[0]):
+        send_telegram(metin)
+
+    # BTC durumu
+    btc_c = btc_d["close"].to_numpy(float)
+    e200 = k.ema(btc_c, 200)[-1]
+    e50 = k.ema(btc_c, 50)[-1]
+    btc_bilgi = (f"BTC (günlük kapanış {fmt(btc_c[-1])}): EMA50 {'üstünde' if btc_c[-1] > e50 else 'altında'}, "
+                 f"EMA200 {'üstünde → long açık' if btc_c[-1] > e200 else 'altında → yeni long yok, sadece short'}")
+
+    if ilk_calisma:
+        acik = [(s, r.acik) for s, r in sonuclar.items() if r.acik]
+        satir = ["🔄 Bot Kirilim69 PRO v6'ya güncellendi (TradingView göstergesiyle aynı mantık).",
+                 f"İzlenen: {len(sonuclar)} coin, 4 saatlik, long + short. BIST takibi kapatıldı (v6 sadece kriptoda test edildi).",
+                 btc_bilgi]
+        if acik:
+            satir.append("\nv6'ya göre şu an açık pozisyonlar (bilgi için, giriş zamanı geçmiş olabilir):")
+            for s, a in acik:
+                satir.append(f"• {s} {YON[a['yon']]} giriş {fmt(a['giris'])} ({tr_saat(pd.Timestamp(a['zaman']) + pd.Timedelta(hours=4))}) | "
+                             f"stop {fmt(a['stop'])} | TP1 {fmt(a['tp1'])}{' ✓' if a['tp1_done'] else ''} | TP2 {fmt(a['tp2'])} | "
+                             f"anlık {a['anlik_r']:+.2f}R")
+        eski = state.get("eski_pozisyonlar") or {}
+        if eski:
+            satir.append(f"\nEski sistemden açık {len(eski)} pozisyon kapanana kadar eski kurallarla takip edilecek "
+                         f"([ESKİ SİSTEM] etiketiyle): " + ", ".join(x.split('] ')[-1] for x in eski))
+        satir.append("\nBundan sonra yeni giriş, TP1, stop ve çıkış sinyalleri tek tek gelecek; her akşam 21:00'de özet.")
+        send_telegram("\n".join(satir))
+
+    eski_pozisyonlari_yonet(state, veriler)
+
+    # gunluk ozet
+    simdi = datetime.now(timezone.utc)
+    bugun = simdi.astimezone(TR).strftime("%Y-%m-%d")
+    ozet_zorla = os.environ.get("OZET_ZORLA") == "true"
+    if ozet_zorla or (simdi.hour >= cfg["GUNLUK_OZET_SAAT_UTC"] and state.get("son_ozet_gunu") != bugun and not ilk_calisma):
+        send_telegram(gunluk_ozet(state, sonuclar, btc_bilgi))
+        state["son_ozet_gunu"] = bugun
+
+    if len(hatali) > len(cfg["COINLER"]) // 2:
+        send_telegram(f"⚠️ Bot uyarısı: {len(hatali)} coinin verisi alınamadı ({', '.join(hatali[:8])}...). "
+                      f"Binance erişim sorunu olabilir; sonraki çalıştırmada tekrar denenecek.")
+
+    state["bildirilen"] = bildirilen_liste[-3000:]
+    state["trade_log"] = state.get("trade_log", [])[-1000:]
+    state["son_calisma"] = simdi.isoformat(timespec="seconds")
     save_state(state, cfg)
-    print(f"\nTarama tamamlandi. Basarili: {taranan} | Hatali: {hatali}")
+    print(f"\nTarama tamamlandi. Basarili: {len(sonuclar)} | Hatali: {len(hatali)} | Gonderilen mesaj: {len(mesajlar)}")
 
 
 if __name__ == "__main__":
     if os.environ.get("TEST_MODE") == "true":
-        uyar("Genel izleme botu: bu bir TEST mesajidir. Telegram baglantisi calisiyor.")
+        send_telegram("Kirilim69 PRO v6 botu: bu bir TEST mesajıdır. Telegram bağlantısı çalışıyor.")
         sys.exit(0)
     main()
