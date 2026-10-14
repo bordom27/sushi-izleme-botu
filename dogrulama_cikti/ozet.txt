@@ -1,0 +1,12 @@
+46 coin icin veri cekiliyor...
+Traceback (most recent call last):
+  File "/home/runner/work/sushi-izleme-botu/sushi-izleme-botu/v6_backtest.py", line 153, in <module>
+    sys.exit(main())
+             ^^^^^^
+  File "/home/runner/work/sushi-izleme-botu/sushi-izleme-botu/v6_backtest.py", line 102, in main
+    data, btc_d, btc_4h = veri_topla(semboller)
+                          ^^^^^^^^^^^^^^^^^^^^^
+  File "/home/runner/work/sushi-izleme-botu/sushi-izleme-botu/v6_backtest.py", line 34, in veri_topla
+    btc_d = veri.mumlar_onbellekli("BTCUSDT", "1d", VERI_BAS_1D)
+            ^^^^^^^^^^^^^^^^^^^^^^
+AttributeError: module 'veri' has no attribute 'mumlar_onbellekli'
