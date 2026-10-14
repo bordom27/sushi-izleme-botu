@@ -1,12 +1,52 @@
 46 coin icin veri cekiliyor...
-Traceback (most recent call last):
-  File "/home/runner/work/sushi-izleme-botu/sushi-izleme-botu/v6_backtest.py", line 153, in <module>
-    sys.exit(main())
-             ^^^^^^
-  File "/home/runner/work/sushi-izleme-botu/sushi-izleme-botu/v6_backtest.py", line 102, in main
-    data, btc_d, btc_4h = veri_topla(semboller)
-                          ^^^^^^^^^^^^^^^^^^^^^
-  File "/home/runner/work/sushi-izleme-botu/sushi-izleme-botu/v6_backtest.py", line 34, in veri_topla
-    btc_d = veri.mumlar_onbellekli("BTCUSDT", "1d", VERI_BAS_1D)
-            ^^^^^^^^^^^^^^^^^^^^^^
-AttributeError: module 'veri' has no attribute 'mumlar_onbellekli'
+OOS BTC>EMA200 (TV: 179 islem, %63.7, +18.26R, long -0.4R): 179 islem | isabet %63.7 (114/179) | toplam +18.24R | islem basi +0.102R | PF 1.28 | maxDD 13.5R | Long 43 (-0.41R) | Short 136 (+18.65R)
+            n  kaz     R
+symbol                  
+AAVEUSDT    2    1  0.14
+ACEUSDT     2    0 -2.08
+ADAUSDT     8    5  1.33
+ALGOUSDT    4    4  2.52
+APTUSDT     2    2  1.62
+ARBUSDT     5    3  0.58
+ATOMUSDT    5    4  3.43
+AVAXUSDT    6    4  0.86
+BNBUSDT     4    3  0.37
+BTCUSDT     4    3  0.79
+CRVUSDT     6    5  1.89
+DEXEUSDT    2    1 -0.47
+DOGEUSDT    5    3 -0.28
+DOTUSDT     2    2  1.58
+ENAUSDT     4    2 -0.40
+ETCUSDT     2    0 -2.09
+ETHUSDT     6    3 -0.28
+FETUSDT     3    3  1.57
+FILUSDT     2    1 -0.28
+HBARUSDT    5    2 -1.09
+ICPUSDT     1    0 -1.04
+INJUSDT     5    5  4.82
+JSTUSDT     2    2  0.72
+JTOUSDT     2    2  1.42
+LINKUSDT    8    4 -2.55
+LTCUSDT     3    1 -1.38
+NEARUSDT    1    1  0.69
+OPUSDT      4    3  0.50
+PAXGUSDT    1    1  0.31
+PEPEUSDT    3    2  0.78
+PLUMEUSDT   1    0 -1.02
+POLUSDT     4    2 -0.70
+RENDERUSDT  8    3 -2.96
+RUNEUSDT    4    3  1.50
+SEIUSDT     8    5  2.25
+SOLUSDT     1    0 -0.76
+SUIUSDT     4    2 -0.62
+SUSHIUSDT   5    3 -0.03
+TIAUSDT     5    4  1.32
+TRXUSDT     4    4  3.59
+UNIUSDT     9    5  0.42
+VETUSDT     4    3  1.06
+WIFUSDT     4    2 -0.72
+XLMUSDT     4    2 -0.10
+ZILUSDT     5    4  1.05
+OOS filtresiz (TV: 209 islem, %63.6, +17.0R, long -1.59R / short +18.65R): 209 islem | isabet %63.6 (133/209) | toplam +16.93R | islem basi +0.081R | PF 1.22 | maxDD 14.3R | Long 73 (-1.72R) | Short 136 (+18.65R)
+IS filtresiz (TV: 170 islem, %70.6, +34.8R): 159 islem | isabet %71.1 (113/159) | toplam +32.95R | islem basi +0.207R | PF 1.75 | maxDD 8.0R | Long 100 (+11.60R) | Short 59 (+21.36R)
+IS filtresiz, veri 2024-07'den: 127 islem | isabet %70.1 (89/127) | toplam +27.94R | islem basi +0.220R | PF 1.86 | maxDD 8.0R | Long 83 (+5.50R) | Short 44 (+22.44R)
