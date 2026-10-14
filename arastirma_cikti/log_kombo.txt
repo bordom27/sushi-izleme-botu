@@ -1,0 +1,13 @@
+TEMEL
+C1 kirilim kapanisi
+C2 C1+zaman30
+C3 C2+trail3
+C4 C3+tp1%80
+C5 C1+zamanyok
+C6 C2+tp1 1.0R
+C7 C2 sadece short
+C8 C2+direnc120
+C9 C2+engel0.8
+C10 C2+adx30
+C11 C2+long coin>200
+C12 C2+trail3+tp1 1.0R
