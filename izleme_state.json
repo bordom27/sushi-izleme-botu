@@ -3,14 +3,7 @@
     "[KRIPTO] CHZUSDT": null,
     "[KRIPTO] PYTHUSDT": null,
     "[KRIPTO] PLUMEUSDT": null,
-    "[BIST] LOGO.IS": {
-      "entry_time": "2026-09-22 06:30:00",
-      "entry": 145.89999389648438,
-      "stop": 134.1428506033761,
-      "tp1_price": 163.5357088361468,
-      "tp2_price": 169.41428048270092,
-      "tp1_done": false
-    },
+    "[BIST] LOGO.IS": null,
     "[KRIPTO] KAITOUSDT": null,
     "[KRIPTO] DEXEUSDT": null,
     "[KRIPTO] ARBUSDT": null,
@@ -374,6 +367,12 @@
       "varlik": "[KRIPTO] ZILUSDT",
       "sonuc": "STOP",
       "pnl_pct": -4.61
+    },
+    {
+      "zaman": "2026-10-14 09:21:33",
+      "varlik": "[BIST] LOGO.IS",
+      "sonuc": "STOP",
+      "pnl_pct": -8.06
     }
   ],
   "son_stop": {
@@ -408,6 +407,7 @@
     "[KRIPTO] AAVEUSDT": "2026-10-12 12:00:00",
     "[KRIPTO] JTOUSDT": "2026-10-12 16:00:00",
     "[KRIPTO] DOTUSDT": "2026-10-12 16:00:00",
-    "[KRIPTO] ZILUSDT": "2026-10-13 00:00:00"
+    "[KRIPTO] ZILUSDT": "2026-10-13 00:00:00",
+    "[BIST] LOGO.IS": "2026-10-14 06:30:00"
   }
 }
