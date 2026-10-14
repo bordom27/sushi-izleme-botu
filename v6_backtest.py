@@ -104,23 +104,23 @@ def main():
     satirlar = []
     if args.dogrulama:
         senaryolar = [
-            ("OOS BTC>EMA200 (TV: 179 islem, %63.7, +18.26R, long -0.4R)", {}, "2025-07-01", None),
+            ("OOS BTC>EMA200 (TV: 179 islem, %63.7, +18.26R, long -0.4R)", {"entry_mode": "Hibrit"}, "2025-07-01", None),
             ("OOS filtresiz (TV: 209 islem, %63.6, +17.0R, long -1.59R / short +18.65R)",
-             {"long_sart": "Kapali"}, "2025-07-01", None),
-            ("IS filtresiz (TV: 170 islem, %70.6, +34.8R)", {"long_sart": "Kapali"}, "2024-01-01", "2025-06-30 23:59"),
+             {"long_sart": "Kapali", "entry_mode": "Hibrit"}, "2025-07-01", None),
+            ("IS filtresiz (TV: 170 islem, %70.6, +34.8R)", {"long_sart": "Kapali", "entry_mode": "Hibrit"}, "2024-01-01", "2025-06-30 23:59"),
         ]
         for ad, prm, bas, bit in senaryolar:
             tr = calistir(data, btc_d, btc_4h, prm, bas, bit)
             satirlar.append(ozet(tr, ad))
             print(satirlar[-1], flush=True)
-            if bas == "2025-07-01" and not prm:
+            if bas == "2025-07-01" and prm == {"entry_mode": "Hibrit"}:
                 tr.to_csv("v6_dogrulama_oos.csv", index=False)
                 g = tr.groupby("symbol").agg(n=("sonuc_r", "size"), kaz=("sonuc_r", lambda x: int((x > 0).sum())),
                                              R=("sonuc_r", "sum")).round(2)
                 print(g.to_string(), flush=True)
         # IS: TradingView'in yukledigi veri ~5000 mumla sinirli olabilir -> farkli veri baslangiciyla da bak
         data2 = {s: (df[df["open_time"] >= "2024-07-01"].reset_index(drop=True), gd) for s, (df, gd) in data.items()}
-        tr = calistir(data2, btc_d, btc_4h, {"long_sart": "Kapali"}, "2024-01-01", "2025-06-30 23:59")
+        tr = calistir(data2, btc_d, btc_4h, {"long_sart": "Kapali", "entry_mode": "Hibrit"}, "2024-01-01", "2025-06-30 23:59")
         satirlar.append(ozet(tr, "IS filtresiz, veri 2024-07'den"))
         print(satirlar[-1], flush=True)
         return
