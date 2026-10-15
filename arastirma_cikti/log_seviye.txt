@@ -1,0 +1,9 @@
+v6.2 TEMEL (fitil, 80 mum)
+govde kapanisi seviyesi
+en az 2 kez test edilmis
+en az 3 kez test edilmis
+en az 2 test, tolerans 0.3 ATR
+govde + en az 2 test
+gunluk 20 gun seviyesi
+gunluk 30 gun seviyesi
+gunluk 14 gun seviyesi
