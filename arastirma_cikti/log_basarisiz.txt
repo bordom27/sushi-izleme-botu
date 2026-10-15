@@ -1,0 +1,10 @@
+v6.1 TEMEL
+basarisiz kirilim cikisi: 3 mum, seviye-0.0 ATR
+basarisiz kirilim cikisi: 3 mum, seviye-0.3 ATR
+basarisiz kirilim cikisi: 3 mum, seviye-0.6 ATR
+basarisiz kirilim cikisi: 6 mum, seviye-0.0 ATR
+basarisiz kirilim cikisi: 6 mum, seviye-0.3 ATR
+basarisiz kirilim cikisi: 6 mum, seviye-0.6 ATR
+basarisiz kirilim cikisi: TP1e kadar mum, seviye-0.0 ATR
+basarisiz kirilim cikisi: TP1e kadar mum, seviye-0.3 ATR
+basarisiz kirilim cikisi: TP1e kadar mum, seviye-0.6 ATR
