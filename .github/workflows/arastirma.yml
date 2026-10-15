@@ -16,13 +16,13 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        mod: [seviye]
+        mod: [dogruluk]
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
         with:
           python-version: "3.11"
-      - run: pip install -r requirements.txt
+      - run: pip install -r requirements.txt scikit-learn
       - uses: actions/cache@v4
         with:
           path: .veri_cache
@@ -35,7 +35,7 @@ jobs:
             arastirma-kovalama-
             arastirma-limit-
             arastirma-profesyonel-
-      - run: python $( [ "${{ matrix.mod }}" = ozellik ] && echo ozellik.py || echo "arastirma.py ${{ matrix.mod }}" ) 2>&1 | grep -v " mum (" | tee log_${{ matrix.mod }}.txt
+      - run: python $( case "${{ matrix.mod }}" in ozellik) echo ozellik.py;; dogruluk) echo dogruluk.py;; *) echo "arastirma.py ${{ matrix.mod }}";; esac ) 2>&1 | grep -v " mum (" | tee log_${{ matrix.mod }}.txt
       - run: |
           mkdir -p arastirma_cikti && mv log_${{ matrix.mod }}.txt arastirma_cikti/
           git config user.name "arastirma"; git config user.email "a@users.noreply.github.com"
