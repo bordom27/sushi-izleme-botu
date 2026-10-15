@@ -16,7 +16,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        mod: [formasyon]
+        mod: [ozellik]
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
@@ -30,7 +30,8 @@ jobs:
           restore-keys: |
             arastirma-${{ matrix.mod }}-
             arastirma-kombo-
-      - run: python arastirma.py ${{ matrix.mod }} 2>&1 | grep -v " mum (" | tee log_${{ matrix.mod }}.txt
+            arastirma-formasyon-
+      - run: python $( [ "${{ matrix.mod }}" = ozellik ] && echo ozellik.py || echo "arastirma.py ${{ matrix.mod }}" ) 2>&1 | grep -v " mum (" | tee log_${{ matrix.mod }}.txt
       - run: |
           mkdir -p arastirma_cikti && mv log_${{ matrix.mod }}.txt arastirma_cikti/
           git config user.name "arastirma"; git config user.email "a@users.noreply.github.com"
