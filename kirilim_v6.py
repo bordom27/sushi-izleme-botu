@@ -122,6 +122,12 @@ PARAMS = {
     "use_trend_exit": False,
     "erken_be_r": 0.0,
 
+    # 16) Basarisiz kirilim cikisi (varsayilan KAPALI): TP1 alinmadan, girisin ilk K mumunda
+    #     kapanis kirilan seviyenin x ATR gerisine donerse stopu beklemeden kapanista cik.
+    "basarisiz_cikis": False,
+    "bc_bar": 6,                    # kac mum boyunca kontrol edilir (0 = TP1'e kadar her zaman)
+    "bc_atr": 0.0,                  # seviyenin bu kadar ATR gerisinde kapanis gerekir
+
     # 14) Kucuk zaman diliminde giris (varsayilan KAPALI): 4s sinyalden sonra 1s grafikte
     #     geri cekilme + mikro yapi kirilimi (1s mum onceki 1s tepesinin ustunde kapanir) ile giris.
     "ltf_giris": "",                # "" | "geri_cekilme" (0.382 geri cekilme sart) | "ilk_dusus" (ilk kirmizi 1s mum yeter)
@@ -943,6 +949,11 @@ def simule_et(symbol: str, df: pd.DataFrame, gunluk: pd.DataFrame | None,
                 if tp2_dok:
                     cikis = max(pos["tp2"], o[i]) if isL else min(pos["tp2"], o[i])
                     neden = "TP2"
+                elif p["basarisiz_cikis"] and (not pos["tp1_done"]) and not math.isnan(pos.get("seviye", np.nan)) \
+                        and (p["bc_bar"] <= 0 or (i - pos["bar"]) <= p["bc_bar"]) \
+                        and d * (c[i] - pos["seviye"]) < -p["bc_atr"] * a:
+                    cikis = c[i]
+                    neden = "BASARISIZ"
                 elif p["use_time_stop"] and (not pos["tp1_done"]) and (i - pos["bar"]) >= p["time_stop_bars"] \
                         and d * (c[i] - pos["giris"]) < p["time_stop_min_r"] * pos["risk"]:
                     cikis = c[i]
@@ -1143,7 +1154,7 @@ def simule_et(symbol: str, df: pd.DataFrame, gunluk: pd.DataFrame | None,
                 pos = {
                     "yon": g_dir, "giris": giris, "risk": rsk, "stop": stop, "stop_ilk": stop,
                     "tp1": tp1, "tp2": tp2, "hh": h[i], "ll": l[i], "real_r": 0.0, "tp1_done": False,
-                    "bar": i, "zaman": ot[i], "tip": g_tip, "kalite": g_kal,
+                    "bar": i, "zaman": ot[i], "tip": g_tip, "kalite": g_kal, "seviye": g_sev,
                     "tp1_kay": tp1_kay, "tp2_kay": tp2_kay, "risk_pct": risk_pct,
                     "poz_pct": min(p["hesap_risk"] / risk_pct * 100, 100),
                 }

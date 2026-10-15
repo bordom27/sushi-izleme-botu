@@ -217,6 +217,12 @@ PROFESYONEL = [
     ("trend ici geri cekilme taze 5", {"geri_cekilme": True, "sadece_formasyon": True, "gc_taze_bar": 5}),
 ]
 
+BASARISIZ = [("v6.1 TEMEL", {})]
+for bb in (3, 6, 0):
+    for xa in (0.0, 0.3, 0.6):
+        BASARISIZ.append((f"basarisiz kirilim cikisi: {bb if bb else 'TP1e kadar'} mum, seviye-{xa} ATR",
+                          {"basarisiz_cikis": True, "bc_bar": bb, "bc_atr": xa}))
+
 
 def main():
     os.makedirs(OUT, exist_ok=True)
@@ -340,7 +346,7 @@ def main():
         with open(f"{OUT}/kombo.txt", "w") as f:
             f.write(res.to_string(index=False))
 
-    elif mod in ("formasyon", "kovalama", "limit", "profesyonel"):
+    elif mod in ("formasyon", "kovalama", "limit", "profesyonel", "basarisiz"):
         tick = veri._get("/api/v3/ticker/24hr", {})
         haric = set(COINLER) | STOK_HARIC | {"USDCUSDT", "FDUSDUSDT", "TUSDUSDT", "DAIUSDT", "EURUSDT", "USDPUSDT",
                                 "RLUSDUSDT", "USD1USDT", "PYUSDUSDT", "AEURUSDT", "XUSDUSDT", "BFUSDUSDT",
@@ -362,7 +368,7 @@ def main():
             print("1s veri hazir", len(DATA["1h"]), flush=True)
         rows = []
         with mp.Pool(4) as hv:
-            for ad, prm in ({"kovalama": KOVALAMA, "limit": LIMIT, "profesyonel": PROFESYONEL}.get(mod, FORM_SENARYO)):
+            for ad, prm in ({"kovalama": KOVALAMA, "limit": LIMIT, "profesyonel": PROFESYONEL, "basarisiz": BASARISIZ}.get(mod, FORM_SENARYO)):
                 tr = calistir(prm, COINLER + yeni, "4h", hv)
                 for etiket, x in (("46", tr[tr.symbol.isin(COINLER)] if len(tr) else tr),
                                   ("YENI", tr[tr.symbol.isin(yeni)] if len(tr) else tr), ("HEPSI", tr)):
