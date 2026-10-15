@@ -58,7 +58,8 @@ TR = timezone(timedelta(hours=3))
 YON = {1: "LONG", -1: "SHORT"}
 TIP_ADI = {"GUCLU KIRILIM": "GÜÇLÜ KIRILIM", "KIRILIM": "KIRILIM", "RETEST": "RETEST", "TEYIT": "TEYİT"}
 NEDEN_ADI = {"STOP": "STOP", "STOP_TP1": "STOP (TP1 sonrası iz süren stop)", "TP2": "TP2 (final)",
-             "ZAMAN": "ZAMAN STOPU", "TREND": "TREND ÇIKIŞI"}
+             "ZAMAN": "ZAMAN STOPU", "TREND": "TREND ÇIKIŞI",
+             "BASARISIZ": "BAŞARISIZ KIRILIM (fiyat kırılan seviyenin gerisine döndü, stop beklenmeden çıkıldı)"}
 
 
 # ------------------------------------------------------------------------------------
@@ -194,6 +195,7 @@ def mesaj_giris(sym, o: k.Olay, cfg) -> str:
         f"Pozisyon büyüklüğü (hesabın %{k.PARAMS['hesap_risk']:g}'i riskte): sermayenin %{v['poz_pct']:.1f}\n"
         + kalabalik_satiri(sym, o, cfg, v) +
         f"TP1 sonrası stop giriş+0.1R'ye çekilir ve 2.5 ATR iz süren stopa geçer. "
+        f"İlk 3 mumda kapanış kırılan seviyenin gerisine dönerse stopu bekleme, çık (bot bildirir). "
         f"20 mum (~3.3 gün) içinde TP1 gelmez ve kâr 0.5R'nin altındaysa çık.\n"
         f"{grafik_linki(sym)}" + gecikme_notu(o.zaman, cfg)
     )

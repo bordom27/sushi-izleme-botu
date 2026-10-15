@@ -122,6 +122,13 @@ PARAMS = {
     "use_trend_exit": False,
     "erken_be_r": 0.0,
 
+    # 9) Basarisiz kirilim cikisi (Ekim 2026 testi: ayni kazanc, ~%25 daha kucuk max dusus):
+    #    TP1 alinmadan, girisin ilk 3 mumunda kapanis kirilan seviyenin 0.3 ATR gerisine
+    #    donerse stopu beklemeden kapanista cik.
+    "basarisiz_cikis": True,
+    "bc_bar": 3,
+    "bc_atr": 0.3,
+
     # 8) Sembol tablosu
     "use_auto_params": True,
     "def_rsi_max": 70.0,
@@ -666,6 +673,11 @@ def simule_et(symbol: str, df: pd.DataFrame, gunluk: pd.DataFrame | None,
                 if tp2_dok:
                     cikis = max(pos["tp2"], o[i]) if isL else min(pos["tp2"], o[i])
                     neden = "TP2"
+                elif p["basarisiz_cikis"] and (not pos["tp1_done"]) and not math.isnan(pos.get("seviye", np.nan)) \
+                        and (p["bc_bar"] <= 0 or (i - pos["bar"]) <= p["bc_bar"]) \
+                        and d * (c[i] - pos["seviye"]) < -p["bc_atr"] * a:
+                    cikis = c[i]
+                    neden = "BASARISIZ"
                 elif p["use_time_stop"] and (not pos["tp1_done"]) and (i - pos["bar"]) >= p["time_stop_bars"] \
                         and d * (c[i] - pos["giris"]) < p["time_stop_min_r"] * pos["risk"]:
                     cikis = c[i]
@@ -807,7 +819,7 @@ def simule_et(symbol: str, df: pd.DataFrame, gunluk: pd.DataFrame | None,
                 pos = {
                     "yon": g_dir, "giris": giris, "risk": rsk, "stop": stop, "stop_ilk": stop,
                     "tp1": tp1, "tp2": tp2, "hh": h[i], "ll": l[i], "real_r": 0.0, "tp1_done": False,
-                    "bar": i, "zaman": ot[i], "tip": g_tip, "kalite": g_kal,
+                    "bar": i, "zaman": ot[i], "tip": g_tip, "kalite": g_kal, "seviye": g_sev,
                     "tp1_kay": tp1_kay, "tp2_kay": tp2_kay, "risk_pct": risk_pct,
                     "poz_pct": min(p["hesap_risk"] / risk_pct * 100, 100),
                 }
