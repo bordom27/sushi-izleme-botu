@@ -234,6 +234,18 @@ SEVIYE = [("v6.2 TEMEL (fitil, 80 mum)", dict(_B)),
           ("gunluk 30 gun seviyesi", dict(_B, gunluk_seviye=30)),
           ("gunluk 14 gun seviyesi", dict(_B, gunluk_seviye=14))]
 
+_B2 = {"basarisiz_cikis": True, "bc_bar": 3, "bc_atr": 0.3}
+FIKIR = [("v6.2 TEMEL", dict(_B2)),
+         ("TP2 yok, trail 2.5", dict(_B2, tp2_yok=True)),
+         ("TP2 yok, trail 3.0", dict(_B2, tp2_yok=True, trail_atr_mult=3.0)),
+         ("TP2 yok, trail 4.0", dict(_B2, tp2_yok=True, trail_atr_mult=4.0)),
+         ("TP2 yok, trail 3.0, TP1 %50", dict(_B2, tp2_yok=True, trail_atr_mult=3.0, tp1_pct=50.0)),
+         ("gunluk EMA20 onayi", dict(_B2, gunluk_ema_onay=20)),
+         ("gunluk EMA10 onayi", dict(_B2, gunluk_ema_onay=10)),
+         ("gunluk EMA50 onayi", dict(_B2, gunluk_ema_onay=50)),
+         ("BTC yuksek oynaklik rejimi", dict(_B2, btc_vol_rejim="yuksek")),
+         ("BTC dusuk oynaklik rejimi", dict(_B2, btc_vol_rejim="dusuk"))]
+
 
 def main():
     os.makedirs(OUT, exist_ok=True)
@@ -357,7 +369,7 @@ def main():
         with open(f"{OUT}/kombo.txt", "w") as f:
             f.write(res.to_string(index=False))
 
-    elif mod in ("formasyon", "kovalama", "limit", "profesyonel", "basarisiz", "seviye"):
+    elif mod in ("formasyon", "kovalama", "limit", "profesyonel", "basarisiz", "seviye", "fikir"):
         tick = veri._get("/api/v3/ticker/24hr", {})
         haric = set(COINLER) | STOK_HARIC | {"USDCUSDT", "FDUSDUSDT", "TUSDUSDT", "DAIUSDT", "EURUSDT", "USDPUSDT",
                                 "RLUSDUSDT", "USD1USDT", "PYUSDUSDT", "AEURUSDT", "XUSDUSDT", "BFUSDUSDT",
@@ -379,7 +391,7 @@ def main():
             print("1s veri hazir", len(DATA["1h"]), flush=True)
         rows = []
         with mp.Pool(4) as hv:
-            for ad, prm in ({"kovalama": KOVALAMA, "limit": LIMIT, "profesyonel": PROFESYONEL, "basarisiz": BASARISIZ, "seviye": SEVIYE}.get(mod, FORM_SENARYO)):
+            for ad, prm in ({"kovalama": KOVALAMA, "limit": LIMIT, "profesyonel": PROFESYONEL, "basarisiz": BASARISIZ, "seviye": SEVIYE, "fikir": FIKIR}.get(mod, FORM_SENARYO)):
                 tr = calistir(prm, COINLER + yeni, "4h", hv)
                 for etiket, x in (("46", tr[tr.symbol.isin(COINLER)] if len(tr) else tr),
                                   ("YENI", tr[tr.symbol.isin(yeni)] if len(tr) else tr), ("HEPSI", tr)):

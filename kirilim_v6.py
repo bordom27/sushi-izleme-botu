@@ -122,6 +122,11 @@ PARAMS = {
     "use_trend_exit": False,
     "erken_be_r": 0.0,
 
+    # 18) Yeni fikirler (varsayilan KAPALI)
+    "tp2_yok": False,               # True: TP2 yok, kalan kisim sadece iz suren stopla
+    "gunluk_ema_onay": 0,           # >0: long icin gunluk kapanis > gunluk EMA(N), short icin altinda
+    "btc_vol_rejim": "",            # "" | "yuksek" | "dusuk": BTC 4s ATR% kendi 180 mumluk medyaninin ustu/alti
+
     # 17) Seviye tanimi (varsayilan = son R mumun en yuksek fitili)
     "seviye_tipi": "fitil",         # "fitil" | "kapanis" (govde kapanislarinin en yuksegi)
     "gunluk_seviye": 0,             # >0: direnc = son N kapanmis gunun en yuksek degeri (gunluk veri gerekir)
@@ -516,6 +521,22 @@ def simule_et(symbol: str, df: pd.DataFrame, gunluk: pd.DataFrame | None,
     else:
         M = {k: np.full(n, np.nan) for k in ("c", "e", "h", "e2")}
 
+    GE = p["gunluk_ema_onay"]
+    if GE > 0 and gunluk is not None and len(gunluk):
+        gcl = gunluk["close"].to_numpy(float)
+        GEo = _htf_onceki(ot, gunluk, "D", {"c": gcl, "e": ema(gcl, GE)})
+    else:
+        GEo = None
+    BVR = p["btc_vol_rejim"]
+    btc_yuksek_vol = np.full(n, np.nan)
+    if BVR and btc_4h is not None and len(btc_4h):
+        b4_ = btc_4h.reset_index(drop=True)
+        bh, bl, bc_ = (b4_[k_].to_numpy(float) for k_ in ("high", "low", "close"))
+        bap = rma(true_range(bh, bl, bc_, True), 14) / bc_
+        med = pd.Series(bap).rolling(180, min_periods=60).median().to_numpy()
+        btc_yuksek_vol = pd.Series(np.where(np.isnan(med), np.nan, (bap > med).astype(float)),
+                                   index=pd.to_datetime(b4_["open_time"])).reindex(ot).to_numpy(float)
+
     mk_roc = np.full(n, np.nan)
     if btc_4h is not None and len(btc_4h):
         b4 = btc_4h.reset_index(drop=True)
@@ -742,6 +763,18 @@ def simule_et(symbol: str, df: pd.DataFrame, gunluk: pd.DataFrame | None,
 
         long_set = long_izin and long_ek and L1 and L2 and L3 and L4 and L5 and L7 and e9 and (dengeli or (L6 and L8))
         short_set = short_izin and S1 and S2 and S3 and S4 and S5 and S7 and e9 and (dengeli or (S6 and S8))
+        if GEo is not None:
+            gc_, ge_ = GEo["c"][i], GEo["e"][i]
+            if math.isnan(gc_) or math.isnan(ge_):
+                long_set = short_set = False
+            else:
+                long_set = long_set and gc_ > ge_
+                short_set = short_set and gc_ < ge_
+        if BVR:
+            bv = btc_yuksek_vol[i]
+            ok_ = (not math.isnan(bv)) and ((bv == 1.0) if BVR == "yuksek" else (bv == 0.0))
+            long_set = long_set and ok_
+            short_set = short_set and ok_
 
         # ---------------- kirilim ani
         rng = h[i] - l[i]
@@ -1148,6 +1181,9 @@ def simule_et(symbol: str, df: pd.DataFrame, gunluk: pd.DataFrame | None,
                     aday2 = L2f - g_dir * tp_off
                     if abs(aday2 - giris) <= p["tp2_max_r"] * rsk:
                         tp2, tp2_kay = aday2, "Fib"
+            if p["tp2_yok"]:
+                tp2 = giris + 1000 * rsk if gL else giris * 0.001
+                tp2_kay = "yok"
             if (not gL) and tp2 <= 0:
                 red = "TP2 hesaplanamadi"
 
