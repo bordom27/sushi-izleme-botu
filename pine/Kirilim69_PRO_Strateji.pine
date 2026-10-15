@@ -1,0 +1,1270 @@
+//@version=5
+strategy("Kirilim69 PRO Strateji", shorttitle="K69 Strat", overlay=true, max_labels_count=500, max_lines_count=200, initial_capital=10000, currency=currency.USD, default_qty_type=strategy.fixed, default_qty_value=1, commission_type=strategy.commission.percent, commission_value=0.1, slippage=0, pyramiding=0, process_orders_on_close=true, calc_on_every_tick=false)
+
+// ============================================================================
+// KIRILIM69 PRO (v6.1 - LONG + SHORT, 46+70 coinde zaman ve coin bolmeli test, komisyon dahil)
+// Bu indikator gercek islem ACMAZ. Sanal pozisyonla sinyal + yonetim gosterir.
+//
+// Her elek LONG icin yazildigi gibi, SHORT icin AYNASI uygulanir:
+//  1  Piyasa      : L: BTC/XU100 gunluk EMA ustu, panik dusus yok (+ops. dominans)
+//                   S: BTC/XU100 gunluk EMA alti, ani yukselis (squeeze) yok
+//  2  Ana trend   : L: G kapanis > EMA200, EMA200 dusmuyor, H kapanis > EMA21
+//                   S: G kapanis < EMA200, EMA200 yukselmiyor, H kapanis < EMA21
+//  3  Haftalik MACD   L: pozitif   S: negatif
+//  4  Gunluk MACD     L: pozitif   S: negatif
+//  5  EMA dizilimi    L: K > EMA50, EMA21 > EMA50, egim yukari   S: tersi
+//  6  MACD (grafik)   L: pozitif   S: negatif
+//  7  RSI             L: 50 .. ust sinir     S: (100-ust sinir) .. 50
+//  8  ADX / DMI       L: DI+ > DI-           S: DI- > DI+   (ADX esik ustu veya yukseliyor)
+//  9  Cooldown + isinma (ortak)
+// KIRILIM ANI: L: direncin ustunde govde kapanisi   S: destegin altinda govde kapanisi
+//  hacim, mum kalitesi, asiri uzama, Fibonacci 0.618 yapi kurali, (ops.) taban
+// ZAMANLAMA : Kirilim mumunun kapanisinda giris (ops. Hibrit / retest)
+// RISK      : Yapisal stop (L: swing dip alti, S: swing tepe ustu), ATR ile sinirli.
+//             TP'ler fib seviyelerine ve karsidaki ilk pivot engele gore.
+//             R/R yetersizse / stop cok genisse islem REDDEDILIR.
+// YONETIM   : TP1 kismi kar, stop basabas+, chandelier trailing, zaman stopu.
+// Ust zaman dilimi verileri KAPANMIS mumlardan alinir (repaint yok).
+// ============================================================================
+
+G_DIR = "0) Islem yonu"
+G_MKT = "1) Elek: Piyasa (BTC / XU100)"
+G_HTF = "2) Elek: Ana trend + Haftalik/Gunluk MACD"
+G_LTF = "3) Elek: Grafik zaman dilimi (EMA / RSI / ADX)"
+G_BRK = "4) Kirilim zamanlamasi"
+G_FIB = "5) Fibonacci / seviyeler"
+G_RSK = "6) Stop / TP / Risk"
+G_POS = "7) Pozisyon yonetimi"
+G_DEF = "8) Sembol tablosu / varsayilan"
+G_VIS = "9) Gorunum"
+G_ALR = "10) Alarm"
+
+MACD_MODLARI_TIP = "Tanim LONG icin yazilmistir; SHORT tarafinda aynasi (negatif / dusuyor) uygulanir."
+
+// ---------------------------------------------------------------- 0) Yon
+yonModu      = input.string("Long + Short", "Islem yonu", options=["Long + Short", "Sadece Long", "Sadece Short"], group=G_DIR)
+bistShortYok = input.bool(true, "BIST hisselerinde short verme", group=G_DIR, tooltip="Spot BIST'te aciga satis cogu bireysel yatirimci icin pratik degildir.")
+sikilik      = input.string("Dengeli (onerilen)", "Elek sikiligi", options=["Dengeli (onerilen)", "Siki (hepsi zorunlu)"], group=G_DIR, tooltip="Dengeli: Piyasa, ana trend, haftalik/gunluk MACD, EMA, RSI, hacim ve kirilim ZORUNLU. Grafik MACD, ADX, guclu mum kapanisi ve Fib yapisi 'yumusak' elektir; 4'unden en az secilen kadari yeterli. Siki: hepsi zorunlu (cok az sinyal).")
+profil       = input.string("Dengeli (test edildi)", "Profil", options=["Dengeli (test edildi)", "Yuksek isabet (deneysel)"], group=G_DIR, tooltip="Yuksek isabet: ana trend + haftalik MACD elegi ve %5 oynaklik siniri zorla acilir. Daha az ama daha secici islem; sinirli test edildi.")
+minYumusak   = input.int(4, "Dengeli: 4 yumusak elekten en az", minval=0, maxval=4, group=G_DIR)
+
+// ---------------------------------------------------------------- 1) Piyasa
+useMkt     = input.bool(true, "Piyasa filtresini kullan", group=G_MKT, tooltip="Kripto icin BTC, BIST hisseleri icin XU100 gunluk trendi kontrol edilir. BTC paritelerinin kendisinde atlanir.")
+btcSym     = input.symbol("BINANCE:BTCUSDT", "BTC sembolu", group=G_MKT)
+bistSym    = input.symbol("BIST:XU100", "BIST endeks sembolu", group=G_MKT)
+mktEmaLen  = input.int(50, "Piyasa trend EMA (gunluk)", minval=5, group=G_MKT)
+longSart   = input.string("BTC > EMA200", "Long icin ek trend sarti", options=["Kapali", "BTC > EMA200", "Coin > EMA200", "BTC ve coin > EMA200"], group=G_MKT, tooltip="Sadece long islemlere uygulanir (gunluk kapanis, gunluk EMA200). Short tarafini etkilemez.")
+mktMacdReq = input.bool(false, "Piyasa gunluk MACD de uyumlu olsun", group=G_MKT, tooltip="Long icin hist > 0, short icin hist < 0.")
+usePanic   = input.bool(true, "Piyasa ani hareket filtresi", group=G_MKT)
+panicBars  = input.int(6, "Ani hareket olcumu: son N mum (grafik TF)", minval=1, group=G_MKT)
+panicPct   = input.float(4.0, "Ani hareket esigi (%)", minval=0.5, step=0.5, group=G_MKT, tooltip="Long: piyasa son N mumda bu yuzdeden fazla DUSTUYSE long acilmaz. Short: bu yuzdeden fazla YUKSELDIYSE short acilmaz.")
+useDom     = input.bool(false, "BTC dominans filtresi (sadece altcoin LONG)", group=G_MKT, tooltip="Dominans gunluk EMA'sinin ustundeyse (para BTC'ye kaciyor) altcoin long'u acilmaz.")
+domSym     = input.symbol("CRYPTOCAP:BTC.D", "Dominans sembolu", group=G_MKT)
+domEmaLen  = input.int(20, "Dominans EMA", minval=2, group=G_MKT)
+
+// ---------------------------------------------------------------- 2) HTF
+useAnaTrendIn = input.bool(false, "Ana trend filtresi", group=G_HTF, tooltip="Long dusen trendde, short yukselen trendde acilmaz.")
+dEmaLongLen = input.int(200, "Gunluk uzun EMA", minval=20, group=G_HTF)
+slopeLen    = input.int(10, "Uzun EMA egim kontrolu (gun)", minval=1, group=G_HTF)
+wEmaLen     = input.int(21, "Haftalik EMA", minval=2, group=G_HTF)
+useWMacdIn  = input.bool(false, "Haftalik MACD elegi", group=G_HTF)
+wMacdMode   = input.string("MACD > 0 veya Hist > 0", "Haftalik MACD tanimi", options=["MACD > 0 veya Hist > 0", "Hist > 0", "Hist > 0 veya yukseliyor", "MACD > 0", "Hist > 0 ve MACD > 0"], group=G_HTF, tooltip=MACD_MODLARI_TIP)
+useDMacd    = input.bool(false, "Gunluk MACD elegi", group=G_HTF)
+dMacdMode   = input.string("Hist > 0 veya yukseliyor", "Gunluk MACD tanimi", options=["MACD > 0 veya Hist > 0", "Hist > 0", "Hist > 0 veya yukseliyor", "MACD > 0", "Hist > 0 ve MACD > 0"], group=G_HTF, tooltip=MACD_MODLARI_TIP)
+naPolicy    = input.string("Engelle", "Ust TF verisi yetersizse", options=["Engelle", "Gecir"], group=G_HTF, tooltip="Yeni listelenen coinlerde haftalik MACD / gunluk EMA200 hesaplanamaz.")
+
+// ---------------------------------------------------------------- 3) LTF
+emaFastLen    = input.int(21, "Hizli EMA", minval=1, group=G_LTF)
+trendEmaLen   = input.int(50, "Trend EMA", minval=1, group=G_LTF)
+macdFast      = input.int(12, "MACD fast (tum TF)", minval=1, group=G_LTF)
+macdSlow      = input.int(26, "MACD slow (tum TF)", minval=1, group=G_LTF)
+macdSignalLen = input.int(9, "MACD signal (tum TF)", minval=1, group=G_LTF)
+useLtfMacd    = input.bool(true, "Grafik TF MACD elegi", group=G_LTF)
+ltfMacdMode   = input.string("Hist > 0 veya yukseliyor", "Grafik TF MACD tanimi", options=["MACD > 0 veya Hist > 0", "Hist > 0", "Hist > 0 veya yukseliyor", "MACD > 0", "Hist > 0 ve MACD > 0"], group=G_LTF, tooltip=MACD_MODLARI_TIP)
+rsiLen        = input.int(14, "RSI periyodu", minval=1, group=G_LTF)
+rsiMin        = input.float(50.0, "RSI orta sinir", group=G_LTF, tooltip="Long: RSI >= bu deger. Short: RSI <= 100 - bu deger.")
+useAdx        = input.bool(true, "ADX / DMI elegi", group=G_LTF)
+diLen         = input.int(14, "DI periyodu", minval=1, group=G_LTF)
+adxSmooth     = input.int(14, "ADX yumusatma", minval=1, group=G_LTF)
+adxMin        = input.float(25.0, "ADX esigi", group=G_LTF, tooltip="Sikismadan cikan kirilimlarda ADX dusuk olur; bu yuzden ADX yukseliyorsa da gecer.")
+
+// ---------------------------------------------------------------- 4) Kirilim
+entryMode       = input.string("Kirilim kapanisi", "Giris zamanlamasi", options=["Kirilim kapanisi", "Hibrit", "Sadece retest"], group=G_BRK, tooltip="Kirilim kapanisi (varsayilan, Ekim 2026 testinde en iyisi): tum elekleri gecen kirilim mumunun kapanisinda girer. Hibrit: sadece guclu kirilimda hemen girer, digerlerinde retest bekler.")
+resistanceLen   = input.int(80, "Direnc / destek lookback", minval=2, group=G_BRK)
+breakBufAtr     = input.float(0.1, "Kirilim tamponu (ATR)", minval=0.0, step=0.05, group=G_BRK)
+useVolumeFilter = input.bool(true, "Hacim filtresi", group=G_BRK)
+volLen          = input.int(20, "Hacim ortalamasi", minval=1, group=G_BRK)
+volMult         = input.float(2.0, "Hacim esigi (x ortalama)", minval=0.1, step=0.1, group=G_BRK)
+strongVolMult   = input.float(2.0, "Guclu kirilim hacmi (x ortalama)", minval=0.5, step=0.1, group=G_BRK)
+minClosePos     = input.float(0.6, "Mum kapanis gucu (0-1)", minval=0.0, maxval=1.0, step=0.05, group=G_BRK, tooltip="Long: kapanis mum araliginin en az %60'inda. Short: en fazla %40'inda (uzun ters fitilli kirilim reddedilir).")
+maxCandleRangeAtr = input.float(3.0, "Max mum araligi (ATR)", minval=0.1, step=0.1, group=G_BRK)
+maxExtAtr       = input.float(3.0, "Hizli EMA'dan max uzaklik (ATR)", minval=0.1, step=0.1, group=G_BRK)
+useBase         = input.bool(false, "Sikisma / taban filtresi", group=G_BRK)
+maxBaseAtr      = input.float(6.0, "Max taban genisligi (ATR)", minval=0.5, step=0.5, group=G_BRK)
+retestBars      = input.int(6, "Retest icin max bekleme (mum)", minval=1, group=G_BRK)
+useTeyit        = input.bool(true, "Retest gelmezse teyit mumu ile gir", group=G_BRK, tooltip="Zayif kirilimdan sonra fiyat geri test yapmadan devam ederse: kirilim mumunun tepesinin (short: dibinin) otesinde kapanan ilk mumda girilir. Kapaliysa retest gelmeyen kirilimlar kacirilir.")
+retestTolAtr    = input.float(0.3, "Retest tolerans (ATR)", minval=0.0, step=0.05, group=G_BRK)
+failAtr         = input.float(0.5, "Sahte kirilim esigi (ATR)", minval=0.0, step=0.1, group=G_BRK)
+cooldownBars    = input.int(3, "Stop sonrasi cooldown (mum)", minval=0, group=G_BRK)
+
+// ---------------------------------------------------------------- 5) Fib
+useFib       = input.bool(true, "Fib 0.618 yapi filtresi", group=G_FIB, tooltip="Long: yukselis bacaginda geri cekilme 0.618 altina inmemis olmali. Short: dusus bacaginda tepki yukselisi 0.618 ustune cikmamis olmali.")
+fibLen       = input.int(89, "Fib swing lookback", minval=10, group=G_FIB)
+useFibTp     = input.bool(true, "TP'leri fib seviyelerine oturt", group=G_FIB)
+showFib      = input.bool(true, "Guncel fib seviyelerini ciz", group=G_FIB)
+showDirenc   = input.bool(true, "Pivot direnc / destekleri ciz", group=G_FIB)
+direncSayisi = input.int(3, "Her yonde gosterilecek seviye", minval=1, maxval=10, group=G_FIB)
+
+// ---------------------------------------------------------------- 6) Risk
+atrLen       = input.int(14, "ATR periyodu", minval=1, group=G_RSK)
+stopMode     = input.string("Yapisal + ATR siniri", "Stop yontemi", options=["Yapisal + ATR siniri", "Sabit ATR (sembol tablosu)"], group=G_RSK)
+stopLookback = input.int(5, "Yapisal stop: son N mumun dibi / tepesi", minval=1, group=G_RSK)
+stopBufAtr   = input.float(0.2, "Stop tamponu (ATR)", minval=0.0, step=0.05, group=G_RSK)
+seviyeStopAtr = input.float(1.5, "Kirilan seviyenin bu kadar ATR otesine stop (0 = kapali)", minval=0.0, step=0.1, group=G_RSK, tooltip="Kirilim, fiyat kirilan seviyenin belirgin otesine geri donerse gecersizdir. Swing stop daha uzaksa bu daha yakin stop kullanilir; gereksiz genis stop yuzunden red azalir.")
+minStopAtr   = input.float(1.0, "Min stop mesafesi (ATR)", minval=0.1, step=0.1, group=G_RSK)
+maxStopAtr   = input.float(3.0, "Max stop mesafesi (ATR) - asarsa red", minval=0.5, step=0.1, group=G_RSK)
+maxRiskPct   = input.float(12.0, "Max stop mesafesi (%) - asarsa red", minval=0.5, step=0.5, group=G_RSK)
+tp1R         = input.float(0.8, "TP1 (R) - fib uygun degilse", minval=0.3, step=0.1, group=G_RSK)
+tp1MinR      = input.float(0.6, "TP1 fib araligi: min R", minval=0.3, step=0.1, group=G_RSK)
+tp1MaxR      = input.float(1.1, "TP1 fib araligi: max R", minval=0.5, step=0.1, group=G_RSK)
+tp2MaxR      = input.float(6.0, "TP2 fib icin max R", minval=1.0, step=0.5, group=G_RSK)
+tpOffsetAtr  = input.float(0.1, "TP'yi seviyeden bu kadar once koy (ATR)", minval=0.0, step=0.05, group=G_RSK)
+useRoom      = input.bool(true, "Karsi engel alan kontrolu", group=G_RSK, tooltip="Long: ustteki ilk pivot direnc. Short: alttaki ilk pivot destek.")
+roomPivotLen = input.int(10, "Engel pivot uzunlugu", minval=2, group=G_RSK)
+minRoomR     = input.float(0.5, "Ilk engele min mesafe (R)", minval=0.3, step=0.1, group=G_RSK)
+hesapRisk    = input.float(0.5, "Islem basina hesap riski (%)", minval=0.1, step=0.1, group=G_RSK)
+komisyonPct  = input.float(0.1, "Komisyon + kayma (% tek yon)", minval=0.0, step=0.01, group=G_RSK, tooltip="Basari ve R hesabina dahil edilir. Binance spot ~0.1, vadeli ~0.05 + kayma.")
+minKalite    = input.string("C", "Min sinyal kalitesi", options=["C", "B", "A"], group=G_RSK, tooltip="A: 4-5/5, B: 2-3/5 yumusak kalite puani. C = hepsi.")
+maxAtrPctIn  = input.float(0.0, "Max oynaklik: ATR fiyatin %'si (0 = kapali)", minval=0.0, step=0.5, group=G_RSK)
+
+// ---------------------------------------------------------------- 7) Yonetim
+tp1Pct       = input.float(70.0, "TP1'de kapatilan oran (%)", minval=10, maxval=90, step=5, group=G_POS)
+beBufR       = input.float(0.1, "TP1 sonrasi stop: basabas + (R)", minval=0.0, step=0.05, group=G_POS)
+trailAtrMult = input.float(2.5, "Chandelier trailing (ATR)", minval=0.5, step=0.1, group=G_POS)
+useTimeStop  = input.bool(true, "Zaman stopu", group=G_POS)
+timeStopBars = input.int(20, "Zaman stopu: mum sayisi", minval=2, group=G_POS)
+timeStopMinR = input.float(0.5, "Zaman stopu: bu R'ye ulasmadiysa cik", step=0.1, group=G_POS)
+useTrendExit = input.bool(false, "TP1 sonrasi trend EMA'nin ters tarafinda kapanista cik", group=G_POS)
+statBas      = input.time(timestamp("2000-01-01"), "Test: islem acma baslangici", group=G_POS, tooltip="Sadece bu tarihten sonra yeni islem acilir (zaman bolmeli test icin).")
+statBit      = input.time(timestamp("2100-01-01"), "Test: islem acma bitisi", group=G_POS)
+erkenBeR     = input.float(0.0, "Erken basabas: bu R'ye ulasinca stop girise (0 = kapali)", minval=0.0, step=0.1, group=G_POS)
+
+// ---------------------------------------------------------------- 8) Varsayilan
+useAutoParams  = input.bool(true, "Sembole ozel parametreleri uygula", group=G_DEF, tooltip="RSI ust siniri (short icin aynasi), ATR stop carpani (sabit ATR modunda) ve TP2 alt R degeri tablodan alinir.")
+defRsiMaxEntry = input.float(70.0, "Varsayilan RSI ust siniri", group=G_DEF)
+defAtrStopMult = input.float(2.0, "Varsayilan ATR stop carpani", step=0.1, group=G_DEF)
+defTp2R        = input.float(2.5, "Varsayilan TP2 alt siniri (R)", step=0.1, group=G_DEF)
+
+// ---------------------------------------------------------------- 9) Gorunum
+showValues  = input.bool(true, "Giris / cikis etiketleri", group=G_VIS)
+showRejects = input.bool(true, "Reddedilen kirilimlari goster", group=G_VIS)
+showPivots  = input.bool(true, "Buyuk swing tepe/dip", group=G_VIS)
+pivotBars   = input.int(25, "Pivot hassasiyeti", minval=1, group=G_VIS)
+proxAtr     = input.float(1.5, "Erken uyari yakinligi (ATR)", minval=0.0, step=0.1, group=G_VIS)
+showPanel   = input.bool(true, "Kontrol paneli", group=G_VIS)
+panelModu   = input.string("Kompakt", "Panel modu", options=["Kompakt", "Canli durum", "Teshis (gecmis)"], group=G_VIS, tooltip="Kompakt: 5-6 satirlik ozet (varsayilan). Canli durum: tum elekler tek tek (buyuk panel). Teshis: gecmisteki kirilimlarda her elegin gecme orani.")
+panelYazi   = input.string(size.tiny, "Panel yazi boyutu", options=[size.tiny, size.small, size.normal], group=G_VIS)
+panelPos    = input.string(position.top_right, "Panel konumu", options=[position.top_right, position.middle_right, position.bottom_right, position.top_left, position.bottom_left], group=G_VIS)
+
+// ---------------------------------------------------------------- 10) Alarm
+useDynAlert = input.bool(true, "Dinamik alarm mesaji (alert())", group=G_ALR, tooltip="Alarm olustururken kosul olarak bu indikatoru ve 'alert() fonksiyon cagrilari'ni secin.")
+
+// Profil etkisi
+bool yuksekIsabet = profil == "Yuksek isabet (deneysel)"
+bool useAnaTrend = useAnaTrendIn or yuksekIsabet
+bool useWMacd = useWMacdIn or yuksekIsabet
+float maxAtrPct = yuksekIsabet and maxAtrPctIn <= 0 ? 5.0 : maxAtrPctIn
+
+// ============================================================================
+// SEMBOL + PARAMETRE TABLOSU (eski botun optimizasyonu)
+// ============================================================================
+string tickerRaw = syminfo.ticker
+string sembol = str.endswith(tickerRaw, ".P") ? str.substring(tickerRaw, 0, str.length(tickerRaw) - 2) : tickerRaw
+bool isCrypto  = syminfo.type == "crypto"
+bool isBist    = syminfo.prefix == "BIST"
+bool isBtcBase = isCrypto and syminfo.basecurrency == "BTC"
+string mktSym  = isCrypto ? btcSym : bistSym
+string mkKisa  = isCrypto ? "BTC" : "XU100"
+bool mktUygulanir = useMkt and (isCrypto or isBist) and not isBtcBase
+bool longIzin  = yonModu != "Sadece Short"
+bool shortIzin = yonModu != "Sadece Long" and not (bistShortYok and isBist)
+
+var float dbRsi = na
+var float dbAtr = na
+var float dbTp2 = na
+var string dbKat = "TEST EDILMEDI"
+var float dbKazanma = na
+var float dbGetiri = na
+var bool ozelParamVarMi = false
+
+if barstate.isfirst
+    string[] rows = array.new_string()
+    array.push(rows, "JSTUSDT|75|2.0|1.5|ORTA|55.4|103.1")
+    array.push(rows, "PHAUSDT|75|2.0|1.5|ORTA|58.1|94.8")
+    array.push(rows, "PAXGUSDT|75|2.5|1.5|GUCLU|59.8|90.2")
+    array.push(rows, "TRXUSDT|75|2.5|2.5|BELIRSIZ|48.6|97.5")
+    array.push(rows, "TUSDT|75|2.5|1.5|ORTA|56.9|53.1")
+    array.push(rows, "AGLDUSDT|75|2.0|1.5|BELIRSIZ|50.9|52.9")
+    array.push(rows, "NEARUSDT|65|2.5|3.0|BELIRSIZ|48.3|55.4")
+    array.push(rows, "ZILUSDT|75|2.0|1.5|BELIRSIZ|48.7|51.7")
+    array.push(rows, "DEXEUSDT|75|2.0|1.5|BELIRSIZ|53.7|46.8")
+    array.push(rows, "KAITOUSDT|75|2.5|2.0|ORTA|63.3|39.4")
+    array.push(rows, "AVAUSDT|75|1.5|1.5|BELIRSIZ|48.9|47.3")
+    array.push(rows, "RAYUSDT|60|2.0|3.0|BELIRSIZ|58.6|30.0")
+    array.push(rows, "SKLUSDT|75|2.0|1.5|BELIRSIZ|47.6|36.1")
+    array.push(rows, "CHZUSDT|65|2.5|3.0|BELIRSIZ|50.0|32.0")
+    array.push(rows, "NFPUSDT|70|1.5|1.5|BELIRSIZ|50.7|29.6")
+    array.push(rows, "PEPEUSDT|75|1.5|1.5|BELIRSIZ|50.0|29.2")
+    array.push(rows, "ARBUSDT|75|1.5|1.5|BELIRSIZ|47.7|30.3")
+    array.push(rows, "EPICUSDT|75|1.5|2.0|BELIRSIZ|51.5|25.7")
+    array.push(rows, "CUSDT|70|1.5|1.5|BELIRSIZ|62.5|21.0")
+    array.push(rows, "DOTUSDT|60|1.5|1.5|BELIRSIZ|54.5|24.0")
+    array.push(rows, "ETHFIUSDT|60|2.0|3.0|VERI_YETERSIZ|64.3|20.1")
+    array.push(rows, "ENAUSDT|70|1.5|1.5|BELIRSIZ|50.0|23.7")
+    array.push(rows, "FILUSDT|65|2.0|1.5|BELIRSIZ|48.2|24.4")
+    array.push(rows, "ZENUSDT|60|2.5|3.0|BELIRSIZ|47.5|23.3")
+    array.push(rows, "LOGO|75|2.0|2.0|VERI_YETERSIZ|100.0|10.9")
+    array.push(rows, "CTSIUSDT|75|2.5|1.5|BELIRSIZ|46.5|22.6")
+    array.push(rows, "SARKY|75|1.5|3.0|VERI_YETERSIZ|100.0|10.4")
+    array.push(rows, "DASHUSDT|65|1.5|1.5|BELIRSIZ|46.3|22.0")
+    array.push(rows, "PLUMEUSDT|65|2.5|1.5|VERI_YETERSIZ|72.7|14.0")
+    array.push(rows, "EREGL|75|2.5|2.0|VERI_YETERSIZ|100.0|9.5")
+    array.push(rows, "AAVEUSDT|65|2.0|3.0|BELIRSIZ|38.3|24.0")
+    array.push(rows, "NILUSDT|75|2.5|3.0|BELIRSIZ|46.2|19.9")
+    array.push(rows, "HFTUSDT|65|2.0|1.5|BELIRSIZ|49.1|17.9")
+    array.push(rows, "CAKEUSDT|75|2.0|2.0|BELIRSIZ|38.8|22.3")
+    array.push(rows, "ECILC|60|2.0|3.0|VERI_YETERSIZ|100.0|8.5")
+    array.push(rows, "PETKM|75|1.5|1.5|VERI_YETERSIZ|75.0|10.8")
+    array.push(rows, "ALLOUSDT|75|2.5|1.5|VERI_YETERSIZ|70.0|11.5")
+    array.push(rows, "MORPHOUSDT|60|2.5|1.5|VERI_YETERSIZ|70.0|11.4")
+    array.push(rows, "PROMUSDT|75|2.5|1.5|BELIRSIZ|47.5|15.1")
+    array.push(rows, "MINAUSDT|60|2.5|1.5|BELIRSIZ|51.5|13.9")
+    array.push(rows, "KCHOL|65|2.0|1.5|VERI_YETERSIZ|100.0|6.9")
+    array.push(rows, "SISE|65|1.5|3.0|VERI_YETERSIZ|100.0|6.8")
+    array.push(rows, "ASTOR|60|1.5|3.0|VERI_YETERSIZ|100.0|6.8")
+    array.push(rows, "ALGOUSDT|75|1.5|1.5|BELIRSIZ|43.2|15.6")
+    array.push(rows, "BERAUSDT|75|2.0|1.5|BELIRSIZ|50.0|12.8")
+    array.push(rows, "ZAMAUSDT|75|2.0|1.5|BELIRSIZ|54.5|11.8")
+    array.push(rows, "ENKAI|70|2.0|2.5|VERI_YETERSIZ|100.0|6.1")
+    array.push(rows, "TUPRS|65|1.5|2.5|VERI_YETERSIZ|100.0|6.1")
+    array.push(rows, "NUGYO|75|2.0|2.5|VERI_YETERSIZ|100.0|6.1")
+    array.push(rows, "PYTHUSDT|75|2.5|1.5|BELIRSIZ|44.7|11.4")
+    array.push(rows, "XTZUSDT|60|1.5|1.5|BELIRSIZ|46.8|9.9")
+    array.push(rows, "IZMDC|70|2.0|1.5|VERI_YETERSIZ|100.0|4.5")
+    array.push(rows, "SUSDT|65|1.5|1.5|BELIRSIZ|52.6|8.3")
+    array.push(rows, "XRPUSDT|75|2.5|3.0|BELIRSIZ|38.6|11.2")
+    array.push(rows, "INDES|75|1.5|1.5|VERI_YETERSIZ|62.5|6.8")
+    array.push(rows, "ACEUSDT|70|2.0|1.5|BELIRSIZ|45.8|9.1")
+    array.push(rows, "JTOUSDT|70|2.5|1.5|BELIRSIZ|44.0|9.2")
+    array.push(rows, "ICBCT|60|2.5|3.0|VERI_YETERSIZ|100.0|3.4")
+    array.push(rows, "SOPHUSDT|70|1.5|1.5|BELIRSIZ|50.0|6.6")
+    array.push(rows, "SAGAUSDT|65|1.5|2.0|BELIRSIZ|39.3|7.6")
+    array.push(rows, "ZECUSDT|70|2.5|2.5|BELIRSIZ|40.9|6.5")
+    array.push(rows, "APTUSDT|60|2.0|1.5|BELIRSIZ|46.4|5.6")
+    array.push(rows, "METUSDT|60|2.5|3.0|VERI_YETERSIZ|50.0|5.1")
+    array.push(rows, "YKBNK|70|1.5|1.5|VERI_YETERSIZ|60.0|3.7")
+    array.push(rows, "SKYUSDT|65|1.5|2.0|BELIRSIZ|44.4|4.9")
+    array.push(rows, "FUSDT|70|1.5|3.0|VERI_YETERSIZ|44.4|3.5")
+    array.push(rows, "ALARK|75|1.5|1.5|VERI_YETERSIZ|50.0|2.8")
+    array.push(rows, "GUNUSDT|70|2.0|3.0|BELIRSIZ|35.3|3.7")
+    array.push(rows, "TTKOM|55|1.5|1.5|VERI_YETERSIZ|0.0|0.0")
+    for i = 0 to array.size(rows) - 1
+        string[] p = str.split(array.get(rows, i), "|")
+        if array.get(p, 0) == sembol
+            dbRsi := str.tonumber(array.get(p, 1))
+            dbAtr := str.tonumber(array.get(p, 2))
+            dbTp2 := str.tonumber(array.get(p, 3))
+            dbKat := array.get(p, 4)
+            dbKazanma := str.tonumber(array.get(p, 5))
+            dbGetiri := str.tonumber(array.get(p, 6))
+            ozelParamVarMi := true
+            break
+
+kullanOzel  = useAutoParams and ozelParamVarMi
+rsiMaxEntry = kullanOzel ? dbRsi : defRsiMaxEntry
+atrStopMult = kullanOzel ? dbAtr : defAtrStopMult
+tp2R        = kullanOzel ? dbTp2 : defTp2R
+
+// ============================================================================
+// GOSTERGELER (grafik zaman dilimi)
+// ============================================================================
+atrVal = ta.atr(atrLen)
+[macdLine, signalLine, histLine] = ta.macd(close, macdFast, macdSlow, macdSignalLen)
+rsiVal       = ta.rsi(close, rsiLen)
+emaFast      = ta.ema(close, emaFastLen)
+trendEma     = ta.ema(close, trendEmaLen)
+emaLongLocal = ta.ema(close, dEmaLongLen)
+[diP, diM, adxVal] = ta.dmi(diLen, adxSmooth)
+
+// ============================================================================
+// UST ZAMAN DILIMLERI (kapanmis mum, repaint yok)
+// ============================================================================
+f_haftalik() =>
+    [m, s, h] = ta.macd(close, macdFast, macdSlow, macdSignalLen)
+    e = ta.ema(close, wEmaLen)
+    [m[1], h[1], h[2], close[1], e[1]]
+
+f_gunluk() =>
+    [m, s, h] = ta.macd(close, macdFast, macdSlow, macdSignalLen)
+    eL = ta.ema(close, dEmaLongLen)
+    [m[1], h[1], h[2], close[1], eL[1], eL[1 + slopeLen]]
+
+f_piyasa() =>
+    [m, s, h] = ta.macd(close, macdFast, macdSlow, macdSignalLen)
+    e = ta.ema(close, mktEmaLen)
+    e2 = ta.ema(close, 200)
+    [close[1], e[1], h[1], e2[1]]
+
+f_dom() =>
+    e = ta.ema(close, domEmaLen)
+    [close[1], e[1]]
+
+[wMacd, wHist, wHistPrev, wClose, wEma] = request.security(syminfo.tickerid, "W", f_haftalik(), lookahead=barmerge.lookahead_on)
+[dMacdH, dHistH, dHistPrevH, dCloseH, dEmaLH, dEmaLOldH] = request.security(syminfo.tickerid, "D", f_gunluk(), lookahead=barmerge.lookahead_on)
+[mkClose, mkEma, mkHist, mkEma200] = request.security(mktSym, "D", f_piyasa(), lookahead=barmerge.lookahead_on, ignore_invalid_symbol=true)
+mkRoc = request.security(mktSym, timeframe.period, ta.roc(close, panicBars), ignore_invalid_symbol=true)
+[domClose, domEma] = request.security(domSym, "D", f_dom(), lookahead=barmerge.lookahead_on, ignore_invalid_symbol=true)
+
+bool isGunlukGrafik = timeframe.isdaily and timeframe.multiplier == 1
+dMacd     = isGunlukGrafik ? macdLine : dMacdH
+dHist     = isGunlukGrafik ? histLine : dHistH
+dHistPrev = isGunlukGrafik ? histLine[1] : dHistPrevH
+dClose    = isGunlukGrafik ? close : dCloseH
+dEmaL     = isGunlukGrafik ? emaLongLocal : dEmaLH
+dEmaLOld  = isGunlukGrafik ? emaLongLocal[slopeLen] : dEmaLOldH
+
+// LONG tanimi
+f_macdPoz(float m, float h, float hPrev, string mode) =>
+    bool yukseliyor = not na(hPrev) and h > hPrev
+    mode == "MACD > 0 veya Hist > 0" ? (m > 0 or h > 0) : mode == "Hist > 0" ? h > 0 : mode == "Hist > 0 veya yukseliyor" ? (h > 0 or yukseliyor) : mode == "MACD > 0" ? m > 0 : (h > 0 and m > 0)
+
+// SHORT tanimi (ayna)
+f_macdNeg(float m, float h, float hPrev, string mode) =>
+    bool dusuyor = not na(hPrev) and h < hPrev
+    mode == "MACD > 0 veya Hist > 0" ? (m < 0 or h < 0) : mode == "Hist > 0" ? h < 0 : mode == "Hist > 0 veya yukseliyor" ? (h < 0 or dusuyor) : mode == "MACD > 0" ? m < 0 : (h < 0 and m < 0)
+
+bool naGecir = naPolicy == "Gecir"
+
+// ============================================================================
+// ELEKLER 1-9 (L = long, S = short)
+// ============================================================================
+// 1 Piyasa
+bool mkVeriYok = na(mkClose) or na(mkEma)
+bool mkTrendL = mkVeriYok ? naGecir : (mkClose > mkEma and (not mktMacdReq or mkHist > 0))
+bool mkTrendS = mkVeriYok ? naGecir : (mkClose < mkEma and (not mktMacdReq or mkHist < 0))
+bool panikL = not usePanic or na(mkRoc) or mkRoc > -panicPct
+bool panikS = not usePanic or na(mkRoc) or mkRoc < panicPct
+bool domOk  = not useDom or not isCrypto or isBtcBase or na(domClose) or na(domEma) or domClose <= domEma
+bool L1 = (not mktUygulanir or (mkTrendL and panikL)) and domOk
+bool coinUst200 = (na(dClose) or na(dEmaL)) ? naGecir : dClose > dEmaL
+bool btcUst200 = not mktUygulanir ? coinUst200 : ((na(mkClose) or na(mkEma200)) ? naGecir : mkClose > mkEma200)
+bool longEk = longSart == "Kapali" ? true : longSart == "BTC > EMA200" ? btcUst200 : longSart == "Coin > EMA200" ? coinUst200 : (btcUst200 and coinUst200)
+bool S1 = not mktUygulanir or (mkTrendS and panikS)
+
+// 2 Ana trend
+bool atVeriYok = na(dEmaL) or na(dEmaLOld) or na(wEma) or na(wClose)
+bool L2 = not useAnaTrend or (atVeriYok ? naGecir : (dClose > dEmaL and dEmaL >= dEmaLOld and wClose > wEma))
+bool S2 = not useAnaTrend or (atVeriYok ? naGecir : (dClose < dEmaL and dEmaL <= dEmaLOld and wClose < wEma))
+
+// 3 Haftalik MACD
+bool wYok = na(wHist) or na(wMacd)
+bool L3 = not useWMacd or (wYok ? naGecir : f_macdPoz(wMacd, wHist, wHistPrev, wMacdMode))
+bool S3 = not useWMacd or (wYok ? naGecir : f_macdNeg(wMacd, wHist, wHistPrev, wMacdMode))
+
+// 4 Gunluk MACD
+bool dYok = na(dHist) or na(dMacd)
+bool L4 = not useDMacd or (dYok ? naGecir : f_macdPoz(dMacd, dHist, dHistPrev, dMacdMode))
+bool S4 = not useDMacd or (dYok ? naGecir : f_macdNeg(dMacd, dHist, dHistPrev, dMacdMode))
+
+// 5 EMA dizilimi
+bool L5 = close > trendEma and emaFast > trendEma and trendEma >= trendEma[3]
+bool S5 = close < trendEma and emaFast < trendEma and trendEma <= trendEma[3]
+
+// 6 MACD grafik
+bool L6 = not useLtfMacd or f_macdPoz(macdLine, histLine, histLine[1], ltfMacdMode)
+bool S6 = not useLtfMacd or f_macdNeg(macdLine, histLine, histLine[1], ltfMacdMode)
+
+// 7 RSI
+// Kirilim mumu RSI'yi dogal olarak yukari iter; asiri alim kontrolu kirilim ONCESI mumu da kabul eder
+bool L7 = rsiVal >= rsiMin and math.min(rsiVal, rsiVal[1]) < rsiMaxEntry
+bool S7 = rsiVal <= 100 - rsiMin and math.max(rsiVal, rsiVal[1]) > 100 - rsiMaxEntry
+
+// 8 ADX / DMI
+bool adxGuc = adxVal >= adxMin or adxVal > adxVal[2]
+bool L8 = not useAdx or (diP > diM and adxGuc)
+bool S8 = not useAdx or (diM > diP and adxGuc)
+
+// 9 Cooldown + isinma
+var int sonStopBarIndex = na
+bool cCool = na(sonStopBarIndex) or (bar_index - sonStopBarIndex) >= cooldownBars
+int minIsinma = math.max(resistanceLen, macdSlow + macdSignalLen, atrLen, trendEmaLen, volLen, fibLen) + 5
+bool isinma = bar_index >= minIsinma
+bool e9 = cCool and isinma
+
+bool dengeli  = sikilik == "Dengeli (onerilen)"
+bool longSet  = longIzin and longEk and L1 and L2 and L3 and L4 and L5 and L7 and e9 and (dengeli or (L6 and L8))
+bool shortSet = shortIzin and S1 and S2 and S3 and S4 and S5 and S7 and e9 and (dengeli or (S6 and S8))
+
+// ============================================================================
+// KIRILIM ANI
+// ============================================================================
+resistance = ta.highest(high, resistanceLen)[1]
+support    = ta.lowest(low, resistanceLen)[1]
+float rng  = high - low
+float closePos = rng > 0 ? (close - low) / rng : 0.5
+
+bool hasVolume = ta.cum(nz(volume)) > 0
+volAvg = ta.sma(volume, volLen)[1]
+float volOran = volAvg > 0 ? volume / volAvg : na
+
+bool rangeOk    = atrVal <= 0 or rng <= maxCandleRangeAtr * atrVal
+bool cBreakoutL = close > resistance + breakBufAtr * atrVal
+bool cBreakoutS = close < support - breakBufAtr * atrVal
+bool cVol       = not useVolumeFilter or not hasVolume or (volume > volAvg * volMult)
+bool cMumL      = close > open and closePos >= minClosePos and rangeOk
+bool cMumS      = close < open and closePos <= 1 - minClosePos and rangeOk
+bool cMumTemelL = close > open and closePos >= 0.5 and rangeOk
+bool cMumTemelS = close < open and closePos <= 0.5 and rangeOk
+bool cUzamaL    = atrVal <= 0 or (close - emaFast) <= maxExtAtr * atrVal
+bool cUzamaS    = atrVal <= 0 or (emaFast - close) <= maxExtAtr * atrVal
+bool cTaban     = not useBase or (atrVal > 0 and (resistance - support) <= maxBaseAtr * atrVal)
+
+// Fibonacci bacagi (onceki mum itibariyla)
+fibLow  = ta.lowest(low, fibLen)[1]
+fibHigh = ta.highest(high, fibLen)[1]
+lbOff = ta.lowestbars(low, fibLen)
+hbOff = ta.highestbars(high, fibLen)
+int lowAgo  = -nz(lbOff[1])
+int highAgo = -nz(hbOff[1])
+bool yukariBacak = lowAgo > highAgo
+float fibRange = fibHigh - fibLow
+bool fibGecerli = not na(fibRange) and fibRange > 0
+// Long: tepeden sonraki en dusuk nokta (geri cekilme)
+float pbLowRaw = ta.lowest(low[1], math.max(highAgo, 1))
+float pbLow = highAgo >= 1 ? pbLowRaw : na
+// Short: dipten sonraki en yuksek nokta (tepki yukselisi)
+float pbHighRaw = ta.highest(high[1], math.max(lowAgo, 1))
+float pbHigh = lowAgo >= 1 ? pbHighRaw : na
+
+bool cFibL = not useFib or not fibGecerli or (yukariBacak ? (na(pbLow) or pbLow >= fibHigh - 0.618 * fibRange) : close >= fibLow + 0.618 * fibRange)
+bool cFibS = not useFib or not fibGecerli or (not yukariBacak ? (na(pbHigh) or pbHigh <= fibLow + 0.618 * fibRange) : close <= fibHigh - 0.618 * fibRange)
+
+int yumusakL = (L6 ? 1 : 0) + (L8 ? 1 : 0) + (cMumL ? 1 : 0) + (cFibL ? 1 : 0)
+int yumusakS = (S6 ? 1 : 0) + (S8 ? 1 : 0) + (cMumS ? 1 : 0) + (cFibS ? 1 : 0)
+bool yumusakOkL = dengeli ? (cMumTemelL and yumusakL >= minYumusak) : (L6 and L8 and cMumL and cFibL)
+bool yumusakOkS = dengeli ? (cMumTemelS and yumusakS >= minYumusak) : (S6 and S8 and cMumS and cFibS)
+bool cOynak = maxAtrPct <= 0 or (atrVal / close * 100) <= maxAtrPct
+bool kirilimAdayL = longSet and cBreakoutL and cVol and cUzamaL and cTaban and cOynak and yumusakOkL and barstate.isconfirmed
+bool kirilimAdayS = shortSet and cBreakoutS and cVol and cUzamaS and cTaban and cOynak and yumusakOkS and barstate.isconfirmed
+
+// Kalite skoru (yumusak kriterler, 0-5)
+bool s1  = hasVolume and volOran >= strongVolMult
+bool s3  = atrVal > 0 and (resistance - support) <= 4 * atrVal
+bool s2L = fibGecerli and yukariBacak and (na(pbLow) or pbLow >= fibHigh - 0.382 * fibRange)
+bool s2S = fibGecerli and not yukariBacak and (na(pbHigh) or pbHigh <= fibLow + 0.382 * fibRange)
+bool s4L = not mktUygulanir or mkHist > 0
+bool s4S = not mktUygulanir or mkHist < 0
+int skorL = (s1 ? 1 : 0) + (s2L ? 1 : 0) + (s3 ? 1 : 0) + (s4L ? 1 : 0) + (closePos >= 0.8 ? 1 : 0)
+int skorS = (s1 ? 1 : 0) + (s2S ? 1 : 0) + (s3 ? 1 : 0) + (s4S ? 1 : 0) + (closePos <= 0.2 ? 1 : 0)
+f_harf(int s) =>
+    s >= 4 ? "A" : s >= 2 ? "B" : "C"
+string kaliteL = f_harf(skorL)
+string kaliteS = f_harf(skorS)
+bool kaliteOkL = minKalite == "C" or (minKalite == "B" ? skorL >= 2 : skorL >= 4)
+bool kaliteOkS = minKalite == "C" or (minKalite == "B" ? skorS >= 2 : skorS >= 4)
+
+// ============================================================================
+// FIB SEVIYELERI + PIVOT ENGELLERI
+// ============================================================================
+var float[] GERI = array.from(0.236, 0.382, 0.5, 0.618, 0.786)
+var float[] UZAT = array.from(1.272, 1.414, 1.618, 2.0, 2.618)
+
+f_fibSeviyeler() =>
+    float[] s = array.new_float()
+    if fibGecerli
+        for r in GERI
+            array.push(s, yukariBacak ? fibHigh - r * fibRange : fibLow + r * fibRange)
+        array.push(s, fibHigh)
+        array.push(s, fibLow)
+        for e in UZAT
+            array.push(s, fibLow + e * fibRange)
+            array.push(s, fibHigh - e * fibRange)
+        array.sort(s, order.ascending)
+    s
+
+// Fiyatin ustundeki ilk fib seviyesi
+f_fibUstu(float fiyat) =>
+    float[] s = f_fibSeviyeler()
+    float sonuc = na
+    for v in s
+        if v > fiyat
+            sonuc := v
+            break
+    sonuc
+
+// Fiyatin altindaki ilk (en yakin) fib seviyesi
+f_fibAlti(float fiyat) =>
+    float[] s = f_fibSeviyeler()
+    float sonuc = na
+    for v in s
+        if v >= fiyat
+            break
+        if v > 0
+            sonuc := v
+    sonuc
+
+var float[] direncler = array.new_float()
+var float[] destekler = array.new_float()
+phRoom = ta.pivothigh(high, roomPivotLen, roomPivotLen)
+plRoom = ta.pivotlow(low, roomPivotLen, roomPivotLen)
+if not na(phRoom)
+    array.push(direncler, phRoom)
+    if array.size(direncler) > 30
+        array.shift(direncler)
+if not na(plRoom)
+    array.push(destekler, plRoom)
+    if array.size(destekler) > 30
+        array.shift(destekler)
+
+f_tavan(float fiyat) =>
+    float best = na
+    int n = array.size(direncler)
+    if n > 0
+        for i = 0 to n - 1
+            float v = array.get(direncler, i)
+            if v > fiyat * 1.002 and (na(best) or v < best)
+                best := v
+    best
+
+f_zemin(float fiyat) =>
+    float best = na
+    int n = array.size(destekler)
+    if n > 0
+        for i = 0 to n - 1
+            float v = array.get(destekler, i)
+            if v < fiyat * 0.998 and (na(best) or v > best)
+                best := v
+    best
+
+swingLowRaw  = ta.lowest(low, stopLookback)
+swingHighRaw = ta.highest(high, stopLookback)
+
+// ============================================================================
+// POZISYON DURUMU
+// ============================================================================
+var bool   posOpen = false
+var int    posDir = 0
+var float  posEntry = na
+var float  posStop = na
+var float  posTp1 = na
+var float  posTp2 = na
+var float  posRisk = na
+var float  posHH = na
+var float  posLL = na
+var float  posRealR = 0.0
+var float  posPoz = na
+var bool   tp1Done = false
+var int    girisBarIndex = na
+var string posTip = ""
+var string posKalite = ""
+var string posTp1Kay = ""
+var string posTp2Kay = ""
+
+var bool   pendAktif = false
+var int    pendDir = 0
+var float  pendSeviye = na
+var float  pendUc = na
+var int    pendBar = na
+var string pendKalite = ""
+
+var int   nIslem = 0
+var int   nKazanc = 0
+var int   nIslemL = 0
+var int   nKazL = 0
+var int   nIslemS = 0
+var int   nKazS = 0
+var float toplamRL = 0.0
+var float toplamRS = 0.0
+var int   nTp1 = 0
+var int   nTp2 = 0
+var int   nTamStop = 0
+var float toplamR = 0.0
+var float brutKar = 0.0
+var float brutZarar = 0.0
+var float tepeR = 0.0
+var float maxDD = 0.0
+var int   nHata = 0
+var int   ilkZaman = na
+if na(ilkZaman)
+    ilkZaman := time
+
+bool posOpenBasta = posOpen
+
+// ---------------------------------------------------------------- CIKISLAR
+bool stopHit = false
+bool tp1Hit = false
+bool tp2Hit = false
+bool zamanCikis = false
+bool trendCikis = false
+float cikisFiyat = na
+float islemSonucR = na
+int cikanDir = 0
+
+if posOpen and barstate.isconfirmed and bar_index > girisBarIndex
+    bool isL = posDir == 1
+    bool stopDokundu = isL ? low <= posStop : high >= posStop
+    if stopDokundu
+        stopHit := true
+        cikisFiyat := isL ? math.min(posStop, open) : math.max(posStop, open)
+    else
+        bool tp1Dokundu = isL ? high >= posTp1 : low <= posTp1
+        if not tp1Done and tp1Dokundu
+            tp1Hit := true
+            tp1Done := true
+            nTp1 += 1
+            float tp1Dolum = isL ? math.max(posTp1, open) : math.min(posTp1, open)
+            posRealR += tp1Pct / 100 * posDir * (tp1Dolum - posEntry) / posRisk
+            posStop := isL ? math.max(posStop, posEntry + beBufR * posRisk) : math.min(posStop, posEntry - beBufR * posRisk)
+        if not tp1Done and erkenBeR > 0 and (isL ? high >= posEntry + erkenBeR * posRisk : low <= posEntry - erkenBeR * posRisk)
+            posStop := isL ? math.max(posStop, posEntry) : math.min(posStop, posEntry)
+        bool tp2Dokundu = isL ? high >= posTp2 : low <= posTp2
+        bool trendTers = isL ? close < trendEma : close > trendEma
+        if tp2Dokundu
+            tp2Hit := true
+            cikisFiyat := isL ? math.max(posTp2, open) : math.min(posTp2, open)
+            nTp2 += 1
+        else if useTimeStop and not tp1Done and (bar_index - girisBarIndex) >= timeStopBars and posDir * (close - posEntry) < timeStopMinR * posRisk
+            zamanCikis := true
+            cikisFiyat := close
+        else if useTrendExit and tp1Done and trendTers
+            trendCikis := true
+            cikisFiyat := close
+    if na(cikisFiyat)
+        posHH := math.max(posHH, high)
+        posLL := math.min(posLL, low)
+        if tp1Done
+            if isL
+                float trailL = posHH - trailAtrMult * atrVal
+                if trailL > posStop
+                    posStop := trailL
+            else
+                float trailS = posLL + trailAtrMult * atrVal
+                if trailS < posStop
+                    posStop := trailS
+    else
+        float kalan = tp1Done ? (1 - tp1Pct / 100) : 1.0
+        posRealR += kalan * posDir * (cikisFiyat - posEntry) / posRisk
+        posRealR -= 2 * komisyonPct / 100 * posEntry / posRisk
+        islemSonucR := posRealR
+        cikanDir := posDir
+        if cikisFiyat > high * 1.000001 or cikisFiyat < low * 0.999999
+            nHata += 1
+        posOpen := false
+        if stopHit and islemSonucR < 0
+            sonStopBarIndex := bar_index
+        if stopHit and not tp1Done
+            nTamStop += 1
+        nIslem += 1
+        if islemSonucR > 0
+            nKazanc += 1
+            brutKar += islemSonucR
+        else
+            brutZarar -= islemSonucR
+        if cikanDir == 1
+            nIslemL += 1
+            toplamRL += islemSonucR
+            if islemSonucR > 0
+                nKazL += 1
+        else
+            nIslemS += 1
+            toplamRS += islemSonucR
+            if islemSonucR > 0
+                nKazS += 1
+        toplamR += islemSonucR
+        tepeR := math.max(tepeR, toplamR)
+        maxDD := math.max(maxDD, tepeR - toplamR)
+
+// ---------------------------------------------------------------- GIRIS ZAMANLAMASI
+bool girisSinyal = false
+int girisDir = 0
+string girisTipi = ""
+string girisKalite = ""
+float girisSeviye = na
+bool kirilimIsaretL = false
+bool kirilimIsaretS = false
+bool sahteKirilim = false
+bool retestZamanAsimi = false
+bool yoksayilan = (kirilimAdayL or kirilimAdayS) and posOpenBasta
+
+if barstate.isconfirmed and not posOpenBasta
+    // a) Bekleyen retest
+    if pendAktif and bar_index > pendBar
+        bool pL = pendDir == 1
+        float tol = retestTolAtr * atrVal
+        bool basarisiz = pL ? close < pendSeviye - failAtr * atrVal : close > pendSeviye + failAtr * atrVal
+        bool retestL = low <= pendSeviye + tol and close > pendSeviye and close > open and closePos >= 0.5 and longSet
+        bool retestS = high >= pendSeviye - tol and close < pendSeviye and close < open and closePos <= 0.5 and shortSet
+        bool teyitL = useTeyit and close > pendUc and close > open and closePos >= 0.5 and longSet and cUzamaL
+        bool teyitS = useTeyit and close < pendUc and close < open and closePos <= 0.5 and shortSet and cUzamaS
+        if basarisiz
+            pendAktif := false
+            sahteKirilim := true
+        else if bar_index - pendBar > retestBars
+            pendAktif := false
+            retestZamanAsimi := true
+        else if pL ? retestL : retestS
+            girisSinyal := true
+            girisDir := pendDir
+            girisTipi := "RETEST"
+            girisKalite := pendKalite
+            girisSeviye := pendSeviye
+            pendAktif := false
+        else if pL ? teyitL : teyitS
+            girisSinyal := true
+            girisDir := pendDir
+            girisTipi := "TEYIT"
+            girisKalite := pendKalite
+            girisSeviye := pendSeviye
+            pendAktif := false
+    // b) Yeni kirilim
+    if not girisSinyal and ((kirilimAdayL and kaliteOkL) or (kirilimAdayS and kaliteOkS))
+        int d = (kirilimAdayL and kaliteOkL) ? 1 : -1
+        bool guclu = (not hasVolume or volOran >= strongVolMult) and (d == 1 ? closePos >= 0.75 : closePos <= 0.25)
+        string harf = d == 1 ? kaliteL : kaliteS
+        if entryMode == "Kirilim kapanisi" or (entryMode == "Hibrit" and guclu)
+            girisSinyal := true
+            girisDir := d
+            girisTipi := guclu ? "GUCLU KIRILIM" : "KIRILIM"
+            girisKalite := harf
+            girisSeviye := d == 1 ? resistance : support
+            pendAktif := false
+        else
+            pendAktif := true
+            pendDir := d
+            pendSeviye := d == 1 ? resistance : support
+            pendUc := d == 1 ? high : low
+            pendBar := bar_index
+            pendKalite := harf
+            kirilimIsaretL := d == 1
+            kirilimIsaretS := d == -1
+
+// ---------------------------------------------------------------- STOP / TP HESABI
+bool yeniGiris = false
+bool reddedildi = false
+string redNedeni = ""
+int redTur = 0
+
+if girisSinyal and (time < statBas or time > statBit)
+    girisSinyal := false
+
+if girisSinyal
+    bool gL = girisDir == 1
+    float giris = close
+    float yapiStop = gL ? swingLowRaw - stopBufAtr * atrVal : swingHighRaw + stopBufAtr * atrVal
+    if seviyeStopAtr > 0 and not na(girisSeviye)
+        float sevStop = girisSeviye - girisDir * seviyeStopAtr * atrVal
+        yapiStop := gL ? math.max(yapiStop, sevStop) : math.min(yapiStop, sevStop)
+    float yapisalRisk = gL ? giris - yapiStop : yapiStop - giris
+    float rsk = stopMode == "Sabit ATR (sembol tablosu)" ? atrStopMult * atrVal : math.max(yapisalRisk, minStopAtr * atrVal)
+    float riskPct = rsk / giris * 100
+    float tpOff = tpOffsetAtr * atrVal
+
+    // TP1: once fib seviyesi (min-max R araliginda), yoksa sabit R
+    float tp1 = giris + girisDir * tp1R * rsk
+    string tp1Kay = "R"
+    if useFibTp
+        float L1f = gL ? f_fibUstu(giris + tp1MinR * rsk + tpOff) : f_fibAlti(giris - tp1MinR * rsk - tpOff)
+        if not na(L1f)
+            float aday1 = L1f - girisDir * tpOff
+            if math.abs(aday1 - giris) <= tp1MaxR * rsk
+                tp1 := aday1
+                tp1Kay := "Fib"
+
+    // Red kontrolleri
+    float engel = gL ? f_tavan(giris) : f_zemin(giris)
+    float engelMesafe = na(engel) ? na : math.abs(engel - giris)
+    if stopMode != "Sabit ATR (sembol tablosu)" and rsk > maxStopAtr * atrVal
+        reddedildi := true
+        redTur := 1
+        redNedeni := "Stop cok genis (" + str.tostring(rsk / atrVal, "#.#") + " ATR)"
+    else if riskPct > maxRiskPct
+        reddedildi := true
+        redTur := 2
+        redNedeni := "Stop %" + str.tostring(riskPct, "#.#") + " > %" + str.tostring(maxRiskPct, "#.#")
+    else if useRoom and not na(engel) and engelMesafe < minRoomR * rsk
+        reddedildi := true
+        redTur := 3
+        redNedeni := (gL ? "Ust direnc" : "Alt destek") + " cok yakin (" + str.tostring(engelMesafe / rsk, "#.#") + "R)"
+
+    // TP1 karsi engeli asiyorsa engelin hemen onune cek
+    if not reddedildi and useRoom and not na(engel)
+        float engelOnu = engel - girisDir * tpOff
+        if gL ? engelOnu < tp1 : engelOnu > tp1
+            tp1 := engelOnu
+            tp1Kay := gL ? "Direnc" : "Destek"
+
+    // TP2
+    float tp2Mesafe = math.max(math.max(tp2R, tp1R + 0.5) * rsk, math.abs(tp1 - giris) + 0.5 * rsk)
+    float tp2 = giris + girisDir * tp2Mesafe
+    string tp2Kay = "R"
+    if useFibTp
+        float L2f = gL ? f_fibUstu(tp2 + tpOff) : f_fibAlti(tp2 - tpOff)
+        if not na(L2f)
+            float aday2 = L2f - girisDir * tpOff
+            if math.abs(aday2 - giris) <= tp2MaxR * rsk
+                tp2 := aday2
+                tp2Kay := "Fib"
+    if not gL and tp2 <= 0
+        reddedildi := true
+        redNedeni := "TP2 hesaplanamadi"
+
+    if not reddedildi
+        posOpen := true
+        yeniGiris := true
+        posDir := girisDir
+        posEntry := giris
+        posRisk := rsk
+        posStop := giris - girisDir * rsk
+        posTp1 := tp1
+        posTp2 := tp2
+        posHH := high
+        posLL := low
+        posRealR := 0.0
+        tp1Done := false
+        girisBarIndex := bar_index
+        posTip := girisTipi
+        posKalite := girisKalite
+        posTp1Kay := tp1Kay
+        posTp2Kay := tp2Kay
+        posPoz := math.min(hesapRisk / riskPct * 100, 100)
+        bool sira = gL ? (posStop < posEntry and posEntry < posTp1 and posTp1 < posTp2) : (posStop > posEntry and posEntry > posTp1 and posTp1 > posTp2)
+        if not sira or pendAktif
+            nHata += 1
+
+// ============================================================================
+// STRATEJI EMIRLERI (indikatorun sanal pozisyonunu Strategy Tester'a aktarir)
+// Not: komisyon Strateji Ayarlari > Ozellikler'den de degistirilebilir (varsayilan %0.1).
+// ============================================================================
+string emirId = posDir == 1 ? "L" : "S"
+if yeniGiris
+    float adet = (strategy.equity * hesapRisk / 100) / posRisk
+    adet := math.min(adet, strategy.equity / close)
+    strategy.entry(emirId, posDir == 1 ? strategy.long : strategy.short, qty=adet)
+if (zamanCikis or trendCikis) and strategy.position_size != 0
+    strategy.close_all(comment=zamanCikis ? "Zaman" : "Trend")
+if posOpen and not yeniGiris
+    if not tp1Done
+        strategy.exit("TP1", emirId, qty_percent=tp1Pct, limit=posTp1, stop=posStop, comment_profit="TP1", comment_loss="Stop")
+    strategy.exit("TP2", emirId, limit=posTp2, stop=posStop, comment_profit="TP2", comment_loss=tp1Done ? "Trail/BE" : "Stop")
+if yeniGiris
+    strategy.exit("TP1", emirId, qty_percent=tp1Pct, limit=posTp1, stop=posStop, comment_profit="TP1", comment_loss="Stop")
+    strategy.exit("TP2", emirId, limit=posTp2, stop=posStop, comment_profit="TP2", comment_loss="Stop")
+
+// ============================================================================
+// TESHIS SAYACLARI (gecmisteki tum kirilim mumlari)
+// ============================================================================
+var int[] gecL = array.new_int(14, 0)
+var int[] gecS = array.new_int(14, 0)
+var string[] ELEK_AD = array.from("1 Piyasa", "2 Ana trend", "3 Haftalik MACD", "4 Gunluk MACD", "5 EMA dizilimi", "6 MACD (grafik)", "7 RSI", "8 ADX / DMI", "9 Cooldown", "11 Hacim", "12 Mum kalitesi", "13 Uzama", "14 Fibonacci", "15 Taban")
+var int nBrkL = 0
+var int nBrkS = 0
+var int nAdayL = 0
+var int nAdayS = 0
+var int nDirekt = 0
+var int nPend = 0
+var int nRetestGiris = 0
+var int nSahte = 0
+var int nZamanAsimi = 0
+var int nRedStop = 0
+var int nRedRisk = 0
+var int nRedEngel = 0
+
+f_say(int[] arr, int i, bool kosul) =>
+    if kosul
+        array.set(arr, i, array.get(arr, i) + 1)
+    true
+
+if barstate.isconfirmed and isinma
+    if cBreakoutL and longIzin
+        nBrkL += 1
+        f_say(gecL, 0, L1)
+        f_say(gecL, 1, L2)
+        f_say(gecL, 2, L3)
+        f_say(gecL, 3, L4)
+        f_say(gecL, 4, L5)
+        f_say(gecL, 5, L6)
+        f_say(gecL, 6, L7)
+        f_say(gecL, 7, L8)
+        f_say(gecL, 8, e9)
+        f_say(gecL, 9, cVol)
+        f_say(gecL, 10, cMumL)
+        f_say(gecL, 11, cUzamaL)
+        f_say(gecL, 12, cFibL)
+        f_say(gecL, 13, cTaban)
+    if cBreakoutS and shortIzin
+        nBrkS += 1
+        f_say(gecS, 0, S1)
+        f_say(gecS, 1, S2)
+        f_say(gecS, 2, S3)
+        f_say(gecS, 3, S4)
+        f_say(gecS, 4, S5)
+        f_say(gecS, 5, S6)
+        f_say(gecS, 6, S7)
+        f_say(gecS, 7, S8)
+        f_say(gecS, 8, e9)
+        f_say(gecS, 9, cVol)
+        f_say(gecS, 10, cMumS)
+        f_say(gecS, 11, cUzamaS)
+        f_say(gecS, 12, cFibS)
+        f_say(gecS, 13, cTaban)
+    nAdayL += kirilimAdayL ? 1 : 0
+    nAdayS += kirilimAdayS ? 1 : 0
+    nDirekt += girisSinyal and girisTipi != "RETEST" and girisTipi != "TEYIT" ? 1 : 0
+    nRetestGiris += girisSinyal and (girisTipi == "RETEST" or girisTipi == "TEYIT") ? 1 : 0
+    nPend += (kirilimIsaretL or kirilimIsaretS) ? 1 : 0
+    nSahte += sahteKirilim ? 1 : 0
+    nZamanAsimi += retestZamanAsimi ? 1 : 0
+    nRedStop += redTur == 1 ? 1 : 0
+    nRedRisk += redTur == 2 ? 1 : 0
+    nRedEngel += redTur == 3 ? 1 : 0
+
+f_enCok(int[] arr, int n) =>
+    string ad = "-"
+    float enAz = 101.0
+    if n > 0
+        for i = 0 to 13
+            bool yum = dengeli and (i == 5 or i == 7 or i == 10 or i == 12)
+            float pct = array.get(arr, i) * 100.0 / n
+            if not yum and pct < enAz
+                enAz := pct
+                ad := array.get(ELEK_AD, i) + " %" + str.tostring(pct, "#")
+    ad
+
+// ============================================================================
+// CIZIMLER
+// ============================================================================
+plot(resistance, color=color.new(color.red, 0), title="Direnc", linewidth=1)
+plot(support, color=color.new(color.green, 0), title="Destek", linewidth=1)
+plot(emaFast, color=color.new(color.yellow, 40), title="Hizli EMA", linewidth=1)
+plot(trendEma, color=color.new(color.purple, 20), title="Trend EMA", linewidth=1)
+plot(pendAktif and not posOpen ? pendSeviye : na, color=pendDir == 1 ? color.new(color.yellow, 0) : color.new(color.fuchsia, 0), title="Retest seviyesi", linewidth=2, style=plot.style_linebr)
+
+color bgRenk = na
+if pendAktif and not posOpen
+    bgRenk := pendDir == 1 ? color.new(color.yellow, 88) : color.new(color.fuchsia, 88)
+else if longSet and not posOpen and (proxAtr <= 0 or (close <= resistance and close >= resistance - proxAtr * atrVal))
+    bgRenk := color.new(color.green, 88)
+else if shortSet and not posOpen and (proxAtr <= 0 or (close >= support and close <= support + proxAtr * atrVal))
+    bgRenk := color.new(color.red, 88)
+bgcolor(bgRenk, title="Durum zemini")
+
+pEntry = plot(posOpen ? posEntry : na, title="Aktif giris", color=color.new(color.gray, 30), linewidth=1, style=plot.style_linebr)
+pStop  = plot(posOpen ? posStop : na, title="Aktif stop", color=color.new(color.orange, 0), linewidth=2, style=plot.style_linebr)
+pTp1   = plot(posOpen and not tp1Done ? posTp1 : na, title="Aktif TP1", color=color.new(color.teal, 0), linewidth=1, style=plot.style_linebr)
+pTp2   = plot(posOpen ? posTp2 : na, title="Aktif TP2", color=color.new(color.blue, 0), linewidth=1, style=plot.style_linebr)
+fill(pEntry, pStop, color=color.new(color.red, 92), title="Risk bolgesi")
+fill(pEntry, pTp2, color=color.new(color.green, 92), title="Odul bolgesi")
+
+pivotHighVal = ta.pivothigh(high, pivotBars, pivotBars)
+pivotLowVal  = ta.pivotlow(low, pivotBars, pivotBars)
+plotshape(showPivots and not na(pivotHighVal), style=shape.labeldown, location=location.abovebar, color=color.new(color.purple, 0), text="P", textcolor=color.white, size=size.tiny, offset=-pivotBars, title="Buyuk swing tepe")
+plotshape(showPivots and not na(pivotLowVal), style=shape.labelup, location=location.belowbar, color=color.new(color.aqua, 0), text="D", textcolor=color.black, size=size.tiny, offset=-pivotBars, title="Buyuk swing dip")
+
+plotshape(yeniGiris and posDir == 1, style=shape.triangleup, location=location.belowbar, color=color.lime, size=size.small, title="LONG giris")
+plotshape(yeniGiris and posDir == -1, style=shape.triangledown, location=location.abovebar, color=color.fuchsia, size=size.small, title="SHORT giris")
+plotshape(kirilimIsaretL, style=shape.diamond, location=location.belowbar, color=color.new(color.yellow, 0), size=size.tiny, title="Long kirilim (retest bekleniyor)")
+plotshape(kirilimIsaretS, style=shape.diamond, location=location.abovebar, color=color.new(color.fuchsia, 0), size=size.tiny, title="Short kirilim (retest bekleniyor)")
+plotshape(sahteKirilim, style=shape.xcross, location=location.belowbar, color=color.new(color.gray, 0), size=size.tiny, title="Sahte kirilim (iptal)")
+plotshape(reddedildi, style=shape.square, location=location.belowbar, color=color.new(color.gray, 20), size=size.tiny, title="Reddedilen kirilim")
+plotshape(yoksayilan, style=shape.circle, location=location.belowbar, color=color.new(color.gray, 40), size=size.tiny, title="Yoksayilan kirilim (pozisyon acik)")
+plotshape(stopHit, style=shape.xcross, location=location.abovebar, color=color.red, size=size.small, title="Stop")
+plotshape(tp1Hit, style=shape.circle, location=location.abovebar, color=color.orange, size=size.small, title="TP1")
+plotshape(tp2Hit, style=shape.circle, location=location.abovebar, color=color.blue, size=size.small, title="TP2")
+plotshape(zamanCikis or trendCikis, style=shape.square, location=location.abovebar, color=color.purple, size=size.tiny, title="Zaman / trend cikisi")
+
+if showValues and yeniGiris
+    bool eL = posDir == 1
+    float rp = posRisk / posEntry * 100
+    string t = (eL ? "LONG " : "SHORT ") + posTip + " | Kalite " + posKalite + "\n" + str.tostring(posEntry, format.mintick)
+    t += "\nSTOP " + str.tostring(posStop, format.mintick) + " (%" + str.tostring(rp, "#.##") + ")"
+    t += "\nTP1 " + str.tostring(posTp1, format.mintick) + " (" + str.tostring(math.abs(posTp1 - posEntry) / posRisk, "#.#") + "R " + posTp1Kay + ")"
+    t += "\nTP2 " + str.tostring(posTp2, format.mintick) + " (" + str.tostring(math.abs(posTp2 - posEntry) / posRisk, "#.#") + "R " + posTp2Kay + ")"
+    t += "\nPoz: sermayenin %" + str.tostring(posPoz, "#.#") + "'i"
+    if eL
+        label.new(bar_index, low, t, style=label.style_label_up, color=color.new(color.lime, 20), textcolor=color.black, size=size.small)
+    else
+        label.new(bar_index, high, t, style=label.style_label_down, color=color.new(color.fuchsia, 20), textcolor=color.white, size=size.small)
+
+if showRejects and reddedildi
+    label.new(bar_index, girisDir == 1 ? low : high, "RED (" + (girisDir == 1 ? "L" : "S") + "): " + redNedeni, style=girisDir == 1 ? label.style_label_up : label.style_label_down, color=color.new(color.gray, 30), textcolor=color.white, size=size.tiny)
+
+if showValues and not na(islemSonucR)
+    string neden = stopHit ? (tp1Done ? "STOP (TP1 sonrasi)" : "STOP") : tp2Hit ? "TP2" : zamanCikis ? "ZAMAN STOPU" : "TREND CIKISI"
+    color lc = islemSonucR > 0 ? color.new(color.blue, 20) : color.new(color.red, 20)
+    string yt = (cikanDir == 1 ? "LONG " : "SHORT ") + neden + "\n" + str.tostring(cikisFiyat, format.mintick) + "\nIslem: " + str.tostring(islemSonucR, "#.##") + "R"
+    if cikanDir == 1
+        label.new(bar_index, high, yt, style=label.style_label_down, color=lc, textcolor=color.white, size=size.small)
+    else
+        label.new(bar_index, low, yt, style=label.style_label_up, color=lc, textcolor=color.white, size=size.small)
+
+if showValues and tp1Hit and not tp2Hit and na(islemSonucR)
+    label.new(bar_index, posDir == 1 ? high : low, "TP1 " + str.tostring(posTp1, format.mintick) + "\nstop -> basabas+", style=posDir == 1 ? label.style_label_down : label.style_label_up, color=color.new(color.orange, 20), textcolor=color.black, size=size.tiny)
+
+// ---------------------------------------------------------------- Fib + pivot seviyeleri (son mumda)
+// Fiyatin USTUNDEKI her seviye kirmizi "DIRENC", ALTINDAKI her seviye yesil "DESTEK".
+f_seviye(float lv, string ad, int x1, int x2, bool vurgu) =>
+    bool ustte = lv > close
+    color c = ustte ? color.new(color.red, vurgu ? 0 : 30) : color.new(color.green, vurgu ? 0 : 30)
+    string tur = ustte ? "DIRENC" : "DESTEK"
+    line l = line.new(x1, lv, x2, lv, color=c, style=vurgu ? line.style_solid : line.style_dotted, width=vurgu ? 2 : 1)
+    label lb = label.new(x2, lv, tur + " | " + ad + "  " + str.tostring(lv, format.mintick), style=label.style_label_left, color=color.new(color.black, 100), textcolor=c, size=size.tiny)
+    [l, lb]
+
+var line[] fibCiz = array.new_line()
+var label[] fibEt = array.new_label()
+if barstate.islast
+    while array.size(fibCiz) > 0
+        line.delete(array.pop(fibCiz))
+    while array.size(fibEt) > 0
+        label.delete(array.pop(fibEt))
+    int x1 = math.max(bar_index - fibLen, 0)
+    int x2 = bar_index + 5
+    if showFib and fibGecerli
+        for r in GERI
+            float lv = yukariBacak ? fibHigh - r * fibRange : fibLow + r * fibRange
+            [lA, lbA] = f_seviye(lv, "Fib " + str.tostring(r), x1, x2, r == 0.618 or r == 0.5)
+            array.push(fibCiz, lA)
+            array.push(fibEt, lbA)
+        [lT, lbT] = f_seviye(fibHigh, "Fib tepe", x1, x2, true)
+        array.push(fibCiz, lT)
+        array.push(fibEt, lbT)
+        [lD, lbD] = f_seviye(fibLow, "Fib dip", x1, x2, true)
+        array.push(fibCiz, lD)
+        array.push(fibEt, lbD)
+        for e in UZAT
+            float lv = yukariBacak ? fibLow + e * fibRange : fibHigh - e * fibRange
+            if lv > 0
+                [lE, lbE] = f_seviye(lv, "Fib ext " + str.tostring(e), x1, x2, e == 1.618)
+                array.push(fibCiz, lE)
+                array.push(fibEt, lbE)
+    if showDirenc
+        float[] ust = array.new_float()
+        for v in direncler
+            if v > close
+                array.push(ust, v)
+        array.sort(ust, order.ascending)
+        int ku = math.min(array.size(ust), direncSayisi)
+        if ku > 0
+            for i = 0 to ku - 1
+                [lP, lbP] = f_seviye(array.get(ust, i), "Pivot tepe" + (i == 0 ? " (long ilk engel)" : ""), x1, x2, i == 0)
+                array.push(fibCiz, lP)
+                array.push(fibEt, lbP)
+        float[] alt = array.new_float()
+        for v in destekler
+            if v < close
+                array.push(alt, v)
+        array.sort(alt, order.descending)
+        int ka = math.min(array.size(alt), direncSayisi)
+        if ka > 0
+            for i = 0 to ka - 1
+                [lQ, lbQ] = f_seviye(array.get(alt, i), "Pivot dip" + (i == 0 ? " (short ilk engel)" : ""), x1, x2, i == 0)
+                array.push(fibCiz, lQ)
+                array.push(fibEt, lbQ)
+
+// ============================================================================
+// KONTROL PANELI  (sutunlar: Elek | LONG | SHORT | Detay)
+// ============================================================================
+var table panel = table.new(panelPos, 4, 34, bgcolor=color.new(#131722, 8), frame_color=color.new(color.gray, 40), frame_width=1, border_color=color.new(color.gray, 75), border_width=1)
+
+f_hucre(int c, int r, string txt, color col, color bg, string sz) =>
+    table.cell(panel, c, r, txt, text_color=col, text_size=(sz == size.normal and panelYazi != size.tiny) ? size.normal : panelYazi, text_halign=text.align_left, bgcolor=bg)
+    true
+
+f_elek(int r, string k, bool okL, bool okS, string detay) =>
+    f_hucre(0, r, k, color.silver, na, size.small)
+    f_hucre(1, r, longIzin ? (okL ? "✓" : "✗") : "-", longIzin ? (okL ? color.lime : color.red) : color.gray, na, size.small)
+    f_hucre(2, r, shortIzin ? (okS ? "✓" : "✗") : "-", shortIzin ? (okS ? color.lime : color.red) : color.gray, na, size.small)
+    f_hucre(3, r, detay, color.white, na, size.small)
+    true
+
+f_bilgi(int r, string k, string v, color vCol) =>
+    f_hucre(0, r, k, color.silver, na, size.small)
+    f_hucre(1, r, "", color.white, na, size.small)
+    f_hucre(2, r, "", color.white, na, size.small)
+    f_hucre(3, r, v, vCol, na, size.small)
+    true
+
+f_baslik(int r, string txt, string t1, string t2, color bg) =>
+    f_hucre(0, r, txt, color.white, bg, size.small)
+    f_hucre(1, r, t1, color.white, bg, size.small)
+    f_hucre(2, r, t2, color.white, bg, size.small)
+    f_hucre(3, r, "", color.white, bg, size.small)
+    true
+
+f_macdMetin(float m, float h, float hp) =>
+    "hist " + (h > 0 ? "+" : "-") + (h > hp ? " yukseliyor" : " dusuyor") + " | MACD " + (m > 0 ? "+" : "-")
+
+f_ilk(bool a1, bool a2, bool a3, bool a4, bool a5, bool a6, bool a7, bool a8, bool a9, bool izin) =>
+    not izin ? "kapali" : not a1 ? "1 Piyasa" : not a2 ? "2 Ana trend" : not a3 ? "3 H.MACD" : not a4 ? "4 G.MACD" : not a5 ? "5 EMA" : not a6 ? "6 MACD" : not a7 ? "7 RSI" : not a8 ? "8 ADX" : not a9 ? "9 Cooldown" : "-"
+
+if showPanel and barstate.islast and panelModu == "Canli durum"
+    color cW = color.white
+    color cG = color.gray
+    color basCol = ozelParamVarMi ? color.new(color.green, 55) : color.new(color.orange, 55)
+    f_hucre(0, 0, sembol, cW, basCol, size.small)
+    f_hucre(1, 0, "", cW, basCol, size.small)
+    f_hucre(2, 0, "", cW, basCol, size.small)
+    f_hucre(3, 0, (kullanOzel ? "OZEL PARAM" : "VARSAYILAN") + " | " + yonModu + " | " + entryMode + (dengeli ? " | * yumusak (" + str.tostring(minYumusak) + "/4 yeter)" : ""), cW, basCol, size.small)
+
+    f_baslik(1, "TREND ELEKLERI", "LONG", "SHORT", color.new(color.blue, 55))
+    string pDetay = not mktUygulanir ? (isBtcBase ? "BTC'nin kendisi (atlandi)" : "uygulanmiyor") : mkKisa + (mkVeriYok ? " veri yok" : ((mkClose > mkEma ? " > " : " < ") + "EMA" + str.tostring(mktEmaLen))) + " | " + str.tostring(nz(mkRoc), "#.#") + "%"
+    pDetay += useDom and isCrypto and not isBtcBase ? " | Dom " + (domOk ? "ok" : "yukseliyor") : ""
+    f_elek(2, "1 Piyasa", L1, S1, pDetay)
+    string aDetay = not useAnaTrend ? "kapali" : atVeriYok ? "veri yok (" + naPolicy + ")" : "G " + (dClose > dEmaL ? ">" : "<") + " EMA" + str.tostring(dEmaLongLen) + ", egim " + (dEmaL >= dEmaLOld ? "yukari" : "asagi") + ", H " + (wClose > wEma ? ">" : "<") + " EMA" + str.tostring(wEmaLen)
+    f_elek(3, "2 Ana trend", L2, S2, aDetay)
+    f_elek(4, "3 Haftalik MACD", L3, S3, not useWMacd ? "kapali" : wYok ? "veri yok (" + naPolicy + ")" : f_macdMetin(wMacd, wHist, wHistPrev))
+    f_elek(5, "4 Gunluk MACD", L4, S4, not useDMacd ? "kapali" : dYok ? "veri yok (" + naPolicy + ")" : f_macdMetin(dMacd, dHist, dHistPrev))
+    f_elek(6, "5 EMA dizilimi", L5, S5, "K " + (close > trendEma ? ">" : "<") + " EMA" + str.tostring(trendEmaLen) + ", EMA" + str.tostring(emaFastLen) + (emaFast > trendEma ? " > " : " < ") + "EMA" + str.tostring(trendEmaLen))
+    f_elek(7, dengeli ? "6 MACD (grafik) *" : "6 MACD (grafik)", L6, S6, useLtfMacd ? f_macdMetin(macdLine, histLine, histLine[1]) : "kapali")
+    f_elek(8, "7 RSI", L7, S7, str.tostring(rsiVal, "#.#") + " | L " + str.tostring(rsiMin, "#") + "-" + str.tostring(rsiMaxEntry, "#") + " | S " + str.tostring(100 - rsiMaxEntry, "#") + "-" + str.tostring(100 - rsiMin, "#"))
+    f_elek(9, dengeli ? "8 ADX / DMI *" : "8 ADX / DMI", L8, S8, useAdx ? "ADX " + str.tostring(adxVal, "#.#") + (adxVal > adxVal[2] ? " yukseliyor" : "") + " | DI+" + (diP > diM ? " > " : " < ") + "DI-" : "kapali")
+    string coolMetni = not isinma ? "isinma" : cCool ? "hazir" : "bekleniyor (" + str.tostring(cooldownBars - (bar_index - sonStopBarIndex)) + " mum)"
+    f_elek(10, "9 Cooldown", e9, e9, coolMetni)
+
+    f_baslik(11, "KIRILIM ANI (bu mum)", "LONG", "SHORT", color.new(color.teal, 55))
+    f_elek(12, "10 Kirilim", cBreakoutL, cBreakoutS, "Direnc " + str.tostring(resistance, format.mintick) + " | Destek " + str.tostring(support, format.mintick))
+    string hacimMetni = not useVolumeFilter ? "filtre kapali" : (not hasVolume ? "hacim yok (atlandi)" : str.tostring(nz(volOran), "0.0") + "x (>" + str.tostring(volMult, "0.0") + "x)")
+    f_elek(13, "11 Hacim", cVol, cVol, hacimMetni)
+    f_elek(14, dengeli ? "12 Mum kalitesi *" : "12 Mum kalitesi", cMumL, cMumS, "kapanis %" + str.tostring(closePos * 100, "#") + " | " + str.tostring(atrVal > 0 ? rng / atrVal : 0, "0.0") + " ATR")
+    f_elek(15, "13 Uzama", cUzamaL, cUzamaS, "EMA" + str.tostring(emaFastLen) + "'e uzaklik " + str.tostring(atrVal > 0 ? (close - emaFast) / atrVal : 0, "0.0") + " ATR")
+    string fibMetni = not useFib ? "kapali" : not fibGecerli ? "veri yok" : (yukariBacak ? "yukselis bacagi" : "dusus bacagi") + " | 0.5: " + str.tostring(fibLow + 0.5 * fibRange, format.mintick)
+    f_elek(16, dengeli ? "14 Fibonacci *" : "14 Fibonacci", cFibL, cFibS, fibMetni)
+    f_elek(17, "15 Taban", cTaban, cTaban, useBase ? str.tostring(atrVal > 0 ? (resistance - support) / atrVal : 0, "#.0") + " ATR" : "kapali")
+
+    string ilkL = f_ilk(L1, L2, L3, L4, L5, dengeli or L6, L7, dengeli or L8, e9, longIzin)
+    string ilkS = f_ilk(S1, S2, S3, S4, S5, dengeli or S6, S7, dengeli or S8, e9, shortIzin)
+    string sonuc = posOpen ? "Pozisyon acik" : pendAktif ? (pendDir == 1 ? "LONG" : "SHORT") + " retest bekleniyor @ " + str.tostring(pendSeviye, format.mintick) : longSet ? "LONG elekleri OK - direnc kirilimi bekleniyor" : shortSet ? "SHORT elekleri OK - destek kirilimi bekleniyor" : "Takildi -> L: " + ilkL + " | S: " + ilkS
+    color sonucRenk = posOpen ? color.lime : pendAktif ? color.yellow : (longSet or shortSet) ? color.lime : color.orange
+    f_bilgi(18, "SONUC", sonuc, sonucRenk)
+    f_hucre(0, 19, "Kalite (bu mum)", color.silver, na, size.small)
+    f_hucre(1, 19, kaliteL, cW, na, size.small)
+    f_hucre(2, 19, kaliteS, cW, na, size.small)
+    f_hucre(3, 19, "L " + str.tostring(skorL) + "/5 | S " + str.tostring(skorS) + "/5", cG, na, size.small)
+
+    f_baslik(20, "SANAL POZISYON", "", "", color.new(color.green, 60))
+    string durum = posOpen ? (posDir == 1 ? "LONG " : "SHORT ") + posTip + (tp1Done ? " | TP1 alindi, trailing" : "") : "YOK"
+    f_bilgi(21, "Durum", durum, posOpen ? (posDir == 1 ? color.lime : color.fuchsia) : cG)
+    f_bilgi(22, "Giris / Stop", posOpen ? str.tostring(posEntry, format.mintick) + " / " + str.tostring(posStop, format.mintick) : "-", cW)
+    f_bilgi(23, "TP1 / TP2", posOpen ? (tp1Done ? "alindi" : str.tostring(posTp1, format.mintick)) + " / " + str.tostring(posTp2, format.mintick) : "-", cW)
+
+    f_baslik(24, "BASARI ORANI (komisyon dahil)", "", "", color.new(color.purple, 45))
+    float kazOran = nIslem > 0 ? nKazanc * 100.0 / nIslem : na
+    string basariMetni = nIslem == 0 ? "henuz kapanmis islem yok" : "%" + str.tostring(kazOran, "#.#") + "  (" + str.tostring(nKazanc) + "/" + str.tostring(nIslem) + " islem)"
+    color basariRenk = nIslem == 0 ? cG : kazOran >= 55 ? color.lime : kazOran >= 45 ? color.yellow : color.red
+    f_hucre(0, 25, "Toplam basari", cW, color.new(basariRenk, 80), size.normal)
+    f_hucre(1, 25, "", cW, color.new(basariRenk, 80), size.normal)
+    f_hucre(2, 25, "", cW, color.new(basariRenk, 80), size.normal)
+    f_hucre(3, 25, basariMetni, basariRenk, color.new(basariRenk, 80), size.normal)
+    string lMetni = nIslemL == 0 ? "-" : "%" + str.tostring(nKazL * 100.0 / nIslemL, "#.#") + " (" + str.tostring(nKazL) + "/" + str.tostring(nIslemL) + ") | " + str.tostring(toplamRL, "#.##") + "R"
+    f_bilgi(26, "LONG basari", lMetni, nIslemL == 0 ? cG : (toplamRL >= 0 ? color.lime : color.red))
+    string sMetni = nIslemS == 0 ? "-" : "%" + str.tostring(nKazS * 100.0 / nIslemS, "#.#") + " (" + str.tostring(nKazS) + "/" + str.tostring(nIslemS) + ") | " + str.tostring(toplamRS, "#.##") + "R"
+    f_bilgi(27, "SHORT basari", sMetni, nIslemS == 0 ? cG : (toplamRS >= 0 ? color.lime : color.red))
+    string tpMetni = nIslem == 0 ? "-" : "TP1 %" + str.tostring(nTp1 * 100.0 / nIslem, "#") + " | TP2 %" + str.tostring(nTp2 * 100.0 / nIslem, "#") + " | Tam stop %" + str.tostring(nTamStop * 100.0 / nIslem, "#")
+    f_bilgi(28, "Hedefe ulasma", tpMetni, cW)
+    float pf = brutZarar > 0 ? brutKar / brutZarar : na
+    f_bilgi(29, "Toplam R / PF", str.tostring(toplamR, "#.##") + "R / " + (na(pf) ? "-" : str.tostring(pf, "#.##")), toplamR >= 0 ? color.lime : color.red)
+    f_bilgi(30, "Ort. R / Max DD", (nIslem > 0 ? str.tostring(toplamR / nIslem, "#.##") : "-") + " / -" + str.tostring(maxDD, "#.##") + "R", cW)
+
+    string eskiMetni = ozelParamVarMi ? dbKat + " | %" + str.tostring(dbKazanma, "#.#") + " | +%" + str.tostring(dbGetiri, "#.#") + " (eski, sadece long)" : "tabloda yok"
+    f_bilgi(31, "Eski bot | Kod kontrolu", eskiMetni + " | kontrol: " + (nHata == 0 ? "0 hata" : str.tostring(nHata) + " HATA"), nHata == 0 ? cG : color.red)
+
+    float tfSn = timeframe.in_seconds()
+    string uyari = tfSn != 14400 ? "DIKKAT: sistem 4 saatlik grafikte test edildi (1H zararda, 1D cok az sinyal)" : (isBist and bistShortYok and yonModu != "Sadece Long") ? "BIST: short kapali (ayarlardan acilabilir)" : nIslem > 0 and nIslem < 20 ? "Ornek az (" + str.tostring(nIslem) + " islem)" : "-"
+    f_bilgi(32, "Uyari", uyari, uyari == "-" ? cG : color.orange)
+    string ozet = "Veri " + str.format_time(ilkZaman, "yyyy-MM-dd") + " | Kirilim L" + str.tostring(nBrkL) + "/S" + str.tostring(nBrkS) + " | aday L" + str.tostring(nAdayL) + "/S" + str.tostring(nAdayS) + " | islem " + str.tostring(nIslem + (posOpen ? 1 : 0)) + " | darbogaz L: " + f_enCok(gecL, nBrkL) + ", S: " + f_enCok(gecS, nBrkS)
+    f_bilgi(33, "Gecmis ozet", ozet, color.aqua)
+
+// ---------------------------------------------------------------- KOMPAKT PANEL
+if showPanel and barstate.islast and panelModu == "Kompakt"
+    color basCol = color.new(color.blue, 55)
+    f_baslik(0, sembol, "L", "S", basCol)
+    f_hucre(3, 0, timeframe.period + (timeframe.in_seconds() == 14400 ? "" : " (!)") + " | " + (entryMode == "Kirilim kapanisi" ? "kapanista giris" : entryMode), color.white, basCol, size.small)
+    string eDetay = longSet ? "LONG hazir > " + str.tostring(resistance + breakBufAtr * atrVal, format.mintick) + " kapanis + hacim" : shortSet ? "SHORT hazir < " + str.tostring(support - breakBufAtr * atrVal, format.mintick) + " kapanis + hacim" : "Bekle | L: " + f_ilk(L1, L2, L3, L4, L5, dengeli or L6, L7, dengeli or L8, e9, longIzin) + " | S: " + f_ilk(S1, S2, S3, S4, S5, dengeli or S6, S7, dengeli or S8, e9, shortIzin)
+    f_elek(1, "Elekler", longSet, shortSet, eDetay)
+    string kDurum = posOpen ? (posDir == 1 ? "LONG " : "SHORT ") + str.tostring(posEntry, format.mintick) + " | SL " + str.tostring(posStop, format.mintick) + " | TP1 " + (tp1Done ? "ok" : str.tostring(posTp1, format.mintick)) + " | TP2 " + str.tostring(posTp2, format.mintick) : pendAktif ? (pendDir == 1 ? "LONG" : "SHORT") + " retest @ " + str.tostring(pendSeviye, format.mintick) : "yok"
+    f_bilgi(2, "Pozisyon", kDurum, posOpen ? (posDir == 1 ? color.lime : color.fuchsia) : pendAktif ? color.yellow : color.gray)
+    float kOran = nIslem > 0 ? nKazanc * 100.0 / nIslem : na
+    f_bilgi(3, "Basari", nIslem == 0 ? "henuz islem yok" : "%" + str.tostring(kOran, "#") + " (" + str.tostring(nKazanc) + "/" + str.tostring(nIslem) + ") | " + str.tostring(toplamR, "#.#") + "R | DD -" + str.tostring(maxDD, "#.#") + "R", nIslem == 0 ? color.gray : toplamR >= 0 ? color.lime : color.red)
+    string lsMetni = "L " + (nIslemL == 0 ? "-" : str.tostring(nKazL) + "/" + str.tostring(nIslemL) + " " + str.tostring(toplamRL, "#.#") + "R") + " | S " + (nIslemS == 0 ? "-" : str.tostring(nKazS) + "/" + str.tostring(nIslemS) + " " + str.tostring(toplamRS, "#.#") + "R") + (nHata == 0 ? "" : " | HATA " + str.tostring(nHata))
+    f_bilgi(4, "Long / Short", lsMetni, nHata == 0 ? color.silver : color.red)
+    if timeframe.in_seconds() != 14400
+        f_bilgi(5, "Uyari", "Sistem 4 saatlik grafik icin test edildi", color.orange)
+
+// ---------------------------------------------------------------- TESHIS PANELI
+f_oranRenk(float p) =>
+    na(p) ? color.gray : p < 20 ? color.red : p < 50 ? color.orange : color.lime
+
+if showPanel and barstate.islast and panelModu == "Teshis (gecmis)"
+    color cW = color.white
+    color hb = color.new(color.purple, 45)
+    f_baslik(0, sembol + " TESHIS", "LONG", "SHORT", hb)
+    f_hucre(3, 0, "Kirilim mumlarinda her elegin gecme orani", cW, hb, size.small)
+    f_hucre(0, 1, "Kirilim mumu sayisi", color.silver, na, size.small)
+    f_hucre(1, 1, str.tostring(nBrkL), cW, na, size.small)
+    f_hucre(2, 1, str.tostring(nBrkS), cW, na, size.small)
+    f_hucre(3, 1, str.tostring(bar_index) + " mum yuklu", color.gray, na, size.small)
+    int minIdxL = -1
+    int minIdxS = -1
+    float minL = 101.0
+    float minS = 101.0
+    for i = 0 to 13
+        float pL = nBrkL > 0 ? array.get(gecL, i) * 100.0 / nBrkL : na
+        float pS = nBrkS > 0 ? array.get(gecS, i) * 100.0 / nBrkS : na
+        bool yumusakMi = dengeli and (i == 5 or i == 7 or i == 10 or i == 12)
+        f_hucre(0, 2 + i, array.get(ELEK_AD, i) + (yumusakMi ? " *" : ""), color.silver, na, size.small)
+        f_hucre(1, 2 + i, na(pL) ? "-" : "%" + str.tostring(pL, "#"), f_oranRenk(pL), na, size.small)
+        f_hucre(2, 2 + i, na(pS) ? "-" : "%" + str.tostring(pS, "#"), f_oranRenk(pS), na, size.small)
+        f_hucre(3, 2 + i, yumusakMi ? "yumusak elek" : "", color.gray, na, size.small)
+        if not yumusakMi and not na(pL) and pL < minL
+            minL := pL
+            minIdxL := i
+        if not yumusakMi and not na(pS) and pS < minS
+            minS := pS
+            minIdxS := i
+    f_bilgi(16, "En cok takilan", "L: " + (minIdxL >= 0 ? array.get(ELEK_AD, minIdxL) : "-") + " | S: " + (minIdxS >= 0 ? array.get(ELEK_AD, minIdxS) : "-"), color.orange)
+    f_hucre(0, 17, "Tum elekler gecti (aday)", color.silver, na, size.small)
+    f_hucre(1, 17, str.tostring(nAdayL), cW, na, size.small)
+    f_hucre(2, 17, str.tostring(nAdayS), cW, na, size.small)
+    f_hucre(3, 17, "", cW, na, size.small)
+    f_baslik(18, "AKIS (aday -> islem)", "", "", hb)
+    f_bilgi(19, "Direkt giris sinyali", str.tostring(nDirekt), cW)
+    f_bilgi(20, "Retest beklemeye alinan", str.tostring(nPend), cW)
+    f_bilgi(21, "Retest / teyit ile giris", str.tostring(nRetestGiris), cW)
+    f_bilgi(22, "Sahte kirilim (iptal)", str.tostring(nSahte), cW)
+    f_bilgi(23, "Retest zaman asimi", str.tostring(nZamanAsimi), cW)
+    f_bilgi(24, "Red: stop cok genis", str.tostring(nRedStop), nRedStop > 0 ? color.orange : cW)
+    f_bilgi(25, "Red: stop % fazla", str.tostring(nRedRisk), nRedRisk > 0 ? color.orange : cW)
+    f_bilgi(26, "Red: karsi engel yakin", str.tostring(nRedEngel), nRedEngel > 0 ? color.orange : cW)
+    f_bilgi(27, "Acilan islem", str.tostring(nIslem + (posOpen ? 1 : 0)), color.lime)
+
+// ============================================================================
+// ALARMLAR
+// ============================================================================
+if useDynAlert and yeniGiris
+    string a = sembol + " | " + (posDir == 1 ? "LONG" : "SHORT") + " GIRIS " + posTip + " (kalite " + posKalite + ")"
+    a += " | Fiyat: " + str.tostring(posEntry, format.mintick)
+    a += " | Stop: " + str.tostring(posStop, format.mintick) + " (%" + str.tostring(posRisk / posEntry * 100, "#.##") + ")"
+    a += " | TP1: " + str.tostring(posTp1, format.mintick) + " | TP2: " + str.tostring(posTp2, format.mintick)
+    a += " | Poz: %" + str.tostring(posPoz, "#.#") + " sermaye"
+    alert(a, alert.freq_once_per_bar_close)
+if useDynAlert and (kirilimIsaretL or kirilimIsaretS)
+    alert(sembol + " | " + (kirilimIsaretL ? "LONG direnc" : "SHORT destek") + " kirilimi - retest bekleniyor @ " + str.tostring(pendSeviye, format.mintick) + " (kalite " + pendKalite + ")", alert.freq_once_per_bar_close)
+if useDynAlert and stopHit
+    alert(sembol + " | " + (cikanDir == 1 ? "LONG" : "SHORT") + " STOP: " + str.tostring(cikisFiyat, format.mintick) + " | Islem " + str.tostring(islemSonucR, "#.##") + "R", alert.freq_once_per_bar_close)
+if useDynAlert and tp1Hit
+    alert(sembol + " | " + (posDir == 1 ? "LONG" : "SHORT") + " TP1: " + str.tostring(posTp1, format.mintick) + " - %" + str.tostring(tp1Pct, "#") + " kapat, stop basabas+", alert.freq_once_per_bar_close)
+if useDynAlert and tp2Hit
+    alert(sembol + " | " + (cikanDir == 1 ? "LONG" : "SHORT") + " TP2 (final): " + str.tostring(posTp2, format.mintick) + " | Islem " + str.tostring(islemSonucR, "#.##") + "R", alert.freq_once_per_bar_close)
+if useDynAlert and (zamanCikis or trendCikis)
+    alert(sembol + " | " + (cikanDir == 1 ? "LONG" : "SHORT") + " " + (zamanCikis ? "ZAMAN STOPU" : "TREND CIKISI") + ": " + str.tostring(cikisFiyat, format.mintick) + " | Islem " + str.tostring(islemSonucR, "#.##") + "R", alert.freq_once_per_bar_close)
+

@@ -1,0 +1,31 @@
+name: Pine derleme (gecici)
+on:
+  push:
+    branches: [arastirma]
+    paths: ["pine/**", ".github/workflows/pine-derle.yml"]
+permissions:
+  contents: write
+jobs:
+  d:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: |
+          mkdir -p arastirma_cikti; : > arastirma_cikti/derleme.txt
+          for f in pine/*.pine; do
+            for url in "https://pine-facade.tradingview.com/pine-facade/translate_light?user_name=Guest&pine_id=00000000-0000-0000-0000-000000000000" ; do
+              code=$(curl -s -m 60 -o /tmp/o -w "%{http_code}" -X POST "$url" -H "Referer: https://www.tradingview.com/" -H "Origin: https://www.tradingview.com" --data-urlencode "source@$f")
+              echo "== $f $code" >> arastirma_cikti/derleme.txt
+              python3 -c "
+import json,sys
+d=open('/tmp/o').read()
+try:
+  j=json.loads(d); r=j.get('result',{}) or {}
+  print('success:',j.get('success'),'| errors:',json.dumps(r.get('errors2') or r.get('errors') or j.get('reason') or [],ensure_ascii=False)[:1500],'| warnings:',len(r.get('warnings2') or r.get('warnings') or []))
+except Exception as e: print('ham:',d[:600])
+" >> arastirma_cikti/derleme.txt
+            done
+          done
+          cat arastirma_cikti/derleme.txt
+          git config user.name a; git config user.email a@users.noreply.github.com
+          git add arastirma_cikti/derleme.txt; git commit -m "derleme [skip ci]"; git pull --rebase origin arastirma; git push
