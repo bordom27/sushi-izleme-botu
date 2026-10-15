@@ -9,6 +9,10 @@ on:
         description: "true yaparsan taramayi atlar, sadece Telegram test mesaji gonderir"
         type: boolean
         default: false
+      ozet_gonder:
+        description: "true yaparsan gunluk ozeti hemen de gonderir"
+        type: boolean
+        default: false
 
 permissions:
   contents: write
@@ -47,6 +51,7 @@ jobs:
           TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
           TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
           TEST_MODE: ${{ github.event.inputs.test_mesaji }}
+          OZET_ZORLA: ${{ github.event.inputs.ozet_gonder }}
         run: python genel_izleme_bulut.py
 
       - name: Durumu repoya geri kaydet (degistiyse)

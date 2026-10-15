@@ -304,6 +304,28 @@ def gunluk_ozet(state, sonuclar, btc_bilgi) -> str:
     hazir_s = [s for s, r in sonuclar.items() if r.filtre.get("short_hazir") and not r.acik]
     satir.append(f"Elekleri geçmiş, kırılım bekleyen: LONG {len(hazir_l)} | SHORT {len(hazir_s)}")
 
+    def _izle(liste, yon):
+        out = []
+        for s in liste:
+            r = sonuclar[s]
+            f = r.filtre
+            sev = f.get("direnc") if yon == 1 else f.get("destek")
+            atr = f.get("atr")
+            if not sev or not r.son_kapanis:
+                continue
+            esik = sev + yon * 0.1 * (atr or 0)          # kirilim icin kapanisin gecmesi gereken seviye
+            uzak = (esik / r.son_kapanis - 1) * 100
+            out.append((abs(uzak), f"• {s}: {'üstünde' if yon == 1 else 'altında'} 4s kapanış {fmt(esik)} "
+                                   f"(şu an {fmt(r.son_kapanis)}, %{uzak:+.1f} uzakta) + hacim ortalamanın 2 katı"))
+        return [m for _, m in sorted(out)]
+
+    if hazir_l:
+        satir.append("LONG takip (direnç kırılırsa sinyal):")
+        satir.extend(_izle(hazir_l, 1))
+    if hazir_s:
+        satir.append("SHORT takip (destek kırılırsa sinyal):")
+        satir.extend(_izle(hazir_s, -1))
+
     # son 30 gun v6 istatistigi (bildirilen kapanislardan)
     log = [t for t in state.get("trade_log", []) if t.get("sistem") == "v6"]
     simdi = pd.Timestamp.now(tz="UTC").tz_localize(None)
