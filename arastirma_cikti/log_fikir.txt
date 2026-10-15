@@ -1,0 +1,10 @@
+v6.2 TEMEL
+TP2 yok, trail 2.5
+TP2 yok, trail 3.0
+TP2 yok, trail 4.0
+TP2 yok, trail 3.0, TP1 %50
+gunluk EMA20 onayi
+gunluk EMA10 onayi
+gunluk EMA50 onayi
+BTC yuksek oynaklik rejimi
+BTC dusuk oynaklik rejimi
