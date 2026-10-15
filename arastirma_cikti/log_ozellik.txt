@@ -1,4 +1,4 @@
-islem 626 269
+islem 626 215
 arsiv erisimi: OK
-ozellik hazir 538
-bitti 538
+ozellik hazir 447
+bitti 447
