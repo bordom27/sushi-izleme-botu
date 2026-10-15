@@ -1,0 +1,11 @@
+1s veri hazir 111
+v6.1 TEMEL
+1s giris: 0.382 geri cekilme, 3 mum4
+1s giris: 0.382 geri cekilme, 6 mum4
+1s giris: ilk kirmizi mum, 3 mum4
+1s giris: ilk kirmizi mum, 6 mum4
+1s giris: geri cekilme, min stop 0.8 ATR
+1s giris: geri cekilme, min stop 0.3 ATR
+v6.1 + trend ici geri cekilme
+SADECE trend ici geri cekilme
+trend ici geri cekilme taze 5
