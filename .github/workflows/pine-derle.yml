@@ -16,6 +16,7 @@ jobs:
             for url in "https://pine-facade.tradingview.com/pine-facade/translate_light?user_name=Guest&pine_id=00000000-0000-0000-0000-000000000000" ; do
               code=$(curl -s -m 60 -o /tmp/o -w "%{http_code}" -X POST "$url" -H "Referer: https://www.tradingview.com/" -H "Origin: https://www.tradingview.com" --data-urlencode "source@$f")
               echo "== $f $code" >> arastirma_cikti/derleme.txt
+              python3 pine/derle.py >> arastirma_cikti/derleme.txt
               python3 -c "
 import json,sys
 d=open('/tmp/o').read()

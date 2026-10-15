@@ -3,7 +3,7 @@ name: Arastirma (gecici)
 on:
   push:
     branches: [arastirma]
-    paths-ignore: ["arastirma_cikti/**"]
+    paths-ignore: ["arastirma_cikti/**", "pine/**", ".github/workflows/pine-derle.yml", ".github/workflows/erisim-testi.yml"]
   workflow_dispatch: {}
 
 permissions:
