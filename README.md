@@ -32,5 +32,8 @@ GitHub Actions'ta 59 tekil ayar, 12 kombinasyon, 4 zaman dilimi ve listede olmay
 - 46 coinde maksimum düşüş ~13R → işlem başı risk **%0.5** önerilir (~%6.5 hesap düşüşü).
 - Long tarafı son dönemde zayıf, short tarafı güçlü; bot ikisini de bildirir.
 
+## Kalabalık uyarısı (Ekim 2026 araştırması)
+626 işlemde girişteki hacim ivmesi, taker alım/satım oranı, funding, open interest değişimi ve long/short oranları incelendi (Binance arşivi). Tutarlı çıkan tek etken: **büyük oyuncuların (top trader) pozisyon oranı** girişin yönüne yığılmışsa (L/S > 1.69, short'ta S/L > 1.69) işlem başı getiri dört grubun dördünde düşük (test döneminde negatif). Filtre olarak eklemek eğitim döneminde kazancı düşürdüğü için **filtre değil, risk uyarısı**: giriş mesajında "riski yarıya indir" olarak gösterilir. Veri TradingView'da olmadığı için sadece botta.
+
 ## Elle çalıştırma
 GitHub → Actions → *Genel Izleme Botu* → *Run workflow* (`test_mesaji` = true yalnızca Telegram bağlantısını dener).

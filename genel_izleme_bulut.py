@@ -47,7 +47,11 @@ CONFIG = {
     "BILDIR_TRAIL_R": 0.5,           # TP1 sonrasi iz suren stop en az bu kadar R ilerlerse bildir
     "GUNLUK_OZET_SAAT_UTC": 18,      # 21:00 Turkiye saati
     "GECIKME_UYARI_SAAT": 3,         # olay bu kadar saatten eskiyse mesajda belirt
-    "BAYAT_SAAT": 12,                # bundan eski olaylar tek tek degil, tek ozet mesajinda gonderilir
+    "BAYAT_SAAT": 12,
+    # KALABALIK UYARISI (Ekim 2026 testi): buyuk oyuncularin (top trader) pozisyon orani girisin
+    # yonune bu kadar yigilmissa (long'da L/S > esik, short'ta S/L > esik) islem basi getiri
+    # dort test grubunun dordunde de belirgin dusuk cikti -> riski yariya indirme onerisi.
+    "KALABALIK_ESIK": 1.69,                # bundan eski olaylar tek tek degil, tek ozet mesajinda gonderilir
 }
 
 TR = timezone(timedelta(hours=3))
@@ -142,6 +146,37 @@ def gecikme_notu(olay_zaman, cfg) -> str:
     return ""
 
 
+def kalabalik_orani(sym: str, zaman_ms: int):
+    """Binance vadeli 'top trader' long/short POZISYON orani (giris anina en yakin 5 dk degeri)."""
+    for ad in (sym, "1000" + sym):
+        try:
+            r = requests.get("https://www.binance.com/futures/data/topLongShortPositionRatio",
+                             params={"symbol": ad, "period": "5m", "limit": 1, "endTime": zaman_ms},
+                             headers=veri.HEADERS, timeout=10)
+            if r.ok:
+                d = r.json()
+                if isinstance(d, list) and d:
+                    return float(d[-1]["longShortRatio"])
+        except Exception as exc:
+            print(f"kalabalik orani alinamadi {ad}: {exc}")
+    return None
+
+
+def kalabalik_satiri(sym, o: k.Olay, cfg, v):
+    kapanis = pd.Timestamp(o.zaman) + pd.Timedelta(hours=4)
+    ls = kalabalik_orani(sym, int(kapanis.tz_localize("UTC").timestamp() * 1000) if kapanis.tzinfo is None
+                         else int(kapanis.timestamp() * 1000))
+    if not ls or ls <= 0:
+        return ""
+    yonlu = ls if o.yon == 1 else 1 / ls
+    oran_txt = f"büyük oyuncular L/S {ls:.2f}"
+    if yonlu > cfg["KALABALIK_ESIK"]:
+        yari = k.PARAMS["hesap_risk"] / 2
+        return (f"⚠️ Kalabalık zaten {YON[o.yon]} tarafında ({oran_txt}). Testte bu durumda işlemler belirgin zayıf: "
+                f"riski yarıya indir → hesabın %{yari:g}'i (sermayenin %{v['poz_pct'] / 2:.1f}).\n")
+    return f"Kalabalık: {oran_txt} — {YON[o.yon]} tarafı aşırı kalabalık değil ✓\n"
+
+
 def mesaj_giris(sym, o: k.Olay, cfg) -> str:
     v = o.veri
     d = o.yon
@@ -157,6 +192,7 @@ def mesaj_giris(sym, o: k.Olay, cfg) -> str:
         f"TP1: {fmt(v['tp1'])}  ({tp1_r:.1f}R, {v['tp1_kay']}) → pozisyonun %70'ini kapat\n"
         f"TP2: {fmt(v['tp2'])}  ({tp2_r:.1f}R, {v['tp2_kay']}) → kalan %30\n"
         f"Pozisyon büyüklüğü (hesabın %{k.PARAMS['hesap_risk']:g}'i riskte): sermayenin %{v['poz_pct']:.1f}\n"
+        + kalabalik_satiri(sym, o, cfg, v) +
         f"TP1 sonrası stop giriş+0.1R'ye çekilir ve 2.5 ATR iz süren stopa geçer. "
         f"20 mum (~3.3 gün) içinde TP1 gelmez ve kâr 0.5R'nin altındaysa çık.\n"
         f"{grafik_linki(sym)}" + gecikme_notu(o.zaman, cfg)
