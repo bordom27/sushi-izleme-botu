@@ -1,0 +1,5 @@
+islem 628 278
+Toplam 628 islem | IS 208 isl %69.7 +64.5R (+0.310) | OOS 420 isl %59.3 +53.3R (+0.127)
+
+=== Tercil (ortalama R; 0=dusuk, 2=yuksek; IS sinirlari) ===
+bitti 286
