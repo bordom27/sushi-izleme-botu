@@ -2,7 +2,7 @@
 indicator("Kirilim69 PRO - Cok Elekli Kirilim Sistemi (Long/Short)", shorttitle="Kirilim69 PRO", overlay=true, max_labels_count=500, max_lines_count=200)
 
 // ============================================================================
-// KIRILIM69 PRO (v6.1 - LONG + SHORT, 46+70 coinde zaman ve coin bolmeli test, komisyon dahil)
+// KIRILIM69 PRO (v6.2 - LONG + SHORT, 46+70 coinde zaman ve coin bolmeli test, komisyon dahil)
 // Bu indikator gercek islem ACMAZ. Sanal pozisyonla sinyal + yonetim gosterir.
 //
 // Her elek LONG icin yazildigi gibi, SHORT icin AYNASI uygulanir:
@@ -23,7 +23,7 @@ indicator("Kirilim69 PRO - Cok Elekli Kirilim Sistemi (Long/Short)", shorttitle=
 // RISK      : Yapisal stop (L: swing dip alti, S: swing tepe ustu), ATR ile sinirli.
 //             TP'ler fib seviyelerine ve karsidaki ilk pivot engele gore.
 //             R/R yetersizse / stop cok genisse islem REDDEDILIR.
-// YONETIM   : TP1 kismi kar, stop basabas+, chandelier trailing, zaman stopu.
+// YONETIM   : TP1 kismi kar, stop basabas+, chandelier trailing, basarisiz kirilimda erken cikis, zaman stopu.
 // Ust zaman dilimi verileri KAPANMIS mumlardan alinir (repaint yok).
 // ============================================================================
 
@@ -145,6 +145,9 @@ useTimeStop  = input.bool(true, "Zaman stopu", group=G_POS)
 timeStopBars = input.int(20, "Zaman stopu: mum sayisi", minval=2, group=G_POS)
 timeStopMinR = input.float(0.5, "Zaman stopu: bu R'ye ulasmadiysa cik", step=0.1, group=G_POS)
 useTrendExit = input.bool(false, "TP1 sonrasi trend EMA'nin ters tarafinda kapanista cik", group=G_POS)
+useBasarisiz = input.bool(true, "Basarisiz kirilimda erken cik", group=G_POS, tooltip="TP1 alinmadan, girisin ilk N mumunda kapanis kirilan seviyenin gerisine donerse stopu beklemeden kapanista cikar. Ekim 2026 testi: ayni kazanc, ~%25 daha kucuk max dusus.")
+bcBar        = input.int(3, "Basarisiz kirilim: ilk N mum (0 = TP1'e kadar)", minval=0, group=G_POS)
+bcAtr        = input.float(0.3, "Basarisiz kirilim: seviyenin bu kadar ATR gerisi", minval=0.0, step=0.1, group=G_POS)
 statBas      = input.time(timestamp("2000-01-01"), "Test: islem acma baslangici", group=G_POS, tooltip="Sadece bu tarihten sonra yeni islem acilir (zaman bolmeli test icin).")
 statBit      = input.time(timestamp("2100-01-01"), "Test: islem acma bitisi", group=G_POS)
 erkenBeR     = input.float(0.0, "Erken basabas: bu R'ye ulasinca stop girise (0 = kapali)", minval=0.0, step=0.1, group=G_POS)
@@ -569,6 +572,7 @@ var string posTip = ""
 var string posKalite = ""
 var string posTp1Kay = ""
 var string posTp2Kay = ""
+var float  posSeviye = na
 
 var bool   pendAktif = false
 var int    pendDir = 0
@@ -605,6 +609,7 @@ bool stopHit = false
 bool tp1Hit = false
 bool tp2Hit = false
 bool zamanCikis = false
+bool basarisizCikis = false
 bool trendCikis = false
 float cikisFiyat = na
 float islemSonucR = na
@@ -633,6 +638,9 @@ if posOpen and barstate.isconfirmed and bar_index > girisBarIndex
             tp2Hit := true
             cikisFiyat := isL ? math.max(posTp2, open) : math.min(posTp2, open)
             nTp2 += 1
+        else if useBasarisiz and not tp1Done and not na(posSeviye) and (bcBar <= 0 or (bar_index - girisBarIndex) <= bcBar) and posDir * (close - posSeviye) < -bcAtr * atrVal
+            basarisizCikis := true
+            cikisFiyat := close
         else if useTimeStop and not tp1Done and (bar_index - girisBarIndex) >= timeStopBars and posDir * (close - posEntry) < timeStopMinR * posRisk
             zamanCikis := true
             cikisFiyat := close
@@ -836,6 +844,7 @@ if girisSinyal
         posKalite := girisKalite
         posTp1Kay := tp1Kay
         posTp2Kay := tp2Kay
+        posSeviye := girisSeviye
         posPoz := math.min(hesapRisk / riskPct * 100, 100)
         bool sira = gL ? (posStop < posEntry and posEntry < posTp1 and posTp1 < posTp2) : (posStop > posEntry and posEntry > posTp1 and posTp1 > posTp2)
         if not sira or pendAktif
@@ -961,7 +970,7 @@ plotshape(yoksayilan, style=shape.circle, location=location.belowbar, color=colo
 plotshape(stopHit, style=shape.xcross, location=location.abovebar, color=color.red, size=size.small, title="Stop")
 plotshape(tp1Hit, style=shape.circle, location=location.abovebar, color=color.orange, size=size.small, title="TP1")
 plotshape(tp2Hit, style=shape.circle, location=location.abovebar, color=color.blue, size=size.small, title="TP2")
-plotshape(zamanCikis or trendCikis, style=shape.square, location=location.abovebar, color=color.purple, size=size.tiny, title="Zaman / trend cikisi")
+plotshape(zamanCikis or trendCikis or basarisizCikis, style=shape.square, location=location.abovebar, color=color.purple, size=size.tiny, title="Zaman / trend / basarisiz kirilim cikisi")
 
 if showValues and yeniGiris
     bool eL = posDir == 1
@@ -980,7 +989,7 @@ if showRejects and reddedildi
     label.new(bar_index, girisDir == 1 ? low : high, "RED (" + (girisDir == 1 ? "L" : "S") + "): " + redNedeni, style=girisDir == 1 ? label.style_label_up : label.style_label_down, color=color.new(color.gray, 30), textcolor=color.white, size=size.tiny)
 
 if showValues and not na(islemSonucR)
-    string neden = stopHit ? (tp1Done ? "STOP (TP1 sonrasi)" : "STOP") : tp2Hit ? "TP2" : zamanCikis ? "ZAMAN STOPU" : "TREND CIKISI"
+    string neden = stopHit ? (tp1Done ? "STOP (TP1 sonrasi)" : "STOP") : tp2Hit ? "TP2" : basarisizCikis ? "BASARISIZ KIRILIM" : zamanCikis ? "ZAMAN STOPU" : "TREND CIKISI"
     color lc = islemSonucR > 0 ? color.new(color.blue, 20) : color.new(color.red, 20)
     string yt = (cikanDir == 1 ? "LONG " : "SHORT ") + neden + "\n" + str.tostring(cikisFiyat, format.mintick) + "\nIslem: " + str.tostring(islemSonucR, "#.##") + "R"
     if cikanDir == 1
@@ -1246,8 +1255,8 @@ if useDynAlert and tp1Hit
     alert(sembol + " | " + (posDir == 1 ? "LONG" : "SHORT") + " TP1: " + str.tostring(posTp1, format.mintick) + " - %" + str.tostring(tp1Pct, "#") + " kapat, stop basabas+", alert.freq_once_per_bar_close)
 if useDynAlert and tp2Hit
     alert(sembol + " | " + (cikanDir == 1 ? "LONG" : "SHORT") + " TP2 (final): " + str.tostring(posTp2, format.mintick) + " | Islem " + str.tostring(islemSonucR, "#.##") + "R", alert.freq_once_per_bar_close)
-if useDynAlert and (zamanCikis or trendCikis)
-    alert(sembol + " | " + (cikanDir == 1 ? "LONG" : "SHORT") + " " + (zamanCikis ? "ZAMAN STOPU" : "TREND CIKISI") + ": " + str.tostring(cikisFiyat, format.mintick) + " | Islem " + str.tostring(islemSonucR, "#.##") + "R", alert.freq_once_per_bar_close)
+if useDynAlert and (zamanCikis or trendCikis or basarisizCikis)
+    alert(sembol + " | " + (cikanDir == 1 ? "LONG" : "SHORT") + " " + (basarisizCikis ? "BASARISIZ KIRILIM - CIK" : zamanCikis ? "ZAMAN STOPU" : "TREND CIKISI") + ": " + str.tostring(cikisFiyat, format.mintick) + " | Islem " + str.tostring(islemSonucR, "#.##") + "R", alert.freq_once_per_bar_close)
 
 alertcondition(yeniGiris and posDir == 1, title="LONG giris", message="{{ticker}}: LONG giris sinyali. Kapanis: {{close}}")
 alertcondition(yeniGiris and posDir == -1, title="SHORT giris", message="{{ticker}}: SHORT giris sinyali. Kapanis: {{close}}")
