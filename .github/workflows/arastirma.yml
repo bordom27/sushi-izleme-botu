@@ -16,7 +16,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        mod: [basarisiz]
+        mod: [seviye]
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5

@@ -122,6 +122,12 @@ PARAMS = {
     "use_trend_exit": False,
     "erken_be_r": 0.0,
 
+    # 17) Seviye tanimi (varsayilan = son R mumun en yuksek fitili)
+    "seviye_tipi": "fitil",         # "fitil" | "kapanis" (govde kapanislarinin en yuksegi)
+    "gunluk_seviye": 0,             # >0: direnc = son N kapanmis gunun en yuksek degeri (gunluk veri gerekir)
+    "min_test": 0,                  # >0: seviye en az bu kadar pivotla test edilmis olmali
+    "test_tol_atr": 0.5,
+
     # 16) Basarisiz kirilim cikisi (varsayilan KAPALI): TP1 alinmadan, girisin ilk K mumunda
     #     kapanis kirilan seviyenin x ATR gerisine donerse stopu beklemeden kapanista cik.
     "basarisiz_cikis": False,
@@ -442,8 +448,16 @@ def simule_et(symbol: str, df: pd.DataFrame, gunluk: pd.DataFrame | None,
     di_p, di_m, adx_v = dmi(h, l, c, p["di_len"], p["adx_smooth"])
 
     R = p["resistance_len"]
-    resistance = np.concatenate([[np.nan], highest(h, R)[:-1]])
-    support = np.concatenate([[np.nan], lowest(l, R)[:-1]])
+    if p["seviye_tipi"] == "kapanis":
+        resistance = np.concatenate([[np.nan], highest(c, R)[:-1]])
+        support = np.concatenate([[np.nan], lowest(c, R)[:-1]])
+    else:
+        resistance = np.concatenate([[np.nan], highest(h, R)[:-1]])
+        support = np.concatenate([[np.nan], lowest(l, R)[:-1]])
+    MT = p["min_test"]
+    if MT > 0:
+        ph5 = pivot(h, 5, True)
+        pl5 = pivot(l, 5, False)
     vol_avg = np.concatenate([[np.nan], sma(v, p["vol_len"])[:-1]])
 
     F = p["fib_len"]
@@ -486,6 +500,14 @@ def simule_et(symbol: str, df: pd.DataFrame, gunluk: pd.DataFrame | None,
         W = _htf_onceki(ot, haftalik, "W", {"m": wm, "h": wh, "hp": wh_prev, "c": wc, "e": we})
     else:
         W = {k: np.full(n, np.nan) for k in ("m", "h", "hp", "c", "e")}
+
+    GS = p["gunluk_seviye"]
+    if GS > 0 and gunluk is not None and len(gunluk):
+        gh_ = pd.Series(gunluk["high"].to_numpy(float)).rolling(GS).max().to_numpy()
+        gl_ = pd.Series(gunluk["low"].to_numpy(float)).rolling(GS).min().to_numpy()
+        GL = _htf_onceki(ot, gunluk, "D", {"h": gh_, "l": gl_})
+        resistance = GL["h"]
+        support = GL["l"]
 
     if btc_gunluk is not None and len(btc_gunluk):
         bc = btc_gunluk["close"].to_numpy(float)
@@ -760,6 +782,15 @@ def simule_et(symbol: str, df: pd.DataFrame, gunluk: pd.DataFrame | None,
         aday_s = bool(short_set and c_brk_s and c_vol and c_uzama_s and c_taban and c_oynak and yum_ok_s)
         if p["sadece_formasyon"]:
             aday_l = aday_s = False
+        if MT > 0 and (aday_l or aday_s) and a > 0:
+            tol_ = p["test_tol_atr"] * a
+            j0 = max(0, i - R + 5)
+            if aday_l:
+                n_t = sum(1 for j in range(j0, i + 1) if not math.isnan(ph5[j]) and abs(ph5[j] - resistance[i]) <= tol_)
+                aday_l = n_t >= MT
+            if aday_s:
+                n_t = sum(1 for j in range(j0, i + 1) if not math.isnan(pl5[j]) and abs(pl5[j] - support[i]) <= tol_)
+                aday_s = n_t >= MT
         if p["max_kirilim_atr"] > 0 and a > 0:
             if aday_l and (c[i] - resistance[i]) > p["max_kirilim_atr"] * a:
                 aday_l = False
