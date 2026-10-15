@@ -45,7 +45,8 @@ def _tek(args):
     df, gd, wd = DATA[interval][s]
     btc_d = DATA["btc_d"]
     btc = DATA["btc_" + interval]
-    r = k.simule_et(s, df, gd, btc_d, btc, haftalik=wd, params=prm, giris_bas=pd.Timestamp(IS_BAS))
+    s1 = DATA.get("1h", {}).get(s) if prm.get("ltf_giris") else None
+    r = k.simule_et(s, df, gd, btc_d, btc, haftalik=wd, params=prm, giris_bas=pd.Timestamp(IS_BAS), saatlik=s1)
     return r.islemler
 
 
@@ -203,6 +204,19 @@ for lm in ("seviye", "orta", "seviye_atr"):
         LIMIT.append((f"limit {lm} / {nb} mum", {"limit_mod": lm, "limit_bar": nb}))
 LIMIT.append(("limit seviye+0.6ATR / 6 mum", {"limit_mod": "seviye_atr", "limit_atr": 0.6, "limit_bar": 6}))
 
+PROFESYONEL = [
+    ("v6.1 TEMEL", {}),
+    ("1s giris: 0.382 geri cekilme, 3 mum4", {"ltf_giris": "geri_cekilme", "ltf_max_bar4": 3}),
+    ("1s giris: 0.382 geri cekilme, 6 mum4", {"ltf_giris": "geri_cekilme", "ltf_max_bar4": 6}),
+    ("1s giris: ilk kirmizi mum, 3 mum4", {"ltf_giris": "ilk_dusus", "ltf_max_bar4": 3}),
+    ("1s giris: ilk kirmizi mum, 6 mum4", {"ltf_giris": "ilk_dusus", "ltf_max_bar4": 6}),
+    ("1s giris: geri cekilme, min stop 0.8 ATR", {"ltf_giris": "geri_cekilme", "ltf_max_bar4": 3, "ltf_min_stop": 0.8}),
+    ("1s giris: geri cekilme, min stop 0.3 ATR", {"ltf_giris": "geri_cekilme", "ltf_max_bar4": 3, "ltf_min_stop": 0.3}),
+    ("v6.1 + trend ici geri cekilme", {"geri_cekilme": True}),
+    ("SADECE trend ici geri cekilme", {"geri_cekilme": True, "sadece_formasyon": True}),
+    ("trend ici geri cekilme taze 5", {"geri_cekilme": True, "sadece_formasyon": True, "gc_taze_bar": 5}),
+]
+
 
 def main():
     os.makedirs(OUT, exist_ok=True)
@@ -300,6 +314,14 @@ def main():
         DATA["btc_4h"] = veri.mumlar_onbellekli("BTCUSDT", "4h", VERI_BAS)
         DATA["4h"] = yukle(COINLER + yeni)
         yeni = [s_ for s_ in yeni if s_ in DATA["4h"]]
+        if mod == "profesyonel":
+            DATA["1h"] = {}
+            for s_ in list(DATA["4h"]):
+                try:
+                    DATA["1h"][s_] = veri.mumlar_onbellekli(s_, "1h", "2024-05-15")
+                except Exception as exc:
+                    print("1s veri yok", s_, exc, flush=True)
+            print("1s veri hazir", len(DATA["1h"]), flush=True)
         rows = []
         with mp.Pool(4) as hv:
             for ad, prm in KOMBOLAR:
@@ -318,7 +340,7 @@ def main():
         with open(f"{OUT}/kombo.txt", "w") as f:
             f.write(res.to_string(index=False))
 
-    elif mod in ("formasyon", "kovalama", "limit"):
+    elif mod in ("formasyon", "kovalama", "limit", "profesyonel"):
         tick = veri._get("/api/v3/ticker/24hr", {})
         haric = set(COINLER) | STOK_HARIC | {"USDCUSDT", "FDUSDUSDT", "TUSDUSDT", "DAIUSDT", "EURUSDT", "USDPUSDT",
                                 "RLUSDUSDT", "USD1USDT", "PYUSDUSDT", "AEURUSDT", "XUSDUSDT", "BFUSDUSDT",
@@ -330,9 +352,17 @@ def main():
         DATA["btc_4h"] = veri.mumlar_onbellekli("BTCUSDT", "4h", VERI_BAS)
         DATA["4h"] = yukle(COINLER + yeni)
         yeni = [s_ for s_ in yeni if s_ in DATA["4h"]]
+        if mod == "profesyonel":
+            DATA["1h"] = {}
+            for s_ in list(DATA["4h"]):
+                try:
+                    DATA["1h"][s_] = veri.mumlar_onbellekli(s_, "1h", "2024-05-15")
+                except Exception as exc:
+                    print("1s veri yok", s_, exc, flush=True)
+            print("1s veri hazir", len(DATA["1h"]), flush=True)
         rows = []
         with mp.Pool(4) as hv:
-            for ad, prm in ({"kovalama": KOVALAMA, "limit": LIMIT}.get(mod, FORM_SENARYO)):
+            for ad, prm in ({"kovalama": KOVALAMA, "limit": LIMIT, "profesyonel": PROFESYONEL}.get(mod, FORM_SENARYO)):
                 tr = calistir(prm, COINLER + yeni, "4h", hv)
                 for etiket, x in (("46", tr[tr.symbol.isin(COINLER)] if len(tr) else tr),
                                   ("YENI", tr[tr.symbol.isin(yeni)] if len(tr) else tr), ("HEPSI", tr)):

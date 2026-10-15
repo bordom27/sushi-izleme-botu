@@ -14,7 +14,7 @@ HEADERS = {
     "Accept": "application/json",
 }
 BASE_URLS = ["https://data-api.binance.vision", "https://api.binance.com"]
-ARALIK_MS = {"4h": 4 * 3600_000, "6h": 6 * 3600_000, "8h": 8 * 3600_000, "12h": 12 * 3600_000, "1d": 86400_000, "1w": 7 * 86400_000}
+ARALIK_MS = {"1h": 3600_000, "4h": 4 * 3600_000, "6h": 6 * 3600_000, "8h": 8 * 3600_000, "12h": 12 * 3600_000, "1d": 86400_000, "1w": 7 * 86400_000}
 
 
 def _get(path: str, params: dict):

@@ -122,6 +122,16 @@ PARAMS = {
     "use_trend_exit": False,
     "erken_be_r": 0.0,
 
+    # 14) Kucuk zaman diliminde giris (varsayilan KAPALI): 4s sinyalden sonra 1s grafikte
+    #     geri cekilme + mikro yapi kirilimi (1s mum onceki 1s tepesinin ustunde kapanir) ile giris.
+    "ltf_giris": "",                # "" | "geri_cekilme" (0.382 geri cekilme sart) | "ilk_dusus" (ilk kirmizi 1s mum yeter)
+    "ltf_max_bar4": 3,              # en fazla kac 4s mum beklenir
+    "ltf_stop_buf": 0.1,            # 1s dibinin altina tampon (4s ATR)
+    "ltf_min_stop": 0.5,            # min stop mesafesi (4s ATR)
+    # 15) Trend ici geri cekilme sinyali (varsayilan KAPALI): EMA21'e dokunup donus mumu
+    "geri_cekilme": False,
+    "gc_taze_bar": 10,              # son 20 mumun tepesi en fazla bu kadar mum once yapilmis olmali (taze trend)
+
     # 13) Limit emirle giris (varsayilan KAPALI): sinyal mumunda kapanistan girmek yerine
     #     geri cekilmede limit emir. Dolmazsa / once TP1'e giderse iptal.
     "limit_mod": "",                # "" | "seviye" | "orta" | "seviye_atr"
@@ -378,7 +388,8 @@ class Sonuc:
 def simule_et(symbol: str, df: pd.DataFrame, gunluk: pd.DataFrame | None,
               btc_gunluk: pd.DataFrame | None, btc_4h: pd.DataFrame | None,
               haftalik: pd.DataFrame | None = None, params: dict | None = None,
-              giris_bas: pd.Timestamp | None = None, giris_bit: pd.Timestamp | None = None) -> Sonuc:
+              giris_bas: pd.Timestamp | None = None, giris_bit: pd.Timestamp | None = None,
+              saatlik: pd.DataFrame | None = None) -> Sonuc:
     """
     df          : grafik TF (4 saat) - SADECE KAPANMIS mumlar. Kolonlar: open_time, open, high, low, close, volume
     gunluk      : coinin gunluk mumlari (Coin > EMA200 / ana trend / gunluk MACD icin)
@@ -487,6 +498,15 @@ def simule_et(symbol: str, df: pd.DataFrame, gunluk: pd.DataFrame | None,
         s = pd.Series(roc, index=pd.to_datetime(b4["open_time"]))
         mk_roc = s.reindex(ot).to_numpy(float)
 
+    LTF = bool(p["ltf_giris"]) and saatlik is not None and len(saatlik) > 0
+    if LTF:
+        s1 = saatlik.reset_index(drop=True)
+        t1 = pd.to_datetime(s1["open_time"]).to_numpy()
+        o1, h1, l1, c1 = (s1[k_].to_numpy(float) for k_ in ("open", "high", "low", "close"))
+        ot_np = ot.to_numpy()
+        bas1 = np.searchsorted(t1, ot_np)
+        bit1 = np.searchsorted(t1, ot_np + np.timedelta64(4, "h"))
+    lt = None
     min_isinma = max(R, p["macd_slow"] + p["macd_signal"], p["atr_len"], p["trend_ema"], p["vol_len"], F) + 5
 
     # --- durum
@@ -780,6 +800,83 @@ def simule_et(symbol: str, df: pd.DataFrame, gunluk: pd.DataFrame | None,
             if len(destekler) > 30:
                 destekler.pop(0)
 
+        # ---------------- 1 SAATLIK GIRIS (bekleyen 4s sinyal)
+        if LTF and lt is not None and pos is None and i > lt["bar"]:
+            LL = lt["yon"] == 1
+            dd_ = lt["yon"]
+            iptal = None
+            for kk in range(bas1[i], bit1[i]):
+                if pos is None:
+                    if (l1[kk] <= lt["stop4"]) if LL else (h1[kk] >= lt["stop4"]):
+                        iptal = "stop seviyesi"; break
+                    if (h1[kk] >= lt["tp1"]) if LL else (l1[kk] <= lt["tp1"]):
+                        iptal = "giris olmadan TP1"; break
+                    lt["uc"] = min(lt["uc"], l1[kk]) if LL else max(lt["uc"], h1[kk])
+                    if not lt["cekildi"]:
+                        if p["ltf_giris"] == "ilk_dusus":
+                            lt["cekildi"] = (c1[kk] < o1[kk]) if LL else (c1[kk] > o1[kk])
+                        else:
+                            lt["cekildi"] = (l1[kk] <= lt["Z"]) if LL else (h1[kk] >= lt["Z"])
+                    elif lt["onceki_uc"] is not None and (
+                            (c1[kk] > lt["onceki_uc"] and c1[kk] > o1[kk]) if LL else (c1[kk] < lt["onceki_uc"] and c1[kk] < o1[kk])):
+                        gir = c1[kk]
+                        stp = lt["uc"] - dd_ * lt["buf"]
+                        stp = max(stp, lt["stop4"]) if LL else min(stp, lt["stop4"])
+                        if dd_ * (gir - stp) < lt["minstop"]:
+                            stp = gir - dd_ * lt["minstop"]
+                        rk = dd_ * (gir - stp)
+                        if rk <= 0 or dd_ * (lt["tp1"] - gir) < 0.5 * rk:
+                            iptal = "hedefe yer kalmadi"; break
+                        pos = {"yon": dd_, "giris": gir, "risk": rk, "stop": stp, "stop_ilk": stp,
+                               "tp1": lt["tp1"], "tp2": lt["tp2"], "hh": h1[kk], "ll": l1[kk], "real_r": 0.0,
+                               "tp1_done": False, "bar": i, "zaman": ot[i], "tip": lt["tip"] + " 1S",
+                               "kalite": lt["kalite"], "tp1_kay": lt["tp1_kay"], "tp2_kay": lt["tp2_kay"],
+                               "risk_pct": rk / gir * 100, "poz_pct": min(p["hesap_risk"] / (rk / gir * 100) * 100, 100)}
+                        olaylar.append(Olay(ot[i], "GIRIS", dd_, {k_: pos[k_] for k_ in (
+                            "giris", "stop", "tp1", "tp2", "tip", "kalite", "tp1_kay", "tp2_kay", "risk_pct", "poz_pct", "risk")}))
+                        lt = None
+                        continue
+                    lt["onceki_uc"] = h1[kk] if LL else l1[kk]
+                else:
+                    # ayni 4s mumun kalan 1s mumlarinda yonetim (once stop - temkinli)
+                    pos["hh"] = max(pos["hh"], h1[kk]); pos["ll"] = min(pos["ll"], l1[kk])
+                    if (l1[kk] <= pos["stop"]) if LL else (h1[kk] >= pos["stop"]):
+                        cik = min(pos["stop"], o1[kk]) if LL else max(pos["stop"], o1[kk])
+                        kalan = (1 - tp1_pct) if pos["tp1_done"] else 1.0
+                        rr = pos["real_r"] + kalan * dd_ * (cik - pos["giris"]) / pos["risk"] - 2 * kom * pos["giris"] / pos["risk"]
+                        islem = {"symbol": sembol, "yon": dd_, "tip": pos["tip"], "kalite": pos["kalite"],
+                                 "giris_zaman": pos["zaman"], "cikis_zaman": ot[i], "giris": pos["giris"], "cikis": cik,
+                                 "stop_ilk": pos["stop_ilk"], "tp1": pos["tp1"], "tp2": pos["tp2"], "tp1_done": pos["tp1_done"],
+                                 "neden": "STOP_TP1" if pos["tp1_done"] else "STOP", "sonuc_r": rr, "bar_sayisi": 0}
+                        islemler.append(islem); olaylar.append(Olay(ot[i], "CIKIS", dd_, dict(islem)))
+                        if rr < 0:
+                            son_stop_bar = i
+                        pos = None
+                        break
+                    if not pos["tp1_done"] and ((h1[kk] >= pos["tp1"]) if LL else (l1[kk] <= pos["tp1"])):
+                        pos["tp1_done"] = True
+                        dol = max(pos["tp1"], o1[kk]) if LL else min(pos["tp1"], o1[kk])
+                        pos["real_r"] += tp1_pct * dd_ * (dol - pos["giris"]) / pos["risk"]
+                        be = pos["giris"] + dd_ * p["be_buf_r"] * pos["risk"]
+                        pos["stop"] = max(pos["stop"], be) if LL else min(pos["stop"], be)
+                        olaylar.append(Olay(ot[i], "TP1", dd_, {"fiyat": dol, "yeni_stop": pos["stop"],
+                                                               "giris": pos["giris"], "tp2": pos["tp2"]}))
+                    if pos["tp1_done"] and ((h1[kk] >= pos["tp2"]) if LL else (l1[kk] <= pos["tp2"])):
+                        cik = max(pos["tp2"], o1[kk]) if LL else min(pos["tp2"], o1[kk])
+                        rr = pos["real_r"] + (1 - tp1_pct) * dd_ * (cik - pos["giris"]) / pos["risk"] - 2 * kom * pos["giris"] / pos["risk"]
+                        islem = {"symbol": sembol, "yon": dd_, "tip": pos["tip"], "kalite": pos["kalite"],
+                                 "giris_zaman": pos["zaman"], "cikis_zaman": ot[i], "giris": pos["giris"], "cikis": cik,
+                                 "stop_ilk": pos["stop_ilk"], "tp1": pos["tp1"], "tp2": pos["tp2"], "tp1_done": True,
+                                 "neden": "TP2", "sonuc_r": rr, "bar_sayisi": 0}
+                        islemler.append(islem); olaylar.append(Olay(ot[i], "CIKIS", dd_, dict(islem)))
+                        pos = None
+                        break
+            if lt is not None and iptal is None and i - lt["bar"] >= p["ltf_max_bar4"]:
+                iptal = "zaman asimi"
+            if lt is not None and iptal is not None:
+                olaylar.append(Olay(ot[i], "LTF_IPTAL", lt["yon"], {"neden": iptal}))
+                lt = None
+
         # ---------------- BEKLEYEN LIMIT EMIR
         if lim is not None and pos is None and i > lim["bar"]:
             LL = lim["yon"] == 1
@@ -815,7 +912,7 @@ def simule_et(symbol: str, df: pd.DataFrame, gunluk: pd.DataFrame | None,
                 olaylar.append(Olay(ot[i], "LIMIT_IPTAL", lim["yon"], {"fiyat": lim["fiyat"]}))
                 lim = None
 
-        pos_open_basta = pos is not None or lim is not None
+        pos_open_basta = pos is not None or lim is not None or lt is not None
 
         # ---------------- CIKISLAR
         if pos is not None and i > pos["bar"]:
@@ -928,6 +1025,17 @@ def simule_et(symbol: str, df: pd.DataFrame, gunluk: pd.DataFrame | None,
                     olaylar.append(Olay(ot[i], "KIRILIM", d, {"seviye": pend["seviye"], "uc": pend["uc"],
                                                               "kalite": harf, "kapanis": c[i]}))
 
+        if p["geri_cekilme"] and not pos_open_basta and not giris_sinyal and i >= 20 and a > 0:
+            tz = p["gc_taze_bar"]
+            tepe_once = int(np.argmax(h[i - 19:i + 1][::-1]))
+            dip_once = int(np.argmin(l[i - 19:i + 1][::-1]))
+            gc_l = (long_izin and long_ek and L1 and L5 and L8 and e9 and tepe_once <= tz and tepe_once >= 2
+                    and l[i] <= ema_f[i] and c[i] > ema_f[i] and c[i] > o[i] and close_pos >= 0.6 and range_ok)
+            gc_s = (short_izin and S1 and S5 and S8 and e9 and dip_once <= tz and dip_once >= 2
+                    and h[i] >= ema_f[i] and c[i] < ema_f[i] and c[i] < o[i] and close_pos <= 0.4 and range_ok)
+            if gc_l or gc_s:
+                giris_sinyal, g_dir, g_tip, g_kal, g_sev = True, (1 if gc_l else -1), "GERI CEKILME", "G", np.nan
+
         if FORMLAR and not pos_open_basta and not giris_sinyal:
             for f_yon, f_sev, f_tip, f_key in formasyon_ara(i, a):
                 if f_key in form_kullanildi:
@@ -1003,6 +1111,15 @@ def simule_et(symbol: str, df: pd.DataFrame, gunluk: pd.DataFrame | None,
 
             if red is not None:
                 olaylar.append(Olay(ot[i], "RED", g_dir, {"neden": red, "tip": g_tip, "kapanis": giris}))
+            elif LTF:
+                stop = giris - g_dir * rsk
+                sev = g_sev if not math.isnan(g_sev) else giris - g_dir * 0.5 * a
+                lt = {"yon": g_dir, "stop4": stop, "tp1": tp1, "tp2": tp2, "bar": i, "tip": g_tip, "kalite": g_kal,
+                      "tp1_kay": tp1_kay, "tp2_kay": tp2_kay, "Z": giris - 0.382 * (giris - sev),
+                      "uc": giris, "cekildi": False, "onceki_uc": None,
+                      "buf": p["ltf_stop_buf"] * a, "minstop": p["ltf_min_stop"] * a}
+                olaylar.append(Olay(ot[i], "LTF_BEKLE", g_dir, {"kapanis": giris, "stop4": stop, "tp1": tp1, "tp2": tp2,
+                                                               "tip": g_tip}))
             elif p["limit_mod"]:
                 stop = giris - g_dir * rsk
                 lm = p["limit_mod"]
