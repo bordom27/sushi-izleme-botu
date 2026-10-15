@@ -1,0 +1,11 @@
+v6.1 TEMEL (kapanista giris)
+limit seviye / 3 mum
+limit seviye / 6 mum
+limit seviye / 10 mum
+limit orta / 3 mum
+limit orta / 6 mum
+limit orta / 10 mum
+limit seviye_atr / 3 mum
+limit seviye_atr / 6 mum
+limit seviye_atr / 10 mum
+limit seviye+0.6ATR / 6 mum
