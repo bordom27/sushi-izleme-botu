@@ -16,7 +16,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        mod: [kovalama]
+        mod: [limit]
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
@@ -32,6 +32,7 @@ jobs:
             arastirma-kombo-
             arastirma-formasyon-
             arastirma-ozellik-
+            arastirma-kovalama-
       - run: python $( [ "${{ matrix.mod }}" = ozellik ] && echo ozellik.py || echo "arastirma.py ${{ matrix.mod }}" ) 2>&1 | grep -v " mum (" | tee log_${{ matrix.mod }}.txt
       - run: |
           mkdir -p arastirma_cikti && mv log_${{ matrix.mod }}.txt arastirma_cikti/

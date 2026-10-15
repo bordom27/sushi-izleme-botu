@@ -122,6 +122,12 @@ PARAMS = {
     "use_trend_exit": False,
     "erken_be_r": 0.0,
 
+    # 13) Limit emirle giris (varsayilan KAPALI): sinyal mumunda kapanistan girmek yerine
+    #     geri cekilmede limit emir. Dolmazsa / once TP1'e giderse iptal.
+    "limit_mod": "",                # "" | "seviye" | "orta" | "seviye_atr"
+    "limit_atr": 0.3,               # seviye_atr: kirilan seviye + bu kadar ATR (long)
+    "limit_bar": 6,                 # emir en fazla bu kadar mum bekler
+
     # 12) Kovalama korumasi (varsayilan KAPALI)
     "max_kirilim_atr": 0.0,         # kapanis kirilan seviyenin en fazla bu kadar ATR otesinde (0 = kapali)
     "max_onceki_atr": 0.0,          # son 10 mumun dibinden (short: tepesinden) kapanisa hareket en fazla bu kadar ATR
@@ -491,6 +497,7 @@ def simule_et(symbol: str, df: pd.DataFrame, gunluk: pd.DataFrame | None,
     son_stop_bar = None
 
     pos = None          # dict
+    lim = None          # bekleyen limit emir
     pend = None         # dict
     tp1_pct = p["tp1_pct"] / 100.0
     kom = p["komisyon_pct"] / 100.0
@@ -773,7 +780,42 @@ def simule_et(symbol: str, df: pd.DataFrame, gunluk: pd.DataFrame | None,
             if len(destekler) > 30:
                 destekler.pop(0)
 
-        pos_open_basta = pos is not None
+        # ---------------- BEKLEYEN LIMIT EMIR
+        if lim is not None and pos is None and i > lim["bar"]:
+            LL = lim["yon"] == 1
+            dd_ = lim["yon"]
+            dokundu = l[i] <= lim["fiyat"] if LL else h[i] >= lim["fiyat"]
+            if dokundu:
+                fill = min(lim["fiyat"], o[i]) if LL else max(lim["fiyat"], o[i])
+                risk_ = dd_ * (fill - lim["stop"])
+                if risk_ > 0:
+                    pos = {
+                        "yon": dd_, "giris": fill, "risk": risk_, "stop": lim["stop"], "stop_ilk": lim["stop"],
+                        "tp1": lim["tp1"], "tp2": lim["tp2"], "hh": h[i], "ll": l[i], "real_r": 0.0, "tp1_done": False,
+                        "bar": i, "zaman": ot[i], "tip": lim["tip"], "kalite": lim["kalite"],
+                        "tp1_kay": lim["tp1_kay"], "tp2_kay": lim["tp2_kay"], "risk_pct": risk_ / fill * 100,
+                        "poz_pct": min(p["hesap_risk"] / (risk_ / fill * 100) * 100, 100),
+                    }
+                    olaylar.append(Olay(ot[i], "LIMIT_DOLDU", dd_, {"fiyat": fill, "stop": pos["stop"],
+                                                                   "tp1": pos["tp1"], "tp2": pos["tp2"]}))
+                    stop_ayni = l[i] <= pos["stop"] if LL else h[i] >= pos["stop"]
+                    if stop_ayni:
+                        cik = pos["stop"]
+                        rr = dd_ * (cik - fill) / risk_ - 2 * (p["komisyon_pct"] / 100) * fill / risk_
+                        islem = {"symbol": sembol, "yon": dd_, "tip": pos["tip"], "kalite": pos["kalite"],
+                                 "giris_zaman": ot[i], "cikis_zaman": ot[i], "giris": fill, "cikis": cik,
+                                 "stop_ilk": pos["stop"], "tp1": pos["tp1"], "tp2": pos["tp2"], "tp1_done": False,
+                                 "neden": "STOP", "sonuc_r": rr, "bar_sayisi": 0}
+                        islemler.append(islem)
+                        olaylar.append(Olay(ot[i], "CIKIS", dd_, dict(islem)))
+                        son_stop_bar = i
+                        pos = None
+                lim = None
+            elif (h[i] >= lim["tp1"] if LL else l[i] <= lim["tp1"]) or i - lim["bar"] >= p["limit_bar"]:
+                olaylar.append(Olay(ot[i], "LIMIT_IPTAL", lim["yon"], {"fiyat": lim["fiyat"]}))
+                lim = None
+
+        pos_open_basta = pos is not None or lim is not None
 
         # ---------------- CIKISLAR
         if pos is not None and i > pos["bar"]:
@@ -961,6 +1003,24 @@ def simule_et(symbol: str, df: pd.DataFrame, gunluk: pd.DataFrame | None,
 
             if red is not None:
                 olaylar.append(Olay(ot[i], "RED", g_dir, {"neden": red, "tip": g_tip, "kapanis": giris}))
+            elif p["limit_mod"]:
+                stop = giris - g_dir * rsk
+                lm = p["limit_mod"]
+                if lm == "seviye":
+                    lf = g_sev
+                elif lm == "orta":
+                    lf = (o[i] + c[i]) / 2
+                else:
+                    lf = g_sev + g_dir * p["limit_atr"] * a
+                if math.isnan(lf):
+                    lf = giris
+                lf = max(lf, stop + 0.5 * a) if gL else min(lf, stop - 0.5 * a)
+                if (lf >= giris) if gL else (lf <= giris):
+                    lf = giris
+                lim = {"yon": g_dir, "fiyat": lf, "stop": stop, "tp1": tp1, "tp2": tp2, "bar": i,
+                       "tip": g_tip + " LIMIT", "kalite": g_kal, "tp1_kay": tp1_kay, "tp2_kay": tp2_kay}
+                olaylar.append(Olay(ot[i], "LIMIT", g_dir, {"fiyat": lf, "stop": stop, "tp1": tp1, "tp2": tp2,
+                                                           "kapanis": giris, "tip": g_tip}))
             else:
                 stop = giris - g_dir * rsk
                 pos = {

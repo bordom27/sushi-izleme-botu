@@ -197,6 +197,12 @@ for v in (2.0, 2.5):
     KOVALAMA.append((f"EMA21 uzaklik <= {v} ATR", {"max_ext_atr": v}))
 KOVALAMA.append(("kapanis gucu >= 0.7", {"min_close_pos": 0.7}))
 
+LIMIT = [("v6.1 TEMEL (kapanista giris)", {})]
+for lm in ("seviye", "orta", "seviye_atr"):
+    for nb in (3, 6, 10):
+        LIMIT.append((f"limit {lm} / {nb} mum", {"limit_mod": lm, "limit_bar": nb}))
+LIMIT.append(("limit seviye+0.6ATR / 6 mum", {"limit_mod": "seviye_atr", "limit_atr": 0.6, "limit_bar": 6}))
+
 
 def main():
     os.makedirs(OUT, exist_ok=True)
@@ -312,7 +318,7 @@ def main():
         with open(f"{OUT}/kombo.txt", "w") as f:
             f.write(res.to_string(index=False))
 
-    elif mod in ("formasyon", "kovalama"):
+    elif mod in ("formasyon", "kovalama", "limit"):
         tick = veri._get("/api/v3/ticker/24hr", {})
         haric = set(COINLER) | STOK_HARIC | {"USDCUSDT", "FDUSDUSDT", "TUSDUSDT", "DAIUSDT", "EURUSDT", "USDPUSDT",
                                 "RLUSDUSDT", "USD1USDT", "PYUSDUSDT", "AEURUSDT", "XUSDUSDT", "BFUSDUSDT",
@@ -326,7 +332,7 @@ def main():
         yeni = [s_ for s_ in yeni if s_ in DATA["4h"]]
         rows = []
         with mp.Pool(4) as hv:
-            for ad, prm in (KOVALAMA if mod == "kovalama" else FORM_SENARYO):
+            for ad, prm in ({"kovalama": KOVALAMA, "limit": LIMIT}.get(mod, FORM_SENARYO)):
                 tr = calistir(prm, COINLER + yeni, "4h", hv)
                 for etiket, x in (("46", tr[tr.symbol.isin(COINLER)] if len(tr) else tr),
                                   ("YENI", tr[tr.symbol.isin(yeni)] if len(tr) else tr), ("HEPSI", tr)):
