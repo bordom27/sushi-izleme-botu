@@ -1,0 +1,15 @@
+v6.1 TEMEL
+kirilim mesafesi <= 0.5 ATR
+kirilim mesafesi <= 1.0 ATR
+kirilim mesafesi <= 1.5 ATR
+onceki 10 mum hareket <= 4.0 ATR
+onceki 10 mum hareket <= 6.0 ATR
+onceki 10 mum hareket <= 8.0 ATR
+stop <= %6
+stop <= %8
+stop <= %10
+mum boyu <= 2.0 ATR
+mum boyu <= 2.5 ATR
+EMA21 uzaklik <= 2.0 ATR
+EMA21 uzaklik <= 2.5 ATR
+kapanis gucu >= 0.7
