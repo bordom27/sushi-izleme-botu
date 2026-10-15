@@ -35,5 +35,10 @@ GitHub Actions'ta 59 tekil ayar, 12 kombinasyon, 4 zaman dilimi ve listede olmay
 ## Kalabalık uyarısı (Ekim 2026 araştırması)
 626 işlemde girişteki hacim ivmesi, taker alım/satım oranı, funding, open interest değişimi ve long/short oranları incelendi (Binance arşivi). Tutarlı çıkan tek etken: **büyük oyuncuların (top trader) pozisyon oranı** girişin yönüne yığılmışsa (L/S > 1.69, short'ta S/L > 1.69) işlem başı getiri dört grubun dördünde düşük (test döneminde negatif). Filtre olarak eklemek eğitim döneminde kazancı düşürdüğü için **filtre değil, risk uyarısı**: giriş mesajında "riski yarıya indir" olarak gösterilir. Veri TradingView'da olmadığı için sadece botta.
 
+## v6.2: Başarısız kırılımda erken çıkış (Ekim 2026)
+TP1 alınmadan, girişten sonraki ilk 3 mumda 4s kapanış kırılan seviyenin 0.3 ATR gerisine dönerse stop beklenmeden kapanışta çıkılır.
+116 coin: eğitim +64.5R → +63.8R, test +42.0R → +52.1R; maksimum düşüş 5.1R → 3.9R ve 20.1R → 14.5R. İsabet ~4–5 puan düşer (küçük kayıplar).
+Ayrıca test edilip **eklenmeyenler**: limit emirle giriş, 1 saatlikte giriş, EMA21 geri çekilme sinyali, kovalama filtreleri, klasik formasyonlar.
+
 ## Elle çalıştırma
 GitHub → Actions → *Genel Izleme Botu* → *Run workflow* (`test_mesaji` = true yalnızca Telegram bağlantısını dener).
