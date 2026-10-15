@@ -184,6 +184,19 @@ FORM_SENARYO = [("v6.1 TEMEL", {})] + FORM_SENARYO + [
     ("sikisma filtresi 10 ATR", {"use_base": True, "max_base_atr": 10.0}),
 ]
 
+KOVALAMA = [("v6.1 TEMEL", {})]
+for v in (0.5, 1.0, 1.5):
+    KOVALAMA.append((f"kirilim mesafesi <= {v} ATR", {"max_kirilim_atr": v}))
+for v in (4.0, 6.0, 8.0):
+    KOVALAMA.append((f"onceki 10 mum hareket <= {v} ATR", {"max_onceki_atr": v}))
+for v in (6.0, 8.0, 10.0):
+    KOVALAMA.append((f"stop <= %{v:g}", {"max_risk_pct": v}))
+for v in (2.0, 2.5):
+    KOVALAMA.append((f"mum boyu <= {v} ATR", {"max_candle_range_atr": v}))
+for v in (2.0, 2.5):
+    KOVALAMA.append((f"EMA21 uzaklik <= {v} ATR", {"max_ext_atr": v}))
+KOVALAMA.append(("kapanis gucu >= 0.7", {"min_close_pos": 0.7}))
+
 
 def main():
     os.makedirs(OUT, exist_ok=True)
@@ -299,7 +312,7 @@ def main():
         with open(f"{OUT}/kombo.txt", "w") as f:
             f.write(res.to_string(index=False))
 
-    elif mod == "formasyon":
+    elif mod in ("formasyon", "kovalama"):
         tick = veri._get("/api/v3/ticker/24hr", {})
         haric = set(COINLER) | STOK_HARIC | {"USDCUSDT", "FDUSDUSDT", "TUSDUSDT", "DAIUSDT", "EURUSDT", "USDPUSDT",
                                 "RLUSDUSDT", "USD1USDT", "PYUSDUSDT", "AEURUSDT", "XUSDUSDT", "BFUSDUSDT",
@@ -313,7 +326,7 @@ def main():
         yeni = [s_ for s_ in yeni if s_ in DATA["4h"]]
         rows = []
         with mp.Pool(4) as hv:
-            for ad, prm in FORM_SENARYO:
+            for ad, prm in (KOVALAMA if mod == "kovalama" else FORM_SENARYO):
                 tr = calistir(prm, COINLER + yeni, "4h", hv)
                 for etiket, x in (("46", tr[tr.symbol.isin(COINLER)] if len(tr) else tr),
                                   ("YENI", tr[tr.symbol.isin(yeni)] if len(tr) else tr), ("HEPSI", tr)):
@@ -324,8 +337,8 @@ def main():
                         rows.append(satir(f"   {ad} :: sadece {tip} islemleri [HEPSI]", g))
                 print(ad, flush=True)
         res = pd.DataFrame(rows)
-        res.to_csv(f"{OUT}/formasyon.csv", index=False)
-        with open(f"{OUT}/formasyon.txt", "w") as f:
+        res.to_csv(f"{OUT}/{mod}.csv", index=False)
+        with open(f"{OUT}/{mod}.txt", "w") as f:
             f.write(res.to_string(index=False))
 
 

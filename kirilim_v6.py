@@ -122,6 +122,10 @@ PARAMS = {
     "use_trend_exit": False,
     "erken_be_r": 0.0,
 
+    # 12) Kovalama korumasi (varsayilan KAPALI)
+    "max_kirilim_atr": 0.0,         # kapanis kirilan seviyenin en fazla bu kadar ATR otesinde (0 = kapali)
+    "max_onceki_atr": 0.0,          # son 10 mumun dibinden (short: tepesinden) kapanisa hareket en fazla bu kadar ATR
+
     # 11) Formasyonlar (varsayilan KAPALI - acikken TradingView gostergesinde de olmali)
     "formasyonlar": (),            # "CIFT", "OBO", "TREND", "UCGEN", "BAYRAK"
     "form_pivot": 5,                # formasyon pivot hassasiyeti (bar)
@@ -723,6 +727,16 @@ def simule_et(symbol: str, df: pd.DataFrame, gunluk: pd.DataFrame | None,
         aday_s = bool(short_set and c_brk_s and c_vol and c_uzama_s and c_taban and c_oynak and yum_ok_s)
         if p["sadece_formasyon"]:
             aday_l = aday_s = False
+        if p["max_kirilim_atr"] > 0 and a > 0:
+            if aday_l and (c[i] - resistance[i]) > p["max_kirilim_atr"] * a:
+                aday_l = False
+            if aday_s and (support[i] - c[i]) > p["max_kirilim_atr"] * a:
+                aday_s = False
+        if p["max_onceki_atr"] > 0 and a > 0 and i >= 10:
+            if aday_l and (c[i] - float(np.min(l[i - 10:i]))) > p["max_onceki_atr"] * a:
+                aday_l = False
+            if aday_s and (float(np.max(h[i - 10:i])) - c[i]) > p["max_onceki_atr"] * a:
+                aday_s = False
 
         # kalite skoru
         s1 = (not math.isnan(vol_oran)) and vol_oran >= p["strong_vol_mult"]
