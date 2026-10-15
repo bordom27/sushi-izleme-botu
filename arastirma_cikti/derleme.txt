@@ -1,0 +1,4 @@
+== pine/Kirilim69_PRO.pine 200
+success: True | errors: [] | warnings: 0
+== pine/Kirilim69_PRO_Strateji.pine 200
+success: True | errors: [] | warnings: 0
