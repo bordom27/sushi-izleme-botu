@@ -16,7 +16,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        mod: [ek, kalib-0, kalib-1, kalib-2]
+        mod: [k2-0, k2-1, k2-2, k2-3]
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5

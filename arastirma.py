@@ -266,6 +266,12 @@ EK = [("v6.2 TEMEL", dict(_B2)),
       ("yeniden giris 6 mum", dict(_B2, yeniden_giris=6)),
       ("yeniden giris 12 mum", dict(_B2, yeniden_giris=12)),
       ("yeniden giris 6 mum, tampon 0.3 ATR", dict(_B2, yeniden_giris=6, yeniden_buf_atr=0.3))]
+K2 = [("v6.2 TEMEL", dict(_B2))]
+for ms in (3.0, 3.5, 4.0, 4.5):
+    for tp in (70.0, 75.0, 80.0, 85.0):
+        for bc in (0.15, 0.2, 0.25, 0.3):
+            K2.append((f"stop{ms} tp1%{tp:.0f} bc{bc}", dict(_B2, max_stop_atr=ms, tp1_pct=tp, bc_atr=bc)))
+K2S = [K2[:1] + K2[1 + j::4] for j in range(4)]
 BTCF = [("v6.2 TEMEL (long: BTC > gunluk EMA200)", dict(_B2)),
         ("long: BTC EMA200 sarti yok (sadece EMA50)", dict(_B2, long_sart="Kapali")),
         ("long: coin > EMA200", dict(_B2, long_sart="Coin > EMA200")),
@@ -433,7 +439,7 @@ def main():
         with open(f"{OUT}/kombo.txt", "w") as f:
             f.write(res.to_string(index=False))
 
-    elif mod in ("formasyon", "kovalama", "limit", "profesyonel", "basarisiz", "seviye", "fikir", "oda", "yas", "uzun", "btcf", "ek") or mod.startswith("tara") or mod.startswith("kalib"):
+    elif mod in ("formasyon", "kovalama", "limit", "profesyonel", "basarisiz", "seviye", "fikir", "oda", "yas", "uzun", "btcf", "ek") or mod.startswith("tara") or mod.startswith("kalib") or mod.startswith("k2"):
         tick = veri._get("/api/v3/ticker/24hr", {})
         haric = set(COINLER) | STOK_HARIC | {"USDCUSDT", "FDUSDUSDT", "TUSDUSDT", "DAIUSDT", "EURUSDT", "USDPUSDT",
                                 "RLUSDUSDT", "USD1USDT", "PYUSDUSDT", "AEURUSDT", "XUSDUSDT", "BFUSDUSDT",
@@ -462,9 +468,11 @@ def main():
             TARA = [(f"{n:03d}", dict(_B2, resistance_len=n)) for n in range(int(a_), int(b_) + 1)]
         elif mod.startswith("kalib"):
             TARA = KALIB[int(mod.split("-")[1])]
+        elif mod.startswith("k2"):
+            TARA = K2S[int(mod.split("-")[1])]
         rows = []
         with mp.Pool(4) as hv:
-            for ad, prm in (TARA if (mod.startswith("tara") or mod.startswith("kalib")) else {"kovalama": KOVALAMA, "limit": LIMIT, "profesyonel": PROFESYONEL, "basarisiz": BASARISIZ, "seviye": SEVIYE, "fikir": FIKIR, "oda": ODA, "yas": YAS, "uzun": UZUN, "btcf": BTCF, "ek": EK}.get(mod, FORM_SENARYO)):
+            for ad, prm in (TARA if (mod.startswith("tara") or mod.startswith("kalib") or mod.startswith("k2")) else {"kovalama": KOVALAMA, "limit": LIMIT, "profesyonel": PROFESYONEL, "basarisiz": BASARISIZ, "seviye": SEVIYE, "fikir": FIKIR, "oda": ODA, "yas": YAS, "uzun": UZUN, "btcf": BTCF, "ek": EK}.get(mod, FORM_SENARYO)):
                 tr = calistir(prm, COINLER + yeni, "4h", hv)
                 if mod == "ek" and ad == "v6.2 TEMEL":
                     tr.to_csv(f"{OUT}/ek_temel_islemler.csv", index=False)
