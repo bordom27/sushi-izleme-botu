@@ -2,7 +2,7 @@
 strategy("Kirilim69 PRO Strateji", shorttitle="K69 Strat", overlay=true, max_labels_count=500, max_lines_count=200, initial_capital=10000, currency=currency.USD, default_qty_type=strategy.fixed, default_qty_value=1, commission_type=strategy.commission.percent, commission_value=0.1, slippage=0, pyramiding=0, process_orders_on_close=true, calc_on_every_tick=false)
 
 // ============================================================================
-// KIRILIM69 PRO (v6.2 - LONG + SHORT, 46+70 coinde zaman ve coin bolmeli test, komisyon dahil)
+// KIRILIM69 PRO (v6.3 - LONG + SHORT, 46+70 coinde zaman ve coin bolmeli test, komisyon dahil)
 // Bu indikator gercek islem ACMAZ. Sanal pozisyonla sinyal + yonetim gosterir.
 //
 // Her elek LONG icin yazildigi gibi, SHORT icin AYNASI uygulanir:
@@ -122,7 +122,7 @@ stopLookback = input.int(5, "Yapisal stop: son N mumun dibi / tepesi", minval=1,
 stopBufAtr   = input.float(0.2, "Stop tamponu (ATR)", minval=0.0, step=0.05, group=G_RSK)
 seviyeStopAtr = input.float(1.5, "Kirilan seviyenin bu kadar ATR otesine stop (0 = kapali)", minval=0.0, step=0.1, group=G_RSK, tooltip="Kirilim, fiyat kirilan seviyenin belirgin otesine geri donerse gecersizdir. Swing stop daha uzaksa bu daha yakin stop kullanilir; gereksiz genis stop yuzunden red azalir.")
 minStopAtr   = input.float(1.0, "Min stop mesafesi (ATR)", minval=0.1, step=0.1, group=G_RSK)
-maxStopAtr   = input.float(3.0, "Max stop mesafesi (ATR) - asarsa red", minval=0.5, step=0.1, group=G_RSK)
+maxStopAtr   = input.float(3.5, "Max stop mesafesi (ATR) - asarsa red", minval=0.5, step=0.1, group=G_RSK)
 maxRiskPct   = input.float(12.0, "Max stop mesafesi (%) - asarsa red", minval=0.5, step=0.5, group=G_RSK)
 tp1R         = input.float(0.8, "TP1 (R) - fib uygun degilse", minval=0.3, step=0.1, group=G_RSK)
 tp1MinR      = input.float(0.6, "TP1 fib araligi: min R", minval=0.3, step=0.1, group=G_RSK)
@@ -138,7 +138,7 @@ minKalite    = input.string("C", "Min sinyal kalitesi", options=["C", "B", "A"],
 maxAtrPctIn  = input.float(0.0, "Max oynaklik: ATR fiyatin %'si (0 = kapali)", minval=0.0, step=0.5, group=G_RSK)
 
 // ---------------------------------------------------------------- 7) Yonetim
-tp1Pct       = input.float(70.0, "TP1'de kapatilan oran (%)", minval=10, maxval=90, step=5, group=G_POS)
+tp1Pct       = input.float(90.0, "TP1'de kapatilan oran (%)", minval=10, maxval=90, step=5, group=G_POS)
 beBufR       = input.float(0.1, "TP1 sonrasi stop: basabas + (R)", minval=0.0, step=0.05, group=G_POS)
 trailAtrMult = input.float(2.5, "Chandelier trailing (ATR)", minval=0.5, step=0.1, group=G_POS)
 useTimeStop  = input.bool(true, "Zaman stopu", group=G_POS)
@@ -147,7 +147,7 @@ timeStopMinR = input.float(0.5, "Zaman stopu: bu R'ye ulasmadiysa cik", step=0.1
 useTrendExit = input.bool(false, "TP1 sonrasi trend EMA'nin ters tarafinda kapanista cik", group=G_POS)
 useBasarisiz = input.bool(true, "Basarisiz kirilimda erken cik", group=G_POS, tooltip="TP1 alinmadan, girisin ilk N mumunda kapanis kirilan seviyenin gerisine donerse stopu beklemeden kapanista cikar. Ekim 2026 testi: ayni kazanc, ~%25 daha kucuk max dusus.")
 bcBar        = input.int(3, "Basarisiz kirilim: ilk N mum (0 = TP1'e kadar)", minval=0, group=G_POS)
-bcAtr        = input.float(0.3, "Basarisiz kirilim: seviyenin bu kadar ATR gerisi", minval=0.0, step=0.1, group=G_POS)
+bcAtr        = input.float(0.15, "Basarisiz kirilim: seviyenin bu kadar ATR gerisi", minval=0.0, step=0.05, group=G_POS)
 statBas      = input.time(timestamp("2000-01-01"), "Test: islem acma baslangici", group=G_POS, tooltip="Sadece bu tarihten sonra yeni islem acilir (zaman bolmeli test icin).")
 statBit      = input.time(timestamp("2100-01-01"), "Test: islem acma bitisi", group=G_POS)
 erkenBeR     = input.float(0.0, "Erken basabas: bu R'ye ulasinca stop girise (0 = kapali)", minval=0.0, step=0.1, group=G_POS)
