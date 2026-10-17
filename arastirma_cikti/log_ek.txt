@@ -1,0 +1,10 @@
+v6.2 TEMEL
+goreli guc 30 mum > 0
+goreli guc 60 mum > 0
+goreli guc 120 mum > 0
+goreli guc 60 mum > %5
+goreli guc 120 mum > %10
+yeniden giris 3 mum
+yeniden giris 6 mum
+yeniden giris 12 mum
+yeniden giris 6 mum, tampon 0.3 ATR
