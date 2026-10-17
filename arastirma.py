@@ -246,6 +246,31 @@ FIKIR = [("v6.2 TEMEL", dict(_B2)),
          ("BTC yuksek oynaklik rejimi", dict(_B2, btc_vol_rejim="yuksek")),
          ("BTC dusuk oynaklik rejimi", dict(_B2, btc_vol_rejim="dusuk"))]
 
+ODA = [("v6.2 TEMEL (engel 0.5R, pivot 10)", dict(_B2)),
+       ("engel 0.8R", dict(_B2, min_room_r=0.8)),
+       ("engel 1.0R", dict(_B2, min_room_r=1.0)),
+       ("engel 1.5R", dict(_B2, min_room_r=1.5)),
+       ("pivot 5, engel 0.5R", dict(_B2, room_pivot_len=5)),
+       ("pivot 5, engel 1.0R", dict(_B2, room_pivot_len=5, min_room_r=1.0)),
+       ("pivot 20, engel 1.0R", dict(_B2, room_pivot_len=20, min_room_r=1.0))]
+
+
+def teshis(sembol, bas):
+    df, gd, wd = DATA["4h"][sembol]
+    r = k.simule_et(sembol, df, gd, DATA["btc_d"], DATA["btc_4h"], haftalik=wd, params=dict(_B2),
+                    giris_bas=pd.Timestamp(IS_BAS))
+    with open(f"{OUT}/teshis_{sembol}.txt", "w") as f:
+        for o in r.olaylar:
+            if o.zaman >= pd.Timestamp(bas):
+                f.write(f"{o.zaman} {o.tip} {o.yon} {o.veri}\n")
+        f.write("\nfiltre: " + str(r.filtre) + "\n\nmumlar:\n")
+        f.write(df[df.open_time >= pd.Timestamp(bas)].to_string() + "\n")
+        ph = k.pivot(df["high"].values, 10, True)
+        f.write("\npivot10 tepeler (son 400 mum):\n")
+        for j in range(len(df) - 400, len(df)):
+            if not np.isnan(ph[j]):
+                f.write(f"  {df.open_time.iloc[j]} {ph[j]}\n")
+
 
 def main():
     os.makedirs(OUT, exist_ok=True)
@@ -369,7 +394,7 @@ def main():
         with open(f"{OUT}/kombo.txt", "w") as f:
             f.write(res.to_string(index=False))
 
-    elif mod in ("formasyon", "kovalama", "limit", "profesyonel", "basarisiz", "seviye", "fikir"):
+    elif mod in ("formasyon", "kovalama", "limit", "profesyonel", "basarisiz", "seviye", "fikir", "oda"):
         tick = veri._get("/api/v3/ticker/24hr", {})
         haric = set(COINLER) | STOK_HARIC | {"USDCUSDT", "FDUSDUSDT", "TUSDUSDT", "DAIUSDT", "EURUSDT", "USDPUSDT",
                                 "RLUSDUSDT", "USD1USDT", "PYUSDUSDT", "AEURUSDT", "XUSDUSDT", "BFUSDUSDT",
@@ -389,9 +414,13 @@ def main():
                 except Exception as exc:
                     print("1s veri yok", s_, exc, flush=True)
             print("1s veri hazir", len(DATA["1h"]), flush=True)
+        if mod == "oda":
+            for s_ in ("OPUSDT",):
+                if s_ in DATA["4h"]:
+                    teshis(s_, "2026-10-10")
         rows = []
         with mp.Pool(4) as hv:
-            for ad, prm in ({"kovalama": KOVALAMA, "limit": LIMIT, "profesyonel": PROFESYONEL, "basarisiz": BASARISIZ, "seviye": SEVIYE, "fikir": FIKIR}.get(mod, FORM_SENARYO)):
+            for ad, prm in ({"kovalama": KOVALAMA, "limit": LIMIT, "profesyonel": PROFESYONEL, "basarisiz": BASARISIZ, "seviye": SEVIYE, "fikir": FIKIR, "oda": ODA}.get(mod, FORM_SENARYO)):
                 tr = calistir(prm, COINLER + yeni, "4h", hv)
                 for etiket, x in (("46", tr[tr.symbol.isin(COINLER)] if len(tr) else tr),
                                   ("YENI", tr[tr.symbol.isin(yeni)] if len(tr) else tr), ("HEPSI", tr)):
