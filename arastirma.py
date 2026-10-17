@@ -262,7 +262,7 @@ def teshis(sembol, bas):
     with open(f"{OUT}/teshis_{sembol}.txt", "w") as f:
         for o in r.olaylar:
             if o.zaman >= pd.Timestamp(bas):
-                f.write(f"{o.zaman} {o.tip} {o.yon} {o.veri}\n")
+                f.write(f"{o.zaman} {o.tur} {o.yon} {o.veri}\n")
         f.write("\nfiltre: " + str(r.filtre) + "\n\nmumlar:\n")
         f.write(df[df.open_time >= pd.Timestamp(bas)].to_string() + "\n")
         ph = k.pivot(df["high"].values, 10, True)
