@@ -272,6 +272,9 @@ for ms in (3.0, 3.5, 4.0, 4.5):
         for bc in (0.15, 0.2, 0.25, 0.3):
             K2.append((f"stop{ms} tp1%{tp:.0f} bc{bc}", dict(_B2, max_stop_atr=ms, tp1_pct=tp, bc_atr=bc)))
 K2S = [K2[:1] + K2[1 + j::4] for j in range(4)]
+K3 = [("v6.2 TEMEL", dict(_B2))] + [(f"stop3.5 tp1%{tp:.0f} bc{bc}", dict(_B2, max_stop_atr=3.5, tp1_pct=tp, bc_atr=bc))
+                                   for tp in (80.0, 85.0, 90.0, 95.0, 100.0) for bc in (0.0, 0.05, 0.1, 0.15, 0.2)]
+K2S += [K3[:1] + K3[1::2], K3[:1] + K3[2::2]]
 BTCF = [("v6.2 TEMEL (long: BTC > gunluk EMA200)", dict(_B2)),
         ("long: BTC EMA200 sarti yok (sadece EMA50)", dict(_B2, long_sart="Kapali")),
         ("long: coin > EMA200", dict(_B2, long_sart="Coin > EMA200")),

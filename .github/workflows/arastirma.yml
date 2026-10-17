@@ -16,7 +16,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        mod: [k2-0, k2-1, k2-2, k2-3]
+        mod: [k2-4, k2-5]
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
