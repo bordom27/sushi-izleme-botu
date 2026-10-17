@@ -132,6 +132,16 @@ PARAMS = {
     # 17) Seviye tanimi (varsayilan = son R mumun en yuksek fitili)
     "seviye_tipi": "fitil",         # "fitil" | "kapanis" (govde kapanislarinin en yuksegi)
     "gunluk_seviye": 0,             # >0: direnc = son N kapanmis gunun en yuksek degeri (gunluk veri gerekir)
+    "rsi_dinamik": "",              # "" | "ust" | "orta" | "ikisi": RSI eşikleri yerine RSI'nin 200 mumluk Bollinger bandi
+    "z_max": 0.0,                   # >0: kapanisin z-skoru (SMA z_len'den sapma / std) bu degeri asarsa red
+    "z_len": 20,
+    "er_min": 0.0,                  # >0: Kaufman verimlilik orani (er_len) en az bu kadar
+    "er_len": 20,
+    "chop_max": 0.0,                # >0: Choppiness index (14) bu degerden kucuk olmali
+    "fvg_atr": 0.0,                 # >0: girisin bu kadar ATR ustunde/icinde doldurulmamis ters FVG varsa red
+    "fvg_bak": 300,
+    "kor_min": -9.0,                # > -1: coin ile BTC 4s getiri korelasyonu (kor_len) en az bu kadar
+    "kor_len": 30,
     "rs_bar": 0,                    # >0: goreli guc (coin getirisi - BTC getirisi, son rs_bar mum)
     "rs_min": 0.0,                  # long: rs > rs_min, short: rs < -rs_min (oran, 0.05 = %5)
     "yeniden_giris": 0,             # >0: basarisiz kirilim cikisindan sonra bu kadar mum icinde seviye geri alinirsa tekrar gir
@@ -554,6 +564,22 @@ def simule_et(symbol: str, df: pd.DataFrame, gunluk: pd.DataFrame | None,
         s = pd.Series(roc, index=pd.to_datetime(b4["open_time"]))
         mk_roc = s.reindex(ot).to_numpy(float)
 
+    _cs = pd.Series(c)
+    _rs = pd.Series(rsi_v)
+    rbb_m = _rs.rolling(200).mean().to_numpy(); rbb_s = _rs.rolling(200).std(ddof=0).to_numpy()
+    rbb_u, rbb_l = rbb_m + 2 * rbb_s, rbb_m - 2 * rbb_s
+    z_dizi = ((_cs - _cs.rolling(p["z_len"]).mean()) / _cs.rolling(p["z_len"]).std(ddof=0)).to_numpy()
+    _E = p["er_len"]
+    er_dizi = (( _cs - _cs.shift(_E)).abs() / _cs.diff().abs().rolling(_E).sum()).to_numpy()
+    _tr1 = pd.Series(true_range(h, l, c, True))
+    chop_dizi = (100 * np.log10(_tr1.rolling(14).sum() / (pd.Series(h).rolling(14).max() - pd.Series(l).rolling(14).min())) / np.log10(14)).to_numpy()
+    kor_dizi = np.full(n, np.nan)
+    if p["kor_min"] > -1 and btc_4h is not None and len(btc_4h):
+        _b2 = btc_4h.reset_index(drop=True)
+        _bc2 = pd.Series(_b2["close"].to_numpy(float), index=pd.to_datetime(_b2["open_time"])).reindex(ot).reset_index(drop=True)
+        kor_dizi = _cs.pct_change().rolling(p["kor_len"]).corr(_bc2.pct_change()).to_numpy()
+    fvg_ayi, fvg_boga = [], []   # (alt, ust, bar)
+
     rs_dizi = np.full(n, np.nan)
     if p["rs_bar"] > 0 and btc_4h is not None and len(btc_4h):
         _b = btc_4h.reset_index(drop=True)
@@ -771,6 +797,14 @@ def simule_et(symbol: str, df: pd.DataFrame, gunluk: pd.DataFrame | None,
         r1 = rsi_v[i - 1] if i >= 1 else np.nan
         L7 = r0 >= p["rsi_min"] and _pine_min(r0, r1) < rsi_max
         S7 = r0 <= 100 - p["rsi_min"] and _pine_max(r0, r1) > 100 - rsi_max
+        RD = p["rsi_dinamik"]
+        if RD and not math.isnan(rbb_u[i]):
+            if RD in ("ust", "ikisi"):
+                L7 = r0 >= p["rsi_min"] and _pine_min(r0, r1) < rbb_u[i]
+                S7 = r0 <= 100 - p["rsi_min"] and _pine_max(r0, r1) > rbb_l[i]
+            if RD in ("orta", "ikisi"):
+                L7 = L7 and r0 >= rbb_m[i]
+                S7 = S7 and r0 <= rbb_m[i]
         adx2 = adx_v[i - 2] if i >= 2 else np.nan
         adx_guc = adx_v[i] >= p["adx_min"] or adx_v[i] > adx2
         L8 = (not p["use_adx"]) or (di_p[i] > di_m[i] and adx_guc)
@@ -842,6 +876,33 @@ def simule_et(symbol: str, df: pd.DataFrame, gunluk: pd.DataFrame | None,
             if aday_s:
                 n_t = sum(1 for j in range(j0, i + 1) if not math.isnan(pl5[j]) and abs(pl5[j] - support[i]) <= tol_)
                 aday_s = n_t >= MT
+        # FVG listelerini guncelle (bu barda olusan + dolanlari sil)
+        if p["fvg_atr"] > 0:
+            if i >= 2 and h[i] < l[i - 2]:
+                fvg_ayi.append((h[i], l[i - 2], i))
+            if i >= 2 and l[i] > h[i - 2]:
+                fvg_boga.append((h[i - 2], l[i], i))
+            fvg_ayi = [f for f in fvg_ayi if h[i] < f[1] and i - f[2] <= p["fvg_bak"]]
+            fvg_boga = [f for f in fvg_boga if l[i] > f[0] and i - f[2] <= p["fvg_bak"]]
+            if aday_l and a > 0 and any(f[1] > c[i] and f[0] < c[i] + p["fvg_atr"] * a for f in fvg_ayi):
+                aday_l = False
+            if aday_s and a > 0 and any(f[0] < c[i] and f[1] > c[i] - p["fvg_atr"] * a for f in fvg_boga):
+                aday_s = False
+        if p["z_max"] > 0:
+            zv = z_dizi[i]
+            if aday_l and not math.isnan(zv) and zv > p["z_max"]:
+                aday_l = False
+            if aday_s and not math.isnan(zv) and zv < -p["z_max"]:
+                aday_s = False
+        if p["er_min"] > 0 and (aday_l or aday_s):
+            if math.isnan(er_dizi[i]) or er_dizi[i] < p["er_min"]:
+                aday_l = aday_s = False
+        if p["chop_max"] > 0 and (aday_l or aday_s):
+            if math.isnan(chop_dizi[i]) or chop_dizi[i] >= p["chop_max"]:
+                aday_l = aday_s = False
+        if p["kor_min"] > -1 and (aday_l or aday_s):
+            if math.isnan(kor_dizi[i]) or kor_dizi[i] < p["kor_min"]:
+                aday_l = aday_s = False
         if p["rs_bar"] > 0:
             rsv = rs_dizi[i]
             if aday_l and (math.isnan(rsv) or rsv <= p["rs_min"]):

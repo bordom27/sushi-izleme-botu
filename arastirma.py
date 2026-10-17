@@ -275,6 +275,29 @@ K2S = [K2[:1] + K2[1 + j::4] for j in range(4)]
 K3 = [("v6.2 TEMEL", dict(_B2))] + [(f"stop3.5 tp1%{tp:.0f} bc{bc}", dict(_B2, max_stop_atr=3.5, tp1_pct=tp, bc_atr=bc))
                                    for tp in (80.0, 85.0, 90.0, 95.0, 100.0) for bc in (0.0, 0.05, 0.1, 0.15, 0.2)]
 V63 = [("v6.3", dict(_B2, max_stop_atr=3.5, tp1_pct=90.0, bc_atr=0.15))]
+_B3 = dict(V63[0][1])
+YENI6 = [("v6.3 TEMEL", dict(_B3)),
+         ("RSI dinamik ust (BB200 ust bandi)", dict(_B3, rsi_dinamik="ust")),
+         ("RSI dinamik orta (RSI > BB200 ortasi)", dict(_B3, rsi_dinamik="orta")),
+         ("RSI dinamik ikisi", dict(_B3, rsi_dinamik="ikisi")),
+         ("z-skor20 < 2.5", dict(_B3, z_max=2.5)),
+         ("z-skor20 < 3.0", dict(_B3, z_max=3.0)),
+         ("z-skor50 < 2.5", dict(_B3, z_max=2.5, z_len=50)),
+         ("z-skor50 < 3.0", dict(_B3, z_max=3.0, z_len=50)),
+         ("verimlilik orani20 >= 0.2", dict(_B3, er_min=0.2)),
+         ("verimlilik orani20 >= 0.3", dict(_B3, er_min=0.3)),
+         ("verimlilik orani20 >= 0.4", dict(_B3, er_min=0.4)),
+         ("choppiness < 61.8", dict(_B3, chop_max=61.8)),
+         ("choppiness < 55", dict(_B3, chop_max=55.0)),
+         ("choppiness < 50", dict(_B3, chop_max=50.0)),
+         ("ters FVG 1 ATR icinde ise red", dict(_B3, fvg_atr=1.0)),
+         ("ters FVG 2 ATR icinde ise red", dict(_B3, fvg_atr=2.0)),
+         ("ters FVG 3 ATR icinde ise red", dict(_B3, fvg_atr=3.0)),
+         ("BTC korelasyon30 >= 0", dict(_B3, kor_min=0.0)),
+         ("BTC korelasyon30 >= 0.3", dict(_B3, kor_min=0.3)),
+         ("BTC korelasyon60 >= 0.3", dict(_B3, kor_min=0.3, kor_len=60)),
+         ("BTC korelasyon30 >= 0.5", dict(_B3, kor_min=0.5))]
+YENI6S = [YENI6[:1] + YENI6[1 + j::3] for j in range(3)]
 K2S += [K3[:1] + K3[1::2], K3[:1] + K3[2::2]]
 BTCF = [("v6.2 TEMEL (long: BTC > gunluk EMA200)", dict(_B2)),
         ("long: BTC EMA200 sarti yok (sadece EMA50)", dict(_B2, long_sart="Kapali")),
@@ -479,7 +502,7 @@ def main():
         rows[0]["medyan_hacim_musd"] = round(hv_[len(hv_) // 2] / 1e6, 1) if hv_ else 0
         rows[0]["min_hacim_musd"] = round(hv_[0] / 1e6, 2) if hv_ else 0
         pd.DataFrame(rows).to_csv(f"{OUT}/{mod}.csv", index=False)
-    elif mod in ("formasyon", "kovalama", "limit", "profesyonel", "basarisiz", "seviye", "fikir", "oda", "yas", "uzun", "btcf", "ek", "v63") or mod.startswith("tara") or mod.startswith("kalib") or mod.startswith("k2"):
+    elif mod in ("formasyon", "kovalama", "limit", "profesyonel", "basarisiz", "seviye", "fikir", "oda", "yas", "uzun", "btcf", "ek", "v63") or mod.startswith("tara") or mod.startswith("kalib") or mod.startswith("k2") or mod.startswith("y6"):
         tick = veri._get("/api/v3/ticker/24hr", {})
         haric = set(COINLER) | STOK_HARIC | {"USDCUSDT", "FDUSDUSDT", "TUSDUSDT", "DAIUSDT", "EURUSDT", "USDPUSDT",
                                 "RLUSDUSDT", "USD1USDT", "PYUSDUSDT", "AEURUSDT", "XUSDUSDT", "BFUSDUSDT",
@@ -508,11 +531,13 @@ def main():
             TARA = [(f"{n:03d}", dict(_B2, resistance_len=n)) for n in range(int(a_), int(b_) + 1)]
         elif mod.startswith("kalib"):
             TARA = KALIB[int(mod.split("-")[1])]
+        elif mod.startswith("y6"):
+            TARA = YENI6S[int(mod.split("-")[1])]
         elif mod.startswith("k2"):
             TARA = K2S[int(mod.split("-")[1])]
         rows = []
         with mp.Pool(4) as hv:
-            for ad, prm in (TARA if (mod.startswith("tara") or mod.startswith("kalib") or mod.startswith("k2")) else {"kovalama": KOVALAMA, "limit": LIMIT, "profesyonel": PROFESYONEL, "basarisiz": BASARISIZ, "seviye": SEVIYE, "fikir": FIKIR, "oda": ODA, "yas": YAS, "uzun": UZUN, "btcf": BTCF, "ek": EK, "v63": V63}.get(mod, FORM_SENARYO)):
+            for ad, prm in (TARA if (mod.startswith("tara") or mod.startswith("kalib") or mod.startswith("k2") or mod.startswith("y6")) else {"kovalama": KOVALAMA, "limit": LIMIT, "profesyonel": PROFESYONEL, "basarisiz": BASARISIZ, "seviye": SEVIYE, "fikir": FIKIR, "oda": ODA, "yas": YAS, "uzun": UZUN, "btcf": BTCF, "ek": EK, "v63": V63}.get(mod, FORM_SENARYO)):
                 tr = calistir(prm, COINLER + yeni, "4h", hv)
                 if mod == "v63":
                     tr.to_csv(f"{OUT}/v63_islemler.csv", index=False)
