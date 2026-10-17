@@ -1,0 +1,6 @@
+RSI2 5/95 | rejim yok
+BB20 2.5 | rejim adx
+Z50 2.5 | rejim adx
+RSI2 5/95 | rejim chop
+BB20 2.5 | rejim trend
+Z50 2.5 | rejim trend
