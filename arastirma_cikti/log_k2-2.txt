@@ -1,0 +1,17 @@
+v6.2 TEMEL
+stop3.0 tp1%70 bc0.25
+stop3.0 tp1%75 bc0.25
+stop3.0 tp1%80 bc0.25
+stop3.0 tp1%85 bc0.25
+stop3.5 tp1%70 bc0.25
+stop3.5 tp1%75 bc0.25
+stop3.5 tp1%80 bc0.25
+stop3.5 tp1%85 bc0.25
+stop4.0 tp1%70 bc0.25
+stop4.0 tp1%75 bc0.25
+stop4.0 tp1%80 bc0.25
+stop4.0 tp1%85 bc0.25
+stop4.5 tp1%70 bc0.25
+stop4.5 tp1%75 bc0.25
+stop4.5 tp1%80 bc0.25
+stop4.5 tp1%85 bc0.25
