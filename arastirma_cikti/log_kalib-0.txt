@@ -1,0 +1,24 @@
+v6.2 TEMEL
+long: kapali filtre
+sadece short
+tp1 %60
+trail 3.0
+zaman stop 30
+be +0.2
+tp2 tabani 2.0
+hacim 1.5x
+direnc 120
+yumusak 3/4
+max stop 4 ATR
+seviye stop kapali
+engel kontrolu yok
+panik yok
+piyasa MACD de
+haftalik MACD acik
+cooldown 0
+RSI ust 80
+max oynaklik %5
+hacim 1.75x
+kirilim tamponu 0.2
+kapanis gucu 0.7
+basarisiz cikis 2 mum
