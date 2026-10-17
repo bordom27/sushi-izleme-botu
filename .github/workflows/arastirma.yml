@@ -16,7 +16,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        mod: [tara-30-52, tara-53-75, tara-76-98, tara-99-121, tara-122-144, tara-145-167, tara-168-190, tara-191-213, tara-214-236, tara-237-259, tara-260-282, tara-283-300]
+        mod: [tara-301-323, tara-324-346, tara-347-369, tara-370-392, tara-393-415, tara-416-438, tara-439-461, tara-462-484, tara-485-500]
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
