@@ -298,6 +298,64 @@ YENI6 = [("v6.3 TEMEL", dict(_B3)),
          ("BTC korelasyon60 >= 0.3", dict(_B3, kor_min=0.3, kor_len=60)),
          ("BTC korelasyon30 >= 0.5", dict(_B3, kor_min=0.5))]
 YENI6S = [YENI6[:1] + YENI6[1 + j::3] for j in range(3)]
+MR = []
+for rj in ("", "adx", "chop", "trend"):
+    MR += [(f"BB20 2.0 | rejim {rj or 'yok'}", {"sinyal": "bb", "bb_k": 2.0, "rejim": rj}),
+           (f"BB20 2.5 | rejim {rj or 'yok'}", {"sinyal": "bb", "bb_k": 2.5, "rejim": rj}),
+           (f"RSI2 10/90 | rejim {rj or 'yok'}", {"sinyal": "rsi2", "rsi_alt": 10.0, "rsi_ust": 90.0, "rejim": rj}),
+           (f"RSI2 5/95 | rejim {rj or 'yok'}", {"sinyal": "rsi2", "rsi_alt": 5.0, "rsi_ust": 95.0, "rejim": rj}),
+           (f"Z50 2.0 | rejim {rj or 'yok'}", {"sinyal": "z", "z_len": 50, "z_esik": 2.0, "rejim": rj}),
+           (f"Z50 2.5 | rejim {rj or 'yok'}", {"sinyal": "z", "z_len": 50, "z_esik": 2.5, "rejim": rj})]
+MRS = [MR[j::4] for j in range(4)]
+
+
+def _mr_tek(args):
+    import ortalama
+    s_, prm = args
+    df, gd, wd = DATA["4h"][s_]
+    return ortalama.simule(s_, df, DATA["btc_d"], prm, giris_bas=pd.Timestamp(IS_BAS))
+
+
+def mr_calistir(mod, liste):
+    tick = veri._get("/api/v3/ticker/24hr", {})
+    haric = set(COINLER) | STOK_HARIC | {"USDCUSDT", "FDUSDUSDT", "TUSDUSDT", "DAIUSDT", "EURUSDT", "USDPUSDT",
+                            "RLUSDUSDT", "USD1USDT", "PYUSDUSDT", "AEURUSDT", "XUSDUSDT", "BFUSDUSDT",
+                            "WBTCUSDT", "WBETHUSDT", "BNSOLUSDT", "EURIUSDT", "USDEUSDT"}
+    aday = [d for d in tick if d["symbol"].endswith("USDT") and d["symbol"] not in haric
+            and not any(x in d["symbol"] for x in ("UP", "DOWN", "BULL", "BEAR"))]
+    aday.sort(key=lambda d: float(d["quoteVolume"]), reverse=True)
+    yeni = [d["symbol"] for d in aday[:70]]
+    DATA["4h"] = yukle(COINLER + yeni)
+    sem = list(DATA["4h"])
+    kir = None
+    try:
+        kir = pd.read_csv(f"{OUT}/v63_islemler.csv", parse_dates=["cikis_zaman"])
+        kir = kir[kir.cikis_zaman >= pd.Timestamp(IS_BAS)].groupby(kir.cikis_zaman.dt.to_period("M"))["sonuc_r"].sum()
+    except Exception as exc:
+        print("v63 yok", exc)
+    rows = []
+    with mp.Pool(4) as hv:
+        for ad, prm in liste:
+            sonuc = hv.map(_mr_tek, [(s_, prm) for s_ in sem])
+            tr = pd.DataFrame([x for lst in sonuc for x in lst])
+            row = satir(ad, tr)
+            if len(tr) and kir is not None:
+                ay = tr[tr.cikis_zaman >= pd.Timestamp(IS_BAS)].groupby(pd.to_datetime(tr.cikis_zaman).dt.to_period("M"))["sonuc_r"].sum()
+                j = pd.concat([kir.rename("kir"), ay.rename("mr")], axis=1).fillna(0)
+                row["ay_kor"] = round(j.kir.corr(j.mr), 2)
+                kotu = j[j.kir < 0]
+                row["kir_kotu_ay_mr"] = round(kotu.mr.sum(), 1)
+                row["kir_kotu_ay_n"] = len(kotu)
+                birlikte = j.kir + j.mr
+                eq = birlikte.cumsum()
+                row["birlikte_dd_ay"] = round((eq.cummax() - eq).max(), 1)
+                eqk = j.kir.cumsum()
+                row["kir_dd_ay"] = round((eqk.cummax() - eqk).max(), 1)
+            rows.append(row)
+            print(ad, flush=True)
+    pd.DataFrame(rows).to_csv(f"{OUT}/{mod}.csv", index=False)
+
+
 K2S += [K3[:1] + K3[1::2], K3[:1] + K3[2::2]]
 BTCF = [("v6.2 TEMEL (long: BTC > gunluk EMA200)", dict(_B2)),
         ("long: BTC EMA200 sarti yok (sadece EMA50)", dict(_B2, long_sart="Kapali")),
@@ -468,6 +526,8 @@ def main():
         with open(f"{OUT}/kombo.txt", "w") as f:
             f.write(res.to_string(index=False))
 
+    elif mod.startswith("mr-"):
+        mr_calistir(mod, MRS[int(mod.split("-")[1])])
     elif mod == "aday":
         YENI_ = ['XRPUSDT', 'WLDUSDT', 'STRKUSDT', 'TAOUSDT', 'PUMPUSDT', 'ZROUSDT', 'SANDUSDT', 'QNTUSDT', 'EPICUSDT', 'ONDOUSDT', 'GTCUSDT', 'PROMUSDT', 'AMPUSDT', 'ERAUSDT', 'TONUSDT', 'TRUMPUSDT', 'RADUSDT', 'ASTERUSDT', 'EIGENUSDT', 'PYTHUSDT', 'BCHUSDT', 'BATUSDT', 'CAKEUSDT', 'AUSDT', 'ZKUSDT', 'ALTUSDT', 'NIGHTUSDT', 'WUSDT', 'NFPUSDT', 'AVAUSDT', 'XPLUSDT', 'MINAUSDT', 'LSKUSDT', 'DUSKUSDT', 'NILUSDT', 'RSRUSDT', 'MUBARAKUSDT', 'STRAXUSDT', 'KMNOUSDT', 'NMRUSDT', 'ETHFIUSDT', 'BERAUSDT', 'AXLUSDT', 'PENGUUSDT', 'WALUSDT', 'DASHUSDT', 'AUDIOUSDT', 'RAYUSDT', 'LDOUSDT', 'STXUSDT', 'ZAMAUSDT', 'NXPCUSDT', 'SUSDT', 'RLCUSDT', 'VIRTUALUSDT', 'KITEUSDT']
         DATA["btc_4h"] = veri.mumlar_onbellekli("BTCUSDT", "4h", VERI_BAS)
