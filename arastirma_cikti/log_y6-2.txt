@@ -1,0 +1,7 @@
+v6.3 TEMEL
+RSI dinamik ikisi
+z-skor50 < 2.5
+verimlilik orani20 >= 0.3
+choppiness < 55
+ters FVG 2 ATR icinde ise red
+BTC korelasyon30 >= 0.3
