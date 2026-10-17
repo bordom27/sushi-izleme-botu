@@ -1,0 +1,6 @@
+4h BB20 2.5 chop | stop 3.0 ATR, 5 mum
+4h RSI2 10/90 trend | stop 6.0 ATR, 5 mum
+4h BB20 2.5 trend | stop 6.0 ATR, 15 mum
+1d BB20 2.5 chop | stop 3.0 ATR, 5 mum
+1d RSI2 10/90 trend | stop 6.0 ATR, 5 mum
+1d BB20 2.5 trend | stop 6.0 ATR, 15 mum
