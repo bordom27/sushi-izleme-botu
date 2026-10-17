@@ -13,8 +13,8 @@ TradingView'daki **Kirilim69 PRO** göstergesinin aynısını 46 kripto parada (
 | `izleme_state.json` | Botun hafızası (bot kendisi günceller, elle düzenleme). |
 
 ## Telegram mesajları
-- 🟢/🔴 **GİRİŞ**: giriş, stop, TP1 (%70 kapat), TP2 (kalan %30), önerilen pozisyon büyüklüğü (%1 risk)
-- 🟠 **TP1**: %70 kapat, stop giriş + 0.1R
+- 🟢/🔴 **GİRİŞ**: giriş, stop, TP1 (%90 kapat), TP2 (kalan %10), önerilen pozisyon büyüklüğü (%1 risk)
+- 🟠 **TP1**: %90 kapat, stop giriş + 0.1R
 - 🔧 **STOP GÜNCELLE**: TP1 sonrası iz süren stop belirgin ilerlediğinde
 - ✅/❌ **KAPANDI**: TP2, stop, zaman stopu — sonuç R (komisyon dahil)
 - 🟡 **KIRILIM** / ⚪ **iptal**: retest bekleyen kırılım ön uyarısı (`BILDIR_KIRILIM` ile kapatılabilir)
@@ -39,6 +39,14 @@ GitHub Actions'ta 59 tekil ayar, 12 kombinasyon, 4 zaman dilimi ve listede olmay
 TP1 alınmadan, girişten sonraki ilk 3 mumda 4s kapanış kırılan seviyenin 0.3 ATR gerisine dönerse stop beklenmeden kapanışta çıkılır.
 116 coin: eğitim +64.5R → +63.8R, test +42.0R → +52.1R; maksimum düşüş 5.1R → 3.9R ve 20.1R → 14.5R. İsabet ~4–5 puan düşer (küçük kayıplar).
 Ayrıca test edilip **eklenmeyenler**: limit emirle giriş, 1 saatlikte giriş, EMA21 geri çekilme sinyali, kovalama filtreleri, klasik formasyonlar.
+
+## v6.3: yeni giriş tarzına göre yeniden kalibrasyon (Ekim 2026)
+Eski 60 ayar, kırılım kapanışında giriş yapan v6.2 üzerinde yeniden tarandı; iki dönemde de iyileştiren üç ayar 64+25 kombinasyonluk ızgarada birlikte doğrulandı (64 kombinasyonun 58'i iki dönemde de iyi):
+- **TP1'de %90 kapat** (eski %70) — iz süren kalan pozisyon kazanç katmıyordu
+- **Başarısız kırılım çıkışı 0.15 ATR** (eski 0.3)
+- **Maksimum stop 3.5 ATR** (eski 3.0)
+116 coin: eğitim +52.0R → +57.8R, test +44.7R → +54.2R; en kötü düşüş 14.3R → 12.5R. Hem eski 46 coinde hem yeni 70 coinde ayrı ayrı iyileşiyor.
+Test edilip **eklenmeyenler**: göreli güç (BTC'ye göre), başarısız kırılım sonrası yeniden giriş, coin bazlı sicil, giriş saati / haftanın günü, direnç penceresi 30–500 (80 en iyi), long için BTC EMA alternatifleri, üst direnç mesafesi, kırılan seviyenin yaşı.
 
 ## Elle çalıştırma
 GitHub → Actions → *Genel Izleme Botu* → *Run workflow* (`test_mesaji` = true yalnızca Telegram bağlantısını dener).

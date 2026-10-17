@@ -6,7 +6,7 @@ BU SCRIPT GERCEK ISLEM ACMAZ. GitHub Actions tarafindan periyodik tetiklenir.
 TradingView'daki "Kirilim69 PRO" gostergesiyle AYNI mantik (kirilim_v6.py):
 long + short, BTC piyasa elegi (long icin BTC > gunluk EMA200), hacimli
 kirilim / retest / teyit girisi, yapisal stop, fib + engel bazli TP1/TP2,
-TP1'de %70 kar al + stop basabas+0.1R, chandelier trailing, zaman stopu.
+TP1'de %90 kar al + stop basabas+0.1R, chandelier trailing, zaman stopu.
 
 Nasil calisir:
   Her calistirmada her coinin 4 saatlik gecmisi SABIT bir baslangictan
@@ -190,8 +190,8 @@ def mesaj_giris(sym, o: k.Olay, cfg) -> str:
         f"Tip: {TIP_ADI.get(v['tip'], v['tip'])} | Kalite: {v['kalite']}\n"
         f"Giriş: {fmt(v['giris'])}  (mum kapanışı {tr_saat(o.zaman + pd.Timedelta(hours=4))})\n"
         f"Stop: {fmt(v['stop'])}  ({pct(v['stop'], v['giris'])})\n"
-        f"TP1: {fmt(v['tp1'])}  ({tp1_r:.1f}R, {v['tp1_kay']}) → pozisyonun %70'ini kapat\n"
-        f"TP2: {fmt(v['tp2'])}  ({tp2_r:.1f}R, {v['tp2_kay']}) → kalan %30\n"
+        f"TP1: {fmt(v['tp1'])}  ({tp1_r:.1f}R, {v['tp1_kay']}) → pozisyonun %{k.PARAMS['tp1_pct']:g} kadarını kapat\n"
+        f"TP2: {fmt(v['tp2'])}  ({tp2_r:.1f}R, {v['tp2_kay']}) → kalan %{100 - k.PARAMS['tp1_pct']:g}\n"
         f"Pozisyon büyüklüğü (hesabın %{k.PARAMS['hesap_risk']:g}'i riskte): sermayenin %{v['poz_pct']:.1f}\n"
         + kalabalik_satiri(sym, o, cfg, v) +
         f"TP1 sonrası stop giriş+0.1R'ye çekilir ve 2.5 ATR iz süren stopa geçer. "
@@ -204,7 +204,7 @@ def mesaj_giris(sym, o: k.Olay, cfg) -> str:
 def mesaj_tp1(sym, o: k.Olay, cfg) -> str:
     v = o.veri
     return (f"🟠 TP1 — {sym} {YON[o.yon]}\n"
-            f"TP1 {fmt(v['fiyat'])} geldi: pozisyonun %70'ini kapat.\n"
+            f"TP1 {fmt(v['fiyat'])} geldi: pozisyonun %{k.PARAMS['tp1_pct']:g} kadarını kapat.\n"
             f"Yeni stop: {fmt(v['yeni_stop'])} (giriş {fmt(v['giris'])} + 0.1R). Kalan için TP2: {fmt(v['tp2'])}"
             + gecikme_notu(o.zaman, cfg))
 
@@ -491,7 +491,9 @@ def main():
     parmak = hashlib.md5(json.dumps(k.PARAMS, sort_keys=True).encode()).hexdigest()[:10]
     if not ilk_calisma and state.get("ayar_parmak_izi") != parmak:
         acik = [(s, r.acik) for s, r in sonuclar.items() if r.acik]
-        satir = ["⚙️ Sistem ayarları güncellendi. Yeni ayarlara göre şu anki durum:", btc_bilgi]
+        satir = ["⚙️ Sistem ayarları güncellendi (v6.3): TP1'de pozisyonun %90'ı kapatılır (eski %70), "
+                 "başarısız kırılım çıkışı seviyenin 0.15 ATR gerisi (eski 0.3), max stop 3.5 ATR (eski 3.0). "
+                 "Testte: +44.7R → +54.2R, en kötü düşüş 14.3R → 12.5R.", btc_bilgi]
         if acik:
             satir.append("Açık pozisyonlar (yeni kurallara göre; giriş zamanı geçmiş olabilir, sadece bilgi):")
             for s, a in acik:

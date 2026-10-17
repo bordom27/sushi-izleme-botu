@@ -97,7 +97,7 @@ PARAMS = {
     "stop_buf_atr": 0.2,
     "seviye_stop_atr": 1.5,
     "min_stop_atr": 1.0,
-    "max_stop_atr": 3.0,
+    "max_stop_atr": 3.5,
     "max_risk_pct": 12.0,
     "tp1_r": 0.8,
     "tp1_min_r": 0.6,
@@ -113,7 +113,7 @@ PARAMS = {
     "max_atr_pct": 0.0,
 
     # 7) Yonetim
-    "tp1_pct": 70.0,
+    "tp1_pct": 90.0,
     "be_buf_r": 0.1,
     "trail_atr_mult": 2.5,
     "use_time_stop": True,
@@ -127,7 +127,7 @@ PARAMS = {
     #    donerse stopu beklemeden kapanista cik.
     "basarisiz_cikis": True,
     "bc_bar": 3,
-    "bc_atr": 0.3,
+    "bc_atr": 0.15,
 
     # 8) Sembol tablosu
     "use_auto_params": True,
