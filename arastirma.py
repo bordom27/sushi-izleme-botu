@@ -537,6 +537,66 @@ def main():
         with open(f"{OUT}/kombo.txt", "w") as f:
             f.write(res.to_string(index=False))
 
+    elif mod == "rot":
+        import rotasyon as ro
+        tick = veri._get("/api/v3/ticker/24hr", {})
+        haric = set(COINLER) | STOK_HARIC | {"USDCUSDT", "FDUSDUSDT", "TUSDUSDT", "DAIUSDT", "EURUSDT", "USDPUSDT",
+                                "RLUSDUSDT", "USD1USDT", "PYUSDUSDT", "AEURUSDT", "XUSDUSDT", "BFUSDUSDT",
+                                "WBTCUSDT", "WBETHUSDT", "BNSOLUSDT", "EURIUSDT", "USDEUSDT", "PAXGUSDT", "XAUTUSDT"}
+        aday = [d for d in tick if d["symbol"].endswith("USDT") and d["symbol"] not in haric
+                and not any(x in d["symbol"] for x in ("UP", "DOWN", "BULL", "BEAR")) and not d["symbol"].endswith("BUSDT")]
+        aday.sort(key=lambda d: float(d["quoteVolume"]), reverse=True)
+        yeni = [d["symbol"] for d in aday[:70]]
+        evren = [x for x in COINLER + yeni if x not in ("PAXGUSDT",)]
+        gunluk = {}
+        for s_ in evren:
+            try:
+                gunluk[s_] = veri.mumlar_onbellekli(s_, "1d", "2019-06-01")
+            except Exception as exc:
+                print("yok", s_, exc)
+        kap = ro.kapanis_matrisi(gunluk)
+        btc = kap["BTCUSDT"].ffill()
+        kir = None
+        try:
+            kt = pd.read_csv(f"{OUT}/v63_islemler.csv", parse_dates=["cikis_zaman"])
+            kt = kt[kt.cikis_zaman >= pd.Timestamp(IS_BAS)]
+            kir = kt.groupby(kt.cikis_zaman.dt.to_period("M"))["sonuc_r"].sum() * 0.005
+        except Exception as exc:
+            print("v63 yok", exc)
+        sen = []
+        for bak in (14, 30, 60, 90):
+            for n_ in (5, 10, 20):
+                for bf in (False, True):
+                    sen.append((f"long en guclu {n_}, {bak}g, haftalik" + (", BTC>EMA50" if bf else ""),
+                                dict(bak=bak, n=n_, btc_filtre=bf)))
+        sen += [("long/short 10, 30g", dict(bak=30, n=10, ls=True)), ("long/short 10, 60g", dict(bak=60, n=10, ls=True)),
+                ("long/short 5, 30g", dict(bak=30, n=5, ls=True)),
+                ("BTC'ye gore guclu 10, 30g, BTC>EMA50", dict(bak=30, n=10, goreli=True, btc_filtre=True)),
+                ("long en guclu 10, 30g, 2 haftalik, BTC>EMA50", dict(bak=30, n=10, tut=14, btc_filtre=True)),
+                ("KIYAS: tum evren esit agirlik", dict(bak=30, n=60)),
+                ("KIYAS: tum evren esit agirlik, BTC>EMA50", dict(bak=30, n=60, btc_filtre=True))]
+        rows = []
+        for ad, prm in sen:
+            r = ro.simule(kap, btc, **prm)
+            tut = prm.get("tut", 7)
+            a1, a2 = ro.ozet(r, IS_BAS, IS_BIT, tut), ro.ozet(r, OOS_BAS, None, tut)
+            row = {"ayar": ad, **{f"IS_{x}": v for x, v in a1.items()}, **{f"OOS_{x}": v for x, v in a2.items()}}
+            if kir is not None:
+                ay = (1 + r).groupby(r.index.to_period("M")).prod() - 1
+                j = pd.concat([kir.rename("kir"), ay.rename("rot")], axis=1).fillna(0)
+                row["ay_kor"] = round(j.kir.corr(j.rot), 2)
+                row["kir_zarar_ay_rot_%"] = round(100 * j[j.kir < 0].rot.sum(), 1)
+            rows.append(row)
+        bh = btc.reindex(r.index)
+        rb = bh.pct_change().dropna()
+        rows.append({"ayar": "KIYAS: BTC al-tut", **{f"IS_{x}": v for x, v in ro.ozet(rb, IS_BAS, IS_BIT, 7).items()},
+                     **{f"OOS_{x}": v for x, v in ro.ozet(rb, OOS_BAS, None, 7).items()}})
+        if kir is not None:
+            for ad_, b_, e_ in (("IS", IS_BAS, IS_BIT), ("OOS", OOS_BAS, None)):
+                kk = kir[(kir.index.to_timestamp() >= pd.Timestamp(b_)) & ((kir.index.to_timestamp() <= pd.Timestamp(e_)) if e_ else True)]
+                print("KIRILIM %0.5 risk", ad_, "toplam %", round(100 * kk.sum(), 1))
+        pd.DataFrame(rows).to_csv(f"{OUT}/rot.csv", index=False)
+        print("evren", kap.shape, flush=True)
     elif mod.startswith("mr-"):
         mr_calistir(mod, MRS[int(mod.split("-")[1])])
     elif mod == "aday":

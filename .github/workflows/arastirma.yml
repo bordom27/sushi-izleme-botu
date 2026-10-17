@@ -16,7 +16,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        mod: [mr-4, mr-5, mr-6, mr-7]
+        mod: [rot]
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
