@@ -1,0 +1,24 @@
+v6.2 TEMEL
+long: coin>200
+sadece long
+tp1 %80
+trail 3.5
+zaman stop yok
+tp1 0.6R
+tp2 tabani 3.0
+hacim 2.5x
+adx 20
+teyit kapali
+seviye stop 1.0
+engel 0.3R
+panik %3
+piyasa EMA 20
+fib kapali
+gunluk MACD acik
+cooldown 6
+RSI orta 55
+komisyon %0.05 (vadeli)
+hacim 3x
+kirilim tamponu 0.3
+basarisiz cikis 0.2 ATR
+basarisiz cikis 5 mum
