@@ -1,0 +1,9 @@
+v6.2 TEMEL (80 mum)
+direnc 30 mum
+direnc 50 mum
+direnc 60 mum
+direnc 100 mum
+direnc 120 mum
+direnc 160 mum
+direnc 200 mum
+direnc 300 mum
