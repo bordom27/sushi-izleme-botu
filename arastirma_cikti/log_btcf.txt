@@ -1,0 +1,15 @@
+v6.2 TEMEL (long: BTC > gunluk EMA200)
+long: BTC EMA200 sarti yok (sadece EMA50)
+long: coin > EMA200
+long: BTC ve coin > EMA200
+long: BTC veya coin > EMA200
+long: BTC > EMA100
+long: BTC > EMA150
+long: BTC > EMA250
+long: BTC > EMA300
+piyasa EMA 30 (iki yon)
+piyasa EMA 20 (iki yon)
+piyasa EMA 100 (iki yon)
+short: BTC < EMA200
+short: coin < EMA200
+long BTC veya coin + short coin<200
