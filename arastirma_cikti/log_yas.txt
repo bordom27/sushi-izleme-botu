@@ -1,0 +1,7 @@
+v6.2 TEMEL
+seviye en az 2 mum yasli
+seviye en az 3 mum yasli
+seviye en az 5 mum yasli
+seviye en az 8 mum yasli
+seviye en az 12 mum yasli
+seviye en az 20 mum yasli
