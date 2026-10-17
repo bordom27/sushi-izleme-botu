@@ -274,6 +274,7 @@ for ms in (3.0, 3.5, 4.0, 4.5):
 K2S = [K2[:1] + K2[1 + j::4] for j in range(4)]
 K3 = [("v6.2 TEMEL", dict(_B2))] + [(f"stop3.5 tp1%{tp:.0f} bc{bc}", dict(_B2, max_stop_atr=3.5, tp1_pct=tp, bc_atr=bc))
                                    for tp in (80.0, 85.0, 90.0, 95.0, 100.0) for bc in (0.0, 0.05, 0.1, 0.15, 0.2)]
+V63 = [("v6.3", dict(_B2, max_stop_atr=3.5, tp1_pct=90.0, bc_atr=0.15))]
 K2S += [K3[:1] + K3[1::2], K3[:1] + K3[2::2]]
 BTCF = [("v6.2 TEMEL (long: BTC > gunluk EMA200)", dict(_B2)),
         ("long: BTC EMA200 sarti yok (sadece EMA50)", dict(_B2, long_sart="Kapali")),
@@ -424,6 +425,8 @@ def main():
         with mp.Pool(4) as hv:
             for ad, prm in KOMBOLAR:
                 tr = calistir(prm, COINLER + yeni, "4h", hv)
+                if mod == "v63":
+                    tr.to_csv(f"{OUT}/v63_islemler.csv", index=False)
                 if mod == "ek" and ad == "v6.2 TEMEL":
                     tr.to_csv(f"{OUT}/ek_temel_islemler.csv", index=False)
                 if mod == "ek" and len(tr) and (tr.tip == "YENIDEN").any():
@@ -442,7 +445,7 @@ def main():
         with open(f"{OUT}/kombo.txt", "w") as f:
             f.write(res.to_string(index=False))
 
-    elif mod in ("formasyon", "kovalama", "limit", "profesyonel", "basarisiz", "seviye", "fikir", "oda", "yas", "uzun", "btcf", "ek") or mod.startswith("tara") or mod.startswith("kalib") or mod.startswith("k2"):
+    elif mod in ("formasyon", "kovalama", "limit", "profesyonel", "basarisiz", "seviye", "fikir", "oda", "yas", "uzun", "btcf", "ek", "v63") or mod.startswith("tara") or mod.startswith("kalib") or mod.startswith("k2"):
         tick = veri._get("/api/v3/ticker/24hr", {})
         haric = set(COINLER) | STOK_HARIC | {"USDCUSDT", "FDUSDUSDT", "TUSDUSDT", "DAIUSDT", "EURUSDT", "USDPUSDT",
                                 "RLUSDUSDT", "USD1USDT", "PYUSDUSDT", "AEURUSDT", "XUSDUSDT", "BFUSDUSDT",
@@ -475,8 +478,10 @@ def main():
             TARA = K2S[int(mod.split("-")[1])]
         rows = []
         with mp.Pool(4) as hv:
-            for ad, prm in (TARA if (mod.startswith("tara") or mod.startswith("kalib") or mod.startswith("k2")) else {"kovalama": KOVALAMA, "limit": LIMIT, "profesyonel": PROFESYONEL, "basarisiz": BASARISIZ, "seviye": SEVIYE, "fikir": FIKIR, "oda": ODA, "yas": YAS, "uzun": UZUN, "btcf": BTCF, "ek": EK}.get(mod, FORM_SENARYO)):
+            for ad, prm in (TARA if (mod.startswith("tara") or mod.startswith("kalib") or mod.startswith("k2")) else {"kovalama": KOVALAMA, "limit": LIMIT, "profesyonel": PROFESYONEL, "basarisiz": BASARISIZ, "seviye": SEVIYE, "fikir": FIKIR, "oda": ODA, "yas": YAS, "uzun": UZUN, "btcf": BTCF, "ek": EK, "v63": V63}.get(mod, FORM_SENARYO)):
                 tr = calistir(prm, COINLER + yeni, "4h", hv)
+                if mod == "v63":
+                    tr.to_csv(f"{OUT}/v63_islemler.csv", index=False)
                 if mod == "ek" and ad == "v6.2 TEMEL":
                     tr.to_csv(f"{OUT}/ek_temel_islemler.csv", index=False)
                 if mod == "ek" and len(tr) and (tr.tip == "YENIDEN").any():
