@@ -460,6 +460,8 @@ def main():
         DATA["btc_4h"] = veri.mumlar_onbellekli("BTCUSDT", "4h", VERI_BAS)
         DATA["4h"] = yukle([d["symbol"] for d in dilim])
         sem = list(DATA["4h"])
+        with open(f"{OUT}/{mod}_semboller.txt", "w") as f_:
+            f_.write("\n".join(f"{d['symbol']} {float(d['quoteVolume']) / 1e6:.1f} {'VAR' if d['symbol'] in DATA['4h'] else 'YOK'} {len(DATA['4h'][d['symbol']][0]) if d['symbol'] in DATA['4h'] else 0}" for d in dilim))
         with mp.Pool(4) as hv:
             tr = calistir(dict(V63[0][1]), sem, "4h", hv)
         tr.to_csv(f"{OUT}/{mod}_islemler.csv", index=False)
