@@ -35,6 +35,8 @@ PARAMS = {
     # 1) Piyasa
     "use_mkt": True,
     "mkt_ema_len": 50,
+    "btc_long_ema": 200,            # long_sart'taki BTC gunluk EMA uzunlugu
+    "short_sart": "Kapali",         # "Kapali" | "BTC < EMA200" | "Coin < EMA200"
     "long_sart": "BTC > EMA200",    # "Kapali" | "BTC > EMA200" | "Coin > EMA200" | "BTC ve coin > EMA200"
     "mkt_macd_req": False,
     "use_panic": True,
@@ -518,7 +520,7 @@ def simule_et(symbol: str, df: pd.DataFrame, gunluk: pd.DataFrame | None,
     if btc_gunluk is not None and len(btc_gunluk):
         bc = btc_gunluk["close"].to_numpy(float)
         _, _, bh = macd(bc, p["macd_fast"], p["macd_slow"], p["macd_signal"])
-        M = _htf_onceki(ot, btc_gunluk, "D", {"c": bc, "e": ema(bc, p["mkt_ema_len"]), "h": bh, "e2": ema(bc, 200)})
+        M = _htf_onceki(ot, btc_gunluk, "D", {"c": bc, "e": ema(bc, p["mkt_ema_len"]), "h": bh, "e2": ema(bc, p["btc_long_ema"])})
     else:
         M = {k: np.full(n, np.nan) for k in ("c", "e", "h", "e2")}
 
@@ -731,7 +733,10 @@ def simule_et(symbol: str, df: pd.DataFrame, gunluk: pd.DataFrame | None,
             btc_ust200 = na_gecir if (math.isnan(mk_c) or math.isnan(mk_e2)) else mk_c > mk_e2
         ls = p["long_sart"]
         long_ek = True if ls == "Kapali" else btc_ust200 if ls == "BTC > EMA200" else \
-            coin_ust200 if ls == "Coin > EMA200" else (btc_ust200 and coin_ust200)
+            coin_ust200 if ls == "Coin > EMA200" else (btc_ust200 or coin_ust200) if ls == "BTC veya coin > EMA200" \
+            else (btc_ust200 and coin_ust200)
+        ss_ = p["short_sart"]
+        short_ek = True if ss_ == "Kapali" else (not btc_ust200) if ss_ == "BTC < EMA200" else (not coin_ust200)
         S1 = (not mkt_uygulanir) or (mk_trend_s and panik_s)
 
         at_yok = math.isnan(G["e"][i]) or math.isnan(G["eo"][i]) or math.isnan(W["e"][i]) or math.isnan(W["c"][i])
@@ -763,7 +768,7 @@ def simule_et(symbol: str, df: pd.DataFrame, gunluk: pd.DataFrame | None,
         e9 = c_cool and isinma
 
         long_set = long_izin and long_ek and L1 and L2 and L3 and L4 and L5 and L7 and e9 and (dengeli or (L6 and L8))
-        short_set = short_izin and S1 and S2 and S3 and S4 and S5 and S7 and e9 and (dengeli or (S6 and S8))
+        short_set = short_izin and short_ek and S1 and S2 and S3 and S4 and S5 and S7 and e9 and (dengeli or (S6 and S8))
         if GEo is not None:
             gc_, ge_ = GEo["c"][i], GEo["e"][i]
             if math.isnan(gc_) or math.isnan(ge_):

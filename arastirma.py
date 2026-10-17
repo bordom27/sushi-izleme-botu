@@ -248,6 +248,21 @@ FIKIR = [("v6.2 TEMEL", dict(_B2)),
 
 YAS = [("v6.2 TEMEL", dict(_B2))] + [(f"seviye en az {n} mum yasli", dict(_B2, min_seviye_yas=n)) for n in (2, 3, 5, 8, 12, 20)]
 UZUN = [("v6.2 TEMEL (80 mum)", dict(_B2))] + [(f"direnc {n} mum", dict(_B2, resistance_len=n)) for n in (30, 50, 60, 100, 120, 160, 200, 300)]
+BTCF = [("v6.2 TEMEL (long: BTC > gunluk EMA200)", dict(_B2)),
+        ("long: BTC EMA200 sarti yok (sadece EMA50)", dict(_B2, long_sart="Kapali")),
+        ("long: coin > EMA200", dict(_B2, long_sart="Coin > EMA200")),
+        ("long: BTC ve coin > EMA200", dict(_B2, long_sart="BTC ve coin > EMA200")),
+        ("long: BTC veya coin > EMA200", dict(_B2, long_sart="BTC veya coin > EMA200")),
+        ("long: BTC > EMA100", dict(_B2, btc_long_ema=100)),
+        ("long: BTC > EMA150", dict(_B2, btc_long_ema=150)),
+        ("long: BTC > EMA250", dict(_B2, btc_long_ema=250)),
+        ("long: BTC > EMA300", dict(_B2, btc_long_ema=300)),
+        ("piyasa EMA 30 (iki yon)", dict(_B2, mkt_ema_len=30)),
+        ("piyasa EMA 20 (iki yon)", dict(_B2, mkt_ema_len=20)),
+        ("piyasa EMA 100 (iki yon)", dict(_B2, mkt_ema_len=100)),
+        ("short: BTC < EMA200", dict(_B2, short_sart="BTC < EMA200")),
+        ("short: coin < EMA200", dict(_B2, short_sart="Coin < EMA200")),
+        ("long BTC veya coin + short coin<200", dict(_B2, long_sart="BTC veya coin > EMA200", short_sart="Coin < EMA200"))]
 ODA = [("v6.2 TEMEL (engel 0.5R, pivot 10)", dict(_B2)),
        ("engel 0.8R", dict(_B2, min_room_r=0.8)),
        ("engel 1.0R", dict(_B2, min_room_r=1.0)),
@@ -396,7 +411,7 @@ def main():
         with open(f"{OUT}/kombo.txt", "w") as f:
             f.write(res.to_string(index=False))
 
-    elif mod in ("formasyon", "kovalama", "limit", "profesyonel", "basarisiz", "seviye", "fikir", "oda", "yas", "uzun") or mod.startswith("tara"):
+    elif mod in ("formasyon", "kovalama", "limit", "profesyonel", "basarisiz", "seviye", "fikir", "oda", "yas", "uzun", "btcf") or mod.startswith("tara"):
         tick = veri._get("/api/v3/ticker/24hr", {})
         haric = set(COINLER) | STOK_HARIC | {"USDCUSDT", "FDUSDUSDT", "TUSDUSDT", "DAIUSDT", "EURUSDT", "USDPUSDT",
                                 "RLUSDUSDT", "USD1USDT", "PYUSDUSDT", "AEURUSDT", "XUSDUSDT", "BFUSDUSDT",
@@ -425,7 +440,7 @@ def main():
             TARA = [(f"{n:03d}", dict(_B2, resistance_len=n)) for n in range(int(a_), int(b_) + 1)]
         rows = []
         with mp.Pool(4) as hv:
-            for ad, prm in (TARA if mod.startswith("tara") else {"kovalama": KOVALAMA, "limit": LIMIT, "profesyonel": PROFESYONEL, "basarisiz": BASARISIZ, "seviye": SEVIYE, "fikir": FIKIR, "oda": ODA, "yas": YAS, "uzun": UZUN}.get(mod, FORM_SENARYO)):
+            for ad, prm in (TARA if mod.startswith("tara") else {"kovalama": KOVALAMA, "limit": LIMIT, "profesyonel": PROFESYONEL, "basarisiz": BASARISIZ, "seviye": SEVIYE, "fikir": FIKIR, "oda": ODA, "yas": YAS, "uzun": UZUN, "btcf": BTCF}.get(mod, FORM_SENARYO)):
                 tr = calistir(prm, COINLER + yeni, "4h", hv)
                 for etiket, x in (("46", tr[tr.symbol.isin(COINLER)] if len(tr) else tr),
                                   ("YENI", tr[tr.symbol.isin(yeni)] if len(tr) else tr), ("HEPSI", tr)):
