@@ -445,6 +445,29 @@ def main():
         with open(f"{OUT}/kombo.txt", "w") as f:
             f.write(res.to_string(index=False))
 
+    elif mod.startswith("katman"):
+        _, a_, b_ = mod.split("-")
+        tick = veri._get("/api/v3/ticker/24hr", {})
+        haric = set(COINLER) | STOK_HARIC | {"USDCUSDT", "FDUSDUSDT", "TUSDUSDT", "DAIUSDT", "EURUSDT", "USDPUSDT",
+                                "RLUSDUSDT", "USD1USDT", "PYUSDUSDT", "AEURUSDT", "XUSDUSDT", "BFUSDUSDT",
+                                "WBTCUSDT", "WBETHUSDT", "BNSOLUSDT", "EURIUSDT", "USDEUSDT", "PAXGUSDT"}
+        aday = [d for d in tick if d["symbol"].endswith("USDT") and d["symbol"] not in haric and float(d["quoteVolume"]) > 0
+                and not any(x in d["symbol"] for x in ("UP", "DOWN", "BULL", "BEAR"))]
+        aday.sort(key=lambda d: float(d["quoteVolume"]), reverse=True)
+        print("toplam aday", len(aday), flush=True)
+        dilim = aday[int(a_):int(b_)]
+        hacim = {d["symbol"]: float(d["quoteVolume"]) for d in dilim}
+        DATA["btc_4h"] = veri.mumlar_onbellekli("BTCUSDT", "4h", VERI_BAS)
+        DATA["4h"] = yukle([d["symbol"] for d in dilim])
+        sem = list(DATA["4h"])
+        with mp.Pool(4) as hv:
+            tr = calistir(dict(V63[0][1]), sem, "4h", hv)
+        tr.to_csv(f"{OUT}/{mod}_islemler.csv", index=False)
+        rows = [satir(f"katman {a_}-{b_} ({len(sem)} coin, toplam aday {len(aday)})", tr)]
+        hv_ = sorted(hacim.values())
+        rows[0]["medyan_hacim_musd"] = round(hv_[len(hv_) // 2] / 1e6, 1) if hv_ else 0
+        rows[0]["min_hacim_musd"] = round(hv_[0] / 1e6, 2) if hv_ else 0
+        pd.DataFrame(rows).to_csv(f"{OUT}/{mod}.csv", index=False)
     elif mod in ("formasyon", "kovalama", "limit", "profesyonel", "basarisiz", "seviye", "fikir", "oda", "yas", "uzun", "btcf", "ek", "v63") or mod.startswith("tara") or mod.startswith("kalib") or mod.startswith("k2"):
         tick = veri._get("/api/v3/ticker/24hr", {})
         haric = set(COINLER) | STOK_HARIC | {"USDCUSDT", "FDUSDUSDT", "TUSDUSDT", "DAIUSDT", "EURUSDT", "USDPUSDT",

@@ -12,11 +12,11 @@ permissions:
 jobs:
   ara:
     runs-on: ubuntu-latest
-    timeout-minutes: 180
+    timeout-minutes: 240
     strategy:
       fail-fast: false
       matrix:
-        mod: [v63]
+        mod: [katman-0-70, katman-70-130, katman-130-190, katman-190-250, katman-250-310, katman-310-370, katman-370-450]
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
