@@ -130,6 +130,7 @@ PARAMS = {
     # 17) Seviye tanimi (varsayilan = son R mumun en yuksek fitili)
     "seviye_tipi": "fitil",         # "fitil" | "kapanis" (govde kapanislarinin en yuksegi)
     "gunluk_seviye": 0,             # >0: direnc = son N kapanmis gunun en yuksek degeri (gunluk veri gerekir)
+    "min_seviye_yas": 0,            # >0: kirilan tepe/dip en az bu kadar mum once olusmus olmali (dunku mumun tepesi 'direnc' sayilmaz)
     "min_test": 0,                  # >0: seviye en az bu kadar pivotla test edilmis olmali
     "test_tol_atr": 0.5,
 
@@ -824,6 +825,11 @@ def simule_et(symbol: str, df: pd.DataFrame, gunluk: pd.DataFrame | None,
             if aday_s:
                 n_t = sum(1 for j in range(j0, i + 1) if not math.isnan(pl5[j]) and abs(pl5[j] - support[i]) <= tol_)
                 aday_s = n_t >= MT
+        if p["min_seviye_yas"] > 0 and i >= R:
+            if aday_l and int(np.argmax(h[i - R:i][::-1])) < p["min_seviye_yas"]:
+                aday_l = False
+            if aday_s and int(np.argmin(l[i - R:i][::-1])) < p["min_seviye_yas"]:
+                aday_s = False
         if p["max_kirilim_atr"] > 0 and a > 0:
             if aday_l and (c[i] - resistance[i]) > p["max_kirilim_atr"] * a:
                 aday_l = False
