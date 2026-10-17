@@ -132,6 +132,10 @@ PARAMS = {
     # 17) Seviye tanimi (varsayilan = son R mumun en yuksek fitili)
     "seviye_tipi": "fitil",         # "fitil" | "kapanis" (govde kapanislarinin en yuksegi)
     "gunluk_seviye": 0,             # >0: direnc = son N kapanmis gunun en yuksek degeri (gunluk veri gerekir)
+    "rs_bar": 0,                    # >0: goreli guc (coin getirisi - BTC getirisi, son rs_bar mum)
+    "rs_min": 0.0,                  # long: rs > rs_min, short: rs < -rs_min (oran, 0.05 = %5)
+    "yeniden_giris": 0,             # >0: basarisiz kirilim cikisindan sonra bu kadar mum icinde seviye geri alinirsa tekrar gir
+    "yeniden_buf_atr": 0.1,
     "min_seviye_yas": 0,            # >0: kirilan tepe/dip en az bu kadar mum once olusmus olmali (dunku mumun tepesi 'direnc' sayilmaz)
     "min_test": 0,                  # >0: seviye en az bu kadar pivotla test edilmis olmali
     "test_tol_atr": 0.5,
@@ -550,6 +554,13 @@ def simule_et(symbol: str, df: pd.DataFrame, gunluk: pd.DataFrame | None,
         s = pd.Series(roc, index=pd.to_datetime(b4["open_time"]))
         mk_roc = s.reindex(ot).to_numpy(float)
 
+    rs_dizi = np.full(n, np.nan)
+    if p["rs_bar"] > 0 and btc_4h is not None and len(btc_4h):
+        _b = btc_4h.reset_index(drop=True)
+        _bc = pd.Series(_b["close"].to_numpy(float), index=pd.to_datetime(_b["open_time"])).reindex(ot).to_numpy(float)
+        N_ = p["rs_bar"]
+        rs_dizi[N_:] = (c[N_:] / c[:-N_] - 1) - (_bc[N_:] / _bc[:-N_] - 1)
+
     LTF = bool(p["ltf_giris"]) and saatlik is not None and len(saatlik) > 0
     if LTF:
         s1 = saatlik.reset_index(drop=True)
@@ -571,6 +582,7 @@ def simule_et(symbol: str, df: pd.DataFrame, gunluk: pd.DataFrame | None,
     pos = None          # dict
     lim = None          # bekleyen limit emir
     pend = None         # dict
+    yeniden = None      # basarisiz kirilim sonrasi yeniden giris adayi
     tp1_pct = p["tp1_pct"] / 100.0
     kom = p["komisyon_pct"] / 100.0
 
@@ -830,6 +842,12 @@ def simule_et(symbol: str, df: pd.DataFrame, gunluk: pd.DataFrame | None,
             if aday_s:
                 n_t = sum(1 for j in range(j0, i + 1) if not math.isnan(pl5[j]) and abs(pl5[j] - support[i]) <= tol_)
                 aday_s = n_t >= MT
+        if p["rs_bar"] > 0:
+            rsv = rs_dizi[i]
+            if aday_l and (math.isnan(rsv) or rsv <= p["rs_min"]):
+                aday_l = False
+            if aday_s and (math.isnan(rsv) or rsv >= -p["rs_min"]):
+                aday_s = False
         if p["min_seviye_yas"] > 0 and i >= R:
             if aday_l and int(np.argmax(h[i - R:i][::-1])) < p["min_seviye_yas"]:
                 aday_l = False
@@ -1055,6 +1073,8 @@ def simule_et(symbol: str, df: pd.DataFrame, gunluk: pd.DataFrame | None,
                 sonuc_r = pos["real_r"]
                 if neden in ("STOP", "STOP_TP1") and sonuc_r < 0:
                     son_stop_bar = i
+                if neden == "BASARISIZ" and p["yeniden_giris"] > 0 and not pos["tip"].startswith("YENIDEN"):
+                    yeniden = {"yon": d, "seviye": pos["seviye"], "bar": i, "kalite": pos["kalite"]}
                 islem = {
                     "symbol": sembol, "yon": d, "tip": pos["tip"], "kalite": pos["kalite"],
                     "giris_zaman": pos["zaman"], "cikis_zaman": ot[i], "giris": pos["giris"],
@@ -1093,6 +1113,16 @@ def simule_et(symbol: str, df: pd.DataFrame, gunluk: pd.DataFrame | None,
                 elif (teyit_l if pL else teyit_s):
                     giris_sinyal, g_dir, g_tip, g_kal, g_sev = True, pend["yon"], "TEYIT", pend["kalite"], pend["seviye"]
                     pend = None
+            if (not giris_sinyal) and yeniden is not None and i > yeniden["bar"]:
+                if i - yeniden["bar"] > p["yeniden_giris"]:
+                    yeniden = None
+                else:
+                    yd = yeniden["yon"]
+                    geri = yd * (c[i] - yeniden["seviye"]) > p["yeniden_buf_atr"] * a
+                    mum_ok = (c[i] > o[i] and close_pos >= 0.5 and long_set) if yd == 1 else (c[i] < o[i] and close_pos <= 0.5 and short_set)
+                    if geri and mum_ok:
+                        giris_sinyal, g_dir, g_tip, g_kal, g_sev = True, yd, "YENIDEN", yeniden["kalite"], yeniden["seviye"]
+                        yeniden = None
             if (not giris_sinyal) and ((aday_l and kal_ok_l) or (aday_s and kal_ok_s)):
                 d = 1 if (aday_l and kal_ok_l) else -1
                 guclu = ((math.isnan(vol_oran) and False) or (not math.isnan(vol_oran) and vol_oran >= p["strong_vol_mult"])) \

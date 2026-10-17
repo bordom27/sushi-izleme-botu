@@ -248,6 +248,24 @@ FIKIR = [("v6.2 TEMEL", dict(_B2)),
 
 YAS = [("v6.2 TEMEL", dict(_B2))] + [(f"seviye en az {n} mum yasli", dict(_B2, min_seviye_yas=n)) for n in (2, 3, 5, 8, 12, 20)]
 UZUN = [("v6.2 TEMEL (80 mum)", dict(_B2))] + [(f"direnc {n} mum", dict(_B2, resistance_len=n)) for n in (30, 50, 60, 100, 120, 160, 200, 300)]
+_GRID = [(a_, b_) for a_, b_ in SENARYOLAR if not a_.startswith("giris:") and a_ != "TEMEL"]
+_GRID += [("hacim 1.25x", {"vol_mult": 1.25}), ("hacim 1.75x", {"vol_mult": 1.75}), ("hacim 3x", {"vol_mult": 3.0}),
+          ("kirilim tamponu 0", {"break_buf_atr": 0.0}), ("kirilim tamponu 0.2", {"break_buf_atr": 0.2}),
+          ("kirilim tamponu 0.3", {"break_buf_atr": 0.3}), ("kapanis gucu 0.5", {"min_close_pos": 0.5}),
+          ("kapanis gucu 0.7", {"min_close_pos": 0.7}), ("basarisiz cikis 0.2 ATR", {"bc_atr": 0.2}),
+          ("basarisiz cikis 0.5 ATR", {"bc_atr": 0.5}), ("basarisiz cikis 2 mum", {"bc_bar": 2}),
+          ("basarisiz cikis 5 mum", {"bc_bar": 5})]
+KALIB = [[("v6.2 TEMEL", dict(_B2))] + [(a_, dict(_B2, **b_)) for a_, b_ in _GRID[j::3]] for j in range(3)]
+EK = [("v6.2 TEMEL", dict(_B2)),
+      ("goreli guc 30 mum > 0", dict(_B2, rs_bar=30)),
+      ("goreli guc 60 mum > 0", dict(_B2, rs_bar=60)),
+      ("goreli guc 120 mum > 0", dict(_B2, rs_bar=120)),
+      ("goreli guc 60 mum > %5", dict(_B2, rs_bar=60, rs_min=0.05)),
+      ("goreli guc 120 mum > %10", dict(_B2, rs_bar=120, rs_min=0.10)),
+      ("yeniden giris 3 mum", dict(_B2, yeniden_giris=3)),
+      ("yeniden giris 6 mum", dict(_B2, yeniden_giris=6)),
+      ("yeniden giris 12 mum", dict(_B2, yeniden_giris=12)),
+      ("yeniden giris 6 mum, tampon 0.3 ATR", dict(_B2, yeniden_giris=6, yeniden_buf_atr=0.3))]
 BTCF = [("v6.2 TEMEL (long: BTC > gunluk EMA200)", dict(_B2)),
         ("long: BTC EMA200 sarti yok (sadece EMA50)", dict(_B2, long_sart="Kapali")),
         ("long: coin > EMA200", dict(_B2, long_sart="Coin > EMA200")),
@@ -397,6 +415,10 @@ def main():
         with mp.Pool(4) as hv:
             for ad, prm in KOMBOLAR:
                 tr = calistir(prm, COINLER + yeni, "4h", hv)
+                if mod == "ek" and ad == "v6.2 TEMEL":
+                    tr.to_csv(f"{OUT}/ek_temel_islemler.csv", index=False)
+                if mod == "ek" and len(tr) and (tr.tip == "YENIDEN").any():
+                    rows.append(satir(f"   {ad} :: sadece YENIDEN [HEPSI]", tr[tr.tip == "YENIDEN"]))
                 a46 = tr[tr.symbol.isin(COINLER)]
                 ay = tr[tr.symbol.isin(yeni)]
                 for etiket, x in (("46", a46), ("YENI", ay), ("HEPSI", tr)):
@@ -411,7 +433,7 @@ def main():
         with open(f"{OUT}/kombo.txt", "w") as f:
             f.write(res.to_string(index=False))
 
-    elif mod in ("formasyon", "kovalama", "limit", "profesyonel", "basarisiz", "seviye", "fikir", "oda", "yas", "uzun", "btcf") or mod.startswith("tara"):
+    elif mod in ("formasyon", "kovalama", "limit", "profesyonel", "basarisiz", "seviye", "fikir", "oda", "yas", "uzun", "btcf", "ek") or mod.startswith("tara") or mod.startswith("kalib"):
         tick = veri._get("/api/v3/ticker/24hr", {})
         haric = set(COINLER) | STOK_HARIC | {"USDCUSDT", "FDUSDUSDT", "TUSDUSDT", "DAIUSDT", "EURUSDT", "USDPUSDT",
                                 "RLUSDUSDT", "USD1USDT", "PYUSDUSDT", "AEURUSDT", "XUSDUSDT", "BFUSDUSDT",
@@ -438,10 +460,16 @@ def main():
         if mod.startswith("tara"):
             _, a_, b_ = mod.split("-")
             TARA = [(f"{n:03d}", dict(_B2, resistance_len=n)) for n in range(int(a_), int(b_) + 1)]
+        elif mod.startswith("kalib"):
+            TARA = KALIB[int(mod.split("-")[1])]
         rows = []
         with mp.Pool(4) as hv:
-            for ad, prm in (TARA if mod.startswith("tara") else {"kovalama": KOVALAMA, "limit": LIMIT, "profesyonel": PROFESYONEL, "basarisiz": BASARISIZ, "seviye": SEVIYE, "fikir": FIKIR, "oda": ODA, "yas": YAS, "uzun": UZUN, "btcf": BTCF}.get(mod, FORM_SENARYO)):
+            for ad, prm in (TARA if (mod.startswith("tara") or mod.startswith("kalib")) else {"kovalama": KOVALAMA, "limit": LIMIT, "profesyonel": PROFESYONEL, "basarisiz": BASARISIZ, "seviye": SEVIYE, "fikir": FIKIR, "oda": ODA, "yas": YAS, "uzun": UZUN, "btcf": BTCF, "ek": EK}.get(mod, FORM_SENARYO)):
                 tr = calistir(prm, COINLER + yeni, "4h", hv)
+                if mod == "ek" and ad == "v6.2 TEMEL":
+                    tr.to_csv(f"{OUT}/ek_temel_islemler.csv", index=False)
+                if mod == "ek" and len(tr) and (tr.tip == "YENIDEN").any():
+                    rows.append(satir(f"   {ad} :: sadece YENIDEN [HEPSI]", tr[tr.tip == "YENIDEN"]))
                 for etiket, x in (("46", tr[tr.symbol.isin(COINLER)] if len(tr) else tr),
                                   ("YENI", tr[tr.symbol.isin(yeni)] if len(tr) else tr), ("HEPSI", tr)):
                     rows.append(satir(f"{ad} [{etiket}]", x))

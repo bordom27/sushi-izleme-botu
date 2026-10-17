@@ -16,7 +16,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        mod: [btcf]
+        mod: [ek, kalib-0, kalib-1, kalib-2]
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
