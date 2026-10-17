@@ -1,9 +1,7 @@
-Traceback (most recent call last):
-  File "/home/runner/work/sushi-izleme-botu/sushi-izleme-botu/arastirma.py", line 440, in <module>
-    main()
-  File "/home/runner/work/sushi-izleme-botu/sushi-izleme-botu/arastirma.py", line 420, in main
-    teshis(s_, "2026-10-10")
-  File "/home/runner/work/sushi-izleme-botu/sushi-izleme-botu/arastirma.py", line 265, in teshis
-    f.write(f"{o.zaman} {o.tip} {o.yon} {o.veri}\n")
-                         ^^^^^
-AttributeError: 'Olay' object has no attribute 'tip'
+v6.2 TEMEL (engel 0.5R, pivot 10)
+engel 0.8R
+engel 1.0R
+engel 1.5R
+pivot 5, engel 0.5R
+pivot 5, engel 1.0R
+pivot 20, engel 1.0R
