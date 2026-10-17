@@ -307,12 +307,23 @@ for rj in ("", "adx", "chop", "trend"):
            (f"Z50 2.0 | rejim {rj or 'yok'}", {"sinyal": "z", "z_len": 50, "z_esik": 2.0, "rejim": rj}),
            (f"Z50 2.5 | rejim {rj or 'yok'}", {"sinyal": "z", "z_len": 50, "z_esik": 2.5, "rejim": rj})]
 MRS = [MR[j::4] for j in range(4)]
+MR2 = []
+for tf in ("4h", "1d"):
+    for st in (3.0, 6.0):
+        for zm in (5, 15):
+            MR2 += [(f"{tf} RSI2 10/90 trend | stop {st} ATR, {zm} mum", {"tf": tf, "sinyal": "rsi2", "rejim": "trend", "stop_atr": st, "zaman": zm}),
+                    (f"{tf} BB20 2.5 trend | stop {st} ATR, {zm} mum", {"tf": tf, "sinyal": "bb", "bb_k": 2.5, "rejim": "trend", "stop_atr": st, "zaman": zm}),
+                    (f"{tf} BB20 2.5 chop | stop {st} ATR, {zm} mum", {"tf": tf, "sinyal": "bb", "bb_k": 2.5, "rejim": "chop", "stop_atr": st, "zaman": zm})]
+MRS += [MR2[j::4] for j in range(4)]
 
 
 def _mr_tek(args):
     import ortalama
     s_, prm = args
     df, gd, wd = DATA["4h"][s_]
+    prm = dict(prm)
+    if prm.pop("tf", "4h") == "1d":
+        df = gd
     return ortalama.simule(s_, df, DATA["btc_d"], prm, giris_bas=pd.Timestamp(IS_BAS))
 
 
