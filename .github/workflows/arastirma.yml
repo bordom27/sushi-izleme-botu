@@ -16,7 +16,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        mod: [katman-0-90]
+        mod: [aday]
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5

@@ -445,6 +445,15 @@ def main():
         with open(f"{OUT}/kombo.txt", "w") as f:
             f.write(res.to_string(index=False))
 
+    elif mod == "aday":
+        YENI_ = ['XRPUSDT', 'WLDUSDT', 'STRKUSDT', 'TAOUSDT', 'PUMPUSDT', 'ZROUSDT', 'SANDUSDT', 'QNTUSDT', 'EPICUSDT', 'ONDOUSDT', 'GTCUSDT', 'PROMUSDT', 'AMPUSDT', 'ERAUSDT', 'TONUSDT', 'TRUMPUSDT', 'RADUSDT', 'ASTERUSDT', 'EIGENUSDT', 'PYTHUSDT', 'BCHUSDT', 'BATUSDT', 'CAKEUSDT', 'AUSDT', 'ZKUSDT', 'ALTUSDT', 'NIGHTUSDT', 'WUSDT', 'NFPUSDT', 'AVAUSDT', 'XPLUSDT', 'MINAUSDT', 'LSKUSDT', 'DUSKUSDT', 'NILUSDT', 'RSRUSDT', 'MUBARAKUSDT', 'STRAXUSDT', 'KMNOUSDT', 'NMRUSDT', 'ETHFIUSDT', 'BERAUSDT', 'AXLUSDT', 'PENGUUSDT', 'WALUSDT', 'DASHUSDT', 'AUDIOUSDT', 'RAYUSDT', 'LDOUSDT', 'STXUSDT', 'ZAMAUSDT', 'NXPCUSDT', 'SUSDT', 'RLCUSDT', 'VIRTUALUSDT', 'KITEUSDT']
+        DATA["btc_4h"] = veri.mumlar_onbellekli("BTCUSDT", "4h", VERI_BAS)
+        DATA["4h"] = yukle(COINLER + YENI_)
+        with mp.Pool(4) as hv:
+            tr = calistir(dict(V63[0][1]), COINLER + YENI_, "4h", hv)
+        tr.to_csv(f"{OUT}/aday_islemler.csv", index=False)
+        rows = [satir("mevcut 46", tr[tr.symbol.isin(COINLER)]), satir("yeni 56", tr[tr.symbol.isin(YENI_)]), satir("toplam 102", tr)]
+        pd.DataFrame(rows).to_csv(f"{OUT}/aday.csv", index=False)
     elif mod.startswith("katman"):
         _, a_, b_ = mod.split("-")
         tick = veri._get("/api/v3/ticker/24hr", {})
