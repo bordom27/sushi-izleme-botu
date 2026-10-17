@@ -396,6 +396,7 @@ def main():
     bildirilen = set(bildirilen_liste)
     hatali = []
 
+    onceki_semboller = set(state["son_bar"])
     for sym in cfg["COINLER"]:
         try:
             df = btc_4h if sym == "BTCUSDT" else veri.mumlar_onbellekli(sym, "4h", cfg["VERI_BAS_4H"])
@@ -487,6 +488,19 @@ def main():
     btc_bilgi = (f"BTC (günlük kapanış {fmt(btc_c[-1])}): EMA50 {'üstünde' if btc_c[-1] > e50 else 'altında'}, "
                  f"EMA200 {'üstünde → long açık' if btc_c[-1] > e200 else 'altında → yeni long yok, sadece short'}")
 
+    eklenen = [x for x in sonuclar if x not in onceki_semboller]
+    if not ilk_calisma and eklenen:
+        satir = [f"➕ İzleme listesine {len(eklenen)} coin eklendi (toplam {len(sonuclar)}).",
+                 "Seçim geçmiş başarıya göre değil, kurala göre: Binance'te günlük hacmi yüksek (≥ ~2.4M$), "
+                 "en az 6 aylık, stablecoin/hisse/altın olmayan coinler. Testte bu grup da iki dönemde kârda "
+                 "(işlem başı ~0.10R, ilk 46 coinde ~0.15R).",
+                 "Bu coinlerdeki eski sinyaller gönderilmez; bundan sonraki mumlardan itibaren takip edilir.",
+                 ", ".join(x.replace("USDT", "") for x in eklenen)]
+        acik_y = [(x, sonuclar[x].acik) for x in eklenen if sonuclar[x].acik]
+        if acik_y:
+            satir.append("Bu coinlerde sisteme göre şu an açık pozisyon var (giriş zamanı geçmiş, sadece bilgi): "
+                         + ", ".join(f"{x.replace('USDT', '')} {YON[a['yon']]}" for x, a in acik_y))
+        send_telegram("\n".join(satir))
     import hashlib
     parmak = hashlib.md5(json.dumps(k.PARAMS, sort_keys=True).encode()).hexdigest()[:10]
     if not ilk_calisma and state.get("ayar_parmak_izi") != parmak:

@@ -1,6 +1,6 @@
 # Kirilim69 PRO v6 — Telegram izleme botu
 
-TradingView'daki **Kirilim69 PRO** göstergesinin aynısını 46 kripto parada (Binance, 4 saatlik) izler ve sinyalleri Telegram'a gönderir. **Gerçek işlem açmaz.**
+TradingView'daki **Kirilim69 PRO** göstergesinin aynısını 102 kripto parada (Binance, 4 saatlik) izler ve sinyalleri Telegram'a gönderir. **Gerçek işlem açmaz.**
 
 ## Dosyalar
 | Dosya | Görev |
@@ -47,6 +47,10 @@ Eski 60 ayar, kırılım kapanışında giriş yapan v6.2 üzerinde yeniden tara
 - **Maksimum stop 3.5 ATR** (eski 3.0)
 116 coin: eğitim +52.0R → +57.8R, test +44.7R → +54.2R; en kötü düşüş 14.3R → 12.5R. Hem eski 46 coinde hem yeni 70 coinde ayrı ayrı iyileşiyor.
 Test edilip **eklenmeyenler**: göreli güç (BTC'ye göre), başarısız kırılım sonrası yeniden giriş, coin bazlı sicil, giriş saati / haftanın günü, direnç penceresi 30–500 (80 en iyi), long için BTC EMA alternatifleri, üst direnç mesafesi, kırılan seviyenin yaşı.
+
+## Liste genişletme (Ekim 2026)
+Binance'teki ~615 USDT paritesi hacim sırasına göre katmanlara ayrılıp v6.3 ile test edildi. İlk ~70 (46 dışı) katman iki dönemde de kârlı; daha düşük hacimli katmanlarda test kazancı sıfıra yaklaşıyor (ve kayma maliyeti artıyor). Bu yüzden **kurala göre** 56 coin eklendi (hacim ≥ ~2.4M$, ≥ 6 ay geçmiş, stablecoin / tokenize hisse / altın hariç), geçmiş başarıya göre seçim yapılmadı (coin bazlı başarı dönemden döneme taşınmıyor, korelasyon ~0).
+102 coin: eğitim +59.2R, test +52.9R (46 coin: +46.7R / +33.1R).
 
 ## Elle çalıştırma
 GitHub → Actions → *Genel Izleme Botu* → *Run workflow* (`test_mesaji` = true yalnızca Telegram bağlantısını dener).
