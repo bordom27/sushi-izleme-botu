@@ -247,6 +247,7 @@ FIKIR = [("v6.2 TEMEL", dict(_B2)),
          ("BTC dusuk oynaklik rejimi", dict(_B2, btc_vol_rejim="dusuk"))]
 
 YAS = [("v6.2 TEMEL", dict(_B2))] + [(f"seviye en az {n} mum yasli", dict(_B2, min_seviye_yas=n)) for n in (2, 3, 5, 8, 12, 20)]
+UZUN = [("v6.2 TEMEL (80 mum)", dict(_B2))] + [(f"direnc {n} mum", dict(_B2, resistance_len=n)) for n in (30, 50, 60, 100, 120, 160, 200, 300)]
 ODA = [("v6.2 TEMEL (engel 0.5R, pivot 10)", dict(_B2)),
        ("engel 0.8R", dict(_B2, min_room_r=0.8)),
        ("engel 1.0R", dict(_B2, min_room_r=1.0)),
@@ -395,7 +396,7 @@ def main():
         with open(f"{OUT}/kombo.txt", "w") as f:
             f.write(res.to_string(index=False))
 
-    elif mod in ("formasyon", "kovalama", "limit", "profesyonel", "basarisiz", "seviye", "fikir", "oda", "yas"):
+    elif mod in ("formasyon", "kovalama", "limit", "profesyonel", "basarisiz", "seviye", "fikir", "oda", "yas", "uzun"):
         tick = veri._get("/api/v3/ticker/24hr", {})
         haric = set(COINLER) | STOK_HARIC | {"USDCUSDT", "FDUSDUSDT", "TUSDUSDT", "DAIUSDT", "EURUSDT", "USDPUSDT",
                                 "RLUSDUSDT", "USD1USDT", "PYUSDUSDT", "AEURUSDT", "XUSDUSDT", "BFUSDUSDT",
@@ -421,7 +422,7 @@ def main():
                     teshis(s_, "2026-10-10")
         rows = []
         with mp.Pool(4) as hv:
-            for ad, prm in ({"kovalama": KOVALAMA, "limit": LIMIT, "profesyonel": PROFESYONEL, "basarisiz": BASARISIZ, "seviye": SEVIYE, "fikir": FIKIR, "oda": ODA, "yas": YAS}.get(mod, FORM_SENARYO)):
+            for ad, prm in ({"kovalama": KOVALAMA, "limit": LIMIT, "profesyonel": PROFESYONEL, "basarisiz": BASARISIZ, "seviye": SEVIYE, "fikir": FIKIR, "oda": ODA, "yas": YAS, "uzun": UZUN}.get(mod, FORM_SENARYO)):
                 tr = calistir(prm, COINLER + yeni, "4h", hv)
                 for etiket, x in (("46", tr[tr.symbol.isin(COINLER)] if len(tr) else tr),
                                   ("YENI", tr[tr.symbol.isin(yeni)] if len(tr) else tr), ("HEPSI", tr)):
