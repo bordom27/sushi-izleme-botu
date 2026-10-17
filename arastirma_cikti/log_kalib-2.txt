@@ -1,0 +1,23 @@
+v6.2 TEMEL
+long: btc ve coin>200
+tp1 %50
+trail 2.0
+zaman stop 12
+be +0
+tp1 1.0R
+sembol tablosu kapali
+direnc 50
+adx 30
+max stop 2.5 ATR
+seviye stop 2.0
+engel 0.8R
+panik %6
+piyasa EMA 100
+ana trend acik
+yuksek isabet profili
+min kalite B
+erken BE 0.5R
+hacim 1.25x
+kirilim tamponu 0
+kapanis gucu 0.5
+basarisiz cikis 0.5 ATR
