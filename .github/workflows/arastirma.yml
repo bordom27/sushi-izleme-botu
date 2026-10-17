@@ -16,7 +16,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        mod: [uzun]
+        mod: [tara-30-52, tara-53-75, tara-76-98, tara-99-121, tara-122-144, tara-145-167, tara-168-190, tara-191-213, tara-214-236, tara-237-259, tara-260-282, tara-283-300]
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
@@ -28,6 +28,7 @@ jobs:
           path: .veri_cache
           key: arastirma-${{ matrix.mod }}-${{ github.run_id }}
           restore-keys: |
+            arastirma-uzun-
             arastirma-${{ matrix.mod }}-
             arastirma-kombo-
             arastirma-formasyon-

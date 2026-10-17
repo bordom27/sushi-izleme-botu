@@ -396,7 +396,7 @@ def main():
         with open(f"{OUT}/kombo.txt", "w") as f:
             f.write(res.to_string(index=False))
 
-    elif mod in ("formasyon", "kovalama", "limit", "profesyonel", "basarisiz", "seviye", "fikir", "oda", "yas", "uzun"):
+    elif mod in ("formasyon", "kovalama", "limit", "profesyonel", "basarisiz", "seviye", "fikir", "oda", "yas", "uzun") or mod.startswith("tara"):
         tick = veri._get("/api/v3/ticker/24hr", {})
         haric = set(COINLER) | STOK_HARIC | {"USDCUSDT", "FDUSDUSDT", "TUSDUSDT", "DAIUSDT", "EURUSDT", "USDPUSDT",
                                 "RLUSDUSDT", "USD1USDT", "PYUSDUSDT", "AEURUSDT", "XUSDUSDT", "BFUSDUSDT",
@@ -420,9 +420,12 @@ def main():
             for s_ in ("OPUSDT",):
                 if s_ in DATA["4h"]:
                     teshis(s_, "2026-10-10")
+        if mod.startswith("tara"):
+            _, a_, b_ = mod.split("-")
+            TARA = [(f"{n:03d}", dict(_B2, resistance_len=n)) for n in range(int(a_), int(b_) + 1)]
         rows = []
         with mp.Pool(4) as hv:
-            for ad, prm in ({"kovalama": KOVALAMA, "limit": LIMIT, "profesyonel": PROFESYONEL, "basarisiz": BASARISIZ, "seviye": SEVIYE, "fikir": FIKIR, "oda": ODA, "yas": YAS, "uzun": UZUN}.get(mod, FORM_SENARYO)):
+            for ad, prm in (TARA if mod.startswith("tara") else {"kovalama": KOVALAMA, "limit": LIMIT, "profesyonel": PROFESYONEL, "basarisiz": BASARISIZ, "seviye": SEVIYE, "fikir": FIKIR, "oda": ODA, "yas": YAS, "uzun": UZUN}.get(mod, FORM_SENARYO)):
                 tr = calistir(prm, COINLER + yeni, "4h", hv)
                 for etiket, x in (("46", tr[tr.symbol.isin(COINLER)] if len(tr) else tr),
                                   ("YENI", tr[tr.symbol.isin(yeni)] if len(tr) else tr), ("HEPSI", tr)):
