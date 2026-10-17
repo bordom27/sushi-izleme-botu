@@ -1,0 +1,8 @@
+v6.3 TEMEL
+RSI dinamik orta (RSI > BB200 ortasi)
+z-skor20 < 3.0
+verimlilik orani20 >= 0.2
+choppiness < 61.8
+ters FVG 1 ATR icinde ise red
+BTC korelasyon30 >= 0
+BTC korelasyon30 >= 0.5
