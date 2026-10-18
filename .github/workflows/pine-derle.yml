@@ -11,7 +11,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - run: |
-          mkdir -p arastirma_cikti; : > arastirma_cikti/derleme.txt
+          mkdir -p arastirma_cikti; date -u > arastirma_cikti/derleme.txt; sha1sum pine/*.pine >> arastirma_cikti/derleme.txt
           for f in pine/*.pine; do
             code=$(curl -s -m 60 -o /tmp/o -w "%{http_code}" -X POST "https://pine-facade.tradingview.com/pine-facade/translate_light?user_name=Guest&pine_id=00000000-0000-0000-0000-000000000000" -H "Referer: https://www.tradingview.com/" -H "Origin: https://www.tradingview.com" --data-urlencode "source@$f")
             echo "== $f $code" >> arastirma_cikti/derleme.txt
