@@ -590,7 +590,7 @@ def main():
             print(g.to_string(index=False), flush=True)
         pd.concat(out).to_csv(f"{OUT}/genislik.csv", index=False)
         oran50.to_csv(f"{OUT}/genislik_seri.csv")
-    elif mod.startswith("gen2") or mod.startswith("gen3") or mod in ("gen4", "gen5") or mod.startswith("ek3"):
+    elif mod.startswith("gen2") or mod.startswith("gen3") or mod in ("gen4", "gen5") or mod.startswith("ek3") or mod.startswith("opt"):
         tick = veri._get("/api/v3/ticker/24hr", {})
         haric = set(COINLER) | STOK_HARIC | {"USDCUSDT", "FDUSDUSDT", "TUSDUSDT", "DAIUSDT", "EURUSDT", "USDPUSDT",
                                 "RLUSDUSDT", "USD1USDT", "PYUSDUSDT", "AEURUSDT", "XUSDUSDT", "BFUSDUSDT",
@@ -614,6 +614,38 @@ def main():
             ka[s_] = pd.Series(np.where(ok, (c_ < ll).astype(float), np.nan), index=ix)
         KU = pd.DataFrame(ku).fillna(0); KA = pd.DataFrame(ka).fillna(0)
         senaryo = [("v6.3 TEMEL", dict(_B3))]
+        if mod.startswith("opt"):
+            GEN30 = ["BTCUSDT", "ETHUSDT", "SOLUSDT", "XRPUSDT", "BNBUSDT", "DOGEUSDT", "ADAUSDT", "TRXUSDT", "LINKUSDT",
+                     "AVAXUSDT", "SUIUSDT", "LTCUSDT", "NEARUSDT", "DOTUSDT", "UNIUSDT", "AAVEUSDT", "BCHUSDT", "ZECUSDT",
+                     "PEPEUSDT", "ENAUSDT", "TIAUSDT", "FILUSDT", "INJUSDT", "WLDUSDT", "TAOUSDT", "ARBUSDT", "OPUSDT",
+                     "APTUSDT", "HBARUSDT", "XLMUSDT"]
+            up6 = (KU[GEN30].rolling(6, min_periods=1).max() > 0).sum(axis=1)
+            B4 = dict(_B3, ters_s=up6, ters_max=0)
+            UZAY = {"resistance_len": [60, 70, 80, 90, 100, 120], "vol_mult": [1.5, 1.75, 2.0, 2.25, 2.5],
+                    "min_close_pos": [0.5, 0.6, 0.7], "break_buf_atr": [0.0, 0.05, 0.1, 0.2],
+                    "tp1_r": [0.6, 0.8, 1.0, 1.2], "use_fib_tp": [True, False], "tp1_pct": [70.0, 80.0, 90.0, 100.0],
+                    "trail_atr_mult": [2.0, 2.5, 3.0], "bc_atr": [0.1, 0.15, 0.2, 0.3], "bc_bar": [2, 3, 4],
+                    "max_stop_atr": [3.0, 3.5, 4.0, 5.0], "time_stop_bars": [12, 20, 30], "adx_min": [15.0, 20.0, 25.0]}
+            j_ = int(mod.split("-")[1])
+            rng = np.random.default_rng(1000 + j_)
+            senaryo = [("TEMEL v6.4", dict(B4))] if j_ == 0 else []
+            for q in range(20):
+                ch_ = {k_: v_[rng.integers(len(v_))] for k_, v_ in UZAY.items()}
+                senaryo.append((json.dumps({k_: (float(v_) if not isinstance(v_, bool) else v_) for k_, v_ in ch_.items()}), dict(B4, **ch_)))
+            rows = []
+            DON = [("A", "2024-07-01", "2025-06-30 23:59"), ("B", "2025-07-01", "2026-02-28 23:59"), ("C", "2026-03-01", None)]
+            with mp.Pool(4) as hv:
+                for ad, prm in senaryo:
+                    tr = calistir(prm, COINLER + yeni, "4h", hv)
+                    row = {"ayar": ad}
+                    for dk, b_, e_ in DON:
+                        m_ = metrik(tr, b_, e_)
+                        for kk, vv in m_.items():
+                            row[f"{dk}_{kk}"] = vv
+                    rows.append(row)
+                    print(len(rows), flush=True)
+            pd.DataFrame(rows).to_csv(f"{OUT}/{mod}.csv", index=False)
+            return
         if mod.startswith("ek3"):
             GEN30 = ["BTCUSDT", "ETHUSDT", "SOLUSDT", "XRPUSDT", "BNBUSDT", "DOGEUSDT", "ADAUSDT", "TRXUSDT", "LINKUSDT",
                      "AVAXUSDT", "SUIUSDT", "LTCUSDT", "NEARUSDT", "DOTUSDT", "UNIUSDT", "AAVEUSDT", "BCHUSDT", "ZECUSDT",
