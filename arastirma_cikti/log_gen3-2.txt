@@ -1,0 +1,10 @@
+v6.3 TEMEL
+evren 20 | 3 mum <= 1 | sadece short
+evren 20 | 6 mum <= 1 | sadece short
+evren 30 | 3 mum <= 1 | sadece short
+evren 30 | 6 mum <= 1 | sadece short
+evren 40 | 3 mum <= 1 | sadece short
+evren 40 | 6 mum <= 1 | sadece short
+evren 116 | 3 mum <= 1 | sadece short
+evren 116 | 6 mum <= 1 | sadece short
+ilk30: ['BTCUSDT', 'ETHUSDT', 'ZECUSDT', 'SOLUSDT', 'NEARUSDT', 'XRPUSDT', 'BNBUSDT', 'WLDUSDT', 'SUIUSDT', 'DOGEUSDT', 'SANDUSDT', 'TRXUSDT', 'TIAUSDT', 'SOXLBUSDT', 'UNIUSDT', 'STRKUSDT', 'ENAUSDT', 'FILUSDT', 'TAOUSDT', 'AVAXUSDT', 'LINKUSDT', 'INJUSDT', 'AVAUSDT', 'ADAUSDT', 'LTCUSDT', 'PUMPUSDT', 'PEPEUSDT', 'AAVEUSDT', 'ALTUSDT', 'ERAUSDT']
