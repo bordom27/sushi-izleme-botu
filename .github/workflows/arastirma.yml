@@ -17,7 +17,7 @@ jobs:
       fail-fast: false
       max-parallel: 20
       matrix:
-        mod: [opt-0, opt-1, opt-2, opt-3, opt-4, opt-5, opt-6, opt-7, opt-8, opt-9, opt-10, opt-11, opt-12, opt-13, opt-14, opt-15, opt-16, opt-17, opt-18, opt-19]
+        mod: [secici]
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
