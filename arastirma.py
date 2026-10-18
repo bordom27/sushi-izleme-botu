@@ -537,6 +537,59 @@ def main():
         with open(f"{OUT}/kombo.txt", "w") as f:
             f.write(res.to_string(index=False))
 
+    elif mod == "genislik":
+        tick = veri._get("/api/v3/ticker/24hr", {})
+        haric = set(COINLER) | STOK_HARIC | {"USDCUSDT", "FDUSDUSDT", "TUSDUSDT", "DAIUSDT", "EURUSDT", "USDPUSDT",
+                                "RLUSDUSDT", "USD1USDT", "PYUSDUSDT", "AEURUSDT", "XUSDUSDT", "BFUSDUSDT",
+                                "WBTCUSDT", "WBETHUSDT", "BNSOLUSDT", "EURIUSDT", "USDEUSDT"}
+        aday = [d for d in tick if d["symbol"].endswith("USDT") and d["symbol"] not in haric
+                and not any(x in d["symbol"] for x in ("UP", "DOWN", "BULL", "BEAR"))]
+        aday.sort(key=lambda d: float(d["quoteVolume"]), reverse=True)
+        evren = COINLER + [d["symbol"] for d in aday[:70]]
+        kap, ust50, kir_u, kir_a = {}, {}, {}, {}
+        for s_ in evren:
+            try:
+                df = veri.mumlar_onbellekli(s_, "4h", VERI_BAS)
+            except Exception:
+                continue
+            if len(df) < 300 or s_ in ("PAXGUSDT",):
+                continue
+            ix = pd.to_datetime(df["open_time"])
+            c_ = df["close"].to_numpy(float); h_ = df["high"].to_numpy(float); l_ = df["low"].to_numpy(float)
+            e50 = k.ema(c_, 50)
+            ok = np.arange(len(c_)) >= 60
+            ust50[s_] = pd.Series(np.where(ok, (c_ > e50).astype(float), np.nan), index=ix)
+            hh = pd.Series(h_).rolling(80).max().shift(1).to_numpy(); ll = pd.Series(l_).rolling(80).min().shift(1).to_numpy()
+            kir_u[s_] = pd.Series(np.where(ok, (c_ > hh).astype(float), np.nan), index=ix)
+            kir_a[s_] = pd.Series(np.where(ok, (c_ < ll).astype(float), np.nan), index=ix)
+            kap[s_] = pd.Series(c_, index=ix)
+        U = pd.DataFrame(ust50); KU = pd.DataFrame(kir_u); KA = pd.DataFrame(kir_a)
+        oran50 = U.mean(axis=1)                      # % coin EMA50 ustunde
+        oran50_deg = oran50 - oran50.shift(6)         # 1 gunluk degisim
+        ku6 = KU.rolling(6, min_periods=1).sum().mean(axis=1) * 100   # son 1 gunde yukari kirilim yapan coin % (tekrarlar dahil)
+        ka6 = KA.rolling(6, min_periods=1).sum().mean(axis=1) * 100
+        tr = pd.read_csv(f"{OUT}/v63_islemler.csv", parse_dates=["giris_zaman"])
+        tr = tr[tr.giris_zaman >= pd.Timestamp(IS_BAS)].copy()
+        t_ = tr.giris_zaman
+        d_ = tr.yon.to_numpy()
+        tr["genislik"] = np.where(d_ == 1, oran50.reindex(t_).to_numpy(), 1 - oran50.reindex(t_).to_numpy())
+        tr["genislik_deg"] = d_ * oran50_deg.reindex(t_).to_numpy()
+        tr["ayni_yon_kirilim"] = np.where(d_ == 1, ku6.reindex(t_).to_numpy(), ka6.reindex(t_).to_numpy())
+        tr["ters_yon_kirilim"] = np.where(d_ == 1, ka6.reindex(t_).to_numpy(), ku6.reindex(t_).to_numpy())
+        tr["donem"] = np.where(tr.giris_zaman >= pd.Timestamp(OOS_BAS), "OOS", "IS")
+        tr.to_csv(f"{OUT}/genislik_islemler.csv", index=False)
+        out = []
+        for f_ in ("genislik", "genislik_deg", "ayni_yon_kirilim", "ters_yon_kirilim"):
+            q = tr[f_].rank(pct=True)
+            tr["_k"] = pd.cut(q, [0, .2, .4, .6, .8, 1.0], labels=["1-en dusuk", "2", "3", "4", "5-en yuksek"], include_lowest=True)
+            g = tr.groupby(["_k", "donem"], observed=True).agg(n=("sonuc_r", "size"), R=("sonuc_r", "sum"), Rpt=("sonuc_r", "mean"),
+                                                               wr=("sonuc_r", lambda x: (x > 0).mean() * 100),
+                                                               ort=(f_, "mean")).round(3).reset_index()
+            g.insert(0, "ozellik", f_)
+            out.append(g)
+            print(g.to_string(index=False), flush=True)
+        pd.concat(out).to_csv(f"{OUT}/genislik.csv", index=False)
+        oran50.to_csv(f"{OUT}/genislik_seri.csv")
     elif mod == "rot":
         import rotasyon as ro
         tick = veri._get("/api/v3/ticker/24hr", {})
