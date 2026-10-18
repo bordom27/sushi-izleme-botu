@@ -1,0 +1,9 @@
+v6.3 TEMEL
+ters kirilim son 3 mum <= 1 coin (iki yon)
+ters kirilim son 3 mum <= 2 coin (sadece short)
+ters kirilim son 6 mum <= 0 coin (iki yon)
+ters kirilim son 6 mum <= 1 coin (sadece short)
+ters kirilim son 6 mum <= 3 coin (iki yon)
+ters kirilim son 12 mum <= 0 coin (sadece short)
+ters kirilim son 12 mum <= 2 coin (iki yon)
+ters kirilim son 12 mum <= 3 coin (sadece short)
