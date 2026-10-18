@@ -87,7 +87,7 @@ PARAMS = {
     "cooldown_bars": 3,
 
     # 5) Fib
-    "use_fib": True,
+    "use_fib": False,               # Ekim 2026: fib 0.618 giris filtresi kaldirildi (3 donemde de iyilesti); fib TP hedefleri duruyor
     "fib_len": 89,
     "use_fib_tp": True,
 

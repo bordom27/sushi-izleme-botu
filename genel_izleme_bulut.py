@@ -522,9 +522,9 @@ def main():
     parmak = hashlib.md5(json.dumps(k.PARAMS, sort_keys=True).encode()).hexdigest()[:10]
     if not ilk_calisma and state.get("ayar_parmak_izi") != parmak:
         acik = [(s, r.acik) for s, r in sonuclar.items() if r.acik]
-        satir = ["⚙️ Sistem güncellendi (v6.4 seçici mod): kırılım mumunun hacmi ortalamanın en az 2.5 katı olmalı (eski 2x). "
-                 "TradingView grafiğiyle aynı ayar. Testte: ayda ~21 yerine ~13 sinyal, isabet %64 → %69, işlem başı kazanç "
-                 "0.24R → 0.31R, toplam kazanç ~%16 daha az. Son 7.5 ayda daha iyi (+7.1R → +11.9R).",
+        satir = ["⚙️ Sistem güncellendi (v6.5): Fibonacci 0.618 giriş filtresi kaldırıldı (fib TP hedefleri duruyor). "
+                 "Testte üç dönemin üçünde de biraz daha iyi (+1.4R / +5.6R / +0.7R), ayda ~1 sinyal fazla, isabet aynı (~%69). "
+                 "TradingView grafiğiyle aynı ayar.",
                  btc_bilgi]
         if acik:
             satir.append("Açık pozisyonlar (yeni kurallara göre; giriş zamanı geçmiş olabilir, sadece bilgi):")

@@ -55,6 +55,10 @@ Kural: `GENISLIK_COINLER`'deki 30 büyük coinden herhangi biri son 6 mumda (24 
 "En fazla 1 coin" gibi gevşek eşikler iyileştirmiyor: kural "hiç ters kırılım yok" olarak çalışıyor.
 Ayrıca test edilip eklenmeyenler: ortalamaya dönüş sistemi (48 varyasyon, hepsi zararda), momentum rotasyonu (tutarsız, %35–55 düşüş), dinamik RSI, z-skor, verimlilik oranı, choppiness, FVG, BTC korelasyonu.
 
+## v6.5: Fib giriş filtresi kaldırıldı (18 Ekim 2026)
+Fib 0.618 yapı filtresi kapalı (`use_fib=False`); fib tabanlı TP1/TP2 hedefleri aynen duruyor. Seçici mod üzerinde, üç dönem: +1.4R / +5.6R / +0.7R, işlem ~%9 fazla, isabet ve düşüş aynı.
+Fib yerine denenip eklenmeyenler: ölçülü hareket hedefi (20/40/80 mum; 2. dönemde +17–20R ama diğer iki dönemde kötü), sabit R hedefleri, direnç çakışması (büyük fib / 30–60 günlük zirve / eski pivot; sinyal azaltıyor, kaliteyi artırmıyor).
+
 ## Seçici mod (18 Ekim 2026)
 Hacim eşiği 2x → **2.5x** (bot ve TradingView aynı). 116 coin, Tem 2024 – Eki 2026: ayda ~21 → ~13 sinyal, isabet %63.8 → %69.1, işlem başı 0.24R → 0.31R, toplam +135R → +113R, en kötü düşüş 15.3R → 13.0R; Mar–Eki 2026: +7.1R → +11.9R.
 Ayrıca 13 parametreli ortak optimizasyon (400 kombinasyon, arama / seçim / son sınav bölmeli) v6.4'ü geçen bir kombinasyon bulamadı; ilk iki dönemde en iyi görünenler son sınavda −8 ile −22R.
