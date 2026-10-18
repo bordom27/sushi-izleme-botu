@@ -590,7 +590,7 @@ def main():
             print(g.to_string(index=False), flush=True)
         pd.concat(out).to_csv(f"{OUT}/genislik.csv", index=False)
         oran50.to_csv(f"{OUT}/genislik_seri.csv")
-    elif mod.startswith("gen2"):
+    elif mod.startswith("gen2") or mod.startswith("gen3"):
         tick = veri._get("/api/v3/ticker/24hr", {})
         haric = set(COINLER) | STOK_HARIC | {"USDCUSDT", "FDUSDUSDT", "TUSDUSDT", "DAIUSDT", "EURUSDT", "USDPUSDT",
                                 "RLUSDUSDT", "USD1USDT", "PYUSDUSDT", "AEURUSDT", "XUSDUSDT", "BFUSDUSDT",
@@ -614,6 +614,30 @@ def main():
             ka[s_] = pd.Series(np.where(ok, (c_ < ll).astype(float), np.nan), index=ix)
         KU = pd.DataFrame(ku).fillna(0); KA = pd.DataFrame(ka).fillna(0)
         senaryo = [("v6.3 TEMEL", dict(_B3))]
+        if mod.startswith("gen3"):
+            hacim = {d["symbol"]: float(d["quoteVolume"]) for d in tick}
+            sirali = sorted(KU.columns, key=lambda x: -hacim.get(x, 0))
+            for M in (20, 30, 40, 116):
+                cols = sirali[:M]
+                for N in (3, 6):
+                    up = (KU[cols].rolling(N, min_periods=1).max() > 0).sum(axis=1)
+                    dn = (KA[cols].rolling(N, min_periods=1).max() > 0).sum(axis=1)
+                    for mx in (0, 1):
+                        senaryo.append((f"evren {M} | {N} mum <= {mx} | sadece short", dict(_B3, ters_s=up, ters_max=mx)))
+                        senaryo.append((f"evren {M} | {N} mum <= {mx} | iki yon", dict(_B3, ters_l=dn, ters_s=up, ters_max=mx)))
+            parca = int(mod.split("-")[1])
+            senaryo = senaryo[:1] + senaryo[1 + parca::4]
+            rows = []
+            with mp.Pool(4) as hv:
+                for ad, prm in senaryo:
+                    tr = calistir(prm, COINLER + yeni, "4h", hv)
+                    tr.to_csv(f"{OUT}/gen3_{ad.replace(' ', '').replace('|', '_').replace('<=', 'le')}.csv", index=False)
+                    for etiket, x in (("46", tr[tr.symbol.isin(COINLER)]), ("YENI", tr[tr.symbol.isin(yeni)]), ("HEPSI", tr)):
+                        rows.append(satir(f"{ad} [{etiket}]", x))
+                    print(ad, flush=True)
+            pd.DataFrame(rows).to_csv(f"{OUT}/{mod}.csv", index=False)
+            print("ilk30:", sirali[:30], flush=True)
+            return
         for N in (3, 6, 12):
             up = (KU.rolling(N, min_periods=1).max() > 0).sum(axis=1)
             dn = (KA.rolling(N, min_periods=1).max() > 0).sum(axis=1)

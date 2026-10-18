@@ -16,7 +16,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        mod: [gen2-0, gen2-1, gen2-2]
+        mod: [gen3-0, gen3-1, gen3-2, gen3-3]
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
