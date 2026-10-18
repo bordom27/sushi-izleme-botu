@@ -1,0 +1,15 @@
+v6.4 TEMEL
+long: son 6 mumda en az 1 buyuk coin yukari kirmis
+long: son 6 mumda en az 2 buyuk coin yukari kirmis
+long: son 6 mumda en az 3 buyuk coin yukari kirmis
+long: son 6 mumda en az 5 buyuk coin yukari kirmis
+long: son 12 mumda en az 1 buyuk coin yukari kirmis
+long: son 12 mumda en az 2 buyuk coin yukari kirmis
+long: son 12 mumda en az 3 buyuk coin yukari kirmis
+long: son 12 mumda en az 5 buyuk coin yukari kirmis
+long: buyuk coinlerin en az %40'i EMA50 ustunde
+long: buyuk coinlerin en az %50'i EMA50 ustunde
+long: buyuk coinlerin en az %60'i EMA50 ustunde
+long: buyuk coinlerin en az %70'i EMA50 ustunde
+long: buyuk coinlerin en az %80'i EMA50 ustunde
+long: son 6 mumda asagi kiran buyuk coin yok (ayna)
