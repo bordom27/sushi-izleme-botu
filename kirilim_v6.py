@@ -146,7 +146,12 @@ PARAMS = {
     "ters_s": None,                 # pd.Series (yukari kirilim yapan coin sayisi); short filtresi
     "ters_max": -1, 
     "l_seri": None,                 # pd.Series: long icin genislik olcusu (ayni yon kirilim sayisi / EMA50 ustu orani)
-    "l_min": -1.0,                  # >=0: l_seri bu degerin altindaysa long yok                # >=0: bu sayidan fazlaysa sinyal yok
+    "l_min": -1.0, 
+    "olay_zaman": None,             # list[pd.Timestamp] UTC makro olay anlari (FOMC / CPI)
+    "olay_once": 0.0, "olay_sonra": 0.0,   # saat: bu araliga kapanisi denk gelen mumda yeni giris yok
+    "fg_seri": None,                # pd.Series gunluk Fear&Greed (index = gun, deger o gun KULLANILABILIR deger)
+    "fg_l_min": -1.0, "fg_l_max": 999.0, "fg_s_min": -1.0, "fg_s_max": 999.0,
+    "hurst_min": 0.0, "hurst_len": 100, "hurst_k": 8,                 # >=0: l_seri bu degerin altindaysa long yok                # >=0: bu sayidan fazlaysa sinyal yok
     "rs_bar": 0,                    # >0: goreli guc (coin getirisi - BTC getirisi, son rs_bar mum)
     "rs_min": 0.0,                  # long: rs > rs_min, short: rs < -rs_min (oran, 0.05 = %5)
     "yeniden_giris": 0,             # >0: basarisiz kirilim cikisindan sonra bu kadar mum icinde seviye geri alinirsa tekrar gir
@@ -585,6 +590,20 @@ def simule_et(symbol: str, df: pd.DataFrame, gunluk: pd.DataFrame | None,
         kor_dizi = _cs.pct_change().rolling(p["kor_len"]).corr(_bc2.pct_change()).to_numpy()
     fvg_ayi, fvg_boga = [], []   # (alt, ust, bar)
     TM = p["ters_max"]
+    olay_blok = None
+    if p["olay_zaman"]:
+        kap_t = (ot + pd.Timedelta(hours=4)).to_numpy()
+        olay_blok = np.zeros(n, bool)
+        for t_ in p["olay_zaman"]:
+            a_ = np.datetime64(t_ - pd.Timedelta(hours=p["olay_once"])); b_ = np.datetime64(t_ + pd.Timedelta(hours=p["olay_sonra"]))
+            olay_blok |= (kap_t >= a_) & (kap_t <= b_)
+    fg_dizi = p["fg_seri"].reindex(ot.dt.normalize()).to_numpy(float) if p["fg_seri"] is not None else None
+    hurst_dizi = None
+    if p["hurst_min"] > 0:
+        _lr = pd.Series(np.log(c)).diff()
+        _K = p["hurst_k"]; _W = p["hurst_len"]
+        _v1 = _lr.rolling(_W).var(); _vk = (pd.Series(np.log(c)).diff(_K)).rolling(_W).var()
+        hurst_dizi = (0.5 * np.log(_vk / (_K * _v1)) / np.log(_K) + 0.5).to_numpy()
     l_dizi = p["l_seri"].reindex(ot).to_numpy(float) if (p["l_min"] >= 0 and p["l_seri"] is not None) else None
     ters_l = p["ters_l"].reindex(ot).to_numpy(float) if (TM >= 0 and p["ters_l"] is not None) else None
     ters_s = p["ters_s"].reindex(ot).to_numpy(float) if (TM >= 0 and p["ters_s"] is not None) else None
@@ -897,6 +916,19 @@ def simule_et(symbol: str, df: pd.DataFrame, gunluk: pd.DataFrame | None,
                 aday_l = False
             if aday_s and a > 0 and any(f[0] < c[i] and f[1] > c[i] - p["fvg_atr"] * a for f in fvg_boga):
                 aday_s = False
+        if olay_blok is not None and olay_blok[i]:
+            aday_l = aday_s = False
+        if fg_dizi is not None:
+            fv = fg_dizi[i]
+            if not math.isnan(fv):
+                if aday_l and not (p["fg_l_min"] <= fv <= p["fg_l_max"]):
+                    aday_l = False
+                if aday_s and not (p["fg_s_min"] <= fv <= p["fg_s_max"]):
+                    aday_s = False
+        if hurst_dizi is not None and (aday_l or aday_s):
+            hv_ = hurst_dizi[i]
+            if math.isnan(hv_) or hv_ < p["hurst_min"]:
+                aday_l = aday_s = False
         if l_dizi is not None and aday_l and not (l_dizi[i] >= p["l_min"]):
             aday_l = False
         if ters_l is not None and aday_l and not (ters_l[i] <= TM):

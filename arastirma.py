@@ -590,7 +590,7 @@ def main():
             print(g.to_string(index=False), flush=True)
         pd.concat(out).to_csv(f"{OUT}/genislik.csv", index=False)
         oran50.to_csv(f"{OUT}/genislik_seri.csv")
-    elif mod.startswith("gen2") or mod.startswith("gen3") or mod in ("gen4", "gen5"):
+    elif mod.startswith("gen2") or mod.startswith("gen3") or mod in ("gen4", "gen5") or mod.startswith("ek3"):
         tick = veri._get("/api/v3/ticker/24hr", {})
         haric = set(COINLER) | STOK_HARIC | {"USDCUSDT", "FDUSDUSDT", "TUSDUSDT", "DAIUSDT", "EURUSDT", "USDPUSDT",
                                 "RLUSDUSDT", "USD1USDT", "PYUSDUSDT", "AEURUSDT", "XUSDUSDT", "BFUSDUSDT",
@@ -614,6 +614,60 @@ def main():
             ka[s_] = pd.Series(np.where(ok, (c_ < ll).astype(float), np.nan), index=ix)
         KU = pd.DataFrame(ku).fillna(0); KA = pd.DataFrame(ka).fillna(0)
         senaryo = [("v6.3 TEMEL", dict(_B3))]
+        if mod.startswith("ek3"):
+            GEN30 = ["BTCUSDT", "ETHUSDT", "SOLUSDT", "XRPUSDT", "BNBUSDT", "DOGEUSDT", "ADAUSDT", "TRXUSDT", "LINKUSDT",
+                     "AVAXUSDT", "SUIUSDT", "LTCUSDT", "NEARUSDT", "DOTUSDT", "UNIUSDT", "AAVEUSDT", "BCHUSDT", "ZECUSDT",
+                     "PEPEUSDT", "ENAUSDT", "TIAUSDT", "FILUSDT", "INJUSDT", "WLDUSDT", "TAOUSDT", "ARBUSDT", "OPUSDT",
+                     "APTUSDT", "HBARUSDT", "XLMUSDT"]
+            up6 = (KU[GEN30].rolling(6, min_periods=1).max() > 0).sum(axis=1)
+            B4 = dict(_B3, ters_s=up6, ters_max=0)
+            import requests as rq
+            # FOMC karar gunu 14:00 ET, CPI 08:30 ET  (ET -> UTC: yaz +4, kis +5)
+            fomc = ["2024-01-31", "2024-03-20", "2024-05-01", "2024-06-12", "2024-07-31", "2024-09-18", "2024-11-07", "2024-12-18",
+                    "2025-01-29", "2025-03-19", "2025-05-07", "2025-06-18", "2025-07-30", "2025-09-17", "2025-10-29", "2025-12-10",
+                    "2026-01-28", "2026-03-18", "2026-04-29", "2026-06-17", "2026-07-29", "2026-09-16"]
+            cpi = ["2024-02-13", "2024-03-12", "2024-04-10", "2024-05-15", "2024-06-12", "2024-07-11", "2024-08-14", "2024-09-11",
+                   "2024-10-10", "2024-11-13", "2024-12-11", "2025-01-15", "2025-02-12", "2025-03-12", "2025-04-10", "2025-05-13",
+                   "2025-06-11", "2025-07-15", "2025-08-12", "2025-09-11", "2025-10-24", "2025-12-18", "2026-01-13", "2026-02-13",
+                   "2026-03-11", "2026-04-10", "2026-05-12", "2026-06-10", "2026-07-14", "2026-08-12", "2026-09-11", "2026-10-14"]
+            def et2utc(gun, saat, dk):
+                t = pd.Timestamp(gun) + pd.Timedelta(hours=saat, minutes=dk)
+                return t.tz_localize("America/New_York").tz_convert("UTC").tz_localize(None)
+            olaylar_ = [et2utc(g, 14, 0) for g in fomc] + [et2utc(g, 8, 30) for g in cpi]
+            fg = None
+            try:
+                j = rq.get("https://api.alternative.me/fng/?limit=0&format=json", timeout=30).json()["data"]
+                fg = pd.Series({pd.to_datetime(int(x["timestamp"]), unit="s").normalize(): float(x["value"]) for x in j}).sort_index()
+                fg = fg.shift(1, freq="D")      # bir gun gecikmeli: o gunun degeri ancak ertesi gun kullanilir
+                print("F&G", len(fg), fg.index.min(), fg.index.max(), flush=True)
+            except Exception as exc:
+                print("F&G alinamadi", exc, flush=True)
+            senaryo = [("v6.4 TEMEL", dict(B4))]
+            for once, sonra in ((4, 4), (8, 8), (0, 12), (12, 24)):
+                senaryo.append((f"makro: FOMC/CPI {once}s once - {sonra}s sonra giris yok", dict(B4, olay_zaman=olaylar_, olay_once=once, olay_sonra=sonra)))
+            senaryo.append(("makro: sadece FOMC 8s/8s", dict(B4, olay_zaman=olaylar_[:len(fomc)], olay_once=8, olay_sonra=8)))
+            if fg is not None:
+                senaryo += [("F&G: asiri acgozlulukte (>75) long yok", dict(B4, fg_seri=fg, fg_l_max=75)),
+                            ("F&G: >80 long yok", dict(B4, fg_seri=fg, fg_l_max=80)),
+                            ("F&G: asiri korkuda (<25) short yok", dict(B4, fg_seri=fg, fg_s_min=25)),
+                            ("F&G: <20 short yok", dict(B4, fg_seri=fg, fg_s_min=20)),
+                            ("F&G: >75 long yok + <25 short yok", dict(B4, fg_seri=fg, fg_l_max=75, fg_s_min=25)),
+                            ("F&G: long sadece >=50, short sadece <=50", dict(B4, fg_seri=fg, fg_l_min=50, fg_s_max=50)),
+                            ("F&G: long sadece <=60 (kalabalik yok)", dict(B4, fg_seri=fg, fg_l_max=60))]
+            for hm in (0.5, 0.55):
+                for hl in (100, 200):
+                    senaryo.append((f"Hurst({hl}) >= {hm}", dict(B4, hurst_min=hm, hurst_len=hl)))
+            parca = int(mod.split("-")[1])
+            senaryo = senaryo[:1] + senaryo[1 + parca::3]
+            rows = []
+            with mp.Pool(4) as hv:
+                for ad, prm in senaryo:
+                    tr = calistir(prm, COINLER + yeni, "4h", hv)
+                    for etiket, x in (("46", tr[tr.symbol.isin(COINLER)]), ("YENI", tr[tr.symbol.isin(yeni)]), ("HEPSI", tr)):
+                        rows.append(satir(f"{ad} [{etiket}]", x))
+                    print(ad, flush=True)
+            pd.DataFrame(rows).to_csv(f"{OUT}/{mod}.csv", index=False)
+            return
         if mod == "gen5":
             GEN30 = ["BTCUSDT", "ETHUSDT", "SOLUSDT", "XRPUSDT", "BNBUSDT", "DOGEUSDT", "ADAUSDT", "TRXUSDT", "LINKUSDT",
                      "AVAXUSDT", "SUIUSDT", "LTCUSDT", "NEARUSDT", "DOTUSDT", "UNIUSDT", "AAVEUSDT", "BCHUSDT", "ZECUSDT",

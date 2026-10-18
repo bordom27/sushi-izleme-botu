@@ -16,7 +16,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        mod: [gen5]
+        mod: [ek3-0, ek3-1, ek3-2]
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
