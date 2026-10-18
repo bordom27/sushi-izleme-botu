@@ -1,0 +1,38 @@
+ozellik,_k,donem,n,R,Rpt,wr,ort
+genislik,1-en dusuk,IS,21,1.894,0.09,57.143,0.58
+genislik,1-en dusuk,OOS,106,11.169,0.105,56.604,0.738
+genislik,2,IS,18,8.881,0.493,77.778,0.923
+genislik,2,OOS,96,-3.55,-0.037,44.792,0.913
+genislik,3,IS,54,15.073,0.279,66.667,0.948
+genislik,3,OOS,86,20.165,0.234,60.465,0.939
+genislik,4,IS,43,8.057,0.187,62.791,0.966
+genislik,4,OOS,82,8.67,0.106,57.317,0.963
+genislik,5-en yuksek,IS,82,25.365,0.309,67.073,0.99
+genislik,5-en yuksek,OOS,48,20.811,0.434,77.083,0.986
+genislik_deg,1-en dusuk,IS,36,5.699,0.158,63.889,-0.056
+genislik_deg,1-en dusuk,OOS,90,38.074,0.423,80.0,-0.055
+genislik_deg,2,IS,53,18.676,0.352,69.811,0.01
+genislik_deg,2,OOS,69,-2.141,-0.031,42.029,0.008
+genislik_deg,3,IS,63,25.322,0.402,74.603,0.047
+genislik_deg,3,OOS,70,9.791,0.14,58.571,0.043
+genislik_deg,4,IS,25,-0.473,-0.019,52.0,0.101
+genislik_deg,4,OOS,103,-1.933,-0.019,44.66,0.103
+genislik_deg,5-en yuksek,IS,41,10.047,0.245,58.537,0.432
+genislik_deg,5-en yuksek,OOS,86,13.474,0.157,59.302,0.319
+ayni_yon_kirilim,1-en dusuk,IS,34,4.672,0.137,55.882,7.802
+ayni_yon_kirilim,1-en dusuk,OOS,92,4.506,0.049,55.435,9.139
+ayni_yon_kirilim,2,IS,53,11.551,0.218,58.491,28.458
+ayni_yon_kirilim,2,OOS,75,20.519,0.274,66.667,26.636
+ayni_yon_kirilim,3,IS,51,11.147,0.219,66.667,58.078
+ayni_yon_kirilim,3,OOS,76,-11.753,-0.155,39.474,57.923
+ayni_yon_kirilim,4,IS,29,9.032,0.311,68.966,86.123
+ayni_yon_kirilim,4,OOS,103,26.051,0.253,62.136,87.058
+ayni_yon_kirilim,5-en yuksek,IS,51,22.868,0.448,78.431,132.364
+ayni_yon_kirilim,5-en yuksek,OOS,72,17.942,0.249,61.111,126.05
+ters_yon_kirilim,2,IS,170,55.525,0.327,69.412,0.0
+ters_yon_kirilim,2,OOS,172,66.765,0.388,75.0,0.0
+ters_yon_kirilim,3,OOS,30,2.291,0.076,50.0,0.961
+ters_yon_kirilim,4,IS,38,6.021,0.158,57.895,1.549
+ters_yon_kirilim,4,OOS,98,-24.714,-0.252,30.612,1.361
+ters_yon_kirilim,5-en yuksek,IS,10,-2.275,-0.228,40.0,6.715
+ters_yon_kirilim,5-en yuksek,OOS,118,12.923,0.11,55.085,5.617
