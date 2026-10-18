@@ -590,7 +590,7 @@ def main():
             print(g.to_string(index=False), flush=True)
         pd.concat(out).to_csv(f"{OUT}/genislik.csv", index=False)
         oran50.to_csv(f"{OUT}/genislik_seri.csv")
-    elif mod.startswith("gen2") or mod.startswith("gen3"):
+    elif mod.startswith("gen2") or mod.startswith("gen3") or mod == "gen4":
         tick = veri._get("/api/v3/ticker/24hr", {})
         haric = set(COINLER) | STOK_HARIC | {"USDCUSDT", "FDUSDUSDT", "TUSDUSDT", "DAIUSDT", "EURUSDT", "USDPUSDT",
                                 "RLUSDUSDT", "USD1USDT", "PYUSDUSDT", "AEURUSDT", "XUSDUSDT", "BFUSDUSDT",
@@ -614,6 +614,33 @@ def main():
             ka[s_] = pd.Series(np.where(ok, (c_ < ll).astype(float), np.nan), index=ix)
         KU = pd.DataFrame(ku).fillna(0); KA = pd.DataFrame(ka).fillna(0)
         senaryo = [("v6.3 TEMEL", dict(_B3))]
+        if mod == "gen4":
+            GEN30 = ["BTCUSDT", "ETHUSDT", "SOLUSDT", "XRPUSDT", "BNBUSDT", "DOGEUSDT", "ADAUSDT", "TRXUSDT", "LINKUSDT",
+                     "AVAXUSDT", "SUIUSDT", "LTCUSDT", "NEARUSDT", "DOTUSDT", "UNIUSDT", "AAVEUSDT", "BCHUSDT", "ZECUSDT",
+                     "PEPEUSDT", "ENAUSDT", "TIAUSDT", "FILUSDT", "INJUSDT", "WLDUSDT", "TAOUSDT", "ARBUSDT", "OPUSDT",
+                     "APTUSDT", "HBARUSDT", "XLMUSDT"]
+            eksik = [x for x in GEN30 if x not in KU.columns]
+            for x in eksik:
+                df_ = veri.mumlar_onbellekli(x, "4h", VERI_BAS)
+                ix = pd.to_datetime(df_["open_time"]); h_ = df_["high"].to_numpy(float); c_ = df_["close"].to_numpy(float)
+                hh = pd.Series(h_).rolling(80).max().shift(1).to_numpy()
+                KU[x] = pd.Series(np.where(np.arange(len(c_)) >= 80, (c_ > hh).astype(float), 0.0), index=ix).reindex(KU.index).fillna(0)
+            print("eksik eklendi:", eksik, flush=True)
+            for N in (3, 6, 9):
+                up = (KU[GEN30].rolling(N, min_periods=1).max() > 0).sum(axis=1)
+                senaryo.append((f"GEN30 | {N} mum <= 0 | sadece short", dict(_B3, ters_s=up, ters_max=0)))
+            rows = []
+            with mp.Pool(4) as hv:
+                for ad, prm in senaryo:
+                    tr = calistir(prm, COINLER + yeni, "4h", hv)
+                    tr.to_csv(f"{OUT}/gen4_{ad.split('|')[0].strip().replace(' ', '')}_{ad.split('|')[1].strip().replace(' ', '').replace('<=', 'le') if '|' in ad else 'temel'}.csv", index=False)
+                    for etiket, x in (("46", tr[tr.symbol.isin(COINLER)]), ("YENI", tr[tr.symbol.isin(yeni)]), ("HEPSI", tr)):
+                        rows.append(satir(f"{ad} [{etiket}]", x))
+                    tt = tr[tr.giris_zaman >= pd.Timestamp(IS_BAS)].copy()
+                    tt["yariyil"] = tt.giris_zaman.dt.year.astype(str) + "-" + np.where(tt.giris_zaman.dt.month <= 6, "1", "2")
+                    print(ad, tt.groupby("yariyil")["sonuc_r"].agg(["size", "sum"]).round(1).T.to_string(), flush=True)
+            pd.DataFrame(rows).to_csv(f"{OUT}/{mod}.csv", index=False)
+            return
         if mod.startswith("gen3"):
             hacim = {d["symbol"]: float(d["quoteVolume"]) for d in tick}
             sirali = sorted(KU.columns, key=lambda x: -hacim.get(x, 0))
