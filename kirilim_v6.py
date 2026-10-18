@@ -147,6 +147,8 @@ PARAMS = {
     "ters_max": -1, 
     "l_seri": None,                 # pd.Series: long icin genislik olcusu (ayni yon kirilim sayisi / EMA50 ustu orani)
     "l_min": -1.0, 
+    "tp_olcum": 0,                  # >0: TP'ler olculu hareketle (kirilan seviye - son N mumun dibi = taban yuksekligi)
+    "olcum_k1": 0.5, "olcum_k2": 1.0,
     "konf": "",                     # "" | "fib300" | "zirve180" | "zirve360" | "eski_pivot" | "herhangi"
     "konf_tol": 0.5,                # kirilan seviye diger seviyeye bu kadar ATR yakin olmali
     "olay_zaman": None,             # list[pd.Timestamp] UTC makro olay anlari (FOMC / CPI)
@@ -1335,6 +1337,13 @@ def simule_et(symbol: str, df: pd.DataFrame, gunluk: pd.DataFrame | None,
                     aday1 = L1f - g_dir * tp_off
                     if abs(aday1 - giris) <= p["tp1_max_r"] * rsk:
                         tp1, tp1_kay = aday1, "Fib"
+            olcH = np.nan
+            if p["tp_olcum"] > 0 and not math.isnan(g_sev) and i > p["tp_olcum"]:
+                N_ = p["tp_olcum"]
+                olcH = (g_sev - float(np.min(l[i - N_:i]))) if gL else (float(np.max(h[i - N_:i])) - g_sev)
+                if olcH > 0:
+                    d1 = min(max(p["olcum_k1"] * olcH, p["tp1_min_r"] * rsk), p["tp1_max_r"] * rsk)
+                    tp1, tp1_kay = giris + g_dir * d1, "Olcum"
 
             red = None
             engel = tavan(giris) if gL else zemin(giris)
@@ -1360,6 +1369,9 @@ def simule_et(symbol: str, df: pd.DataFrame, gunluk: pd.DataFrame | None,
                     aday2 = L2f - g_dir * tp_off
                     if abs(aday2 - giris) <= p["tp2_max_r"] * rsk:
                         tp2, tp2_kay = aday2, "Fib"
+            if p["tp_olcum"] > 0 and not math.isnan(olcH) and olcH > 0:
+                d2 = min(max(p["olcum_k2"] * olcH, abs(tp1 - giris) + 0.5 * rsk), p["tp2_max_r"] * rsk)
+                tp2, tp2_kay = giris + g_dir * d2, "Olcum"
             if p["tp2_yok"]:
                 tp2 = giris + 1000 * rsk if gL else giris * 0.001
                 tp2_kay = "yok"

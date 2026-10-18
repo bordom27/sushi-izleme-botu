@@ -614,7 +614,7 @@ def main():
             ka[s_] = pd.Series(np.where(ok, (c_ < ll).astype(float), np.nan), index=ix)
         KU = pd.DataFrame(ku).fillna(0); KA = pd.DataFrame(ka).fillna(0)
         senaryo = [("v6.3 TEMEL", dict(_B3))]
-        if mod.startswith("konf"):
+        if mod.startswith("konf"):  # konf + konf2
             GEN30 = ["BTCUSDT", "ETHUSDT", "SOLUSDT", "XRPUSDT", "BNBUSDT", "DOGEUSDT", "ADAUSDT", "TRXUSDT", "LINKUSDT",
                      "AVAXUSDT", "SUIUSDT", "LTCUSDT", "NEARUSDT", "DOTUSDT", "UNIUSDT", "AAVEUSDT", "BCHUSDT", "ZECUSDT",
                      "PEPEUSDT", "ENAUSDT", "TIAUSDT", "FILUSDT", "INJUSDT", "WLDUSDT", "TAOUSDT", "ARBUSDT", "OPUSDT",
@@ -622,7 +622,17 @@ def main():
             up6 = (KU[GEN30].rolling(6, min_periods=1).max() > 0).sum(axis=1)
             B5 = dict(_B3, ters_s=up6, ters_max=0, vol_mult=2.5)
             senaryo = [("SU ANKI (v6.4 secici)", dict(B5))]
-            for kf in ("fib300", "zirve180", "zirve360", "eski_pivot", "herhangi"):
+            if mod.startswith("konf2"):
+                senaryo += [("fib giris filtresi kapali", dict(B5, use_fib=False)),
+                            ("fib hedefler kapali (TP sabit R)", dict(B5, use_fib_tp=False)),
+                            ("fib tamamen kapali", dict(B5, use_fib=False, use_fib_tp=False)),
+                            ("olculu hareket 20 mum (0.5H / 1H)", dict(B5, tp_olcum=20)),
+                            ("olculu hareket 40 mum (0.5H / 1H)", dict(B5, tp_olcum=40)),
+                            ("olculu hareket 20 mum (0.75H / 1.5H)", dict(B5, tp_olcum=20, olcum_k1=0.75, olcum_k2=1.5)),
+                            ("olculu hareket 40 mum (0.5H/1H) + fib giris kapali", dict(B5, tp_olcum=40, use_fib=False)),
+                            ("olculu hareket 80 mum (0.5H / 1H)", dict(B5, tp_olcum=80))]
+            else:
+              for kf in ("fib300", "zirve180", "zirve360", "eski_pivot", "herhangi"):
                 for tol in (0.3, 0.6, 1.0):
                     senaryo.append((f"cakisma {kf} (tol {tol} ATR)", dict(B5, konf=kf, konf_tol=tol)))
             parca = int(mod.split("-")[1])
