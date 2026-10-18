@@ -590,6 +590,47 @@ def main():
             print(g.to_string(index=False), flush=True)
         pd.concat(out).to_csv(f"{OUT}/genislik.csv", index=False)
         oran50.to_csv(f"{OUT}/genislik_seri.csv")
+    elif mod.startswith("gen2"):
+        tick = veri._get("/api/v3/ticker/24hr", {})
+        haric = set(COINLER) | STOK_HARIC | {"USDCUSDT", "FDUSDUSDT", "TUSDUSDT", "DAIUSDT", "EURUSDT", "USDPUSDT",
+                                "RLUSDUSDT", "USD1USDT", "PYUSDUSDT", "AEURUSDT", "XUSDUSDT", "BFUSDUSDT",
+                                "WBTCUSDT", "WBETHUSDT", "BNSOLUSDT", "EURIUSDT", "USDEUSDT"}
+        aday = [d for d in tick if d["symbol"].endswith("USDT") and d["symbol"] not in haric
+                and not any(x in d["symbol"] for x in ("UP", "DOWN", "BULL", "BEAR"))]
+        aday.sort(key=lambda d: float(d["quoteVolume"]), reverse=True)
+        yeni = [d["symbol"] for d in aday[:70]]
+        DATA["btc_4h"] = veri.mumlar_onbellekli("BTCUSDT", "4h", VERI_BAS)
+        DATA["4h"] = yukle(COINLER + yeni)
+        yeni = [x for x in yeni if x in DATA["4h"]]
+        ku, ka = {}, {}
+        for s_, (df, gd, wd) in DATA["4h"].items():
+            if s_ == "PAXGUSDT":
+                continue
+            ix = pd.to_datetime(df["open_time"])
+            h_ = df["high"].to_numpy(float); l_ = df["low"].to_numpy(float); c_ = df["close"].to_numpy(float)
+            hh = pd.Series(h_).rolling(80).max().shift(1).to_numpy(); ll = pd.Series(l_).rolling(80).min().shift(1).to_numpy()
+            ok = np.arange(len(c_)) >= 80
+            ku[s_] = pd.Series(np.where(ok, (c_ > hh).astype(float), np.nan), index=ix)
+            ka[s_] = pd.Series(np.where(ok, (c_ < ll).astype(float), np.nan), index=ix)
+        KU = pd.DataFrame(ku).fillna(0); KA = pd.DataFrame(ka).fillna(0)
+        senaryo = [("v6.3 TEMEL", dict(_B3))]
+        for N in (3, 6, 12):
+            up = (KU.rolling(N, min_periods=1).max() > 0).sum(axis=1)
+            dn = (KA.rolling(N, min_periods=1).max() > 0).sum(axis=1)
+            for mx in (0, 1, 2, 3):
+                senaryo.append((f"ters kirilim son {N} mum <= {mx} coin (iki yon)", dict(_B3, ters_l=dn, ters_s=up, ters_max=mx)))
+                senaryo.append((f"ters kirilim son {N} mum <= {mx} coin (sadece short)", dict(_B3, ters_s=up, ters_max=mx)))
+        parca = int(mod.split("-")[1])
+        senaryo = senaryo[:1] + senaryo[1 + parca::3]
+        rows = []
+        with mp.Pool(4) as hv:
+            for ad, prm in senaryo:
+                tr = calistir(prm, COINLER + yeni, "4h", hv)
+                for etiket, x in (("46", tr[tr.symbol.isin(COINLER)] if len(tr) else tr),
+                                  ("YENI", tr[tr.symbol.isin(yeni)] if len(tr) else tr), ("HEPSI", tr)):
+                    rows.append(satir(f"{ad} [{etiket}]", x))
+                print(ad, flush=True)
+        pd.DataFrame(rows).to_csv(f"{OUT}/{mod}.csv", index=False)
     elif mod == "rot":
         import rotasyon as ro
         tick = veri._get("/api/v3/ticker/24hr", {})

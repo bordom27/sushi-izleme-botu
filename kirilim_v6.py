@@ -142,6 +142,9 @@ PARAMS = {
     "fvg_bak": 300,
     "kor_min": -9.0,                # > -1: coin ile BTC 4s getiri korelasyonu (kor_len) en az bu kadar
     "kor_len": 30,
+    "ters_l": None,                 # pd.Series (zaman -> evrende son N mumda ASAGI kirilim yapan coin sayisi); long filtresi
+    "ters_s": None,                 # pd.Series (yukari kirilim yapan coin sayisi); short filtresi
+    "ters_max": -1,                 # >=0: bu sayidan fazlaysa sinyal yok
     "rs_bar": 0,                    # >0: goreli guc (coin getirisi - BTC getirisi, son rs_bar mum)
     "rs_min": 0.0,                  # long: rs > rs_min, short: rs < -rs_min (oran, 0.05 = %5)
     "yeniden_giris": 0,             # >0: basarisiz kirilim cikisindan sonra bu kadar mum icinde seviye geri alinirsa tekrar gir
@@ -579,6 +582,9 @@ def simule_et(symbol: str, df: pd.DataFrame, gunluk: pd.DataFrame | None,
         _bc2 = pd.Series(_b2["close"].to_numpy(float), index=pd.to_datetime(_b2["open_time"])).reindex(ot).reset_index(drop=True)
         kor_dizi = _cs.pct_change().rolling(p["kor_len"]).corr(_bc2.pct_change()).to_numpy()
     fvg_ayi, fvg_boga = [], []   # (alt, ust, bar)
+    TM = p["ters_max"]
+    ters_l = p["ters_l"].reindex(ot).to_numpy(float) if (TM >= 0 and p["ters_l"] is not None) else None
+    ters_s = p["ters_s"].reindex(ot).to_numpy(float) if (TM >= 0 and p["ters_s"] is not None) else None
 
     rs_dizi = np.full(n, np.nan)
     if p["rs_bar"] > 0 and btc_4h is not None and len(btc_4h):
@@ -888,6 +894,10 @@ def simule_et(symbol: str, df: pd.DataFrame, gunluk: pd.DataFrame | None,
                 aday_l = False
             if aday_s and a > 0 and any(f[0] < c[i] and f[1] > c[i] - p["fvg_atr"] * a for f in fvg_boga):
                 aday_s = False
+        if ters_l is not None and aday_l and not (ters_l[i] <= TM):
+            aday_l = False
+        if ters_s is not None and aday_s and not (ters_s[i] <= TM):
+            aday_s = False
         if p["z_max"] > 0:
             zv = z_dizi[i]
             if aday_l and not math.isnan(zv) and zv > p["z_max"]:

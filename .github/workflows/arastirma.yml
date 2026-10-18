@@ -16,7 +16,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        mod: [genislik]
+        mod: [gen2-0, gen2-1, gen2-2]
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
