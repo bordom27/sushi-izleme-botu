@@ -147,6 +147,8 @@ PARAMS = {
     "ters_max": -1, 
     "l_seri": None,                 # pd.Series: long icin genislik olcusu (ayni yon kirilim sayisi / EMA50 ustu orani)
     "l_min": -1.0, 
+    "konf": "",                     # "" | "fib300" | "zirve180" | "zirve360" | "eski_pivot" | "herhangi"
+    "konf_tol": 0.5,                # kirilan seviye diger seviyeye bu kadar ATR yakin olmali
     "olay_zaman": None,             # list[pd.Timestamp] UTC makro olay anlari (FOMC / CPI)
     "olay_once": 0.0, "olay_sonra": 0.0,   # saat: bu araliga kapanisi denk gelen mumda yeni giris yok
     "fg_seri": None,                # pd.Series gunluk Fear&Greed (index = gun, deger o gun KULLANILABILIR deger)
@@ -590,6 +592,29 @@ def simule_et(symbol: str, df: pd.DataFrame, gunluk: pd.DataFrame | None,
         kor_dizi = _cs.pct_change().rolling(p["kor_len"]).corr(_bc2.pct_change()).to_numpy()
     fvg_ayi, fvg_boga = [], []   # (alt, ust, bar)
     TM = p["ters_max"]
+    KONF = p["konf"]
+    if KONF:
+        _h300 = np.concatenate([[np.nan], highest(h, 300)[:-1]]); _l300 = np.concatenate([[np.nan], lowest(l, 300)[:-1]])
+        _h180 = np.concatenate([[np.nan], highest(h, 180)[:-1]]); _l180 = np.concatenate([[np.nan], lowest(l, 180)[:-1]])
+        _h360 = np.concatenate([[np.nan], highest(h, 360)[:-1]]); _l360 = np.concatenate([[np.nan], lowest(l, 360)[:-1]])
+        _ph10 = pivot(h, 10, True); _pl10 = pivot(l, 10, False)
+    def _konf_ok(i, lev, yon, a_):
+        if not KONF or math.isnan(lev) or a_ <= 0:
+            return True
+        tol = p["konf_tol"] * a_
+        sec = []
+        if KONF in ("fib300", "herhangi") and not math.isnan(_h300[i]):
+            rg = _h300[i] - _l300[i]
+            sec += [_l300[i] + r_ * rg for r_ in (0.236, 0.382, 0.5, 0.618, 0.786)]
+        if KONF in ("zirve180", "herhangi"):
+            sec.append(_h180[i] if yon == 1 else _l180[i])
+        if KONF == "zirve360":
+            sec.append(_h360[i] if yon == 1 else _l360[i])
+        if KONF in ("eski_pivot", "herhangi"):
+            j0, j1 = max(0, i - 300), max(0, i - p["resistance_len"])
+            arr = _ph10[j0:j1] if yon == 1 else _pl10[j0:j1]
+            sec += [x for x in arr if not math.isnan(x)]
+        return any((not math.isnan(x)) and abs(x - lev) <= tol for x in sec)
     olay_blok = None
     if p["olay_zaman"]:
         kap_t = (ot + pd.Timedelta(hours=4)).to_numpy()
@@ -915,6 +940,11 @@ def simule_et(symbol: str, df: pd.DataFrame, gunluk: pd.DataFrame | None,
             if aday_l and a > 0 and any(f[1] > c[i] and f[0] < c[i] + p["fvg_atr"] * a for f in fvg_ayi):
                 aday_l = False
             if aday_s and a > 0 and any(f[0] < c[i] and f[1] > c[i] - p["fvg_atr"] * a for f in fvg_boga):
+                aday_s = False
+        if KONF:
+            if aday_l and not _konf_ok(i, resistance[i], 1, a):
+                aday_l = False
+            if aday_s and not _konf_ok(i, support[i], -1, a):
                 aday_s = False
         if olay_blok is not None and olay_blok[i]:
             aday_l = aday_s = False

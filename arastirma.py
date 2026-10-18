@@ -590,7 +590,7 @@ def main():
             print(g.to_string(index=False), flush=True)
         pd.concat(out).to_csv(f"{OUT}/genislik.csv", index=False)
         oran50.to_csv(f"{OUT}/genislik_seri.csv")
-    elif mod.startswith("gen2") or mod.startswith("gen3") or mod in ("gen4", "gen5") or mod.startswith("ek3") or mod.startswith("opt") or mod == "secici":
+    elif mod.startswith("gen2") or mod.startswith("gen3") or mod in ("gen4", "gen5") or mod.startswith("ek3") or mod.startswith("opt") or mod == "secici" or mod.startswith("konf"):
         tick = veri._get("/api/v3/ticker/24hr", {})
         haric = set(COINLER) | STOK_HARIC | {"USDCUSDT", "FDUSDUSDT", "TUSDUSDT", "DAIUSDT", "EURUSDT", "USDPUSDT",
                                 "RLUSDUSDT", "USD1USDT", "PYUSDUSDT", "AEURUSDT", "XUSDUSDT", "BFUSDUSDT",
@@ -614,6 +614,32 @@ def main():
             ka[s_] = pd.Series(np.where(ok, (c_ < ll).astype(float), np.nan), index=ix)
         KU = pd.DataFrame(ku).fillna(0); KA = pd.DataFrame(ka).fillna(0)
         senaryo = [("v6.3 TEMEL", dict(_B3))]
+        if mod.startswith("konf"):
+            GEN30 = ["BTCUSDT", "ETHUSDT", "SOLUSDT", "XRPUSDT", "BNBUSDT", "DOGEUSDT", "ADAUSDT", "TRXUSDT", "LINKUSDT",
+                     "AVAXUSDT", "SUIUSDT", "LTCUSDT", "NEARUSDT", "DOTUSDT", "UNIUSDT", "AAVEUSDT", "BCHUSDT", "ZECUSDT",
+                     "PEPEUSDT", "ENAUSDT", "TIAUSDT", "FILUSDT", "INJUSDT", "WLDUSDT", "TAOUSDT", "ARBUSDT", "OPUSDT",
+                     "APTUSDT", "HBARUSDT", "XLMUSDT"]
+            up6 = (KU[GEN30].rolling(6, min_periods=1).max() > 0).sum(axis=1)
+            B5 = dict(_B3, ters_s=up6, ters_max=0, vol_mult=2.5)
+            senaryo = [("SU ANKI (v6.4 secici)", dict(B5))]
+            for kf in ("fib300", "zirve180", "zirve360", "eski_pivot", "herhangi"):
+                for tol in (0.3, 0.6, 1.0):
+                    senaryo.append((f"cakisma {kf} (tol {tol} ATR)", dict(B5, konf=kf, konf_tol=tol)))
+            parca = int(mod.split("-")[1])
+            senaryo = senaryo[:1] + senaryo[1 + parca::3]
+            DON = [("A", "2024-07-01", "2025-06-30 23:59"), ("B", "2025-07-01", "2026-02-28 23:59"), ("C", "2026-03-01", None)]
+            rows = []
+            with mp.Pool(4) as hv:
+                for ad, prm in senaryo:
+                    tr = calistir(prm, COINLER + yeni, "4h", hv)
+                    row = {"ayar": ad}
+                    for dk, b_, e_ in DON:
+                        for kk, vv in metrik(tr, b_, e_).items():
+                            row[f"{dk}_{kk}"] = vv
+                    rows.append(row)
+                    print(ad, flush=True)
+            pd.DataFrame(rows).to_csv(f"{OUT}/{mod}.csv", index=False)
+            return
         if mod == "secici":
             GEN30 = ["BTCUSDT", "ETHUSDT", "SOLUSDT", "XRPUSDT", "BNBUSDT", "DOGEUSDT", "ADAUSDT", "TRXUSDT", "LINKUSDT",
                      "AVAXUSDT", "SUIUSDT", "LTCUSDT", "NEARUSDT", "DOTUSDT", "UNIUSDT", "AAVEUSDT", "BCHUSDT", "ZECUSDT",
