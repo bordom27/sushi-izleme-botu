@@ -30,3 +30,13 @@ COINLER = [
     "ETHFIUSDT", "BERAUSDT", "AXLUSDT", "PENGUUSDT", "WALUSDT", "DASHUSDT", "AUDIOUSDT", "RAYUSDT",
     "LDOUSDT", "STXUSDT", "ZAMAUSDT", "NXPCUSDT", "SUSDT", "RLCUSDT", "VIRTUALUSDT", "KITEUSDT",
 ]
+
+
+# Piyasa uyumu filtresi (v6.4) icin bakilan 30 buyuk coin. Bunlardan biri son 24 saatte (6 mum)
+# 80 mumluk tepesinin ustunde kapattiysa yeni short sinyali verilmez. TradingView gostergesiyle AYNI liste.
+GENISLIK_COINLER = [
+    "BTCUSDT", "ETHUSDT", "SOLUSDT", "XRPUSDT", "BNBUSDT", "DOGEUSDT", "ADAUSDT", "TRXUSDT", "LINKUSDT",
+    "AVAXUSDT", "SUIUSDT", "LTCUSDT", "NEARUSDT", "DOTUSDT", "UNIUSDT", "AAVEUSDT", "BCHUSDT", "ZECUSDT",
+    "PEPEUSDT", "ENAUSDT", "TIAUSDT", "FILUSDT", "INJUSDT", "WLDUSDT", "TAOUSDT", "ARBUSDT", "OPUSDT",
+    "APTUSDT", "HBARUSDT", "XLMUSDT",
+]

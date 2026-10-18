@@ -125,6 +125,11 @@ PARAMS = {
     # 9) Basarisiz kirilim cikisi (Ekim 2026 testi: ayni kazanc, ~%25 daha kucuk max dusus):
     #    TP1 alinmadan, girisin ilk 3 mumunda kapanis kirilan seviyenin 0.3 ATR gerisine
     #    donerse stopu beklemeden kapanista cik.
+    # 19) Piyasa uyumu (v6.4, Ekim 2026): son genislik_bar mumda GENISLIK_COINLER'den herhangi biri
+    #     80 mumluk tepesinin ustunde kapattiysa yeni SHORT acilmaz (piyasa tek yonlu dususte degil).
+    "genislik_filtre": True,
+    "genislik_bar": 6,
+    "genislik_max": 0,
     "basarisiz_cikis": True,
     "bc_bar": 3,
     "bc_atr": 0.15,
@@ -365,10 +370,29 @@ class Sonuc:
 # ------------------------------------------------------------------------------------
 # ANA SIMULASYON
 # ------------------------------------------------------------------------------------
+def genislik_serisi(veriler: dict, liste: list, bar: int = 6, R: int = 80) -> pd.Series:
+    """Her 4s mum icin: listedeki coinlerden kacinin son `bar` mumda R-mumluk tepesinin ustunde kapattigi."""
+    kolon = {}
+    for s in liste:
+        df = veriler.get(s)
+        if df is None or len(df) <= R:
+            continue
+        h = df["high"].to_numpy(float)
+        c = df["close"].to_numpy(float)
+        hh = pd.Series(h).rolling(R).max().shift(1).to_numpy()
+        kir = np.where(np.arange(len(c)) >= R, (c > hh).astype(float), 0.0)
+        kolon[s] = pd.Series(kir, index=pd.to_datetime(df["open_time"]))
+    if not kolon:
+        return pd.Series(dtype=float)
+    m = pd.DataFrame(kolon).sort_index().fillna(0)
+    return (m.rolling(bar, min_periods=1).max() > 0).sum(axis=1).astype(float)
+
+
 def simule_et(symbol: str, df: pd.DataFrame, gunluk: pd.DataFrame | None,
               btc_gunluk: pd.DataFrame | None, btc_4h: pd.DataFrame | None,
               haftalik: pd.DataFrame | None = None, params: dict | None = None,
-              giris_bas: pd.Timestamp | None = None, giris_bit: pd.Timestamp | None = None) -> Sonuc:
+              giris_bas: pd.Timestamp | None = None, giris_bit: pd.Timestamp | None = None,
+              genislik: pd.Series | None = None) -> Sonuc:
     """
     df          : grafik TF (4 saat) - SADECE KAPANMIS mumlar. Kolonlar: open_time, open, high, low, close, volume
     gunluk      : coinin gunluk mumlari (Coin > EMA200 / ana trend / gunluk MACD icin)
@@ -376,6 +400,7 @@ def simule_et(symbol: str, df: pd.DataFrame, gunluk: pd.DataFrame | None,
     btc_4h      : BTCUSDT grafik TF (ani hareket / panik elegi)
     haftalik    : coinin haftalik mumlari (sadece haftalik MACD / ana trend aciksa gerekir)
     giris_bas/bit: sadece bu aralikta yeni islem acilir (test icin)
+    genislik    : genislik_serisi() ciktisi (verilmezse piyasa uyumu filtresi uygulanmaz)
     """
     p = dict(PARAMS)
     if params:
@@ -400,6 +425,7 @@ def simule_et(symbol: str, df: pd.DataFrame, gunluk: pd.DataFrame | None,
     df = df.reset_index(drop=True)
     n = len(df)
     ot = pd.to_datetime(df["open_time"])
+    gen_dizi = genislik.reindex(ot).to_numpy(float) if (p["genislik_filtre"] and genislik is not None and len(genislik)) else None
     o = df["open"].to_numpy(float)
     h = df["high"].to_numpy(float)
     l = df["low"].to_numpy(float)
@@ -616,6 +642,8 @@ def simule_et(symbol: str, df: pd.DataFrame, gunluk: pd.DataFrame | None,
         c_oynak = max_atr_pct <= 0 or (a / c[i] * 100) <= max_atr_pct
         aday_l = bool(long_set and c_brk_l and c_vol and c_uzama_l and c_taban and c_oynak and yum_ok_l)
         aday_s = bool(short_set and c_brk_s and c_vol and c_uzama_s and c_taban and c_oynak and yum_ok_s)
+        if gen_dizi is not None and aday_s and not (gen_dizi[i] <= p["genislik_max"]):
+            aday_s = False
 
         # kalite skoru
         s1 = (not math.isnan(vol_oran)) and vol_oran >= p["strong_vol_mult"]

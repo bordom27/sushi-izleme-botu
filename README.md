@@ -48,6 +48,13 @@ Eski 60 ayar, kırılım kapanışında giriş yapan v6.2 üzerinde yeniden tara
 116 coin: eğitim +52.0R → +57.8R, test +44.7R → +54.2R; en kötü düşüş 14.3R → 12.5R. Hem eski 46 coinde hem yeni 70 coinde ayrı ayrı iyileşiyor.
 Test edilip **eklenmeyenler**: göreli güç (BTC'ye göre), başarısız kırılım sonrası yeniden giriş, coin bazlı sicil, giriş saati / haftanın günü, direnç penceresi 30–500 (80 en iyi), long için BTC EMA alternatifleri, üst direnç mesafesi, kırılan seviyenin yaşı.
 
+## v6.4: Piyasa uyumu filtresi (Ekim 2026)
+Piyasa genişliği araştırması: bir short sinyali geldiğinde, aynı anda başka coinler yukarı kırılım yapıyorsa short'lar belirgin şekilde kötü sonuçlanıyor (piyasa tek yönlü düşmüyor, short sıkışması riski).
+Kural: `GENISLIK_COINLER`'deki 30 büyük coinden herhangi biri son 6 mumda (24 saat) 80 mumluk tepesinin üstünde kapattıysa **yeni short açılmaz**. Long'lar etkilenmez.
+116 coin: eğitim +60.3R → +63.4R, test +53.1R → +65.7R; test isabeti %55.9 → %61.2. 20 / 30 / 40 / 116 coinlik sayım evrenlerinin hepsinde ve 3 / 6 / 9 mumluk pencerelerde iki dönemde de iyileşiyor; 5 yarıyılın 4'ünde daha iyi.
+"En fazla 1 coin" gibi gevşek eşikler iyileştirmiyor: kural "hiç ters kırılım yok" olarak çalışıyor.
+Ayrıca test edilip eklenmeyenler: ortalamaya dönüş sistemi (48 varyasyon, hepsi zararda), momentum rotasyonu (tutarsız, %35–55 düşüş), dinamik RSI, z-skor, verimlilik oranı, choppiness, FVG, BTC korelasyonu.
+
 ## Liste genişletme (Ekim 2026)
 Binance'teki ~615 USDT paritesi hacim sırasına göre katmanlara ayrılıp v6.3 ile test edildi. İlk ~70 (46 dışı) katman iki dönemde de kârlı; daha düşük hacimli katmanlarda test kazancı sıfıra yaklaşıyor (ve kayma maliyeti artıyor). Bu yüzden **kurala göre** 56 coin eklendi (hacim ≥ ~2.4M$, ≥ 6 ay geçmiş, stablecoin / tokenize hisse / altın hariç), geçmiş başarıya göre seçim yapılmadı (coin bazlı başarı dönemden döneme taşınmıyor, korelasyon ~0).
 102 coin: eğitim +59.2R, test +52.9R (46 coin: +46.7R / +33.1R).

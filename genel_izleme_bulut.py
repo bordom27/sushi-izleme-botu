@@ -34,7 +34,7 @@ import requests
 
 import kirilim_v6 as k
 import veri
-from coin_listesi import COINLER
+from coin_listesi import COINLER, GENISLIK_COINLER
 
 CONFIG = {
     "COINLER": COINLER,
@@ -396,10 +396,22 @@ def main():
     bildirilen = set(bildirilen_liste)
     hatali = []
 
+    # v6.4 piyasa uyumu: 30 buyuk coinin son 6 mumdaki yukari kirilimlari (short filtresi)
+    gen_veri = {}
+    for gs in GENISLIK_COINLER:
+        try:
+            gen_veri[gs] = btc_4h if gs == "BTCUSDT" else veri.mumlar_onbellekli(gs, "4h", cfg["VERI_BAS_4H"])
+        except Exception as exc:
+            print(f"genislik verisi yok {gs}: {exc}", flush=True)
+        time.sleep(cfg["ISTEK_BEKLEME"])
+    if len(gen_veri) < len(GENISLIK_COINLER) - 3:
+        raise RuntimeError("Genislik (piyasa uyumu) verisi eksik, calistirma iptal.")
+    genislik = k.genislik_serisi(gen_veri, GENISLIK_COINLER, k.PARAMS["genislik_bar"], k.PARAMS["resistance_len"])
+
     onceki_semboller = set(state["son_bar"])
     for sym in cfg["COINLER"]:
         try:
-            df = btc_4h if sym == "BTCUSDT" else veri.mumlar_onbellekli(sym, "4h", cfg["VERI_BAS_4H"])
+            df = gen_veri[sym] if sym in gen_veri else veri.mumlar_onbellekli(sym, "4h", cfg["VERI_BAS_4H"])
             gd = btc_d if sym == "BTCUSDT" else None   # coin gunlugu sadece "Coin > EMA200" ayarinda gerekir
             if k.PARAMS["long_sart"] in ("Coin > EMA200", "BTC ve coin > EMA200") and sym != "BTCUSDT":
                 gd = veri.mumlar_onbellekli(sym, "1d", cfg["VERI_BAS_1D"])
@@ -407,14 +419,15 @@ def main():
             if len(df) < 120:
                 print(f"{sym}: yetersiz veri ({len(df)} mum), atlandi")
                 continue
-            r = k.simule_et(sym, df, gd, btc_d, btc_4h)
+            r = k.simule_et(sym, df, gd, btc_d, btc_4h, genislik=genislik)
             sonuclar[sym] = r
         except Exception as exc:
             print(f"{sym} hata: {exc}", flush=True)
             hatali.append(sym)
             continue
         finally:
-            time.sleep(cfg["ISTEK_BEKLEME"])
+            if sym not in gen_veri:
+                time.sleep(cfg["ISTEK_BEKLEME"])
 
         son_bar_onceki = state["son_bar"].get(sym)
         if son_bar_onceki is not None:
@@ -487,6 +500,10 @@ def main():
     e50 = k.ema(btc_c, 50)[-1]
     btc_bilgi = (f"BTC (günlük kapanış {fmt(btc_c[-1])}): EMA50 {'üstünde' if btc_c[-1] > e50 else 'altında'}, "
                  f"EMA200 {'üstünde → long açık' if btc_c[-1] > e200 else 'altında → yeni long yok, sadece short'}")
+    if len(genislik):
+        gn = int(genislik.iloc[-1])
+        btc_bilgi += (f"\nPiyasa uyumu: son 24 saatte {gn} büyük coin (30'dan) yukarı kırılım yaptı → "
+                      + ("yeni short açılmaz" if gn > k.PARAMS["genislik_max"] else "short sinyalleri açık"))
 
     eklenen = [x for x in sonuclar if x not in onceki_semboller]
     if not ilk_calisma and eklenen:
@@ -505,9 +522,10 @@ def main():
     parmak = hashlib.md5(json.dumps(k.PARAMS, sort_keys=True).encode()).hexdigest()[:10]
     if not ilk_calisma and state.get("ayar_parmak_izi") != parmak:
         acik = [(s, r.acik) for s, r in sonuclar.items() if r.acik]
-        satir = ["⚙️ Sistem ayarları güncellendi (v6.3): TP1'de pozisyonun %90'ı kapatılır (eski %70), "
-                 "başarısız kırılım çıkışı seviyenin 0.15 ATR gerisi (eski 0.3), max stop 3.5 ATR (eski 3.0). "
-                 "Testte: +44.7R → +54.2R, en kötü düşüş 14.3R → 12.5R.", btc_bilgi]
+        satir = ["⚙️ Sistem güncellendi (v6.4 - piyasa uyumu filtresi): 30 büyük coinden herhangi biri son 24 saatte "
+                 "80 mumluk tepesinin üstünde kapattıysa yeni SHORT sinyali verilmez (piyasa tek yönlü düşmüyor demektir). "
+                 "Testte: eğitim +60.3R → +63.4R, test +53.1R → +65.7R, test isabeti %56 → %61. Long sinyalleri değişmedi.",
+                 btc_bilgi]
         if acik:
             satir.append("Açık pozisyonlar (yeni kurallara göre; giriş zamanı geçmiş olabilir, sadece bilgi):")
             for s, a in acik:

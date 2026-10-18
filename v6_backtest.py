@@ -24,7 +24,7 @@ import requests
 
 import kirilim_v6 as k
 import veri
-from coin_listesi import COINLER
+from coin_listesi import COINLER, GENISLIK_COINLER
 
 VERI_BAS_4H = "2023-06-01"
 VERI_BAS_1D = "2019-06-01"
@@ -48,10 +48,18 @@ def veri_topla(semboller, veri_bas_4h=VERI_BAS_4H):
 
 def calistir(data, btc_d, btc_4h, params=None, bas=None, bit=None):
     tum = []
+    gen_veri = {s: df for s, (df, gd) in data.items() if s in GENISLIK_COINLER}
+    eksik = [s for s in GENISLIK_COINLER if s not in gen_veri]
+    for s in eksik:
+        try:
+            gen_veri[s] = veri.mumlar_onbellekli(s, "4h", VERI_BAS_4H)
+        except Exception as exc:
+            print(f"genislik verisi yok {s}: {exc}", flush=True)
+    genislik = k.genislik_serisi(gen_veri, GENISLIK_COINLER, k.PARAMS["genislik_bar"], k.PARAMS["resistance_len"])
     for s, (df, gd) in data.items():
         if len(df) < 120:
             continue
-        r = k.simule_et(s, df, gd, btc_d, btc_4h, params=params,
+        r = k.simule_et(s, df, gd, btc_d, btc_4h, params=params, genislik=genislik,
                         giris_bas=pd.Timestamp(bas) if bas else None,
                         giris_bit=pd.Timestamp(bit) if bit else None)
         tum.extend(r.islemler)
