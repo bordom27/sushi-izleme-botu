@@ -1,0 +1,7 @@
+F&G 3178 2018-02-02 00:00:00 2026-10-19 00:00:00
+v6.4 TEMEL
+makro: FOMC/CPI 8s once - 8s sonra giris yok
+makro: sadece FOMC 8s/8s
+F&G: asiri korkuda (<25) short yok
+F&G: long sadece >=50, short sadece <=50
+Hurst(200) >= 0.5
