@@ -94,7 +94,7 @@ resistanceLen   = input.int(80, "Direnc / destek lookback", minval=2, group=G_BR
 breakBufAtr     = input.float(0.1, "Kirilim tamponu (ATR)", minval=0.0, step=0.05, group=G_BRK)
 useVolumeFilter = input.bool(true, "Hacim filtresi", group=G_BRK)
 volLen          = input.int(20, "Hacim ortalamasi", minval=1, group=G_BRK)
-volMult         = input.float(2.0, "Hacim esigi (x ortalama)", minval=0.1, step=0.1, group=G_BRK)
+volMult         = input.float(2.5, "Hacim esigi (x ortalama)", minval=0.1, step=0.1, group=G_BRK)
 strongVolMult   = input.float(2.0, "Guclu kirilim hacmi (x ortalama)", minval=0.5, step=0.1, group=G_BRK)
 minClosePos     = input.float(0.6, "Mum kapanis gucu (0-1)", minval=0.0, maxval=1.0, step=0.05, group=G_BRK, tooltip="Long: kapanis mum araliginin en az %60'inda. Short: en fazla %40'inda (uzun ters fitilli kirilim reddedilir).")
 maxCandleRangeAtr = input.float(3.0, "Max mum araligi (ATR)", minval=0.1, step=0.1, group=G_BRK)
@@ -108,7 +108,7 @@ failAtr         = input.float(0.5, "Sahte kirilim esigi (ATR)", minval=0.0, step
 cooldownBars    = input.int(3, "Stop sonrasi cooldown (mum)", minval=0, group=G_BRK)
 
 // ---------------------------------------------------------------- 5) Fib
-useFib       = input.bool(true, "Fib 0.618 yapi filtresi", group=G_FIB, tooltip="Long: yukselis bacaginda geri cekilme 0.618 altina inmemis olmali. Short: dusus bacaginda tepki yukselisi 0.618 ustune cikmamis olmali.")
+useFib       = input.bool(false, "Fib 0.618 yapi filtresi", group=G_FIB, tooltip="Long: yukselis bacaginda geri cekilme 0.618 altina inmemis olmali. Short: dusus bacaginda tepki yukselisi 0.618 ustune cikmamis olmali.")
 fibLen       = input.int(89, "Fib swing lookback", minval=10, group=G_FIB)
 useFibTp     = input.bool(true, "TP'leri fib seviyelerine oturt", group=G_FIB)
 showFib      = input.bool(true, "Guncel fib seviyelerini ciz", group=G_FIB)
@@ -176,6 +176,7 @@ useDynAlert = input.bool(true, "Dinamik alarm mesaji (alert())", group=G_ALR, to
 useGenislik = input.bool(true, "Piyasa uyumu: buyuk coinler yukari kiriyorsa SHORT verme", group=G_MKT, tooltip="30 buyuk coinden herhangi biri son N mumda 80 mumluk tepesinin ustunde kapattiysa yeni short sinyali uretilmez (sadece kripto). Ekim 2026 testi: egitim +60.3R -> +63.4R, test +53.1R -> +65.7R, test isabeti %56 -> %61. Telegram botuyla ayni liste.")
 genBar      = input.int(6, "Piyasa uyumu: son N mum", minval=1, group=G_MKT)
 genMax      = input.int(0, "Piyasa uyumu: izin verilen yukari kiran coin sayisi", minval=0, group=G_MKT)
+sadeGorunum = input.bool(true, "Sade gorunum: sadece direnc / destek + giris oklari", group=G_VIS, tooltip="Acikken EMA'lar, zemin rengi, fib / pivot seviyeleri, etiketler ve diger isaretler cizilmez. Pozisyon bilgisi panelde. Kapatinca eski ayrintili gorunum.")
 
 // Profil etkisi
 bool yuksekIsabet = profil == "Yuksek isabet (deneysel)"
@@ -946,9 +947,9 @@ f_enCok(int[] arr, int n) =>
 // ============================================================================
 plot(resistance, color=color.new(color.red, 0), title="Direnc", linewidth=1)
 plot(support, color=color.new(color.green, 0), title="Destek", linewidth=1)
-plot(emaFast, color=color.new(color.yellow, 40), title="Hizli EMA", linewidth=1)
-plot(trendEma, color=color.new(color.purple, 20), title="Trend EMA", linewidth=1)
-plot(pendAktif and not posOpen ? pendSeviye : na, color=pendDir == 1 ? color.new(color.yellow, 0) : color.new(color.fuchsia, 0), title="Retest seviyesi", linewidth=2, style=plot.style_linebr)
+plot(emaFast, color=color.new(color.yellow, 40), title="Hizli EMA", linewidth=1, display=sadeGorunum ? display.none : display.all)
+plot(trendEma, color=color.new(color.purple, 20), title="Trend EMA", linewidth=1, display=sadeGorunum ? display.none : display.all)
+plot(pendAktif and not posOpen ? pendSeviye : na, color=pendDir == 1 ? color.new(color.yellow, 0) : color.new(color.fuchsia, 0), title="Retest seviyesi", linewidth=2, style=plot.style_linebr, display=sadeGorunum ? display.none : display.all)
 
 color bgRenk = na
 if pendAktif and not posOpen
@@ -957,33 +958,33 @@ else if longSet and not posOpen and (proxAtr <= 0 or (close <= resistance and cl
     bgRenk := color.new(color.green, 88)
 else if shortSet and not posOpen and (proxAtr <= 0 or (close >= support and close <= support + proxAtr * atrVal))
     bgRenk := color.new(color.red, 88)
-bgcolor(bgRenk, title="Durum zemini")
+bgcolor(sadeGorunum ? na : bgRenk, title="Durum zemini")
 
-pEntry = plot(posOpen ? posEntry : na, title="Aktif giris", color=color.new(color.gray, 30), linewidth=1, style=plot.style_linebr)
-pStop  = plot(posOpen ? posStop : na, title="Aktif stop", color=color.new(color.orange, 0), linewidth=2, style=plot.style_linebr)
-pTp1   = plot(posOpen and not tp1Done ? posTp1 : na, title="Aktif TP1", color=color.new(color.teal, 0), linewidth=1, style=plot.style_linebr)
-pTp2   = plot(posOpen ? posTp2 : na, title="Aktif TP2", color=color.new(color.blue, 0), linewidth=1, style=plot.style_linebr)
-fill(pEntry, pStop, color=color.new(color.red, 92), title="Risk bolgesi")
-fill(pEntry, pTp2, color=color.new(color.green, 92), title="Odul bolgesi")
+pEntry = plot(posOpen ? posEntry : na, title="Aktif giris", color=color.new(color.gray, 30), linewidth=1, style=plot.style_linebr, display=sadeGorunum ? display.none : display.all)
+pStop  = plot(posOpen ? posStop : na, title="Aktif stop", color=color.new(color.orange, 0), linewidth=2, style=plot.style_linebr, display=sadeGorunum ? display.none : display.all)
+pTp1   = plot(posOpen and not tp1Done ? posTp1 : na, title="Aktif TP1", color=color.new(color.teal, 0), linewidth=1, style=plot.style_linebr, display=sadeGorunum ? display.none : display.all)
+pTp2   = plot(posOpen ? posTp2 : na, title="Aktif TP2", color=color.new(color.blue, 0), linewidth=1, style=plot.style_linebr, display=sadeGorunum ? display.none : display.all)
+fill(pEntry, pStop, color=sadeGorunum ? na : color.new(color.red, 92), title="Risk bolgesi")
+fill(pEntry, pTp2, color=sadeGorunum ? na : color.new(color.green, 92), title="Odul bolgesi")
 
 pivotHighVal = ta.pivothigh(high, pivotBars, pivotBars)
 pivotLowVal  = ta.pivotlow(low, pivotBars, pivotBars)
-plotshape(showPivots and not na(pivotHighVal), style=shape.labeldown, location=location.abovebar, color=color.new(color.purple, 0), text="P", textcolor=color.white, size=size.tiny, offset=-pivotBars, title="Buyuk swing tepe")
-plotshape(showPivots and not na(pivotLowVal), style=shape.labelup, location=location.belowbar, color=color.new(color.aqua, 0), text="D", textcolor=color.black, size=size.tiny, offset=-pivotBars, title="Buyuk swing dip")
+plotshape(not sadeGorunum and showPivots and not na(pivotHighVal), style=shape.labeldown, location=location.abovebar, color=color.new(color.purple, 0), text="P", textcolor=color.white, size=size.tiny, offset=-pivotBars, title="Buyuk swing tepe")
+plotshape(not sadeGorunum and showPivots and not na(pivotLowVal), style=shape.labelup, location=location.belowbar, color=color.new(color.aqua, 0), text="D", textcolor=color.black, size=size.tiny, offset=-pivotBars, title="Buyuk swing dip")
 
 plotshape(yeniGiris and posDir == 1, style=shape.triangleup, location=location.belowbar, color=color.lime, size=size.small, title="LONG giris")
 plotshape(yeniGiris and posDir == -1, style=shape.triangledown, location=location.abovebar, color=color.fuchsia, size=size.small, title="SHORT giris")
-plotshape(kirilimIsaretL, style=shape.diamond, location=location.belowbar, color=color.new(color.yellow, 0), size=size.tiny, title="Long kirilim (retest bekleniyor)")
-plotshape(kirilimIsaretS, style=shape.diamond, location=location.abovebar, color=color.new(color.fuchsia, 0), size=size.tiny, title="Short kirilim (retest bekleniyor)")
-plotshape(sahteKirilim, style=shape.xcross, location=location.belowbar, color=color.new(color.gray, 0), size=size.tiny, title="Sahte kirilim (iptal)")
-plotshape(reddedildi, style=shape.square, location=location.belowbar, color=color.new(color.gray, 20), size=size.tiny, title="Reddedilen kirilim")
-plotshape(yoksayilan, style=shape.circle, location=location.belowbar, color=color.new(color.gray, 40), size=size.tiny, title="Yoksayilan kirilim (pozisyon acik)")
-plotshape(stopHit, style=shape.xcross, location=location.abovebar, color=color.red, size=size.small, title="Stop")
-plotshape(tp1Hit, style=shape.circle, location=location.abovebar, color=color.orange, size=size.small, title="TP1")
-plotshape(tp2Hit, style=shape.circle, location=location.abovebar, color=color.blue, size=size.small, title="TP2")
-plotshape(zamanCikis or trendCikis or basarisizCikis, style=shape.square, location=location.abovebar, color=color.purple, size=size.tiny, title="Zaman / trend / basarisiz kirilim cikisi")
+plotshape(not sadeGorunum and (kirilimIsaretL), style=shape.diamond, location=location.belowbar, color=color.new(color.yellow, 0), size=size.tiny, title="Long kirilim (retest bekleniyor)")
+plotshape(not sadeGorunum and (kirilimIsaretS), style=shape.diamond, location=location.abovebar, color=color.new(color.fuchsia, 0), size=size.tiny, title="Short kirilim (retest bekleniyor)")
+plotshape(not sadeGorunum and (sahteKirilim), style=shape.xcross, location=location.belowbar, color=color.new(color.gray, 0), size=size.tiny, title="Sahte kirilim (iptal)")
+plotshape(not sadeGorunum and (reddedildi), style=shape.square, location=location.belowbar, color=color.new(color.gray, 20), size=size.tiny, title="Reddedilen kirilim")
+plotshape(not sadeGorunum and (yoksayilan), style=shape.circle, location=location.belowbar, color=color.new(color.gray, 40), size=size.tiny, title="Yoksayilan kirilim (pozisyon acik)")
+plotshape(not sadeGorunum and (stopHit), style=shape.xcross, location=location.abovebar, color=color.red, size=size.small, title="Stop")
+plotshape(not sadeGorunum and (tp1Hit), style=shape.circle, location=location.abovebar, color=color.orange, size=size.small, title="TP1")
+plotshape(not sadeGorunum and (tp2Hit), style=shape.circle, location=location.abovebar, color=color.blue, size=size.small, title="TP2")
+plotshape(not sadeGorunum and (zamanCikis or trendCikis or basarisizCikis), style=shape.square, location=location.abovebar, color=color.purple, size=size.tiny, title="Zaman / trend / basarisiz kirilim cikisi")
 
-if showValues and yeniGiris
+if showValues and yeniGiris and not sadeGorunum
     bool eL = posDir == 1
     float rp = posRisk / posEntry * 100
     string t = (eL ? "LONG " : "SHORT ") + posTip + " | Kalite " + posKalite + "\n" + str.tostring(posEntry, format.mintick)
@@ -996,10 +997,10 @@ if showValues and yeniGiris
     else
         label.new(bar_index, high, t, style=label.style_label_down, color=color.new(color.fuchsia, 20), textcolor=color.white, size=size.small)
 
-if showRejects and reddedildi
+if showRejects and reddedildi and not sadeGorunum
     label.new(bar_index, girisDir == 1 ? low : high, "RED (" + (girisDir == 1 ? "L" : "S") + "): " + redNedeni, style=girisDir == 1 ? label.style_label_up : label.style_label_down, color=color.new(color.gray, 30), textcolor=color.white, size=size.tiny)
 
-if showValues and not na(islemSonucR)
+if showValues and not na(islemSonucR) and not sadeGorunum
     string neden = stopHit ? (tp1Done ? "STOP (TP1 sonrasi)" : "STOP") : tp2Hit ? "TP2" : basarisizCikis ? "BASARISIZ KIRILIM" : zamanCikis ? "ZAMAN STOPU" : "TREND CIKISI"
     color lc = islemSonucR > 0 ? color.new(color.blue, 20) : color.new(color.red, 20)
     string yt = (cikanDir == 1 ? "LONG " : "SHORT ") + neden + "\n" + str.tostring(cikisFiyat, format.mintick) + "\nIslem: " + str.tostring(islemSonucR, "#.##") + "R"
@@ -1008,7 +1009,7 @@ if showValues and not na(islemSonucR)
     else
         label.new(bar_index, low, yt, style=label.style_label_up, color=lc, textcolor=color.white, size=size.small)
 
-if showValues and tp1Hit and not tp2Hit and na(islemSonucR)
+if showValues and tp1Hit and not tp2Hit and na(islemSonucR) and not sadeGorunum
     label.new(bar_index, posDir == 1 ? high : low, "TP1 " + str.tostring(posTp1, format.mintick) + "\nstop -> basabas+", style=posDir == 1 ? label.style_label_down : label.style_label_up, color=color.new(color.orange, 20), textcolor=color.black, size=size.tiny)
 
 // ---------------------------------------------------------------- Fib + pivot seviyeleri (son mumda)
@@ -1030,7 +1031,7 @@ if barstate.islast
         label.delete(array.pop(fibEt))
     int x1 = math.max(bar_index - fibLen, 0)
     int x2 = bar_index + 5
-    if showFib and fibGecerli
+    if showFib and fibGecerli and not sadeGorunum
         for r in GERI
             float lv = yukariBacak ? fibHigh - r * fibRange : fibLow + r * fibRange
             [lA, lbA] = f_seviye(lv, "Fib " + str.tostring(r), x1, x2, r == 0.618 or r == 0.5)
@@ -1048,7 +1049,7 @@ if barstate.islast
                 [lE, lbE] = f_seviye(lv, "Fib ext " + str.tostring(e), x1, x2, e == 1.618)
                 array.push(fibCiz, lE)
                 array.push(fibEt, lbE)
-    if showDirenc
+    if showDirenc and not sadeGorunum
         float[] ust = array.new_float()
         for v in direncler
             if v > close
