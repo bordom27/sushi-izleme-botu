@@ -590,7 +590,7 @@ def main():
             print(g.to_string(index=False), flush=True)
         pd.concat(out).to_csv(f"{OUT}/genislik.csv", index=False)
         oran50.to_csv(f"{OUT}/genislik_seri.csv")
-    elif mod.startswith("gen2") or mod.startswith("gen3") or mod == "gen4":
+    elif mod.startswith("gen2") or mod.startswith("gen3") or mod in ("gen4", "gen5"):
         tick = veri._get("/api/v3/ticker/24hr", {})
         haric = set(COINLER) | STOK_HARIC | {"USDCUSDT", "FDUSDUSDT", "TUSDUSDT", "DAIUSDT", "EURUSDT", "USDPUSDT",
                                 "RLUSDUSDT", "USD1USDT", "PYUSDUSDT", "AEURUSDT", "XUSDUSDT", "BFUSDUSDT",
@@ -614,6 +614,40 @@ def main():
             ka[s_] = pd.Series(np.where(ok, (c_ < ll).astype(float), np.nan), index=ix)
         KU = pd.DataFrame(ku).fillna(0); KA = pd.DataFrame(ka).fillna(0)
         senaryo = [("v6.3 TEMEL", dict(_B3))]
+        if mod == "gen5":
+            GEN30 = ["BTCUSDT", "ETHUSDT", "SOLUSDT", "XRPUSDT", "BNBUSDT", "DOGEUSDT", "ADAUSDT", "TRXUSDT", "LINKUSDT",
+                     "AVAXUSDT", "SUIUSDT", "LTCUSDT", "NEARUSDT", "DOTUSDT", "UNIUSDT", "AAVEUSDT", "BCHUSDT", "ZECUSDT",
+                     "PEPEUSDT", "ENAUSDT", "TIAUSDT", "FILUSDT", "INJUSDT", "WLDUSDT", "TAOUSDT", "ARBUSDT", "OPUSDT",
+                     "APTUSDT", "HBARUSDT", "XLMUSDT"]
+            up6 = (KU[GEN30].rolling(6, min_periods=1).max() > 0).sum(axis=1)
+            B4 = dict(_B3, ters_s=up6, ters_max=0)        # v6.4 temel
+            u50 = {}
+            for s_ in GEN30:
+                df_ = DATA["4h"][s_][0]
+                c_ = df_["close"].to_numpy(float)
+                u50[s_] = pd.Series(np.where(np.arange(len(c_)) >= 60, (c_ > k.ema(c_, 50)).astype(float), np.nan),
+                                    index=pd.to_datetime(df_["open_time"]))
+            U = pd.DataFrame(u50).reindex(KU.index)
+            oran = U.mean(axis=1) * 100
+            senaryo = [("v6.4 TEMEL", dict(B4))]
+            for N in (6, 12):
+                up = (KU[GEN30].rolling(N, min_periods=1).max() > 0).sum(axis=1)
+                for mn in (1, 2, 3, 5):
+                    senaryo.append((f"long: son {N} mumda en az {mn} buyuk coin yukari kirmis", dict(B4, l_seri=up, l_min=mn)))
+            for mn in (40, 50, 60, 70, 80):
+                senaryo.append((f"long: buyuk coinlerin en az %{mn}'i EMA50 ustunde", dict(B4, l_seri=oran, l_min=mn)))
+            dn6 = (KA[GEN30].rolling(6, min_periods=1).max() > 0).sum(axis=1)
+            senaryo.append(("long: son 6 mumda asagi kiran buyuk coin yok (ayna)", dict(B4, ters_l=dn6)))
+            parca = int(mod.split("-")[1]) if "-" in mod else 0
+            rows = []
+            with mp.Pool(4) as hv:
+                for ad, prm in senaryo:
+                    tr = calistir(prm, COINLER + yeni, "4h", hv)
+                    for etiket, x in (("46", tr[tr.symbol.isin(COINLER)]), ("YENI", tr[tr.symbol.isin(yeni)]), ("HEPSI", tr)):
+                        rows.append(satir(f"{ad} [{etiket}]", x))
+                    print(ad, flush=True)
+            pd.DataFrame(rows).to_csv(f"{OUT}/gen5.csv", index=False)
+            return
         if mod == "gen4":
             GEN30 = ["BTCUSDT", "ETHUSDT", "SOLUSDT", "XRPUSDT", "BNBUSDT", "DOGEUSDT", "ADAUSDT", "TRXUSDT", "LINKUSDT",
                      "AVAXUSDT", "SUIUSDT", "LTCUSDT", "NEARUSDT", "DOTUSDT", "UNIUSDT", "AAVEUSDT", "BCHUSDT", "ZECUSDT",

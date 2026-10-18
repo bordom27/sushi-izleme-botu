@@ -144,7 +144,9 @@ PARAMS = {
     "kor_len": 30,
     "ters_l": None,                 # pd.Series (zaman -> evrende son N mumda ASAGI kirilim yapan coin sayisi); long filtresi
     "ters_s": None,                 # pd.Series (yukari kirilim yapan coin sayisi); short filtresi
-    "ters_max": -1,                 # >=0: bu sayidan fazlaysa sinyal yok
+    "ters_max": -1, 
+    "l_seri": None,                 # pd.Series: long icin genislik olcusu (ayni yon kirilim sayisi / EMA50 ustu orani)
+    "l_min": -1.0,                  # >=0: l_seri bu degerin altindaysa long yok                # >=0: bu sayidan fazlaysa sinyal yok
     "rs_bar": 0,                    # >0: goreli guc (coin getirisi - BTC getirisi, son rs_bar mum)
     "rs_min": 0.0,                  # long: rs > rs_min, short: rs < -rs_min (oran, 0.05 = %5)
     "yeniden_giris": 0,             # >0: basarisiz kirilim cikisindan sonra bu kadar mum icinde seviye geri alinirsa tekrar gir
@@ -583,6 +585,7 @@ def simule_et(symbol: str, df: pd.DataFrame, gunluk: pd.DataFrame | None,
         kor_dizi = _cs.pct_change().rolling(p["kor_len"]).corr(_bc2.pct_change()).to_numpy()
     fvg_ayi, fvg_boga = [], []   # (alt, ust, bar)
     TM = p["ters_max"]
+    l_dizi = p["l_seri"].reindex(ot).to_numpy(float) if (p["l_min"] >= 0 and p["l_seri"] is not None) else None
     ters_l = p["ters_l"].reindex(ot).to_numpy(float) if (TM >= 0 and p["ters_l"] is not None) else None
     ters_s = p["ters_s"].reindex(ot).to_numpy(float) if (TM >= 0 and p["ters_s"] is not None) else None
 
@@ -894,6 +897,8 @@ def simule_et(symbol: str, df: pd.DataFrame, gunluk: pd.DataFrame | None,
                 aday_l = False
             if aday_s and a > 0 and any(f[0] < c[i] and f[1] > c[i] - p["fvg_atr"] * a for f in fvg_boga):
                 aday_s = False
+        if l_dizi is not None and aday_l and not (l_dizi[i] >= p["l_min"]):
+            aday_l = False
         if ters_l is not None and aday_l and not (ters_l[i] <= TM):
             aday_l = False
         if ters_s is not None and aday_s and not (ters_s[i] <= TM):
