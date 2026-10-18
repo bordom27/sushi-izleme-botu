@@ -1,0 +1,6 @@
+SU ANKI (v6.4 secici)
+cakisma fib300 (tol 0.6 ATR)
+cakisma zirve180 (tol 0.6 ATR)
+cakisma zirve360 (tol 0.6 ATR)
+cakisma eski_pivot (tol 0.6 ATR)
+cakisma herhangi (tol 0.6 ATR)
