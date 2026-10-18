@@ -1,0 +1,8 @@
+F&G 3178 2018-02-02 00:00:00 2026-10-19 00:00:00
+v6.4 TEMEL
+makro: FOMC/CPI 4s once - 4s sonra giris yok
+makro: FOMC/CPI 12s once - 24s sonra giris yok
+F&G: >80 long yok
+F&G: >75 long yok + <25 short yok
+Hurst(100) >= 0.5
+Hurst(200) >= 0.55
