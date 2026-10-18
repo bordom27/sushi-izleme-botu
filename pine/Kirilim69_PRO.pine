@@ -2,7 +2,7 @@
 indicator("Kirilim69 PRO - Cok Elekli Kirilim Sistemi (Long/Short)", shorttitle="Kirilim69 PRO", overlay=true, max_labels_count=500, max_lines_count=200)
 
 // ============================================================================
-// KIRILIM69 PRO (v6.3 - LONG + SHORT, 46+70 coinde zaman ve coin bolmeli test, komisyon dahil)
+// KIRILIM69 PRO (v6.4 - LONG + SHORT, 46+70 coinde zaman ve coin bolmeli test, komisyon dahil)
 // Bu indikator gercek islem ACMAZ. Sanal pozisyonla sinyal + yonetim gosterir.
 //
 // Her elek LONG icin yazildigi gibi, SHORT icin AYNASI uygulanir:
@@ -172,6 +172,11 @@ panelPos    = input.string(position.top_right, "Panel konumu", options=[position
 // ---------------------------------------------------------------- 10) Alarm
 useDynAlert = input.bool(true, "Dinamik alarm mesaji (alert())", group=G_ALR, tooltip="Alarm olustururken kosul olarak bu indikatoru ve 'alert() fonksiyon cagrilari'ni secin.")
 
+// ---------------------------------------------------------------- v6.4 Piyasa uyumu (sona eklendi: eski ayarlar kaymasin)
+useGenislik = input.bool(true, "Piyasa uyumu: buyuk coinler yukari kiriyorsa SHORT verme", group=G_MKT, tooltip="30 buyuk coinden herhangi biri son N mumda 80 mumluk tepesinin ustunde kapattiysa yeni short sinyali uretilmez (sadece kripto). Ekim 2026 testi: egitim +60.3R -> +63.4R, test +53.1R -> +65.7R, test isabeti %56 -> %61. Telegram botuyla ayni liste.")
+genBar      = input.int(6, "Piyasa uyumu: son N mum", minval=1, group=G_MKT)
+genMax      = input.int(0, "Piyasa uyumu: izin verilen yukari kiran coin sayisi", minval=0, group=G_MKT)
+
 // Profil etkisi
 bool yuksekIsabet = profil == "Yuksek isabet (deneysel)"
 bool useAnaTrend = useAnaTrendIn or yuksekIsabet
@@ -328,6 +333,12 @@ f_dom() =>
 mkRoc = request.security(mktSym, timeframe.period, ta.roc(close, panicBars), ignore_invalid_symbol=true)
 [domClose, domEma] = request.security(domSym, "D", f_dom(), lookahead=barmerge.lookahead_on, ignore_invalid_symbol=true)
 
+// v6.4 piyasa uyumu: 30 buyuk coinin her biri son genBar mumda resistanceLen-mumluk tepesinin ustunde kapatti mi
+f_genK() => math.sum(close > ta.highest(high, resistanceLen)[1] ? 1 : 0, genBar) > 0 ? 1 : 0
+f_gk(string t) => nz(request.security(t, timeframe.period, f_genK(), ignore_invalid_symbol=true))
+int genSayisi = f_gk("BINANCE:BTCUSDT") + f_gk("BINANCE:ETHUSDT") + f_gk("BINANCE:SOLUSDT") + f_gk("BINANCE:XRPUSDT") + f_gk("BINANCE:BNBUSDT") + f_gk("BINANCE:DOGEUSDT") + f_gk("BINANCE:ADAUSDT") + f_gk("BINANCE:TRXUSDT") + f_gk("BINANCE:LINKUSDT") + f_gk("BINANCE:AVAXUSDT") + f_gk("BINANCE:SUIUSDT") + f_gk("BINANCE:LTCUSDT") + f_gk("BINANCE:NEARUSDT") + f_gk("BINANCE:DOTUSDT") + f_gk("BINANCE:UNIUSDT") + f_gk("BINANCE:AAVEUSDT") + f_gk("BINANCE:BCHUSDT") + f_gk("BINANCE:ZECUSDT") + f_gk("BINANCE:PEPEUSDT") + f_gk("BINANCE:ENAUSDT") + f_gk("BINANCE:TIAUSDT") + f_gk("BINANCE:FILUSDT") + f_gk("BINANCE:INJUSDT") + f_gk("BINANCE:WLDUSDT") + f_gk("BINANCE:TAOUSDT") + f_gk("BINANCE:ARBUSDT") + f_gk("BINANCE:OPUSDT") + f_gk("BINANCE:APTUSDT") + f_gk("BINANCE:HBARUSDT") + f_gk("BINANCE:XLMUSDT")
+bool genislikOkS = not (isCrypto and useGenislik) or genSayisi <= genMax
+
 bool isGunlukGrafik = timeframe.isdaily and timeframe.multiplier == 1
 dMacd     = isGunlukGrafik ? macdLine : dMacdH
 dHist     = isGunlukGrafik ? histLine : dHistH
@@ -458,7 +469,7 @@ bool yumusakOkL = dengeli ? (cMumTemelL and yumusakL >= minYumusak) : (L6 and L8
 bool yumusakOkS = dengeli ? (cMumTemelS and yumusakS >= minYumusak) : (S6 and S8 and cMumS and cFibS)
 bool cOynak = maxAtrPct <= 0 or (atrVal / close * 100) <= maxAtrPct
 bool kirilimAdayL = longSet and cBreakoutL and cVol and cUzamaL and cTaban and cOynak and yumusakOkL and barstate.isconfirmed
-bool kirilimAdayS = shortSet and cBreakoutS and cVol and cUzamaS and cTaban and cOynak and yumusakOkS and barstate.isconfirmed
+bool kirilimAdayS = shortSet and cBreakoutS and cVol and cUzamaS and cTaban and cOynak and yumusakOkS and genislikOkS and barstate.isconfirmed
 
 // Kalite skoru (yumusak kriterler, 0-5)
 bool s1  = hasVolume and volOran >= strongVolMult
@@ -1179,8 +1190,8 @@ if showPanel and barstate.islast and panelModu == "Kompakt"
     color basCol = color.new(color.blue, 55)
     f_baslik(0, sembol, "L", "S", basCol)
     f_hucre(3, 0, timeframe.period + (timeframe.in_seconds() == 14400 ? "" : " (!)") + " | " + (entryMode == "Kirilim kapanisi" ? "kapanista giris" : entryMode), color.white, basCol, size.small)
-    string eDetay = longSet ? "LONG hazir > " + str.tostring(resistance + breakBufAtr * atrVal, format.mintick) + " kapanis + hacim" : shortSet ? "SHORT hazir < " + str.tostring(support - breakBufAtr * atrVal, format.mintick) + " kapanis + hacim" : "Bekle | L: " + f_ilk(L1, L2, L3, L4, L5, dengeli or L6, L7, dengeli or L8, e9, longIzin) + " | S: " + f_ilk(S1, S2, S3, S4, S5, dengeli or S6, S7, dengeli or S8, e9, shortIzin)
-    f_elek(1, "Elekler", longSet, shortSet, eDetay)
+    string eDetay = longSet ? "LONG hazir > " + str.tostring(resistance + breakBufAtr * atrVal, format.mintick) + " kapanis + hacim" : shortSet ? (genislikOkS ? "SHORT hazir < " + str.tostring(support - breakBufAtr * atrVal, format.mintick) + " kapanis + hacim" : "SHORT kapali: " + str.tostring(genSayisi) + " buyuk coin yukari kirdi") : "Bekle | L: " + f_ilk(L1, L2, L3, L4, L5, dengeli or L6, L7, dengeli or L8, e9, longIzin) + " | S: " + f_ilk(S1, S2, S3, S4, S5, dengeli or S6, S7, dengeli or S8, e9, shortIzin)
+    f_elek(1, "Elekler", longSet, shortSet and genislikOkS, eDetay)
     string kDurum = posOpen ? (posDir == 1 ? "LONG " : "SHORT ") + str.tostring(posEntry, format.mintick) + " | SL " + str.tostring(posStop, format.mintick) + " | TP1 " + (tp1Done ? "ok" : str.tostring(posTp1, format.mintick)) + " | TP2 " + str.tostring(posTp2, format.mintick) : pendAktif ? (pendDir == 1 ? "LONG" : "SHORT") + " retest @ " + str.tostring(pendSeviye, format.mintick) : "yok"
     f_bilgi(2, "Pozisyon", kDurum, posOpen ? (posDir == 1 ? color.lime : color.fuchsia) : pendAktif ? color.yellow : color.gray)
     float kOran = nIslem > 0 ? nKazanc * 100.0 / nIslem : na
@@ -1189,6 +1200,8 @@ if showPanel and barstate.islast and panelModu == "Kompakt"
     f_bilgi(4, "Long / Short", lsMetni, nHata == 0 ? color.silver : color.red)
     if timeframe.in_seconds() != 14400
         f_bilgi(5, "Uyari", "Sistem 4 saatlik grafik icin test edildi", color.orange)
+    else if isCrypto and useGenislik
+        f_bilgi(5, "Piyasa", "Son " + str.tostring(genBar) + " mumda " + str.tostring(genSayisi) + "/30 buyuk coin yukari kirdi -> " + (genislikOkS ? "short acik" : "yeni short yok"), genislikOkS ? color.silver : color.orange)
 
 // ---------------------------------------------------------------- TESHIS PANELI
 f_oranRenk(float p) =>
