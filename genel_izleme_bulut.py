@@ -522,9 +522,9 @@ def main():
     parmak = hashlib.md5(json.dumps(k.PARAMS, sort_keys=True).encode()).hexdigest()[:10]
     if not ilk_calisma and state.get("ayar_parmak_izi") != parmak:
         acik = [(s, r.acik) for s, r in sonuclar.items() if r.acik]
-        satir = ["⚙️ Sistem güncellendi (v6.4 - piyasa uyumu filtresi): 30 büyük coinden herhangi biri son 24 saatte "
-                 "80 mumluk tepesinin üstünde kapattıysa yeni SHORT sinyali verilmez (piyasa tek yönlü düşmüyor demektir). "
-                 "Testte: eğitim +60.3R → +63.4R, test +53.1R → +65.7R, test isabeti %56 → %61. Long sinyalleri değişmedi.",
+        satir = ["⚙️ Sistem güncellendi (v6.4 seçici mod): kırılım mumunun hacmi ortalamanın en az 2.5 katı olmalı (eski 2x). "
+                 "TradingView grafiğiyle aynı ayar. Testte: ayda ~21 yerine ~13 sinyal, isabet %64 → %69, işlem başı kazanç "
+                 "0.24R → 0.31R, toplam kazanç ~%16 daha az. Son 7.5 ayda daha iyi (+7.1R → +11.9R).",
                  btc_bilgi]
         if acik:
             satir.append("Açık pozisyonlar (yeni kurallara göre; giriş zamanı geçmiş olabilir, sadece bilgi):")

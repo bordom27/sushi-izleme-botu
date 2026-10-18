@@ -55,6 +55,10 @@ Kural: `GENISLIK_COINLER`'deki 30 büyük coinden herhangi biri son 6 mumda (24 
 "En fazla 1 coin" gibi gevşek eşikler iyileştirmiyor: kural "hiç ters kırılım yok" olarak çalışıyor.
 Ayrıca test edilip eklenmeyenler: ortalamaya dönüş sistemi (48 varyasyon, hepsi zararda), momentum rotasyonu (tutarsız, %35–55 düşüş), dinamik RSI, z-skor, verimlilik oranı, choppiness, FVG, BTC korelasyonu.
 
+## Seçici mod (18 Ekim 2026)
+Hacim eşiği 2x → **2.5x** (bot ve TradingView aynı). 116 coin, Tem 2024 – Eki 2026: ayda ~21 → ~13 sinyal, isabet %63.8 → %69.1, işlem başı 0.24R → 0.31R, toplam +135R → +113R, en kötü düşüş 15.3R → 13.0R; Mar–Eki 2026: +7.1R → +11.9R.
+Ayrıca 13 parametreli ortak optimizasyon (400 kombinasyon, arama / seçim / son sınav bölmeli) v6.4'ü geçen bir kombinasyon bulamadı; ilk iki dönemde en iyi görünenler son sınavda −8 ile −22R.
+
 ## Liste genişletme (Ekim 2026)
 Binance'teki ~615 USDT paritesi hacim sırasına göre katmanlara ayrılıp v6.3 ile test edildi. İlk ~70 (46 dışı) katman iki dönemde de kârlı; daha düşük hacimli katmanlarda test kazancı sıfıra yaklaşıyor (ve kayma maliyeti artıyor). Bu yüzden **kurala göre** 56 coin eklendi (hacim ≥ ~2.4M$, ≥ 6 ay geçmiş, stablecoin / tokenize hisse / altın hariç), geçmiş başarıya göre seçim yapılmadı (coin bazlı başarı dönemden döneme taşınmıyor, korelasyon ~0).
 102 coin: eğitim +59.2R, test +52.9R (46 coin: +46.7R / +33.1R).

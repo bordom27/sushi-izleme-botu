@@ -73,7 +73,7 @@ PARAMS = {
     "break_buf_atr": 0.1,
     "use_volume": True,
     "vol_len": 20,
-    "vol_mult": 2.0,
+    "vol_mult": 2.5,                # Ekim 2026: secici mod (2x yerine 2.5x) - daha az sinyal, isabet ~%69
     "strong_vol_mult": 2.0,
     "min_close_pos": 0.6,
     "max_candle_range_atr": 3.0,
