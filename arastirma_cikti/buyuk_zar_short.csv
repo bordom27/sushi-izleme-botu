@@ -1,0 +1,4 @@
+ayar,Y2020_getiri,Y2020_sharpe,Y2020_maxdd,Y2021_getiri,Y2021_sharpe,Y2021_maxdd,Y2022_getiri,Y2022_sharpe,Y2022_maxdd,Y2023_getiri,Y2023_sharpe,Y2023_maxdd,Y24a_getiri,Y24a_sharpe,Y24a_maxdd,A_getiri,A_sharpe,A_maxdd,B_getiri,B_sharpe,B_maxdd,C_getiri,C_sharpe,C_maxdd,TUM_getiri,TUM_sharpe,TUM_maxdd
+sadece LONG (simdiki),13.8,1.78,-4.4,29.4,2.53,-6.0,-5.0,-1.63,-5.4,17.5,2.01,-5.1,2.1,0.43,-6.6,5.5,0.81,-6.6,-0.6,-0.1,-4.5,2.1,0.62,-2.7,79.8,1.17,-9.2
+sadece SHORT,-3.0,-1.53,-3.3,-1.4,-0.59,-2.5,11.7,1.01,-7.7,-15.0,-2.14,-15.0,-0.0,0.01,-1.7,-7.4,-1.21,-9.4,5.5,0.87,-3.8,-5.6,-0.86,-9.7,-16.4,-0.32,-24.4
+LONG + SHORT,9.3,1.43,-4.1,28.2,2.7,-4.6,5.6,0.68,-7.4,5.2,0.74,-6.4,1.4,0.38,-5.3,-2.5,-0.31,-7.4,4.6,0.81,-3.5,-3.8,-0.76,-6.6,54.9,0.85,-9.8
