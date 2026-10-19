@@ -1,0 +1,10 @@
+SU ANKI v6.5
+KAPAT: 4s MACD
+KAPAT: coine ozel RSI/TP tablosu
+AC: trend cikisi (TP1 sonrasi)
+trend EMA 100 (50)
+RSI alt 45.0 (50)
+EMA'dan max uzaklik 2.0 ATR (3)
+ATR uzunluk 10 (14)
+TP1 0.9R (0.8)
+zaman stopu min 0.3R (0.5)
