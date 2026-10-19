@@ -1,0 +1,10 @@
+SU ANKI v6.5
+KAPAT: mum kapanis yeri
+AC: haftalik MACD
+AC: min kalite B
+MACD 12/26/5 (12/26/9)
+RSI ust 80.0 (70, tablo kapali)
+hacim carpani 3.0 (2.5)
+kirilim tamponu 0.2 ATR (0.1)
+stop tamponu 0.3 ATR (0.2)
+min yer 0.8R (0.5)
