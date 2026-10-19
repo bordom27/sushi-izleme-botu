@@ -132,6 +132,7 @@ PARAMS = {
     "ttm_sik": False,               # True: son sik_k mumda BB(20,2) Keltner(20,1.5 ATR) icine girmis olmali (TTM squeeze)
     "ek_R": 0,                      # >0: kirilim ayni zamanda ek_R mumluk tepe/dip kirilimi olmali (coklu kanal onayi)
     "orta_trail": 0,                # >0: TP1 sonrasi stop, son N mum kapanislarinin (max+min)/2 seviyesine cekilir (Zarattini)
+    "use_ema_dizilim": True,        # False: EMA dizilimi elegi (kapanis > trend EMA, hizli > trend, egim) kapatilir
     "kanal_trail": 0,               # >0: TP1 sonrasi stop, son N mumun en dusuk dibi / en yuksek tepesi (Turtle cikisi)
     "gunluk_ema_onay": 0,           # >0: long icin gunluk kapanis > gunluk EMA(N), short icin altinda
     "btc_vol_rejim": "",            # "" | "yuksek" | "dusuk": BTC 4s ATR% kendi 180 mumluk medyaninin ustu/alti
@@ -875,6 +876,8 @@ def simule_et(symbol: str, df: pd.DataFrame, gunluk: pd.DataFrame | None,
         te3 = tr_ema[i - 3] if i >= 3 else np.nan
         L5 = c[i] > tr_ema[i] and ema_f[i] > tr_ema[i] and tr_ema[i] >= te3
         S5 = c[i] < tr_ema[i] and ema_f[i] < tr_ema[i] and tr_ema[i] <= te3
+        if not p["use_ema_dizilim"]:
+            L5 = S5 = True
         hp1 = hist[i - 1] if i >= 1 else np.nan
         L6 = (not p["use_ltf_macd"]) or _macd_poz(m_line[i], hist[i], hp1, p["ltf_macd_mode"])
         S6 = (not p["use_ltf_macd"]) or _macd_neg(m_line[i], hist[i], hp1, p["ltf_macd_mode"])

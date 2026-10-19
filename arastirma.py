@@ -590,7 +590,7 @@ def main():
             print(g.to_string(index=False), flush=True)
         pd.concat(out).to_csv(f"{OUT}/genislik.csv", index=False)
         oran50.to_csv(f"{OUT}/genislik_seri.csv")
-    elif mod.startswith("gen2") or mod.startswith("gen3") or mod in ("gen4", "gen5") or mod.startswith("ek3") or mod.startswith("opt") or mod == "secici" or mod.startswith("konf") or mod.startswith("dis"):
+    elif mod.startswith("gen2") or mod.startswith("gen3") or mod in ("gen4", "gen5") or mod.startswith("ek3") or mod.startswith("opt") or mod == "secici" or mod.startswith("konf") or mod.startswith("dis") or mod.startswith("gozden"):
         tick = veri._get("/api/v3/ticker/24hr", {})
         haric = set(COINLER) | STOK_HARIC | {"USDCUSDT", "FDUSDUSDT", "TUSDUSDT", "DAIUSDT", "EURUSDT", "USDPUSDT",
                                 "RLUSDUSDT", "USD1USDT", "PYUSDUSDT", "AEURUSDT", "XUSDUSDT", "BFUSDUSDT",
@@ -614,6 +614,107 @@ def main():
             ka[s_] = pd.Series(np.where(ok, (c_ < ll).astype(float), np.nan), index=ix)
         KU = pd.DataFrame(ku).fillna(0); KA = pd.DataFrame(ka).fillna(0)
         senaryo = [("v6.3 TEMEL", dict(_B3))]
+        if mod.startswith("gozden"):  # tum ayarlarin tek tek gozden gecirilmesi (v6.5 etrafinda)
+            GEN30 = ["BTCUSDT", "ETHUSDT", "SOLUSDT", "XRPUSDT", "BNBUSDT", "DOGEUSDT", "ADAUSDT", "TRXUSDT", "LINKUSDT",
+                     "AVAXUSDT", "SUIUSDT", "LTCUSDT", "NEARUSDT", "DOTUSDT", "UNIUSDT", "AAVEUSDT", "BCHUSDT", "ZECUSDT",
+                     "PEPEUSDT", "ENAUSDT", "TIAUSDT", "FILUSDT", "INJUSDT", "WLDUSDT", "TAOUSDT", "ARBUSDT", "OPUSDT",
+                     "APTUSDT", "HBARUSDT", "XLMUSDT"]
+            gU = lambda n: (KU[GEN30].rolling(n, min_periods=1).max() > 0).sum(axis=1)
+            B6 = dict(_B3, ters_s=gU(6), ters_max=0, vol_mult=2.5, use_fib=False)
+            S = [("SU ANKI v6.5", dict(B6))]
+            def ek(ad, **kw):
+                S.append((ad, dict(B6, **kw)))
+            # --- 1) Kapatma testi: her filtre ne katiyor?
+            ek("KAPAT: BTC piyasa filtresi", use_mkt=False)
+            ek("KAPAT: long icin BTC>EMA200", long_sart="Kapali")
+            ek("KAPAT: panik filtresi", use_panic=False)
+            ek("KAPAT: EMA dizilimi", use_ema_dizilim=False)
+            ek("KAPAT: 4s MACD", use_ltf_macd=False)
+            ek("KAPAT: ADX/DMI", use_adx=False)
+            ek("KAPAT: RSI (alt+ust)", rsi_min=0.0, def_rsi_max=101.0, use_auto_params=False)
+            ek("KAPAT: RSI ust sinir", def_rsi_max=101.0, use_auto_params=False)
+            ek("KAPAT: hacim", use_volume=False)
+            ek("KAPAT: mum kapanis yeri", min_close_pos=0.0)
+            ek("KAPAT: asiri buyuk mum", max_candle_range_atr=99.0)
+            ek("KAPAT: EMA'dan uzaklik", max_ext_atr=99.0)
+            ek("KAPAT: yer (oda) kontrolu", use_room=False)
+            ek("KAPAT: zaman stopu", use_time_stop=False)
+            ek("KAPAT: basarisiz kirilim cikisi", basarisiz_cikis=False)
+            ek("KAPAT: short genislik filtresi", ters_max=-1)
+            ek("KAPAT: coine ozel RSI/TP tablosu", use_auto_params=False)
+            ek("KAPAT: fib hedefleri", use_fib_tp=False)
+            ek("KAPAT: stop sonrasi bekleme", cooldown_bars=0)
+            ek("YUMUSAK: MACD/ADX/mum 3'te 2 yeter", min_yumusak=3)
+            # --- 2) Acilabilecekler
+            ek("AC: gunluk ana trend", use_ana_trend=True)
+            ek("AC: haftalik MACD", use_w_macd=True)
+            ek("AC: gunluk MACD", use_d_macd=True)
+            ek("AC: BTC piyasa MACD sarti", mkt_macd_req=True)
+            ek("AC: long icin BTC ve coin > EMA200", long_sart="BTC ve coin > EMA200")
+            ek("AC: long icin coin > EMA200 (BTC yerine)", long_sart="Coin > EMA200")
+            ek("AC: short icin BTC < EMA200", short_sart="BTC < EMA200")
+            ek("AC: short icin coin < EMA200", short_sart="Coin < EMA200")
+            ek("AC: trend cikisi (TP1 sonrasi)", use_trend_exit=True)
+            ek("AC: taban genisligi <= 6 ATR", use_base=True)
+            ek("AC: taban genisligi <= 10 ATR", use_base=True, max_base_atr=10.0)
+            ek("AC: ATR% <= 4", max_atr_pct=4.0)
+            ek("AC: ATR% <= 6", max_atr_pct=6.0)
+            ek("AC: min kalite B", min_kalite="B")
+            ek("AC: seviye en az 1 kez test edilmis", min_test=1)
+            ek("AC: seviye en az 2 kez test edilmis", min_test=2)
+            # --- 3) Deger taramasi
+            for v_ in (9, 13, 34): ek(f"hizli EMA {v_} (21)", ema_fast=v_)
+            for v_ in (34, 100, 200): ek(f"trend EMA {v_} (50)", trend_ema=v_)
+            for a_, b_, s_ in ((8, 21, 5), (5, 35, 5), (19, 39, 9), (12, 26, 5)): ek(f"MACD {a_}/{b_}/{s_} (12/26/9)", macd_fast=a_, macd_slow=b_, macd_signal=s_)
+            for m_ in ("Hist > 0", "MACD > 0", "MACD > 0 veya Hist > 0", "ikisi"): ek(f"4s MACD modu: {m_}", ltf_macd_mode=m_)
+            for v_ in (7, 21): ek(f"RSI uzunluk {v_} (14)", rsi_len=v_)
+            for v_ in (45.0, 55.0, 60.0): ek(f"RSI alt {v_} (50)", rsi_min=v_)
+            for v_ in (65.0, 75.0, 80.0): ek(f"RSI ust {v_} (70, tablo kapali)", def_rsi_max=v_, use_auto_params=False)
+            for v_ in (15.0, 20.0, 30.0): ek(f"ADX min {v_} (25)", adx_min=v_)
+            for v_ in (10, 20): ek(f"DI uzunluk {v_} (14)", di_len=v_, adx_smooth=v_)
+            for v_ in (10, 30, 50): ek(f"hacim ortalamasi {v_} mum (20)", vol_len=v_)
+            for v_ in (2.0, 2.25, 2.75, 3.0): ek(f"hacim carpani {v_} (2.5)", vol_mult=v_)
+            for v_ in (0.5, 0.7, 0.8): ek(f"mum kapanis yeri {v_} (0.6)", min_close_pos=v_)
+            for v_ in (2.0, 2.5, 4.0): ek(f"max mum boyu {v_} ATR (3)", max_candle_range_atr=v_)
+            for v_ in (2.0, 2.5, 4.0): ek(f"EMA'dan max uzaklik {v_} ATR (3)", max_ext_atr=v_)
+            for v_ in (0.0, 0.05, 0.2): ek(f"kirilim tamponu {v_} ATR (0.1)", break_buf_atr=v_)
+            for v_ in (20, 100): ek(f"BTC piyasa EMA {v_} (50)", mkt_ema_len=v_)
+            for v_ in (100, 150): ek(f"long BTC EMA {v_} (200)", btc_long_ema=v_)
+            for v_ in (3.0, 6.0): ek(f"panik esigi %{v_} (4)", panic_pct=v_)
+            for v_ in (10, 20): ek(f"ATR uzunluk {v_} (14)", atr_len=v_)
+            for v_ in (3, 8): ek(f"stop icin son {v_} mum (5)", stop_lookback=v_)
+            for v_ in (0.1, 0.3): ek(f"stop tamponu {v_} ATR (0.2)", stop_buf_atr=v_)
+            for v_ in (1.0, 2.0): ek(f"seviye stopu {v_} ATR (1.5)", seviye_stop_atr=v_)
+            for v_ in (0.75, 1.5): ek(f"min stop {v_} ATR (1)", min_stop_atr=v_)
+            for v_ in (0.6, 0.7, 0.9, 1.0): ek(f"TP1 {v_}R (0.8)", tp1_r=v_)
+            for v_ in (2.0, 3.0): ek(f"TP2 {v_}R (2.5, tablo kapali)", def_tp2_r=v_, use_auto_params=False)
+            for v_ in (0.3, 0.8): ek(f"min yer {v_}R (0.5)", min_room_r=v_)
+            for v_ in (0.0, 0.2): ek(f"basabas tamponu {v_}R (0.1)", be_buf_r=v_)
+            for v_ in (2.0, 3.0): ek(f"iz suren stop {v_} ATR (2.5)", trail_atr_mult=v_)
+            for v_ in (12, 30): ek(f"zaman stopu {v_} mum (20)", time_stop_bars=v_)
+            for v_ in (0.3, 0.8): ek(f"zaman stopu min {v_}R (0.5)", time_stop_min_r=v_)
+            for v_ in (2, 6): ek(f"stop sonrasi bekleme {v_} mum (3)", cooldown_bars=v_)
+            for v_ in (2, 4): ek(f"basarisiz kirilim {v_} mum (3)", bc_bar=v_)
+            for v_ in (0.1, 0.25): ek(f"basarisiz kirilim {v_} ATR (0.15)", bc_atr=v_)
+            for v_ in (3, 12): ek(f"short genislik penceresi {v_} mum (6)", ters_s=gU(v_))
+            ek("short genislik: en fazla 1 coin", ters_max=1)
+            for v_ in (60, 100): ek(f"direnc {v_} mum (80)", resistance_len=v_)
+            K = 12
+            parca = int(mod.split("-")[1])
+            senaryo = S[:1] + S[1 + parca::K]
+            DON = [("A", "2024-07-01", "2025-06-30 23:59"), ("B", "2025-07-01", "2026-02-28 23:59"), ("C", "2026-03-01", None)]
+            rows = []
+            with mp.Pool(4) as hv:
+                for ad, prm in senaryo:
+                    tr = calistir(prm, COINLER + yeni, "4h", hv)
+                    row = {"ayar": ad}
+                    for dk, b_, e_ in DON:
+                        for kk, vv in metrik(tr, b_, e_).items():
+                            row[f"{dk}_{kk}"] = vv
+                    rows.append(row)
+                    print(ad, flush=True)
+            pd.DataFrame(rows).to_csv(f"{OUT}/{mod}.csv", index=False)
+            return
         if mod.startswith("dis"):  # dis kaynak fikirleri (Zarattini/Turtle/TTM)
             GEN30 = ["BTCUSDT", "ETHUSDT", "SOLUSDT", "XRPUSDT", "BNBUSDT", "DOGEUSDT", "ADAUSDT", "TRXUSDT", "LINKUSDT",
                      "AVAXUSDT", "SUIUSDT", "LTCUSDT", "NEARUSDT", "DOTUSDT", "UNIUSDT", "AAVEUSDT", "BCHUSDT", "ZECUSDT",
