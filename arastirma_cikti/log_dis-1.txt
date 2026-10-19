@@ -1,0 +1,7 @@
+SU ANKI v6.5
+sikisma: son 10 mum BB genisligi <= 0.75 x medyan
+TTM squeeze: son 20 mumda
+coklu kanal: 360 mum tepe/dip de kirilmali
+Zarattini cikis: TP1 %70, kalan kanal ortasi (20) ile, TP2 yok
+Zarattini cikis: TP1 %50, kalan kanal ortasi (40) ile, TP2 yok
+Turtle cikis: TP1 %50, kalan 10 mum dip/tepe ile, TP2 yok
