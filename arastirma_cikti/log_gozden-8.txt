@@ -1,0 +1,10 @@
+SU ANKI v6.5
+KAPAT: hacim
+AC: gunluk ana trend
+AC: ATR% <= 6
+MACD 19/39/9 (12/26/9)
+RSI ust 75.0 (70, tablo kapali)
+hacim carpani 2.75 (2.5)
+kirilim tamponu 0.05 ATR (0.1)
+stop tamponu 0.1 ATR (0.2)
+min yer 0.3R (0.5)
