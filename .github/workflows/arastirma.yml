@@ -17,7 +17,7 @@ jobs:
       fail-fast: false
       max-parallel: 20
       matrix:
-        mod: [buyuk-zar-esik]
+        mod: [retest-1h, retest-4h, retest-1d, retest-1w]
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
@@ -37,7 +37,7 @@ jobs:
             arastirma-kovalama-
             arastirma-limit-
             arastirma-profesyonel-
-      - run: python $( case "${{ matrix.mod }}" in ozellik) echo ozellik.py;; buyuk-*) echo buyuk.py $(echo ${{ matrix.mod }} | sed s/^buyuk-//);; dogruluk) echo dogruluk.py;; *) echo "arastirma.py ${{ matrix.mod }}";; esac ) 2>&1 | grep -v " mum (" | tee log_${{ matrix.mod }}.txt
+      - run: python $( case "${{ matrix.mod }}" in ozellik) echo ozellik.py;; buyuk-*) echo buyuk.py $(echo ${{ matrix.mod }} | sed s/^buyuk-//);; retest-*) echo retest_test.py $(echo ${{ matrix.mod }} | sed s/^retest-//);; dogruluk) echo dogruluk.py;; *) echo "arastirma.py ${{ matrix.mod }}";; esac ) 2>&1 | grep -v " mum (" | tee log_${{ matrix.mod }}.txt
       - run: |
           mkdir -p arastirma_cikti && mv log_${{ matrix.mod }}.txt arastirma_cikti/
           git config user.name "arastirma"; git config user.email "a@users.noreply.github.com"
