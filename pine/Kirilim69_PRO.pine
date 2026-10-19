@@ -1297,11 +1297,12 @@ alertcondition(tp2Hit, title="TP2 (final)", message="{{ticker}}: TP2 tetiklendi.
 
 // ---------------------------------------------------------------- IKINCI SISTEM: GUNLUK TREND PORTFOYU (bilgi)
 // Bot ile ayni kural (zarattini.py): 9 bakis suresi (5..360 gun) kapanis kirilimi + kanal ortasi iz suren stop.
-// Skor = trendde olan sure sayisi (0-9); hedef pay = skor/9 x min(%25 / yillik oynaklik(90g), 2) / 20.
+// Skor = trendde olan sure sayisi (0-9). Kural: skor >= 5 ise LONG tam pay = min(%25 / yillik oynaklik(90g), 2) / 20; altinda pozisyon yok.
 // Portfoye girmesi coinin en likit 20 arasinda olmasina da bagli (bot hesaplar). Sadece kapanmis gunluk mumlar.
 G_TRD = "11) Gunluk trend portfoyu (ikinci sistem, bilgi)"
 trdGoster = input.bool(true, "Gunluk trend kutusu", group=G_TRD)
 trdCizgi  = input.bool(true, "En yakin trend stopunu ciz", group=G_TRD)
+trdMin    = input.int(5, "Pozisyon icin en az skor", minval=1, maxval=9, group=G_TRD)
 
 trd_kanal(int L) =>
     var bool ic = false
@@ -1350,15 +1351,17 @@ trd_hepsi() =>
     [skor[1], yakin[1], uzak[1], sig[1]]
 
 [trdSkor, trdYakin, trdUzak, trdSig] = request.security(syminfo.tickerid, "D", trd_hepsi(), lookahead=barmerge.lookahead_on)
-bool trdVar = trdSkor > 0
-float trdPay = na(trdSig) or trdSig <= 0 ? na : trdSkor / 9.0 * math.min(0.25 / trdSig, 2.0) / 20.0 * 100
+bool trdVar = trdSkor >= trdMin
+float trdPay = na(trdSig) or trdSig <= 0 ? na : math.min(0.25 / trdSig, 2.0) / 20.0 * 100
 plot(trdGoster and trdCizgi and trdVar ? trdYakin : na, "Gunluk trend stopu", color=color.new(color.teal, 30), linewidth=1, style=plot.style_linebr)
-var table trdTb = table.new(position.bottom_left, 2, 3, bgcolor=color.new(color.black, 30), border_width=1)
+var table trdTb = table.new(position.bottom_left, 2, 4, bgcolor=color.new(color.black, 30), border_width=1)
 if trdGoster and barstate.islast
-    color tsc = trdSkor >= 6 ? color.teal : trdSkor >= 1 ? color.olive : color.gray
+    color tsc = trdVar ? color.teal : trdSkor >= 1 ? color.olive : color.gray
     table.cell(trdTb, 0, 0, "Gunluk trend skoru", text_color=color.white, text_size=size.small)
     table.cell(trdTb, 1, 0, str.tostring(trdSkor) + " / 9", text_color=tsc, text_size=size.small)
-    table.cell(trdTb, 0, 1, "Hedef pay (ilk 20 likitteyse)", text_color=color.white, text_size=size.small)
-    table.cell(trdTb, 1, 1, trdVar ? "%" + str.tostring(trdPay, "#.##") + " sermaye" : "yok", text_color=color.white, text_size=size.small)
+    table.cell(trdTb, 0, 1, "Durum", text_color=color.white, text_size=size.small)
+    table.cell(trdTb, 1, 1, trdVar ? "LONG tut" : "Pozisyon yok (skor < " + str.tostring(trdMin) + ")", text_color=trdVar ? color.teal : color.gray, text_size=size.small)
+    table.cell(trdTb, 0, 3, "Pay (ilk 20 likitteyse)", text_color=color.white, text_size=size.small)
+    table.cell(trdTb, 1, 3, trdVar ? "%" + str.tostring(trdPay, "#.##") + " sermaye" : "-", text_color=color.white, text_size=size.small)
     table.cell(trdTb, 0, 2, "En yakin stop / son stop", text_color=color.white, text_size=size.small)
     table.cell(trdTb, 1, 2, trdVar ? str.tostring(trdYakin, format.mintick) + " / " + str.tostring(trdUzak, format.mintick) : "-", text_color=color.white, text_size=size.small)
