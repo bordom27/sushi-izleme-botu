@@ -1,0 +1,11 @@
+SU ANKI v6.5
+KAPAT: EMA'dan uzaklik
+AC: BTC piyasa MACD sarti
+AC: seviye en az 2 kez test edilmis
+4s MACD modu: MACD > 0
+ADX min 20.0 (25)
+mum kapanis yeri 0.7 (0.6)
+BTC piyasa EMA 100 (50)
+seviye stopu 2.0 ATR (1.5)
+basabas tamponu 0.2R (0.1)
+basarisiz kirilim 0.25 ATR (0.15)
