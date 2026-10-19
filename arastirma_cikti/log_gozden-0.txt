@@ -1,0 +1,11 @@
+SU ANKI v6.5
+KAPAT: BTC piyasa filtresi
+KAPAT: yer (oda) kontrolu
+AC: long icin BTC ve coin > EMA200
+hizli EMA 9 (21)
+4s MACD modu: MACD > 0 veya Hist > 0
+ADX min 30.0 (25)
+mum kapanis yeri 0.8 (0.6)
+long BTC EMA 100 (200)
+min stop 0.75 ATR (1)
+iz suren stop 2.0 ATR (2.5)
