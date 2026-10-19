@@ -1,0 +1,81 @@
+//@version=5
+// K69 GUNLUK TREND - ikinci sistemin (gunluk trend portfoyu) tek coin gorunumu.
+// Bot ile ayni kural (zarattini.py): 9 bakis suresi (5,10,20,30,60,90,150,250,360 gun) icin
+//   giris: gunluk kapanis onceki L gunun en yuksek kapanisini gecer
+//   cikis: kapanis iz suren stopun altina iner; stop = max(onceki stop, son L gun kapanislarinin (max+min)/2)
+// Skor = trendde olan sure sayisi (0-9). Hedef pay = skor/9 x min(%25 / yillik oynaklik(90g), 2) / 20.
+// Portfoye girip girmemesi coinin en likit 20 arasinda olmasina da bagli (onu bot hesaplar).
+// Sadece KAPANMIS gunluk mumlar kullanilir (4 saatlik grafikte de calisir, tekrar boyamaz).
+indicator("K69 Gunluk Trend", shorttitle="K69 Trend", overlay=true)
+
+showLine  = input.bool(true, "En yakin trend stopunu ciz")
+showMarks = input.bool(true, "Trend basladi / bitti isaretleri")
+showTable = input.bool(true, "Bilgi kutusu")
+
+f_kanal(int L) =>
+    var bool ic = false
+    var float st = na
+    float mx = ta.highest(close, L)
+    float mn = ta.lowest(close, L)
+    float orta = (mx + mn) / 2
+    bool brk = close > mx[1]
+    if ic
+        if close < st
+            ic := false
+            st := na
+        else if not na(orta)
+            st := math.max(st, orta)
+    else if brk
+        ic := true
+        st := orta
+    [ic, st]
+
+f_ust(float a, float b) =>
+    na(a) ? b : na(b) ? a : math.max(a, b)
+
+f_hepsi() =>
+    [i1, s1] = f_kanal(5)
+    [i2, s2] = f_kanal(10)
+    [i3, s3] = f_kanal(20)
+    [i4, s4] = f_kanal(30)
+    [i5, s5] = f_kanal(60)
+    [i6, s6] = f_kanal(90)
+    [i7, s7] = f_kanal(150)
+    [i8, s8] = f_kanal(250)
+    [i9, s9] = f_kanal(360)
+    int skor = (i1 ? 1 : 0) + (i2 ? 1 : 0) + (i3 ? 1 : 0) + (i4 ? 1 : 0) + (i5 ? 1 : 0) + (i6 ? 1 : 0) + (i7 ? 1 : 0) + (i8 ? 1 : 0) + (i9 ? 1 : 0)
+    float yakin = na
+    yakin := i1 ? f_ust(yakin, s1) : yakin
+    yakin := i2 ? f_ust(yakin, s2) : yakin
+    yakin := i3 ? f_ust(yakin, s3) : yakin
+    yakin := i4 ? f_ust(yakin, s4) : yakin
+    yakin := i5 ? f_ust(yakin, s5) : yakin
+    yakin := i6 ? f_ust(yakin, s6) : yakin
+    yakin := i7 ? f_ust(yakin, s7) : yakin
+    yakin := i8 ? f_ust(yakin, s8) : yakin
+    yakin := i9 ? f_ust(yakin, s9) : yakin
+    float uzak = na
+    uzak := i9 ? s9 : i8 ? s8 : i7 ? s7 : i6 ? s6 : i5 ? s5 : i4 ? s4 : i3 ? s3 : i2 ? s2 : i1 ? s1 : na
+    float sig = ta.stdev(close / close[1] - 1, 90, false) * math.sqrt(365)
+    [skor[1], yakin[1], uzak[1], sig[1]]
+
+[skorD, yakinD, uzakD, sigD] = request.security(syminfo.tickerid, "D", f_hepsi(), lookahead=barmerge.lookahead_on)
+
+float pay = na(sigD) or sigD <= 0 ? na : skorD / 9.0 * math.min(0.25 / sigD, 2.0) / 20.0 * 100
+bool trendde = skorD > 0
+
+plot(showLine and trendde ? yakinD : na, "En yakin trend stopu", color=color.new(color.teal, 20), linewidth=2, style=plot.style_linebr)
+plotshape(showMarks and trendde and not trendde[1], "Trend basladi", style=shape.triangleup, location=location.belowbar, color=color.new(color.teal, 0), size=size.tiny, text="T+", textcolor=color.teal)
+plotshape(showMarks and not trendde and trendde[1], "Trend bitti", style=shape.xcross, location=location.abovebar, color=color.new(color.gray, 0), size=size.tiny, text="T-", textcolor=color.gray)
+
+var table tb = table.new(position.bottom_right, 2, 4, bgcolor=color.new(color.black, 30), border_width=1)
+if showTable and barstate.islast
+    color sc = skorD >= 6 ? color.teal : skorD >= 1 ? color.olive : color.gray
+    table.cell(tb, 0, 0, "Gunluk trend skoru", text_color=color.white, text_size=size.small)
+    table.cell(tb, 1, 0, str.tostring(skorD) + " / 9", text_color=sc, text_size=size.small)
+    table.cell(tb, 0, 1, "Hedef pay (ilk 20 likitteyse)", text_color=color.white, text_size=size.small)
+    table.cell(tb, 1, 1, trendde ? "%" + str.tostring(pay, "#.##") + " sermaye" : "yok", text_color=color.white, text_size=size.small)
+    table.cell(tb, 0, 2, "En yakin stop / son stop", text_color=color.white, text_size=size.small)
+    table.cell(tb, 1, 2, trendde ? str.tostring(yakinD, format.mintick) + " / " + str.tostring(uzakD, format.mintick) : "-", text_color=color.white, text_size=size.small)
+    table.cell(tb, 0, 3, "Yillik oynaklik (90g)", text_color=color.white, text_size=size.small)
+    table.cell(tb, 1, 3, na(sigD) ? "-" : "%" + str.tostring(sigD * 100, "#"), text_color=color.white, text_size=size.small)
