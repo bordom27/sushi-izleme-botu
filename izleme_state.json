@@ -466,28 +466,13 @@
     }
   },
   "son_ozet_gunu": "2026-10-19",
-  "son_calisma": "2026-10-19T17:51:57+00:00",
+  "son_calisma": "2026-10-19T18:45:48+00:00",
   "ayar_parmak_izi": "bb60a74e14",
   "trend_portfoy": {
-    "ADAUSDT": 0.0018,
-    "AVAXUSDT": 0.0067,
-    "BNBUSDT": 0.0116,
-    "BTCUSDT": 0.0108,
-    "ENAUSDT": 0.0041,
-    "ETHUSDT": 0.0051,
-    "LINKUSDT": 0.0059,
-    "NEARUSDT": 0.0069,
-    "ONDOUSDT": 0.0014,
-    "PEPEUSDT": 0.004,
-    "PUMPUSDT": 0.0038,
-    "SOLUSDT": 0.0073,
-    "SUIUSDT": 0.0031,
-    "TAOUSDT": 0.0048,
-    "TRXUSDT": 0.009,
-    "UNIUSDT": 0.0064,
-    "WLDUSDT": 0.0026,
-    "XRPUSDT": 0.004,
-    "ZECUSDT": 0.0055
+    "NEARUSDT": 0.0103,
+    "UNIUSDT": 0.0116,
+    "ZECUSDT": 0.0099
   },
-  "trend_son_gun": "2026-10-18"
+  "trend_son_gun": "2026-10-18",
+  "trend_ayar": "{\"bant\": 0.01, \"bant_oran\": 0.33, \"hedef_vol\": 0.25, \"max_kaldirac\": 2.0, \"min_gecmis\": 365, \"min_skor\": 5, \"tam_boy\": true, \"top\": 20}"
 }
