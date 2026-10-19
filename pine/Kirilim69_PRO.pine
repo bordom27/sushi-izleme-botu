@@ -1294,3 +1294,71 @@ alertcondition(kirilimIsaretL or kirilimIsaretS, title="Kirilim - retest bekleni
 alertcondition(stopHit, title="Stop", message="{{ticker}}: STOP tetiklendi.")
 alertcondition(tp1Hit, title="TP1", message="{{ticker}}: TP1 tetiklendi.")
 alertcondition(tp2Hit, title="TP2 (final)", message="{{ticker}}: TP2 tetiklendi.")
+
+// ---------------------------------------------------------------- IKINCI SISTEM: GUNLUK TREND PORTFOYU (bilgi)
+// Bot ile ayni kural (zarattini.py): 9 bakis suresi (5..360 gun) kapanis kirilimi + kanal ortasi iz suren stop.
+// Skor = trendde olan sure sayisi (0-9); hedef pay = skor/9 x min(%25 / yillik oynaklik(90g), 2) / 20.
+// Portfoye girmesi coinin en likit 20 arasinda olmasina da bagli (bot hesaplar). Sadece kapanmis gunluk mumlar.
+G_TRD = "11) Gunluk trend portfoyu (ikinci sistem, bilgi)"
+trdGoster = input.bool(true, "Gunluk trend kutusu", group=G_TRD)
+trdCizgi  = input.bool(true, "En yakin trend stopunu ciz", group=G_TRD)
+
+trd_kanal(int L) =>
+    var bool ic = false
+    var float st = na
+    float mx = ta.highest(close, L)
+    float mn = ta.lowest(close, L)
+    float orta = (mx + mn) / 2
+    bool brk = close > mx[1]
+    if ic
+        if close < st
+            ic := false
+            st := na
+        else if not na(orta)
+            st := math.max(st, orta)
+    else if brk
+        ic := true
+        st := orta
+    [ic, st]
+
+trd_ust(float a, float b) =>
+    na(a) ? b : na(b) ? a : math.max(a, b)
+
+trd_hepsi() =>
+    [i1, s1] = trd_kanal(5)
+    [i2, s2] = trd_kanal(10)
+    [i3, s3] = trd_kanal(20)
+    [i4, s4] = trd_kanal(30)
+    [i5, s5] = trd_kanal(60)
+    [i6, s6] = trd_kanal(90)
+    [i7, s7] = trd_kanal(150)
+    [i8, s8] = trd_kanal(250)
+    [i9, s9] = trd_kanal(360)
+    int skor = (i1 ? 1 : 0) + (i2 ? 1 : 0) + (i3 ? 1 : 0) + (i4 ? 1 : 0) + (i5 ? 1 : 0) + (i6 ? 1 : 0) + (i7 ? 1 : 0) + (i8 ? 1 : 0) + (i9 ? 1 : 0)
+    float yakin = na
+    yakin := i1 ? trd_ust(yakin, s1) : yakin
+    yakin := i2 ? trd_ust(yakin, s2) : yakin
+    yakin := i3 ? trd_ust(yakin, s3) : yakin
+    yakin := i4 ? trd_ust(yakin, s4) : yakin
+    yakin := i5 ? trd_ust(yakin, s5) : yakin
+    yakin := i6 ? trd_ust(yakin, s6) : yakin
+    yakin := i7 ? trd_ust(yakin, s7) : yakin
+    yakin := i8 ? trd_ust(yakin, s8) : yakin
+    yakin := i9 ? trd_ust(yakin, s9) : yakin
+    float uzak = i9 ? s9 : i8 ? s8 : i7 ? s7 : i6 ? s6 : i5 ? s5 : i4 ? s4 : i3 ? s3 : i2 ? s2 : i1 ? s1 : na
+    float sig = ta.stdev(close / close[1] - 1, 90, false) * math.sqrt(365)
+    [skor[1], yakin[1], uzak[1], sig[1]]
+
+[trdSkor, trdYakin, trdUzak, trdSig] = request.security(syminfo.tickerid, "D", trd_hepsi(), lookahead=barmerge.lookahead_on)
+bool trdVar = trdSkor > 0
+float trdPay = na(trdSig) or trdSig <= 0 ? na : trdSkor / 9.0 * math.min(0.25 / trdSig, 2.0) / 20.0 * 100
+plot(trdGoster and trdCizgi and trdVar ? trdYakin : na, "Gunluk trend stopu", color=color.new(color.teal, 30), linewidth=1, style=plot.style_linebr)
+var table trdTb = table.new(position.bottom_left, 2, 3, bgcolor=color.new(color.black, 30), border_width=1)
+if trdGoster and barstate.islast
+    color tsc = trdSkor >= 6 ? color.teal : trdSkor >= 1 ? color.olive : color.gray
+    table.cell(trdTb, 0, 0, "Gunluk trend skoru", text_color=color.white, text_size=size.small)
+    table.cell(trdTb, 1, 0, str.tostring(trdSkor) + " / 9", text_color=tsc, text_size=size.small)
+    table.cell(trdTb, 0, 1, "Hedef pay (ilk 20 likitteyse)", text_color=color.white, text_size=size.small)
+    table.cell(trdTb, 1, 1, trdVar ? "%" + str.tostring(trdPay, "#.##") + " sermaye" : "yok", text_color=color.white, text_size=size.small)
+    table.cell(trdTb, 0, 2, "En yakin stop / son stop", text_color=color.white, text_size=size.small)
+    table.cell(trdTb, 1, 2, trdVar ? str.tostring(trdYakin, format.mintick) + " / " + str.tostring(trdUzak, format.mintick) : "-", text_color=color.white, text_size=size.small)
