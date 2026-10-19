@@ -17,7 +17,7 @@ jobs:
       fail-fast: false
       max-parallel: 20
       matrix:
-        mod: [gozden-0, gozden-1, gozden-2, gozden-3, gozden-4, gozden-5, gozden-6, gozden-7, gozden-8, gozden-9, gozden-10, gozden-11]
+        mod: [gozden2-0, gozden2-1, gozden2-2, gozden2-3]
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5

@@ -699,7 +699,23 @@ def main():
             for v_ in (3, 12): ek(f"short genislik penceresi {v_} mum (6)", ters_s=gU(v_))
             ek("short genislik: en fazla 1 coin", ters_max=1)
             for v_ in (60, 100): ek(f"direnc {v_} mum (80)", resistance_len=v_)
-            K = 12
+            if mod.startswith("gozden2"):
+                S = [("SU ANKI v6.5", dict(B6))]
+                ek("TP1 0.9R", tp1_r=0.9)
+                ek("tampon 0.05", break_buf_atr=0.05)
+                ek("BC 0.1 ATR", bc_atr=0.1)
+                ek("TP1 0.9R + tampon 0.05", tp1_r=0.9, break_buf_atr=0.05)
+                ek("TP1 0.9R + BC 0.1", tp1_r=0.9, bc_atr=0.1)
+                ek("tampon 0.05 + BC 0.1", break_buf_atr=0.05, bc_atr=0.1)
+                ek("TP1 0.9R + tampon 0.05 + BC 0.1", tp1_r=0.9, break_buf_atr=0.05, bc_atr=0.1)
+                ek("TP1 0.9R + tampon 0.05 + BC 0.1 + zaman min 0.8R", tp1_r=0.9, break_buf_atr=0.05, bc_atr=0.1, time_stop_min_r=0.8)
+                ek("RSI ust 75 (tablo kapali)", def_rsi_max=75.0, use_auto_params=False)
+                ek("RSI ust 75 + TP1 0.9R + tampon 0.05 + BC 0.1", def_rsi_max=75.0, use_auto_params=False, tp1_r=0.9, break_buf_atr=0.05, bc_atr=0.1)
+                ek("RSI ust yok + min yer 0.8R", def_rsi_max=101.0, use_auto_params=False, min_room_r=0.8)
+                ek("min yer 0.8R + TP1 0.9R", min_room_r=0.8, tp1_r=0.9)
+                K = 4
+            else:
+                K = 12
             parca = int(mod.split("-")[1])
             senaryo = S[:1] + S[1 + parca::K]
             DON = [("A", "2024-07-01", "2025-06-30 23:59"), ("B", "2025-07-01", "2026-02-28 23:59"), ("C", "2026-03-01", None)]
