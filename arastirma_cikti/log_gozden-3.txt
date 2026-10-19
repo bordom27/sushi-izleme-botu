@@ -1,0 +1,9 @@
+SU ANKI v6.5
+KAPAT: EMA dizilimi
+KAPAT: short genislik filtresi
+AC: short icin coin < EMA200
+trend EMA 34 (50)
+RSI uzunluk 21 (14)
+max mum boyu 4.0 ATR (3)
+panik esigi %6.0 (4)
+TP1 0.7R (0.8)
