@@ -17,7 +17,7 @@ jobs:
       fail-fast: false
       max-parallel: 20
       matrix:
-        mod: [buyuk-zar-short]
+        mod: [buyuk-zar-esik]
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5

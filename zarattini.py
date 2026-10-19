@@ -27,7 +27,7 @@ def tablolar(G: dict) -> tuple[pd.DataFrame, pd.DataFrame]:
 
 
 def hedef_agirlik(kapan: pd.DataFrame, hacim: pd.DataFrame, LB=BAKIS, top=20, hedef_vol=0.25, max_kaldirac=2.0,
-                  min_gecmis=365) -> pd.DataFrame:
+                  min_gecmis=365, min_skor=1, tam_boy=False) -> pd.DataFrame:
     """Her gun kapanisindan sonra tutulmasi gereken agirliklar (sermayenin orani)."""
     ret = kapan.pct_change()
     sig = ret.rolling(90, min_periods=60).std() * np.sqrt(365)
@@ -58,6 +58,9 @@ def hedef_agirlik(kapan: pd.DataFrame, hacim: pd.DataFrame, LB=BAKIS, top=20, he
                     stop[j] = O[t, j]
                 if icinde[j]:
                     toplam[t, j] += 1.0
+    toplam = np.where(toplam >= min_skor, toplam, 0.0)
+    if tam_boy:   # skor esigi gecilince tam pay (orantili degil)
+        toplam = np.where(toplam > 0, float(len(LB)), 0.0)
     sinyal = pd.DataFrame(toplam / len(LB), index=kapan.index, columns=kapan.columns)
     olcek = (hedef_vol / sig).clip(upper=max_kaldirac)
     return ((sinyal * olcek).where(secili, 0.0).fillna(0.0) / top)
