@@ -55,6 +55,13 @@ Kural: `GENISLIK_COINLER`'deki 30 büyük coinden herhangi biri son 6 mumda (24 
 "En fazla 1 coin" gibi gevşek eşikler iyileştirmiyor: kural "hiç ters kırılım yok" olarak çalışıyor.
 Ayrıca test edilip eklenmeyenler: ortalamaya dönüş sistemi (48 varyasyon, hepsi zararda), momentum rotasyonu (tutarsız, %35–55 düşüş), dinamik RSI, z-skor, verimlilik oranı, choppiness, FVG, BTC korelasyonu.
 
+## Büyük adım araştırması (19 Ekim 2026)
+- **Teşhis (Mar–Eki 2026 zayıflığı):** sinyal sayısı ayda ~7'ye düştü (önceki dönemler 12 ve 23). Kâr motoru short tarafı (işlem başı 0.44 / 0.39 / 0.27R); long tarafı her dönemde zayıf (0.24 / 0.10 / 0.02R). Son dönemde BTC çoğunlukla yükselişte olduğu için short fırsatı az çıktı; sistem bozulmadı, piyasa rejimi değişti.
+- **Başka zaman dilimleri** (1s, 2s, 6s, 8s, 12s, 1G; olduğu gibi ve takvime ölçekli): hiçbiri 4s'i geçmiyor. 1s/2s zararda, 6s/8s/12s son dönemde negatif.
+- **Zarattini tarzı günlük trend sistemi** (Donchian topluluğu, kanal ortası stop, vol hedefli): tek başına zayıf (Sharpe ~0.8, 2. dönem düz), 4s sistemle korelasyon ~0. Yarım ağırlıkla eklemek Sharpe'ı 2.24 → 2.35, son dönemi %3.6 → %6.5 yapıyor; küçük katkı, şimdilik eklenmedi.
+- **Toplu sinyaller:** aynı mumda ≥2 aynı yön sinyal en iyi işlemler (8+ kümede işlem başı 0.52R); tekil sinyaller zayıf (0.10R) ama yine kârlı, elemek veya küçültmek sonucu iyileştirmiyor. En kötü gün de bir kümeden: 25 Oca 2026'da açılan 14 short ertesi gün başarısız kırılımla kapandı (−7.2R). Bot artık aynı mumda ≥4 aynı yön sinyalde toplam risk uyarısı veriyor.
+- **Risk boyutu** (gerçekçi sermaye eğrisi, eşzamanlı pozisyonlar, bileşik; kâr/zarar çıkışta): %0.5 → yıllık ~%29, max düşüş ~%4; %1 → ~%63, ~%8, en kötü gün ~%−7.5; %1.5 → ~%104, ~%12. Aynı anda 27'ye kadar açık işlem olabiliyor (%0.5 riskte toplam pozisyon sermayenin 2.3 katına çıkabiliyor). Geçmiş test; gerçek işlemde kayma ve dolum farkı sonuçları düşürür.
+
 ## v6.6: İnce ayar (19 Ekim 2026)
 Tüm ayarlar tek tek gözden geçirildi (125 test, 116 coin, üç dönem). Birleşim: TP1 0.8R → **0.9R**, kırılım tamponu 0.1 → **0.05 ATR**, başarısız kırılım çıkışı 0.15 → **0.1 ATR**, zaman stopu eşiği 0.5R → **0.8R**. Üç dönem: +5.1R / +5.5R / +1.3R (A 44.8 → 49.9R, B 56.4 → 61.9R, C 5.2 → 6.6R); işlem ~%5 fazla, isabet aynı.
 Etkisiz çıkanlar (sonucu hiç değiştirmiyor; hacim / ADX / EMA şartları aynı işlemleri zaten eliyor): 4s MACD ve ayarları, panik filtresi, stop sonrası bekleme, RSI alt sınırı.

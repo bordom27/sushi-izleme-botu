@@ -194,9 +194,9 @@ def mesaj_giris(sym, o: k.Olay, cfg) -> str:
         f"TP2: {fmt(v['tp2'])}  ({tp2_r:.1f}R, {v['tp2_kay']}) → kalan %{100 - k.PARAMS['tp1_pct']:g}\n"
         f"Pozisyon büyüklüğü (hesabın %{k.PARAMS['hesap_risk']:g}'i riskte): sermayenin %{v['poz_pct']:.1f}\n"
         + kalabalik_satiri(sym, o, cfg, v) +
-        f"TP1 sonrası stop giriş+0.1R'ye çekilir ve 2.5 ATR iz süren stopa geçer. "
-        f"İlk 3 mumda kapanış kırılan seviyenin gerisine dönerse stopu bekleme, çık (bot bildirir). "
-        f"20 mum (~3.3 gün) içinde TP1 gelmez ve kâr 0.5R'nin altındaysa çık.\n"
+        f"TP1 sonrası stop giriş+{k.PARAMS['be_buf_r']:g}R'ye çekilir ve {k.PARAMS['trail_atr_mult']:g} ATR iz süren stopa geçer. "
+        f"İlk {k.PARAMS['bc_bar']} mumda kapanış kırılan seviyenin {k.PARAMS['bc_atr']:g} ATR gerisine dönerse stopu bekleme, çık (bot bildirir). "
+        f"{k.PARAMS['time_stop_bars']} mum (~{k.PARAMS['time_stop_bars'] * 4 / 24:.1f} gün) içinde TP1 gelmez ve kâr {k.PARAMS['time_stop_min_r']:g}R'nin altındaysa çık.\n"
         f"{grafik_linki(sym)}" + gecikme_notu(o.zaman, cfg)
     )
 
@@ -492,6 +492,13 @@ def main():
         kapanis = sum(m.startswith(("✅", "❌")) for m in liste)
         baslik = (f"🕓 4s mum kapanışı {tr_saat(t + pd.Timedelta(hours=4))} — "
                   f"{giris} giriş, {kapanis} kapanış, {len(liste) - giris - kapanis} diğer")
+        for simge, yon_ad in (("🟢", "LONG"), ("🔴", "SHORT")):
+            n_ = sum(m.startswith(simge) for m in liste)
+            if n_ >= 4:
+                baslik += (f"\n⚠️ Aynı anda {n_} {yon_ad} sinyali: bunlar aynı piyasa hareketine bağlı, genelde birlikte "
+                           f"kazanır ya da birlikte kaybeder. Hepsine girersen toplam risk ≈ {n_} × %{k.PARAMS['hesap_risk']:g} "
+                           f"= %{n_ * k.PARAMS['hesap_risk']:g}. (Testte bu toplu sinyaller ortalamada en iyi işlemler; "
+                           f"ama en kötü tek gün de böyle bir kümeden geldi: 14 short aynı gün başarısız kırılımla kapandı, −7.2R.)")
         send_telegram(baslik + "\n\n" + "\n\n".join(liste) if len(liste) > 1 else liste[0])
 
     # BTC durumu
