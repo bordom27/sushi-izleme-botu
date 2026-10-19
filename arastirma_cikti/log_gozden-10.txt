@@ -1,0 +1,11 @@
+SU ANKI v6.5
+KAPAT: asiri buyuk mum
+AC: gunluk MACD
+AC: seviye en az 1 kez test edilmis
+4s MACD modu: Hist > 0
+ADX min 15.0 (25)
+mum kapanis yeri 0.5 (0.6)
+BTC piyasa EMA 20 (50)
+seviye stopu 1.0 ATR (1.5)
+basabas tamponu 0.0R (0.1)
+basarisiz kirilim 0.1 ATR (0.15)
