@@ -55,6 +55,12 @@ Kural: `GENISLIK_COINLER`'deki 30 büyük coinden herhangi biri son 6 mumda (24 
 "En fazla 1 coin" gibi gevşek eşikler iyileştirmiyor: kural "hiç ters kırılım yok" olarak çalışıyor.
 Ayrıca test edilip eklenmeyenler: ortalamaya dönüş sistemi (48 varyasyon, hepsi zararda), momentum rotasyonu (tutarsız, %35–55 düşüş), dinamik RSI, z-skor, verimlilik oranı, choppiness, FVG, BTC korelasyonu.
 
+## v6.6: İnce ayar (19 Ekim 2026)
+Tüm ayarlar tek tek gözden geçirildi (125 test, 116 coin, üç dönem). Birleşim: TP1 0.8R → **0.9R**, kırılım tamponu 0.1 → **0.05 ATR**, başarısız kırılım çıkışı 0.15 → **0.1 ATR**, zaman stopu eşiği 0.5R → **0.8R**. Üç dönem: +5.1R / +5.5R / +1.3R (A 44.8 → 49.9R, B 56.4 → 61.9R, C 5.2 → 6.6R); işlem ~%5 fazla, isabet aynı.
+Etkisiz çıkanlar (sonucu hiç değiştirmiyor; hacim / ADX / EMA şartları aynı işlemleri zaten eliyor): 4s MACD ve ayarları, panik filtresi, stop sonrası bekleme, RSI alt sınırı.
+Kötüleştirenler: hacim filtresini kapatmak (C −25R), short genişlik filtresini kapatmak, EMA'dan uzaklık / mum boyu sınırını daraltmak veya genişletmek, hacim çarpanı 2.0 / 3.0, günlük/haftalık MACD, günlük ana trend, seviye test sayısı, taban genişliği, ATR% sınırı, sıkışma (BB / TTM squeeze), Zarattini / Turtle çıkışları.
+Not: RSI üst sınırını (70) kaldırmak 2. dönemde +27R ama son dönemde −7.6R; eklenmedi.
+
 ## v6.5: Fib giriş filtresi kaldırıldı (18 Ekim 2026)
 Fib 0.618 yapı filtresi kapalı (`use_fib=False`); fib tabanlı TP1/TP2 hedefleri aynen duruyor. Seçici mod üzerinde, üç dönem: +1.4R / +5.6R / +0.7R, işlem ~%9 fazla, isabet ve düşüş aynı.
 Fib yerine denenip eklenmeyenler: ölçülü hareket hedefi (20/40/80 mum; 2. dönemde +17–20R ama diğer iki dönemde kötü), sabit R hedefleri, direnç çakışması (büyük fib / 30–60 günlük zirve / eski pivot; sinyal azaltıyor, kaliteyi artırmıyor).

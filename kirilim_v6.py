@@ -70,7 +70,7 @@ PARAMS = {
     # 4) Kirilim
     "entry_mode": "Kirilim kapanisi",  # "Hibrit" | "Sadece retest" | "Kirilim kapanisi" (Ekim 2026 testi: kapanis en iyi)
     "resistance_len": 80,
-    "break_buf_atr": 0.1,
+    "break_buf_atr": 0.05,
     "use_volume": True,
     "vol_len": 20,
     "vol_mult": 2.5,                # Ekim 2026: secici mod (2x yerine 2.5x) - daha az sinyal, isabet ~%69
@@ -99,7 +99,7 @@ PARAMS = {
     "min_stop_atr": 1.0,
     "max_stop_atr": 3.5,
     "max_risk_pct": 12.0,
-    "tp1_r": 0.8,
+    "tp1_r": 0.9,
     "tp1_min_r": 0.6,
     "tp1_max_r": 1.1,
     "tp2_max_r": 6.0,
@@ -118,7 +118,7 @@ PARAMS = {
     "trail_atr_mult": 2.5,
     "use_time_stop": True,
     "time_stop_bars": 20,
-    "time_stop_min_r": 0.5,
+    "time_stop_min_r": 0.8,
     "use_trend_exit": False,
     "erken_be_r": 0.0,
 
@@ -132,7 +132,7 @@ PARAMS = {
     "genislik_max": 0,
     "basarisiz_cikis": True,
     "bc_bar": 3,
-    "bc_atr": 0.15,
+    "bc_atr": 0.1,
 
     # 8) Sembol tablosu
     "use_auto_params": True,
