@@ -1,0 +1,4 @@
+SU ANKI v6.5
+tampon 0.05
+tampon 0.05 + BC 0.1
+RSI ust 75 + TP1 0.9R + tampon 0.05 + BC 0.1
