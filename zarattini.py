@@ -4,7 +4,7 @@ Gunluk trend portfoyu (Zarattini, Pagani, Barbon 2025 "Catching Crypto Trends" y
 Her coin ve her bakis suresi L icin (5, 10, 20, 30, 60, 90, 150, 250, 360 gun):
   - giris: gunluk kapanis, onceki L gunun en yuksek kapanisini gecerse
   - cikis: kapanis iz suren stopun altina inerse; stop = max(onceki stop, son L gun kapanislarinin (en yuksek + en dusuk) / 2)
-Coinin sinyali = trendde olan bakis surelerinin orani (0..1).
+Skor = trendde olan bakis suresi sayisi (0-9). Skor >= 5 ise tam pay, degilse pozisyon yok (AYAR["min_skor"], "tam_boy").
 Boyut: sinyal x (hedef yillik oynaklik %25 / coinin 90 gunluk oynakligi), en fazla 2 kat; son 30 gunun hacmine gore
 en likit 20 coin (en az 365 gunluk gecmis) arasinda, her biri sermayenin 1/20'si uzerinden.
 Kararlar gunluk mum kapanisinda (00:00 UTC) verilir.
@@ -15,7 +15,8 @@ import numpy as np
 import pandas as pd
 
 BAKIS = (5, 10, 20, 30, 60, 90, 150, 250, 360)
-AYAR = {"top": 20, "hedef_vol": 0.25, "max_kaldirac": 2.0, "min_gecmis": 365, "bant": 0.01, "bant_oran": 0.33}
+AYAR = {"top": 20, "hedef_vol": 0.25, "max_kaldirac": 2.0, "min_gecmis": 365, "bant": 0.01, "bant_oran": 0.33,
+        "min_skor": 5, "tam_boy": True}   # 19 Eki 2026 testi: skor >= 5 olunca tam pay (2020+ +%121 / Sharpe 1.26; orantili +%80 / 1.17)
 
 
 def tablolar(G: dict) -> tuple[pd.DataFrame, pd.DataFrame]:
@@ -27,7 +28,7 @@ def tablolar(G: dict) -> tuple[pd.DataFrame, pd.DataFrame]:
 
 
 def hedef_agirlik(kapan: pd.DataFrame, hacim: pd.DataFrame, LB=BAKIS, top=20, hedef_vol=0.25, max_kaldirac=2.0,
-                  min_gecmis=365) -> pd.DataFrame:
+                  min_gecmis=365, min_skor=1, tam_boy=False) -> pd.DataFrame:
     """Her gun kapanisindan sonra tutulmasi gereken agirliklar (sermayenin orani)."""
     ret = kapan.pct_change()
     sig = ret.rolling(90, min_periods=60).std() * np.sqrt(365)
@@ -58,6 +59,9 @@ def hedef_agirlik(kapan: pd.DataFrame, hacim: pd.DataFrame, LB=BAKIS, top=20, he
                     stop[j] = O[t, j]
                 if icinde[j]:
                     toplam[t, j] += 1.0
+    toplam = np.where(toplam >= min_skor, toplam, 0.0)
+    if tam_boy:   # skor esigi gecilince tam pay (orantili degil)
+        toplam = np.where(toplam > 0, float(len(LB)), 0.0)
     sinyal = pd.DataFrame(toplam / len(LB), index=kapan.index, columns=kapan.columns)
     olcek = (hedef_vol / sig).clip(upper=max_kaldirac)
     return ((sinyal * olcek).where(secili, 0.0).fillna(0.0) / top)

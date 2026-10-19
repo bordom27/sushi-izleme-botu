@@ -388,7 +388,7 @@ def gunluk_ozet(state, sonuclar, btc_bilgi) -> str:
 def trend_portfoyu(state: dict, cfg: dict, btc_d: pd.DataFrame) -> str | None:
     """Gunluk trend portfoyu: son kapanan gunluk mumdan sonra bir kez calisir, degisiklik varsa mesaj dondurur."""
     son_gun = str(btc_d["open_time"].iloc[-1])[:10]
-    if state.get("trend_son_gun") == son_gun:
+    if state.get("trend_son_gun") == son_gun and state.get("trend_ayar") == json.dumps(Z.AYAR, sort_keys=True):
         return None
     G = {}
     for sym in cfg["COINLER"]:
@@ -406,11 +406,15 @@ def trend_portfoyu(state: dict, cfg: dict, btc_d: pd.DataFrame) -> str | None:
     if str(kap.index[-1])[:10] != son_gun:
         return None
     w = Z.hedef_agirlik(kap, hac, top=Z.AYAR["top"], hedef_vol=Z.AYAR["hedef_vol"],
-                        max_kaldirac=Z.AYAR["max_kaldirac"], min_gecmis=Z.AYAR["min_gecmis"])
+                        max_kaldirac=Z.AYAR["max_kaldirac"], min_gecmis=Z.AYAR["min_gecmis"],
+                        min_skor=Z.AYAR["min_skor"], tam_boy=Z.AYAR["tam_boy"])
     olcek = cfg["TREND_OLCEK"]
     hedef = (w.iloc[-1] * olcek).round(4)
-    ilk = "trend_portfoy" not in state
-    eski = {s_: float(v) for s_, v in (state.get("trend_portfoy") or {}).items()}
+    ayar_izi = json.dumps(Z.AYAR, sort_keys=True)
+    kural_degisti = "trend_portfoy" in state and state.get("trend_ayar") != ayar_izi
+    ilk = "trend_portfoy" not in state or kural_degisti
+    eski = {} if ilk else {s_: float(v) for s_, v in (state.get("trend_portfoy") or {}).items()}
+    state["trend_ayar"] = ayar_izi
     bant = Z.AYAR["bant"] * olcek
     yeni, al, kapat, degis = {}, [], [], []
     for sym in sorted(set(eski) | set(hedef[hedef > 0].index)):
@@ -435,11 +439,15 @@ def trend_portfoyu(state: dict, cfg: dict, btc_d: pd.DataFrame) -> str | None:
     toplam = sum(yeni.values())
     if not (al or kapat or degis) and not ilk:
         return None
-    baslik = "📈 GÜNLÜK TREND PORTFÖYÜ" + (" — BAŞLANGIÇ" if ilk else "") + f" ({son_gun} günlük kapanışı)"
+    baslik = "📈 GÜNLÜK TREND PORTFÖYÜ" + (" — KURAL GÜNCELLENDİ" if kural_degisti else " — BAŞLANGIÇ" if ilk else "") + f" ({son_gun} günlük kapanışı)"
     satir = [baslik, "İkinci sistem: sadece LONG, günler/haftalar sürer, stop yerine çıkışı bot bildirir. "
                      "Yüzdeler toplam sermayenin oranı = pozisyon büyüklüğü (vadelide 1x kaldıraç değeri)."]
+    if kural_degisti:
+        satir.append(f"Yeni kural: trend skoru en az {Z.AYAR['min_skor']}/9 olan coinde tam pay, altına düşünce kapat "
+                     f"(testte 2020+ +%121, eskisi +%80; ortalama ~5 coin). Önceki trend pozisyonlarını bu listeye göre ayarla; "
+                     f"listede olmayanları kapat.")
     if ilk:
-        satir.append(f"Şu an tutulması gerekenler ({len(yeni)} coin):")
+        satir.append(f"Şu an tutulması gerekenler ({len(yeni)} coin):" if yeni else "Şu an trend portföyünde coin yok (skoru eşiği geçen coin yok).")
         for sym, v in sorted(yeni.items(), key=lambda x: -x[1]):
             satir.append(f"• {sym.replace('USDT', '')}: sermayenin %{100 * v:.2f}'i ({fmt(float(fiyat[sym]))})")
     else:
