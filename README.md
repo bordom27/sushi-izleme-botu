@@ -55,6 +55,12 @@ Kural: `GENISLIK_COINLER`'deki 30 büyük coinden herhangi biri son 6 mumda (24 
 "En fazla 1 coin" gibi gevşek eşikler iyileştirmiyor: kural "hiç ters kırılım yok" olarak çalışıyor.
 Ayrıca test edilip eklenmeyenler: ortalamaya dönüş sistemi (48 varyasyon, hepsi zararda), momentum rotasyonu (tutarsız, %35–55 düşüş), dinamik RSI, z-skor, verimlilik oranı, choppiness, FVG, BTC korelasyonu.
 
+## Büyük örneklem: 2020'den bugüne (19 Ekim 2026)
+v6.6, 2020 başından bugüne (6.8 yıl, 750 işlem): toplam +153.7R, isabet %61, en kötü düşüş 14.4R. Yıllık: 2020 +12.1R, 2021 +13.9R, 2022 +3.7R, 2023 −0.9R, 2024 ilk yarı +5.1R, A +50.3R, B +63.2R, C +6.5R.
+Ayarlar 2024 sonrası veriyle geliştirildiği için 2020–2024 örneklem dışı sayılır; orada işlem başı ~0.09R (A/B'de 0.34R) — gerçekçi beklenti daha düşük. Batan coinler veride yok (hafif iyimser).
+Reddedilen fikirlerin hiçbiri her yıl iyileştirmiyor (RSI üst sınırı yok: toplam +27R ama 2021 ve son dönem kötü; BTC filtreleri yok: +18R ama 2021, 2024, son dönem kötü).
+Zarattini günlük trend sistemi bu dönemde Sharpe 1.28, v6.6 ile korelasyon 0.01; eşit oynaklıkta ikisi birlikte yıllık ~%23, Sharpe 1.94 (v6.6 tek başına %0.5 riskte ~%12, 1.48).
+
 ## Büyük adım araştırması (19 Ekim 2026)
 - **Teşhis (Mar–Eki 2026 zayıflığı):** sinyal sayısı ayda ~7'ye düştü (önceki dönemler 12 ve 23). Kâr motoru short tarafı (işlem başı 0.44 / 0.39 / 0.27R); long tarafı her dönemde zayıf (0.24 / 0.10 / 0.02R). Son dönemde BTC çoğunlukla yükselişte olduğu için short fırsatı az çıktı; sistem bozulmadı, piyasa rejimi değişti.
 - **Başka zaman dilimleri** (1s, 2s, 6s, 8s, 12s, 1G; olduğu gibi ve takvime ölçekli): hiçbiri 4s'i geçmiyor. 1s/2s zararda, 6s/8s/12s son dönemde negatif.
