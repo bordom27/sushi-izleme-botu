@@ -1,0 +1,7 @@
+SU ANKI v6.5
+sikisma: son 10 mum BB genisligi <= 0.9 x medyan
+coklu kanal: 120 mum tepe/dip de kirilmali
+Zarattini cikis: TP1 %90, kalan kanal ortasi (20) ile, TP2 yok
+Zarattini cikis: TP1 %70, kalan kanal ortasi (40) ile, TP2 yok
+Zarattini cikis: TP1 %50, kalan kanal ortasi (80) ile, TP2 yok
+Turtle cikis: TP1 %50, kalan 20 mum dip/tepe ile, TP2 yok
