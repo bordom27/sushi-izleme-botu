@@ -1,0 +1,9 @@
+SU ANKI v6.5
+KAPAT: RSI (alt+ust)
+KAPAT: stop sonrasi bekleme
+AC: taban genisligi <= 10 ATR
+MACD 8/21/5 (12/26/9)
+RSI alt 60.0 (50)
+hacim carpani 2.0 (2.5)
+EMA'dan max uzaklik 4.0 ATR (3)
+TP2 2.0R (2.5, tablo kapali)
