@@ -55,6 +55,11 @@ Kural: `GENISLIK_COINLER`'deki 30 büyük coinden herhangi biri son 6 mumda (24 
 "En fazla 1 coin" gibi gevşek eşikler iyileştirmiyor: kural "hiç ters kırılım yok" olarak çalışıyor.
 Ayrıca test edilip eklenmeyenler: ortalamaya dönüş sistemi (48 varyasyon, hepsi zararda), momentum rotasyonu (tutarsız, %35–55 düşüş), dinamik RSI, z-skor, verimlilik oranı, choppiness, FVG, BTC korelasyonu.
 
+## İkinci sistem: günlük trend portföyü (19 Ekim 2026)
+`zarattini.py` — Zarattini, Pagani, Barbon (2025) "Catching Crypto Trends" yaklaşımı, sadece LONG, günlük grafik. Her coin için 9 bakış süresinde (5–360 gün) kapanış kırılımı + kanal ortası iz süren stop; sinyal = trendde olan sürelerin oranı; boyut = %25 hedef oynaklık / coinin oynaklığı (en fazla 2 kat), en likit 20 coin, her biri sermayenin 1/20'si üzerinden.
+Bot her günlük kapanıştan sonra (03:07 TR) hedefleri hesaplar; değişiklik varsa tek mesaj: 🟢 AL / ⬆️ ARTIR / ⬇️ AZALT / 🔴 KAPAT, yüzdeler toplam sermayenin oranı. Küçük değişiklikte işlem yok (fark sermayenin %1'inden ve mevcut payın %33'ünden küçükse). 21:00 özetinde portföy satırı var.
+Test (2020+, 1 gün gecikme + bu bant, %0.1 komisyon): toplam +%80, Sharpe 1.17, max düşüş %9; ortalama 12–13 coin, sermayenin ~%8'i (en fazla ~%33); günlerin ~%58'inde değişiklik. v6.6 ile korelasyon ~0. `TREND_OLCEK` (varsayılan 1.0) v6.6'nın %0.5 riskiyle eşit oynaklık demek; ikisini birlikte büyütmek için ikisini aynı oranda artır.
+
 ## Büyük örneklem: 2020'den bugüne (19 Ekim 2026)
 v6.6, 2020 başından bugüne (6.8 yıl, 750 işlem): toplam +153.7R, isabet %61, en kötü düşüş 14.4R. Yıllık: 2020 +12.1R, 2021 +13.9R, 2022 +3.7R, 2023 −0.9R, 2024 ilk yarı +5.1R, A +50.3R, B +63.2R, C +6.5R.
 Ayarlar 2024 sonrası veriyle geliştirildiği için 2020–2024 örneklem dışı sayılır; orada işlem başı ~0.09R (A/B'de 0.34R) — gerçekçi beklenti daha düşük. Batan coinler veride yok (hafif iyimser).
