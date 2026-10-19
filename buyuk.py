@@ -279,6 +279,34 @@ def main():
             rows.append(row); print(row, flush=True)
         pd.DataFrame(rows).to_csv(f"{OUT}/buyuk_zar_gercek.csv", index=False)
         w.iloc[-5:].T.round(4).to_csv(f"{OUT}/buyuk_zar_son_agirlik.csv")
+    elif mod == "zar-short":
+        import zarattini as Z
+        G = {}
+        for s_ in liste:
+            try:
+                g = veri.mumlar_onbellekli(s_, "1d", "2019-06-01")
+                if len(g) > 400:
+                    G[s_] = g[["open_time", "close", "volume"]].copy()
+            except Exception as exc:
+                print("veri yok", s_, exc, flush=True)
+            time.sleep(0.05)
+        kap, hac = Z.tablolar(G)
+        wL = Z.hedef_agirlik(kap, hac)
+        wS = Z.hedef_agirlik(-kap, hac)        # ayna: dusus kirilimi + kanal ortasi stop (short)
+        DONZ = [("Y2020", "2020-01-01", "2020-12-31"), ("Y2021", "2021-01-01", "2021-12-31"),
+                ("Y2022", "2022-01-01", "2022-12-31"), ("Y2023", "2023-01-01", "2023-12-31"),
+                ("Y24a", "2024-01-01", "2024-06-30")] + DON + [("TUM", "2020-01-01", None)]
+        rows, ser = [], {}
+        for ad, w in (("sadece LONG (simdiki)", wL), ("sadece SHORT", -wS), ("LONG + SHORT", wL - wS)):
+            H = Z.bantli(w.abs(), 0.01, 0.33) * np.sign(w)
+            r = Z.getiri(H, kap, gecikme=1, komisyon=0.001)
+            row = {"ayar": ad}
+            for dk, bb, ee in DONZ:
+                for kk, vv in zar_metrik(r, bb, ee).items():
+                    row[f"{dk}_{kk}"] = vv
+            rows.append(row); ser[ad] = r; print(row, flush=True)
+        pd.DataFrame(rows).to_csv(f"{OUT}/buyuk_zar_short.csv", index=False)
+        pd.DataFrame(ser).to_csv(f"{OUT}/buyuk_zar_short_gunluk.csv.gz", compression="gzip")
     elif mod.startswith("zar"):
         G = {}
         for s in liste:
