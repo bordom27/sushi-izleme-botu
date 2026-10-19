@@ -1,0 +1,9 @@
+SU ANKI v6.5
+KAPAT: RSI ust sinir
+YUMUSAK: MACD/ADX/mum 3'te 2 yeter
+AC: ATR% <= 4
+MACD 5/35/5 (12/26/9)
+RSI ust 65.0 (70, tablo kapali)
+hacim carpani 2.25 (2.5)
+kirilim tamponu 0.0 ATR (0.1)
+TP2 3.0R (2.5, tablo kapali)
