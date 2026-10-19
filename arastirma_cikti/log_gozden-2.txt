@@ -1,0 +1,11 @@
+SU ANKI v6.5
+KAPAT: panik filtresi
+KAPAT: basarisiz kirilim cikisi
+AC: short icin BTC < EMA200
+hizli EMA 34 (21)
+RSI uzunluk 7 (14)
+DI uzunluk 20 (14)
+max mum boyu 2.5 ATR (3)
+panik esigi %3.0 (4)
+TP1 0.6R (0.8)
+short genislik: en fazla 1 coin
