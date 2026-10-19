@@ -12,12 +12,12 @@ permissions:
 jobs:
   ara:
     runs-on: ubuntu-latest
-    timeout-minutes: 240
+    timeout-minutes: 340
     strategy:
       fail-fast: false
       max-parallel: 20
       matrix:
-        mod: [buyuk-btcf]
+        mod: [buyuk-uzun-0, buyuk-uzun-1, buyuk-uzun-2, buyuk-uzun-3, buyuk-zar-uzun]
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5

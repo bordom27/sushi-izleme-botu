@@ -189,6 +189,54 @@ def main():
                 tr = A.calistir(prm, liste, iv, hv)
                 rows.append(ozet(tr, ad)); print(rows[-1], flush=True)
         pd.DataFrame(rows).to_csv(f"{OUT}/buyuk_btcf.csv", index=False)
+    elif mod.startswith("uzun"):
+        # buyuk orneklem: 2020'den bugune (2021 boga, 2022 ayi, 2023 toparlanma dahil)
+        A.VERI_BAS = "2019-09-01"
+        A.IS_BAS = "2020-01-01"
+        iv = "4h"
+        A.DATA["btc_4h"] = veri.mumlar_onbellekli("BTCUSDT", "4h", A.VERI_BAS)
+        A.DATA[iv] = A.yukle(liste, iv)
+        print("coin", len(A.DATA[iv]), flush=True)
+        p = b66(A.DATA[iv])
+        S = [("v6.6", p),
+             ("v6.5 (eski ince ayar)", dict(p, tp1_r=0.8, break_buf_atr=0.1, bc_atr=0.15, time_stop_min_r=0.5)),
+             ("RSI ust siniri yok", dict(p, def_rsi_max=101.0, use_auto_params=False)),
+             ("RSI ust 75", dict(p, def_rsi_max=75.0, use_auto_params=False)),
+             ("tum BTC filtreleri kapali", dict(p, use_mkt=False, long_sart="Kapali")),
+             ("BTC EMA50 sadece short'ta kapali", dict(p, mkt_short=False)),
+             ("short genislik filtresi kapali", dict(p, ters_max=-1)),
+             ("hacim 2.0x", dict(p, vol_mult=2.0)),
+             ("hacim 3.0x", dict(p, vol_mult=3.0)),
+             ("coklu kanal 240", dict(p, ek_R=240)),
+             ("fib giris filtresi acik", dict(p, use_fib=True)),
+             ("basarisiz kirilim cikisi yok", dict(p, basarisiz_cikis=False)),
+             ("TP1'de %70 kapat", dict(p, tp1_pct=70.0)),
+             ("direnc 60 mum", dict(p, resistance_len=60)),
+             ("direnc 120 mum", dict(p, resistance_len=120)),
+             ("min yer 0.8R", dict(p, min_room_r=0.8))]
+        K = 4
+        parca = int(mod.split("-")[1])
+        senaryo = S[:1] + S[1 + parca::K]
+        DON2 = [("Y2020", "2020-01-01", "2020-12-31 23:59"), ("Y2021", "2021-01-01", "2021-12-31 23:59"),
+                ("Y2022", "2022-01-01", "2022-12-31 23:59"), ("Y2023", "2023-01-01", "2023-12-31 23:59"),
+                ("Y24a", "2024-01-01", "2024-06-30 23:59")] + DON + [("TUM", "2020-01-01", None)]
+        rows = []
+        with mp.Pool(4) as hv:
+            for ad, prm in senaryo:
+                tr = A.calistir(prm, liste, iv, hv)
+                row = {"ayar": ad}
+                for dk, b_, e_ in DON2:
+                    for kk, vv in A.metrik(tr, b_, e_).items():
+                        row[f"{dk}_{kk}"] = vv
+                rows.append(row); print(row, flush=True)
+                if ad == "v6.6" and parca == 0 and len(tr):
+                    tr.drop(columns=[c for c in tr.columns if tr[c].dtype == object and c not in
+                                     ("symbol", "tip", "kalite", "neden")], errors="ignore") \
+                        .to_csv(f"{OUT}/buyuk_uzun_islem_v66.csv.gz", index=False, compression="gzip")
+        pd.DataFrame(rows).to_csv(f"{OUT}/buyuk_{mod}.csv", index=False)
+        # coinlerin veri baslangici (orneklemin hangi yilda kac coin icerdigi)
+        bas = {s_: str(d[0]["open_time"].iloc[0])[:10] for s_, d in A.DATA[iv].items()}
+        pd.Series(bas).to_csv(f"{OUT}/buyuk_uzun_coin_baslangic.csv")
     elif mod.startswith("zar"):
         G = {}
         for s in liste:
@@ -211,28 +259,37 @@ def main():
             ("uzun lookback (60-360)", dict(LB=(60, 90, 150, 250, 360))),
             ("sadece BTC+ETH", dict(top=2, sadece=["BTCUSDT", "ETHUSDT"])),
             ("tam yatirim: sermaye trenddeki coinlere bolunur (kaldiracsiz)", dict(bolen="aktif", toplam_tavan=1.0)),
+            ("UZUN 2020+: Zarattini temel", dict(bas="2020-01-01")),
+            ("UZUN 2020+: top10", dict(bas="2020-01-01", top=10)),
             ("tam yatirim, vol hedefsiz (esit agirlik, kaldiracsiz)", dict(bolen="aktif", toplam_tavan=1.0, hedef_vol=10.0, max_kaldirac=1.0)),
         ]
+        DONZ = DON + [("T", "2024-07-01", None)]
+        cikti = "buyuk_zar"
+        if mod == "zar-uzun":
+            senaryo = [x for x in senaryo if x[0].startswith("UZUN")]
+            DONZ = [("Y2020", "2020-01-01", "2020-12-31"), ("Y2021", "2021-01-01", "2021-12-31"),
+                    ("Y2022", "2022-01-01", "2022-12-31"), ("Y2023", "2023-01-01", "2023-12-31"),
+                    ("Y24a", "2024-01-01", "2024-06-30")] + DON + [("TUM", "2020-01-01", None)]
+            cikti = "buyuk_zar_uzun"
         rows, seriler = [], {}
         for ad, kw in senaryo:
             net, maruz = zar_sim(G, **kw)
-            row = {"ayar": ad, "ort_maruziyet": round(maruz[maruz.index >= "2024-07-01"].mean(), 2)}
-            for dk, b_, e_ in DON:
+            row = {"ayar": ad, "ort_maruziyet": round(maruz[maruz.index >= DONZ[0][1]].mean(), 2)}
+            for dk, b_, e_ in DONZ:
                 for kk, vv in zar_metrik(net, b_, e_).items():
                     row[f"{dk}_{kk}"] = vv
-            for kk, vv in zar_metrik(net, "2024-07-01").items():
-                row[f"T_{kk}"] = vv
             rows.append(row); seriler[ad] = net
             print(row, flush=True)
         btc = A.DATA["btc_d"].set_index("open_time")["close"].pct_change()
         row = {"ayar": "BTC al-tut"}
-        for dk, b_, e_ in DON:
+        for dk, b_, e_ in DONZ:
             for kk, vv in zar_metrik(btc, b_, e_).items():
                 row[f"{dk}_{kk}"] = vv
-        for kk, vv in zar_metrik(btc, "2024-07-01").items():
-            row[f"T_{kk}"] = vv
         rows.append(row); seriler["BTC"] = btc
-        pd.DataFrame(rows).to_csv(f"{OUT}/buyuk_zar.csv", index=False)
+        pd.DataFrame(rows).to_csv(f"{OUT}/{cikti}.csv", index=False)
+        if mod == "zar-uzun":
+            pd.DataFrame(seriler).to_csv(f"{OUT}/{cikti}_gunluk.csv.gz", compression="gzip")
+            return
         pd.DataFrame(seriler).to_csv(f"{OUT}/buyuk_zar_gunluk.csv.gz", compression="gzip")
 
 
