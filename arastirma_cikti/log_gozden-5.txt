@@ -1,0 +1,10 @@
+SU ANKI v6.5
+KAPAT: ADX/DMI
+KAPAT: fib hedefleri
+AC: taban genisligi <= 6 ATR
+trend EMA 200 (50)
+RSI alt 55.0 (50)
+EMA'dan max uzaklik 2.5 ATR (3)
+ATR uzunluk 20 (14)
+TP1 1.0R (0.8)
+zaman stopu min 0.8R (0.5)
