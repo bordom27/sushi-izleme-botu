@@ -1,0 +1,4 @@
+SU ANKI v6.5
+TP1 0.9R + tampon 0.05
+TP1 0.9R + tampon 0.05 + BC 0.1 + zaman min 0.8R
+min yer 0.8R + TP1 0.9R
