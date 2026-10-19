@@ -237,6 +237,48 @@ def main():
         # coinlerin veri baslangici (orneklemin hangi yilda kac coin icerdigi)
         bas = {s_: str(d[0]["open_time"].iloc[0])[:10] for s_, d in A.DATA[iv].items()}
         pd.Series(bas).to_csv(f"{OUT}/buyuk_uzun_coin_baslangic.csv")
+    elif mod == "zar-gercek":
+        import zarattini as Z
+        G = {}
+        for s_ in liste:
+            try:
+                g = veri.mumlar_onbellekli(s_, "1d", "2019-06-01")
+                if len(g) > 400:
+                    G[s_] = g[["open_time", "close", "volume"]].copy()
+            except Exception as exc:
+                print("veri yok", s_, exc, flush=True)
+            time.sleep(0.05)
+        kap, hac = Z.tablolar(G)
+        w = Z.hedef_agirlik(kap, hac)
+        DONZ = [("Y2020", "2020-01-01", "2020-12-31"), ("Y2021", "2021-01-01", "2021-12-31"),
+                ("Y2022", "2022-01-01", "2022-12-31"), ("Y2023", "2023-01-01", "2023-12-31"),
+                ("Y24a", "2024-01-01", "2024-06-30")] + DON + [("TUM", "2020-01-01", None)]
+        sen = [("ideal: kapanista, her gun tam uyum", 0, 0.0, 0.0, 0.001),
+               ("1 gun gecikme", 1, 0.0, 0.0, 0.001),
+               ("1 gun gecikme + bant %0.5", 1, 0.005, 0.0, 0.001),
+               ("1 gun gecikme + bant %1", 1, 0.01, 0.0, 0.001),
+               ("1 gun gecikme + bant %2", 1, 0.02, 0.0, 0.001),
+               ("1 gun gecikme + bant %0.5 veya %25", 1, 0.005, 0.25, 0.001),
+               ("1 gun gecikme + bant %1 veya %33", 1, 0.01, 0.33, 0.001),
+               ("1 gun gecikme + bant %1 veya %50", 1, 0.01, 0.5, 0.001),
+               ("1 gun gecikme + bant %1 veya %33, komisyon %0.2", 1, 0.01, 0.33, 0.002)]
+        rows = []
+        for ad, gc, b_, o_, kom in sen:
+            H = Z.bantli(w, b_, o_)
+            r = Z.getiri(H, kap, gecikme=gc, komisyon=kom)
+            d_ = (H.diff().abs() > 1e-12)
+            d_ = d_[d_.index >= "2020-01-01"]
+            row = {"ayar": ad, "islem_gunu_orani": round(float((d_.sum(axis=1) > 0).mean()), 2),
+                   "gunluk_ort_degisiklik": round(float(d_.sum(axis=1).mean()), 2),
+                   "ort_maruziyet": round(float(H[H.index >= "2020-01-01"].sum(axis=1).mean()), 3),
+                   "max_maruziyet": round(float(H[H.index >= "2020-01-01"].sum(axis=1).max()), 3),
+                   "ort_coin": round(float((H[H.index >= "2020-01-01"] > 0).sum(axis=1).mean()), 1)}
+            for dk, bb, ee in DONZ:
+                for kk, vv in zar_metrik(r, bb, ee).items():
+                    row[f"{dk}_{kk}"] = vv
+            rows.append(row); print(row, flush=True)
+        pd.DataFrame(rows).to_csv(f"{OUT}/buyuk_zar_gercek.csv", index=False)
+        w.iloc[-5:].T.round(4).to_csv(f"{OUT}/buyuk_zar_son_agirlik.csv")
     elif mod.startswith("zar"):
         G = {}
         for s in liste:
