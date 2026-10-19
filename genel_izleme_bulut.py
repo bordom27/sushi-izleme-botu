@@ -34,6 +34,7 @@ import requests
 
 import kirilim_v6 as k
 import veri
+import zarattini as Z
 from coin_listesi import COINLER, GENISLIK_COINLER
 
 CONFIG = {
@@ -51,7 +52,12 @@ CONFIG = {
     # KALABALIK UYARISI (Ekim 2026 testi): buyuk oyuncularin (top trader) pozisyon orani girisin
     # yonune bu kadar yigilmissa (long'da L/S > esik, short'ta S/L > esik) islem basi getiri
     # dort test grubunun dordunde de belirgin dusuk cikti -> riski yariya indirme onerisi.
-    "KALABALIK_ESIK": 1.69,                # bundan eski olaylar tek tek degil, tek ozet mesajinda gonderilir
+    "KALABALIK_ESIK": 1.69,
+    # IKINCI SISTEM: gunluk trend portfoyu (zarattini.py). Agirliklar sermayenin orani; 1.0 = v6.6'nin islem basi
+    # %0.5 riskiyle ayni oynaklik (testte birlikte: 2020+ yillik ~%23, Sharpe ~1.9). Ikisini birlikte buyutmek icin
+    # hesap_risk ile ayni oranda artir.
+    "TREND_PORTFOY": True,
+    "TREND_OLCEK": 1.0,                # bundan eski olaylar tek tek degil, tek ozet mesajinda gonderilir
 }
 
 TR = timezone(timedelta(hours=3))
@@ -338,6 +344,10 @@ def gunluk_ozet(state, sonuclar, btc_bilgi) -> str:
         satir.append("Eski sistemden açık: " + ", ".join(
             f"{x.split('] ')[-1]} (stop {fmt(p['stop'])}, TP1 {fmt(p['tp1_price'])}{' ✓' if p['tp1_done'] else ''}, TP2 {fmt(p['tp2_price'])})"
             for x, p in eski.items()))
+    tp = state.get("trend_portfoy") or {}
+    if tp:
+        satir.append(f"Günlük trend portföyü ({len(tp)} coin, sermayenin %{100 * sum(tp.values()):.1f}'i): " + ", ".join(
+            f"{x.replace('USDT', '')} %{100 * v:.2f}" for x, v in sorted(tp.items(), key=lambda y: -y[1])))
     hazir_l = [s for s, r in sonuclar.items() if r.filtre.get("long_hazir") and not r.acik]
     hazir_s = [s for s, r in sonuclar.items() if r.filtre.get("short_hazir") and not r.acik]
     satir.append(f"Elekleri geçmiş, kırılım bekleyen: LONG {len(hazir_l)} | SHORT {len(hazir_s)}")
@@ -351,10 +361,10 @@ def gunluk_ozet(state, sonuclar, btc_bilgi) -> str:
             atr = f.get("atr")
             if not sev or not r.son_kapanis:
                 continue
-            esik = sev + yon * 0.1 * (atr or 0)          # kirilim icin kapanisin gecmesi gereken seviye
+            esik = sev + yon * k.PARAMS["break_buf_atr"] * (atr or 0)   # kirilim icin kapanisin gecmesi gereken seviye
             uzak = (esik / r.son_kapanis - 1) * 100
             out.append((abs(uzak), f"• {s}: {'üstünde' if yon == 1 else 'altında'} 4s kapanış {fmt(esik)} "
-                                   f"(şu an {fmt(r.son_kapanis)}, %{uzak:+.1f} uzakta) + hacim ortalamanın 2 katı"))
+                                   f"(şu an {fmt(r.son_kapanis)}, %{uzak:+.1f} uzakta) + hacim ortalamanın {k.PARAMS['vol_mult']:g} katı"))
         return [m for _, m in sorted(out)]
 
     if hazir_l:
@@ -372,6 +382,75 @@ def gunluk_ozet(state, sonuclar, btc_bilgi) -> str:
         rr = [t["sonuc_r"] for t in son30]
         satir.append(f"Son 30 gün (canlı): {len(rr)} işlem | isabet %{100 * sum(x > 0 for x in rr) / len(rr):.0f} | "
                      f"toplam {sum(rr):+.2f}R")
+    return "\n".join(satir)
+
+
+def trend_portfoyu(state: dict, cfg: dict, btc_d: pd.DataFrame) -> str | None:
+    """Gunluk trend portfoyu: son kapanan gunluk mumdan sonra bir kez calisir, degisiklik varsa mesaj dondurur."""
+    son_gun = str(btc_d["open_time"].iloc[-1])[:10]
+    if state.get("trend_son_gun") == son_gun:
+        return None
+    G = {}
+    for sym in cfg["COINLER"]:
+        try:
+            g = btc_d if sym == "BTCUSDT" else veri.mumlar_onbellekli(sym, "1d", cfg["VERI_BAS_1D"])
+            if len(g) > 100:
+                G[sym] = g[["open_time", "close", "volume"]]
+        except Exception as exc:
+            print(f"trend verisi yok {sym}: {exc}", flush=True)
+        time.sleep(cfg["ISTEK_BEKLEME"])
+    if len(G) < len(cfg["COINLER"]) * 0.8:
+        print("trend portfoyu: veri eksik, atlandi", flush=True)
+        return None
+    kap, hac = Z.tablolar(G)
+    if str(kap.index[-1])[:10] != son_gun:
+        return None
+    w = Z.hedef_agirlik(kap, hac, top=Z.AYAR["top"], hedef_vol=Z.AYAR["hedef_vol"],
+                        max_kaldirac=Z.AYAR["max_kaldirac"], min_gecmis=Z.AYAR["min_gecmis"])
+    olcek = cfg["TREND_OLCEK"]
+    hedef = (w.iloc[-1] * olcek).round(4)
+    ilk = "trend_portfoy" not in state
+    eski = {s_: float(v) for s_, v in (state.get("trend_portfoy") or {}).items()}
+    bant = Z.AYAR["bant"] * olcek
+    yeni, al, kapat, degis = {}, [], [], []
+    for sym in sorted(set(eski) | set(hedef[hedef > 0].index)):
+        h = eski.get(sym, 0.0)
+        if sym not in hedef.index or pd.isna(kap[sym].iloc[-1]):
+            if h > 0:
+                yeni[sym] = h          # verisi alinamadi: pozisyonu oldugu gibi tut
+            continue
+        t = float(hedef.get(sym, 0.0))
+        esik = max(bant, Z.AYAR.get("bant_oran", 0.33) * max(h, t))
+        if h == 0 and t > 0:
+            yeni[sym] = t; al.append(sym)
+        elif h > 0 and t == 0:
+            kapat.append(sym)
+        elif abs(t - h) > esik:
+            yeni[sym] = t; degis.append((sym, h, t))
+        elif h > 0:
+            yeni[sym] = h
+    state["trend_portfoy"] = yeni
+    state["trend_son_gun"] = son_gun
+    fiyat = kap.iloc[-1]
+    toplam = sum(yeni.values())
+    if not (al or kapat or degis) and not ilk:
+        return None
+    baslik = "📈 GÜNLÜK TREND PORTFÖYÜ" + (" — BAŞLANGIÇ" if ilk else "") + f" ({son_gun} günlük kapanışı)"
+    satir = [baslik, "İkinci sistem: sadece LONG, günler/haftalar sürer, stop yerine çıkışı bot bildirir. "
+                     "Yüzdeler toplam sermayenin oranı = pozisyon büyüklüğü (vadelide 1x kaldıraç değeri)."]
+    if ilk:
+        satir.append(f"Şu an tutulması gerekenler ({len(yeni)} coin):")
+        for sym, v in sorted(yeni.items(), key=lambda x: -x[1]):
+            satir.append(f"• {sym.replace('USDT', '')}: sermayenin %{100 * v:.2f}'i ({fmt(float(fiyat[sym]))})")
+    else:
+        for sym in sorted(al, key=lambda x: -yeni[x]):
+            satir.append(f"🟢 AL {sym.replace('USDT', '')}: sermayenin %{100 * yeni[sym]:.2f}'i ({fmt(float(fiyat[sym]))})")
+        for sym, h, t in sorted(degis, key=lambda x: -(x[2] - x[1])):
+            satir.append(f"{'⬆️ ARTIR' if t > h else '⬇️ AZALT'} {sym.replace('USDT', '')}: %{100 * h:.2f} → %{100 * t:.2f}")
+        for sym in kapat:
+            satir.append(f"🔴 KAPAT {sym.replace('USDT', '')} (trend bitti, {fmt(float(fiyat[sym]))})")
+    satir.append(f"Toplam: {len(yeni)} coin, sermayenin %{100 * toplam:.1f}'i. Bir sonraki günlük kapanışa kadar uygulaman yeterli "
+                 f"(test 1 gün gecikmeyle yapıldı).")
     return "\n".join(satir)
 
 
@@ -563,6 +642,14 @@ def main():
         send_telegram("\n".join(satir))
 
     eski_pozisyonlari_yonet(state, veriler)
+
+    if cfg["TREND_PORTFOY"]:
+        try:
+            tm = trend_portfoyu(state, cfg, btc_d)
+            if tm:
+                send_telegram(tm)
+        except Exception as exc:
+            print(f"trend portfoyu hata: {exc}", flush=True)
 
     # gunluk ozet
     simdi = datetime.now(timezone.utc)
