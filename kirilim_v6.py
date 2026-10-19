@@ -132,7 +132,8 @@ PARAMS = {
     "ttm_sik": False,               # True: son sik_k mumda BB(20,2) Keltner(20,1.5 ATR) icine girmis olmali (TTM squeeze)
     "ek_R": 0,                      # >0: kirilim ayni zamanda ek_R mumluk tepe/dip kirilimi olmali (coklu kanal onayi)
     "orta_trail": 0,                # >0: TP1 sonrasi stop, son N mum kapanislarinin (max+min)/2 seviyesine cekilir (Zarattini)
-    "use_ema_dizilim": True,        # False: EMA dizilimi elegi (kapanis > trend EMA, hizli > trend, egim) kapatilir
+    "use_ema_dizilim": True,
+    "mkt_long": True, "mkt_short": True,   # False: BTC piyasa (EMA50 + panik) filtresi o yonde uygulanmaz        # False: EMA dizilimi elegi (kapanis > trend EMA, hizli > trend, egim) kapatilir
     "kanal_trail": 0,               # >0: TP1 sonrasi stop, son N mumun en dusuk dibi / en yuksek tepesi (Turtle cikisi)
     "gunluk_ema_onay": 0,           # >0: long icin gunluk kapanis > gunluk EMA(N), short icin altinda
     "btc_vol_rejim": "",            # "" | "yuksek" | "dusuk": BTC 4s ATR% kendi 180 mumluk medyaninin ustu/alti
@@ -848,7 +849,7 @@ def simule_et(symbol: str, df: pd.DataFrame, gunluk: pd.DataFrame | None,
         roc_i = mk_roc[i]
         panik_l = (not p["use_panic"]) or math.isnan(roc_i) or roc_i > -p["panic_pct"]
         panik_s = (not p["use_panic"]) or math.isnan(roc_i) or roc_i < p["panic_pct"]
-        L1 = (not mkt_uygulanir) or (mk_trend_l and panik_l)
+        L1 = (not mkt_uygulanir) or (not p["mkt_long"]) or (mk_trend_l and panik_l)
         d_c, d_e = G["c"][i], G["e"][i]
         coin_ust200 = na_gecir if (math.isnan(d_c) or math.isnan(d_e)) else d_c > d_e
         if not mkt_uygulanir:
@@ -861,7 +862,7 @@ def simule_et(symbol: str, df: pd.DataFrame, gunluk: pd.DataFrame | None,
             else (btc_ust200 and coin_ust200)
         ss_ = p["short_sart"]
         short_ek = True if ss_ == "Kapali" else (not btc_ust200) if ss_ == "BTC < EMA200" else (not coin_ust200)
-        S1 = (not mkt_uygulanir) or (mk_trend_s and panik_s)
+        S1 = (not mkt_uygulanir) or (not p["mkt_short"]) or (mk_trend_s and panik_s)
 
         at_yok = math.isnan(G["e"][i]) or math.isnan(G["eo"][i]) or math.isnan(W["e"][i]) or math.isnan(W["c"][i])
         L2 = (not use_ana_trend) or (na_gecir if at_yok else (d_c > d_e and G["e"][i] >= G["eo"][i] and W["c"][i] > W["e"][i]))

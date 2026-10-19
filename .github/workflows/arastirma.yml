@@ -17,7 +17,7 @@ jobs:
       fail-fast: false
       max-parallel: 20
       matrix:
-        mod: [buyuk-liste, buyuk-tf-1h, buyuk-tf-2h, buyuk-tf-6h, buyuk-tf-8h, buyuk-tf-12h, buyuk-tf-1d, buyuk-zar]
+        mod: [buyuk-btcf]
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5

@@ -169,6 +169,26 @@ def main():
             # teshis icin gunluk kapanislar (BTC + evren)
             kap = {s: g[1].set_index("open_time")["close"] for s, g in A.DATA["4h"].items()}
             pd.DataFrame(kap).to_csv(f"{OUT}/buyuk_gunluk_kapanis.csv.gz", compression="gzip")
+    elif mod == "btcf":
+        iv = "4h"
+        A.DATA["btc_4h"] = veri.mumlar_onbellekli("BTCUSDT", "4h", A.VERI_BAS)
+        A.DATA[iv] = A.yukle(liste, iv)
+        p = b66(A.DATA[iv])
+        senaryo = [("SU ANKI v6.6", p),
+                   ("BTC EMA50 filtresi kapali (iki yon)", dict(p, use_mkt=False)),
+                   ("BTC EMA50 filtresi sadece long'da kapali", dict(p, mkt_long=False)),
+                   ("BTC EMA50 filtresi sadece short'ta kapali", dict(p, mkt_short=False)),
+                   ("long icin BTC>EMA200 kapali", dict(p, long_sart="Kapali")),
+                   ("long'da tum BTC filtreleri kapali", dict(p, mkt_long=False, long_sart="Kapali")),
+                   ("tum BTC filtreleri kapali", dict(p, use_mkt=False, long_sart="Kapali")),
+                   ("tum BTC filtreleri + short genislik kapali", dict(p, use_mkt=False, long_sart="Kapali", ters_max=-1)),
+                   ("BTC filtresi yerine coin kendi EMA200'u (long)", dict(p, mkt_long=False, long_sart="Coin > EMA200"))]
+        rows = []
+        with mp.Pool(4) as hv:
+            for ad, prm in senaryo:
+                tr = A.calistir(prm, liste, iv, hv)
+                rows.append(ozet(tr, ad)); print(rows[-1], flush=True)
+        pd.DataFrame(rows).to_csv(f"{OUT}/buyuk_btcf.csv", index=False)
     elif mod.startswith("zar"):
         G = {}
         for s in liste:
