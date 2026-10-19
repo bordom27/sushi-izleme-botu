@@ -13,7 +13,7 @@ TradingView'daki **Kirilim69 PRO** göstergesinin aynısını 102 kripto parada 
 | `izleme_state.json` | Botun hafızası (bot kendisi günceller, elle düzenleme). |
 
 ## Telegram mesajları
-- 🟢/🔴 **GİRİŞ**: giriş, stop, TP1 (%90 kapat), TP2 (kalan %10), önerilen pozisyon büyüklüğü (%1 risk)
+- 🟢/🔴 **GİRİŞ**: giriş, stop, TP1 (%90 kapat), TP2 (kalan %10), önerilen pozisyon büyüklüğü (işlem başı %0.5 risk)
 - 🟠 **TP1**: %90 kapat, stop giriş + 0.1R
 - 🔧 **STOP GÜNCELLE**: TP1 sonrası iz süren stop belirgin ilerlediğinde
 - ✅/❌ **KAPANDI**: TP2, stop, zaman stopu — sonuç R (komisyon dahil)
