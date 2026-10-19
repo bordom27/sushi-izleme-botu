@@ -1,0 +1,11 @@
+SU ANKI v6.5
+KAPAT: long icin BTC>EMA200
+KAPAT: zaman stopu
+AC: long icin coin > EMA200 (BTC yerine)
+hizli EMA 13 (21)
+4s MACD modu: ikisi
+DI uzunluk 10 (14)
+max mum boyu 2.0 ATR (3)
+long BTC EMA 150 (200)
+min stop 1.5 ATR (1)
+iz suren stop 3.0 ATR (2.5)
