@@ -176,7 +176,7 @@ useDynAlert = input.bool(true, "Dinamik alarm mesaji (alert())", group=G_ALR, to
 useGenislik = input.bool(true, "Piyasa uyumu: buyuk coinler yukari kiriyorsa SHORT verme", group=G_MKT, tooltip="30 buyuk coinden herhangi biri son N mumda 80 mumluk tepesinin ustunde kapattiysa yeni short sinyali uretilmez (sadece kripto). Ekim 2026 testi: egitim +60.3R -> +63.4R, test +53.1R -> +65.7R, test isabeti %56 -> %61. Telegram botuyla ayni liste.")
 genBar      = input.int(6, "Piyasa uyumu: son N mum", minval=1, group=G_MKT)
 genMax      = input.int(0, "Piyasa uyumu: izin verilen yukari kiran coin sayisi", minval=0, group=G_MKT)
-sadeGorunum = input.bool(true, "Sade gorunum: direnc / destek + giris oklari + kapanis sonucu", group=G_VIS, tooltip="Acikken EMA'lar, zemin rengi, fib / pivot seviyeleri, etiketler ve diger isaretler cizilmez. Pozisyon bilgisi panelde. Kapatinca eski ayrintili gorunum.")
+sadeGorunum = input.bool(true, "Sade gorunum: direnc / destek + giris (TP / stop) + kapanis sonucu", group=G_VIS, tooltip="Acikken EMA'lar, zemin rengi, fib / pivot seviyeleri, etiketler ve diger isaretler cizilmez. Pozisyon bilgisi panelde. Kapatinca eski ayrintili gorunum.")
 
 // Profil etkisi
 bool yuksekIsabet = profil == "Yuksek isabet (deneysel)"
@@ -1008,6 +1008,16 @@ if showValues and not na(islemSonucR) and not sadeGorunum
         label.new(bar_index, high, yt, style=label.style_label_down, color=lc, textcolor=color.white, size=size.small)
     else
         label.new(bar_index, low, yt, style=label.style_label_up, color=lc, textcolor=color.white, size=size.small)
+
+// Sade gorunumde giris: kucuk etiket (giris, TP1, TP2, stop fiyatlari)
+if sadeGorunum and yeniGiris
+    bool gL = posDir == 1
+    float gRp = posRisk / posEntry * 100
+    string gt = (gL ? "LONG " : "SHORT ") + str.tostring(posEntry, format.mintick)
+    gt += "\nTP1 " + str.tostring(posTp1, format.mintick) + " (" + str.tostring(math.abs(posTp1 - posEntry) / posRisk, "#.#") + "R)"
+    gt += "\nTP2 " + str.tostring(posTp2, format.mintick) + " (" + str.tostring(math.abs(posTp2 - posEntry) / posRisk, "#.#") + "R)"
+    gt += "\nSTOP " + str.tostring(posStop, format.mintick) + " (%" + str.tostring(gRp, "#.##") + ")"
+    label.new(bar_index, gL ? low : high, gt, yloc=gL ? yloc.belowbar : yloc.abovebar, style=gL ? label.style_label_up : label.style_label_down, color=gL ? color.new(color.lime, 15) : color.new(color.fuchsia, 15), textcolor=gL ? color.black : color.white, size=size.tiny, textalign=text.align_left)
 
 // Sade gorunumde islem kapanisi: kucuk etiket (yesil = karla kapandi, kirmizi = zararla), sonuc R cinsinden
 if sadeGorunum and not na(islemSonucR)
