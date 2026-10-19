@@ -126,6 +126,13 @@ PARAMS = {
 
     # 18) Yeni fikirler (varsayilan KAPALI)
     "tp2_yok": False,               # True: TP2 yok, kalan kisim sadece iz suren stopla
+    # Dis kaynak fikirleri (varsayilan KAPALI)
+    "sik_oran": 0.0,                # >0: son sik_k mumdaki en dar BB genisligi <= sik_oran * son sik_ref mum medyani (sikisma sonrasi kirilim)
+    "sik_len": 20, "sik_k": 10, "sik_ref": 120,
+    "ttm_sik": False,               # True: son sik_k mumda BB(20,2) Keltner(20,1.5 ATR) icine girmis olmali (TTM squeeze)
+    "ek_R": 0,                      # >0: kirilim ayni zamanda ek_R mumluk tepe/dip kirilimi olmali (coklu kanal onayi)
+    "orta_trail": 0,                # >0: TP1 sonrasi stop, son N mum kapanislarinin (max+min)/2 seviyesine cekilir (Zarattini)
+    "kanal_trail": 0,               # >0: TP1 sonrasi stop, son N mumun en dusuk dibi / en yuksek tepesi (Turtle cikisi)
     "gunluk_ema_onay": 0,           # >0: long icin gunluk kapanis > gunluk EMA(N), short icin altinda
     "btc_vol_rejim": "",            # "" | "yuksek" | "dusuk": BTC 4s ATR% kendi 180 mumluk medyaninin ustu/alti
 
@@ -583,6 +590,29 @@ def simule_et(symbol: str, df: pd.DataFrame, gunluk: pd.DataFrame | None,
     rbb_m = _rs.rolling(200).mean().to_numpy(); rbb_s = _rs.rolling(200).std(ddof=0).to_numpy()
     rbb_u, rbb_l = rbb_m + 2 * rbb_s, rbb_m - 2 * rbb_s
     z_dizi = ((_cs - _cs.rolling(p["z_len"]).mean()) / _cs.rolling(p["z_len"]).std(ddof=0)).to_numpy()
+    _bbm = _cs.rolling(p["sik_len"]).mean(); _bbs = _cs.rolling(p["sik_len"]).std(ddof=0)
+    _bbw = (4 * _bbs / _bbm)
+    sik_dizi = None
+    if p["sik_oran"] > 0:
+        _mn = _bbw.rolling(p["sik_k"]).min().shift(1); _md = _bbw.rolling(p["sik_ref"]).median().shift(1)
+        sik_dizi = (_mn <= p["sik_oran"] * _md).to_numpy()
+    ttm_dizi = None
+    if p["ttm_sik"]:
+        _atr_s = pd.Series(atr)
+        _ic = ((_bbm + 2 * _bbs) < (_bbm + 1.5 * _atr_s)) & ((_bbm - 2 * _bbs) > (_bbm - 1.5 * _atr_s))
+        ttm_dizi = (_ic.astype(float).rolling(p["sik_k"]).max().shift(1) > 0).to_numpy()
+    ekR_h = ekR_l = None
+    if p["ek_R"] > 0:
+        ekR_h = pd.Series(h).rolling(p["ek_R"]).max().shift(1).to_numpy()
+        ekR_l = pd.Series(l).rolling(p["ek_R"]).min().shift(1).to_numpy()
+    ot_c_max = ot_c_min = None
+    if p["orta_trail"] > 0:
+        ot_c_max = pd.Series(c).rolling(p["orta_trail"]).max().to_numpy()
+        ot_c_min = pd.Series(c).rolling(p["orta_trail"]).min().to_numpy()
+    kt_l = kt_h = None
+    if p["kanal_trail"] > 0:
+        kt_l = pd.Series(l).rolling(p["kanal_trail"]).min().to_numpy()
+        kt_h = pd.Series(h).rolling(p["kanal_trail"]).max().to_numpy()
     _E = p["er_len"]
     er_dizi = (( _cs - _cs.shift(_E)).abs() / _cs.diff().abs().rolling(_E).sum()).to_numpy()
     _tr1 = pd.Series(true_range(h, l, c, True))
@@ -967,6 +997,15 @@ def simule_et(symbol: str, df: pd.DataFrame, gunluk: pd.DataFrame | None,
             aday_l = False
         if ters_s is not None and aday_s and not (ters_s[i] <= TM):
             aday_s = False
+        if sik_dizi is not None and (aday_l or aday_s) and not bool(sik_dizi[i]):
+            aday_l = aday_s = False
+        if ttm_dizi is not None and (aday_l or aday_s) and not bool(ttm_dizi[i]):
+            aday_l = aday_s = False
+        if ekR_h is not None:
+            if aday_l and not (c[i] > ekR_h[i]):
+                aday_l = False
+            if aday_s and not (c[i] < ekR_l[i]):
+                aday_s = False
         if p["z_max"] > 0:
             zv = z_dizi[i]
             if aday_l and not math.isnan(zv) and zv > p["z_max"]:
@@ -1197,6 +1236,11 @@ def simule_et(symbol: str, df: pd.DataFrame, gunluk: pd.DataFrame | None,
             if math.isnan(cikis):
                 pos["hh"] = max(pos["hh"], h[i])
                 pos["ll"] = min(pos["ll"], l[i])
+                if pos["tp1_done"] and ot_c_max is not None and not math.isnan(ot_c_max[i]):
+                    t = (ot_c_max[i] + ot_c_min[i]) / 2
+                    pos["stop"] = max(pos["stop"], t) if isL else min(pos["stop"], t)
+                if pos["tp1_done"] and kt_l is not None and not math.isnan(kt_l[i]):
+                    pos["stop"] = max(pos["stop"], kt_l[i]) if isL else min(pos["stop"], kt_h[i])
                 if pos["tp1_done"]:
                     if isL:
                         t = pos["hh"] - p["trail_atr_mult"] * a

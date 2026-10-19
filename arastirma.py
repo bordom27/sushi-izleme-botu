@@ -590,7 +590,7 @@ def main():
             print(g.to_string(index=False), flush=True)
         pd.concat(out).to_csv(f"{OUT}/genislik.csv", index=False)
         oran50.to_csv(f"{OUT}/genislik_seri.csv")
-    elif mod.startswith("gen2") or mod.startswith("gen3") or mod in ("gen4", "gen5") or mod.startswith("ek3") or mod.startswith("opt") or mod == "secici" or mod.startswith("konf"):
+    elif mod.startswith("gen2") or mod.startswith("gen3") or mod in ("gen4", "gen5") or mod.startswith("ek3") or mod.startswith("opt") or mod == "secici" or mod.startswith("konf") or mod.startswith("dis"):
         tick = veri._get("/api/v3/ticker/24hr", {})
         haric = set(COINLER) | STOK_HARIC | {"USDCUSDT", "FDUSDUSDT", "TUSDUSDT", "DAIUSDT", "EURUSDT", "USDPUSDT",
                                 "RLUSDUSDT", "USD1USDT", "PYUSDUSDT", "AEURUSDT", "XUSDUSDT", "BFUSDUSDT",
@@ -614,6 +614,43 @@ def main():
             ka[s_] = pd.Series(np.where(ok, (c_ < ll).astype(float), np.nan), index=ix)
         KU = pd.DataFrame(ku).fillna(0); KA = pd.DataFrame(ka).fillna(0)
         senaryo = [("v6.3 TEMEL", dict(_B3))]
+        if mod.startswith("dis"):  # dis kaynak fikirleri (Zarattini/Turtle/TTM)
+            GEN30 = ["BTCUSDT", "ETHUSDT", "SOLUSDT", "XRPUSDT", "BNBUSDT", "DOGEUSDT", "ADAUSDT", "TRXUSDT", "LINKUSDT",
+                     "AVAXUSDT", "SUIUSDT", "LTCUSDT", "NEARUSDT", "DOTUSDT", "UNIUSDT", "AAVEUSDT", "BCHUSDT", "ZECUSDT",
+                     "PEPEUSDT", "ENAUSDT", "TIAUSDT", "FILUSDT", "INJUSDT", "WLDUSDT", "TAOUSDT", "ARBUSDT", "OPUSDT",
+                     "APTUSDT", "HBARUSDT", "XLMUSDT"]
+            up6 = (KU[GEN30].rolling(6, min_periods=1).max() > 0).sum(axis=1)
+            B6 = dict(_B3, ters_s=up6, ters_max=0, vol_mult=2.5, use_fib=False)
+            senaryo = [("SU ANKI v6.5", dict(B6))]
+            for so in (0.6, 0.75, 0.9):
+                senaryo.append((f"sikisma: son 10 mum BB genisligi <= {so} x medyan", dict(B6, sik_oran=so)))
+            senaryo.append(("sikisma: son 20 mum BB genisligi <= 0.75 x medyan", dict(B6, sik_oran=0.75, sik_k=20)))
+            senaryo.append(("TTM squeeze: son 10 mumda BB Keltner icinde", dict(B6, ttm_sik=True)))
+            senaryo.append(("TTM squeeze: son 20 mumda", dict(B6, ttm_sik=True, sik_k=20)))
+            for ek in (120, 160, 240, 360):
+                senaryo.append((f"coklu kanal: {ek} mum tepe/dip de kirilmali", dict(B6, ek_R=ek)))
+            for tp in (90, 70, 50):
+                for n in (20, 40, 80):
+                    senaryo.append((f"Zarattini cikis: TP1 %{tp}, kalan kanal ortasi ({n}) ile, TP2 yok", dict(B6, tp1_pct=float(tp), orta_trail=n, tp2_yok=True)))
+            for tp in (70, 50):
+                for n in (10, 20):
+                    senaryo.append((f"Turtle cikis: TP1 %{tp}, kalan {n} mum dip/tepe ile, TP2 yok", dict(B6, tp1_pct=float(tp), kanal_trail=n, tp2_yok=True)))
+            senaryo.append(("Zarattini cikis TP2 korunarak: TP1 %90, kanal ortasi 40", dict(B6, orta_trail=40)))
+            parca = int(mod.split("-")[1])
+            senaryo = senaryo[:1] + senaryo[1 + parca::4]
+            DON = [("A", "2024-07-01", "2025-06-30 23:59"), ("B", "2025-07-01", "2026-02-28 23:59"), ("C", "2026-03-01", None)]
+            rows = []
+            with mp.Pool(4) as hv:
+                for ad, prm in senaryo:
+                    tr = calistir(prm, COINLER + yeni, "4h", hv)
+                    row = {"ayar": ad}
+                    for dk, b_, e_ in DON:
+                        for kk, vv in metrik(tr, b_, e_).items():
+                            row[f"{dk}_{kk}"] = vv
+                    rows.append(row)
+                    print(ad, flush=True)
+            pd.DataFrame(rows).to_csv(f"{OUT}/{mod}.csv", index=False)
+            return
         if mod.startswith("konf"):  # konf + konf2
             GEN30 = ["BTCUSDT", "ETHUSDT", "SOLUSDT", "XRPUSDT", "BNBUSDT", "DOGEUSDT", "ADAUSDT", "TRXUSDT", "LINKUSDT",
                      "AVAXUSDT", "SUIUSDT", "LTCUSDT", "NEARUSDT", "DOTUSDT", "UNIUSDT", "AAVEUSDT", "BCHUSDT", "ZECUSDT",
