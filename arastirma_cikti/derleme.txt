@@ -1,6 +1,6 @@
-Mon Oct 19 14:06:28 UTC 2026
-5aeb938f057723e9b839b546e50e3d52112a6791  pine/Kirilim69_PRO.pine
-f56d525441923062c7a362dceb6f3c3443d2d7e9  pine/Kirilim69_PRO_Strateji.pine
+Mon Oct 19 15:09:36 UTC 2026
+4dc00fd6c63f48b86d029b70ec239f63ced5883b  pine/Kirilim69_PRO.pine
+74b58e54550d04e444b76af83e62e6bd3ad4fcff  pine/Kirilim69_PRO_Strateji.pine
 == pine/Kirilim69_PRO.pine 200
 success: True | errors: [] | warnings: 0
 == pine/Kirilim69_PRO_Strateji.pine 200
