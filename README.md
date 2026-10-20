@@ -1,6 +1,6 @@
 # Kirilim69 PRO v6 — Telegram izleme botu
 
-TradingView'daki **Kirilim69 PRO** göstergesinin aynısını 102 kripto parada (Binance, 4 saatlik) izler ve sinyalleri Telegram'a gönderir. **Gerçek işlem açmaz.**
+TradingView'daki **Kirilim69 PRO** göstergesinin aynısını 160 kripto parada (Binance, 4 saatlik) izler ve sinyalleri Telegram'a gönderir. **Gerçek işlem açmaz.**
 
 ## Dosyalar
 | Dosya | Görev |
@@ -54,6 +54,10 @@ Kural: `GENISLIK_COINLER`'deki 30 büyük coinden herhangi biri son 6 mumda (24 
 116 coin: eğitim +60.3R → +63.4R, test +53.1R → +65.7R; test isabeti %55.9 → %61.2. 20 / 30 / 40 / 116 coinlik sayım evrenlerinin hepsinde ve 3 / 6 / 9 mumluk pencerelerde iki dönemde de iyileşiyor; 5 yarıyılın 4'ünde daha iyi.
 "En fazla 1 coin" gibi gevşek eşikler iyileştirmiyor: kural "hiç ters kırılım yok" olarak çalışıyor.
 Ayrıca test edilip eklenmeyenler: ortalamaya dönüş sistemi (48 varyasyon, hepsi zararda), momentum rotasyonu (tutarsız, %35–55 düşüş), dinamik RSI, z-skor, verimlilik oranı, choppiness, FVG, BTC korelasyonu.
+
+## Liste genişletme 2: 102 → 160 coin (20 Ekim 2026)
+Kurala göre: hacim sırasında listenin ardındaki ilk 100 coin içinden Binance vadelide (USDT-M) kontratı olan ve en az 6 aylık geçmişi olan 58 coin (E grubu). Test (v6.6, 2020+): ilk 50'lik dilim 141 işlem / %55 / +15.2R, 51–100 dilimi 174 işlem / %56 / +26.0R; ikisi de A/B/C dönemlerinin üçünde kârda; işlem başı +0.11–0.15R (çekirdek 102'de +0.2R). Sinyal sayısı ~%40 artar. Sonraki 50 (günlük hacim < ~0.8M$) eklenmedi.
+Güven etiketi sayımı çekirdek 102 coinle yapılır (eşikler o evrende ölçüldü). Vadelide farklı adla işlem görenler (1000PEPE, 1000BONK, 1000FLOKI) ve vadeli kontratı olmayanlar (EPIC, AMP, TON, RAD, NFP, STRAX, AUDIO, RAY) giriş mesajında belirtilir.
 
 ## Güven etiketi (20 Ekim 2026)
 Her giriş mesajında: son 24 saatte (6 × 4s mum, bu mum dahil) aynı yönde kaç coin giriş sinyali verdi. Test (2020+, 759 işlem): **5+ → ⭐ isabet %73** (265 işlem, +113R, en kötü düşüş 8.4R), **8+ → ⭐⭐ isabet %80** (179 işlem, çoğu 2025–26), 5'in altı → isabet %53, işlem başı +0.06R (494 işlem, +32R). Yıllara göre 5+: 2021 %88, 2022 %67, 2023 %60, 2024 %57, 2025 %78, 2026 %71 — her yıl kârda; sert/toplu piyasa hareketlerinde güçlü, sakin dönemde zayıf. 5+ işlemlerin %91'i short. Filtre değil etiket: hepsi bildirilir, yıldızsızları almak kullanıcıya kalmış. (Eşik bu veriye bakılarak seçildi.)

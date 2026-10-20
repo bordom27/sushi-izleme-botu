@@ -35,7 +35,7 @@ import requests
 import kirilim_v6 as k
 import veri
 import zarattini as Z
-from coin_listesi import COINLER, GENISLIK_COINLER
+from coin_listesi import CEKIRDEK, COINLER, GENISLIK_COINLER, VADELI_AD, VADELI_YOK
 
 CONFIG = {
     "COINLER": COINLER,
@@ -193,6 +193,8 @@ def mesaj_giris(sym, o: k.Olay, cfg) -> str:
     simge = "🟢" if d == 1 else "🔴"
     return (
         f"{simge} {YON[d]} GİRİŞ — {sym} (4s)\n"
+        + (f"Vadelide: {VADELI_AD[sym]} (fiyat x1000)\n" if sym in VADELI_AD else "")
+        + ("⚠️ Binance vadelide kontratı yok (sadece spot)\n" if sym in VADELI_YOK else "") +
         f"Tip: {TIP_ADI.get(v['tip'], v['tip'])} | Kalite: {v['kalite']}\n"
         f"Giriş: {fmt(v['giris'])}  (mum kapanışı {tr_saat(o.zaman + pd.Timedelta(hours=4))})\n"
         f"Stop: {fmt(v['stop'])}  ({pct(v['stop'], v['giris'])})\n"
@@ -496,6 +498,7 @@ def main():
     veriler: dict[str, pd.DataFrame] = {}
     mesajlar: list[tuple[pd.Timestamp, str]] = []
     giris_idx: dict[int, int] = {}
+    giris_sym: dict[int, str] = {}
     bildirilen_liste = list(state.get("bildirilen", []))
     bildirilen = set(bildirilen_liste)
     hatali = []
@@ -561,6 +564,7 @@ def main():
                 if metin:
                     if o.tur == "GIRIS":
                         giris_idx[len(mesajlar)] = o.yon
+                        giris_sym[len(mesajlar)] = sym
                     mesajlar.append((o.zaman, metin))
                     bildirilen.add(anahtar)
                     bildirilen_liste.append(anahtar)
@@ -579,10 +583,13 @@ def main():
 
     # Guven etiketi: son 24 saatte (6 x 4s mum, bu mum dahil) ayni yonde kac coin giris sinyali verdi
     # (19 Eki 2026 testi, 2020+: 5+ -> isabet ~%73, 8+ -> ~%80, 5'in alti -> ~%53)
-    tum_giris = [(o.zaman, o.yon) for r_ in sonuclar.values() for o in r_.olaylar if o.tur == "GIRIS"]
+    cekirdek = set(CEKIRDEK)
+    tum_giris = [(o.zaman, o.yon) for s_, r_ in sonuclar.items() if s_ in cekirdek for o in r_.olaylar if o.tur == "GIRIS"]
     for idx, yon_ in giris_idx.items():
         z_, metin_ = mesajlar[idx]
         n_ = sum(1 for zz, yy in tum_giris if yy == yon_ and z_ - pd.Timedelta(hours=20) <= zz <= z_)
+        if giris_sym.get(idx) not in cekirdek:
+            n_ += 1                    # cekirdek disi coinin kendi sinyali
         mesajlar[idx] = (z_, guven_etiketi(metin_, n_, yon_))
 
     simdi_utc = pd.Timestamp.now(tz="UTC").tz_localize(None)
