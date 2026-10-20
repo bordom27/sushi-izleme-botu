@@ -1,7 +1,16 @@
-Traceback (most recent call last):
-  File "/home/runner/work/sushi-izleme-botu/sushi-izleme-botu/buyuk.py", line 524, in <module>
-    main()
-  File "/home/runner/work/sushi-izleme-botu/sushi-izleme-botu/buyuk.py", line 202, in main
-    perp = {x["symbol"]: x.get("onboardDate", 0) for x in j["symbols"] if x.get("contractType") == "PERPETUAL"
-                                                          ~^^^^^^^^^^^
-KeyError: 'symbols'
+kalan aday 364 dilim 14
+            symbol  hacim_musd    veri_bas  n
+0        MAVIAUSDT        0.47  2025-03-26  2
+1       ALPINEUSDT        0.45  2025-05-06  1
+2         NEWTUSDT        0.44  2025-06-19  2
+3         ETHWUSDT        0.43  2023-11-28  4
+4   1000000MOGUSDT        0.43  2024-11-07  0
+5       BANANAUSDT        0.41  2024-08-15  6
+6         WAXPUSDT        0.41  2023-10-18  5
+7          BANUSDT        0.41  2024-11-18  0
+8         MOCAUSDT        0.40  2024-12-16  3
+9         DOLOUSDT        0.39  2025-05-01  0
+10         ASRUSDT        0.38  2025-05-06  1
+11       CETUSUSDT        0.38  2024-11-06  4
+12         XVSUSDT        0.37  2023-04-13  9
+13       ORDERUSDT        0.36  2025-09-26  1
