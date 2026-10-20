@@ -1126,7 +1126,7 @@ def simule_et(symbol: str, df: pd.DataFrame, gunluk: pd.DataFrame | None,
                         cik = min(pos["stop"], o1[kk]) if LL else max(pos["stop"], o1[kk])
                         kalan = (1 - tp1_pct) if pos["tp1_done"] else 1.0
                         rr = pos["real_r"] + kalan * dd_ * (cik - pos["giris"]) / pos["risk"] - 2 * kom * pos["giris"] / pos["risk"]
-                        islem = {"symbol": sembol, "yon": dd_, "tip": pos["tip"], "kalite": pos["kalite"],
+                        islem = {**pos.get("oz", {}), "symbol": sembol, "yon": dd_, "tip": pos["tip"], "kalite": pos["kalite"],
                                  "giris_zaman": pos["zaman"], "cikis_zaman": ot[i], "giris": pos["giris"], "cikis": cik,
                                  "stop_ilk": pos["stop_ilk"], "tp1": pos["tp1"], "tp2": pos["tp2"], "tp1_done": pos["tp1_done"],
                                  "neden": "STOP_TP1" if pos["tp1_done"] else "STOP", "sonuc_r": rr, "bar_sayisi": 0}
@@ -1146,7 +1146,7 @@ def simule_et(symbol: str, df: pd.DataFrame, gunluk: pd.DataFrame | None,
                     if pos["tp1_done"] and ((h1[kk] >= pos["tp2"]) if LL else (l1[kk] <= pos["tp2"])):
                         cik = max(pos["tp2"], o1[kk]) if LL else min(pos["tp2"], o1[kk])
                         rr = pos["real_r"] + (1 - tp1_pct) * dd_ * (cik - pos["giris"]) / pos["risk"] - 2 * kom * pos["giris"] / pos["risk"]
-                        islem = {"symbol": sembol, "yon": dd_, "tip": pos["tip"], "kalite": pos["kalite"],
+                        islem = {**pos.get("oz", {}), "symbol": sembol, "yon": dd_, "tip": pos["tip"], "kalite": pos["kalite"],
                                  "giris_zaman": pos["zaman"], "cikis_zaman": ot[i], "giris": pos["giris"], "cikis": cik,
                                  "stop_ilk": pos["stop_ilk"], "tp1": pos["tp1"], "tp2": pos["tp2"], "tp1_done": True,
                                  "neden": "TP2", "sonuc_r": rr, "bar_sayisi": 0}
@@ -1181,7 +1181,7 @@ def simule_et(symbol: str, df: pd.DataFrame, gunluk: pd.DataFrame | None,
                     if stop_ayni:
                         cik = pos["stop"]
                         rr = dd_ * (cik - fill) / risk_ - 2 * (p["komisyon_pct"] / 100) * fill / risk_
-                        islem = {"symbol": sembol, "yon": dd_, "tip": pos["tip"], "kalite": pos["kalite"],
+                        islem = {**pos.get("oz", {}), "symbol": sembol, "yon": dd_, "tip": pos["tip"], "kalite": pos["kalite"],
                                  "giris_zaman": ot[i], "cikis_zaman": ot[i], "giris": fill, "cikis": cik,
                                  "stop_ilk": pos["stop"], "tp1": pos["tp1"], "tp2": pos["tp2"], "tp1_done": False,
                                  "neden": "STOP", "sonuc_r": rr, "bar_sayisi": 0}
@@ -1268,7 +1268,7 @@ def simule_et(symbol: str, df: pd.DataFrame, gunluk: pd.DataFrame | None,
                     son_stop_bar = i
                 if neden == "BASARISIZ" and p["yeniden_giris"] > 0 and not pos["tip"].startswith("YENIDEN"):
                     yeniden = {"yon": d, "seviye": pos["seviye"], "bar": i, "kalite": pos["kalite"]}
-                islem = {
+                islem = {**pos.get("oz", {}),
                     "symbol": sembol, "yon": d, "tip": pos["tip"], "kalite": pos["kalite"],
                     "giris_zaman": pos["zaman"], "cikis_zaman": ot[i], "giris": pos["giris"],
                     "cikis": cikis, "stop_ilk": pos["stop_ilk"], "tp1": pos["tp1"], "tp2": pos["tp2"],
@@ -1469,6 +1469,27 @@ def simule_et(symbol: str, df: pd.DataFrame, gunluk: pd.DataFrame | None,
                     "tp1_kay": tp1_kay, "tp2_kay": tp2_kay, "risk_pct": risk_pct,
                     "poz_pct": min(p["hesap_risk"] / risk_pct * 100, 100),
                 }
+                if p.get("ozellik_kaydet"):
+                    _a = a if a > 0 else np.nan
+                    _cp = (c[i] - l[i]) / (h[i] - l[i]) if h[i] > l[i] else 0.5
+                    pos["oz"] = {
+                        "oz_vol_oran": v[i] / vol_avg[i] if vol_avg[i] > 0 else np.nan,
+                        "oz_rsi": rsi_v[i] if g_dir == 1 else 100 - rsi_v[i],
+                        "oz_adx": adx_v[i], "oz_di_fark": g_dir * (di_p[i] - di_m[i]),
+                        "oz_atr_pct": _a / c[i] * 100, "oz_ext_ema": g_dir * (c[i] - ema_f[i]) / _a,
+                        "oz_ext_trend": g_dir * (c[i] - tr_ema[i]) / _a,
+                        "oz_kirilim_atr": ((c[i] - resistance[i]) if g_dir == 1 else (support[i] - c[i])) / _a,
+                        "oz_kanal_atr": (resistance[i] - support[i]) / _a,
+                        "oz_close_pos": _cp if g_dir == 1 else 1 - _cp, "oz_mum_atr": (h[i] - l[i]) / _a,
+                        "oz_risk_atr": rsk / _a, "oz_hist": g_dir * hist[i] / _a,
+                        "oz_ret20": g_dir * (c[i] / c[i - 20] - 1) if i >= 20 else np.nan,
+                        "oz_ret80": g_dir * (c[i] / c[i - 80] - 1) if i >= 80 else np.nan,
+                        "oz_tp1_r": abs(tp1 - giris) / rsk, "oz_tp2_r": abs(tp2 - giris) / rsk,
+                        "oz_saat": pd.Timestamp(ot[i]).hour,
+                        "oz_genislik": float(ters_s[i]) if ters_s is not None else np.nan,
+                        "oz_btc_ema": (mk_c / mk_e - 1) * g_dir if (not mk_yok and mk_e) else np.nan,
+                        "oz_btc_ema200": (mk_c / mk_e2 - 1) * g_dir if (not mk_yok and mk_e2 and not math.isnan(mk_e2)) else np.nan,
+                    }
                 olaylar.append(Olay(ot[i], "GIRIS", g_dir, {k: pos[k] for k in (
                     "giris", "stop", "tp1", "tp2", "tip", "kalite", "tp1_kay", "tp2_kay", "risk_pct", "poz_pct", "risk")}))
 

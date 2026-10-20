@@ -189,6 +189,18 @@ def main():
                 tr = A.calistir(prm, liste, iv, hv)
                 rows.append(ozet(tr, ad)); print(rows[-1], flush=True)
         pd.DataFrame(rows).to_csv(f"{OUT}/buyuk_btcf.csv", index=False)
+    elif mod == "oz":
+        A.VERI_BAS = "2019-09-01"
+        A.IS_BAS = "2020-01-01"
+        iv = "4h"
+        A.DATA["btc_4h"] = veri.mumlar_onbellekli("BTCUSDT", "4h", A.VERI_BAS)
+        A.DATA[iv] = A.yukle(liste, iv)
+        p = dict(b66(A.DATA[iv]), ozellik_kaydet=True)
+        with mp.Pool(4) as hv:
+            tr = A.calistir(p, liste, iv, hv)
+        tr.drop(columns=[c for c in tr.columns if tr[c].dtype == object and c not in ("symbol", "tip", "kalite", "neden")],
+                errors="ignore").to_csv(f"{OUT}/oz_islem.csv.gz", index=False, compression="gzip")
+        print(ozet(tr, "v6.6 ozellikli"), flush=True)
     elif mod.startswith("isabet"):
         iv = "4h"
         A.DATA["btc_4h"] = veri.mumlar_onbellekli("BTCUSDT", "4h", A.VERI_BAS)
