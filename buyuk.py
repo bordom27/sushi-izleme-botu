@@ -198,10 +198,10 @@ def main():
         taban = lambda x: _re.sub(r"^(1000000|1000|1M)", "", x)
         mevcut_taban = {taban(x) for x in mevcut}
         A.VERI_BAS = "2019-09-01"; A.IS_BAS = "2020-01-01"
-        j = rq.get("https://fapi.binance.com/fapi/v1/exchangeInfo", timeout=30).json()
+        j = veri._get("/fapi/v1/exchangeInfo", {}, veri.FAPI_URLS)
         perp = {x["symbol"]: x.get("onboardDate", 0) for x in j["symbols"] if x.get("contractType") == "PERPETUAL"
                 and x.get("quoteAsset") == "USDT" and x.get("status") == "TRADING"}
-        tk = rq.get("https://fapi.binance.com/fapi/v1/ticker/24hr", timeout=30).json()
+        tk = veri._get("/fapi/v1/ticker/24hr", {}, veri.FAPI_URLS)
         hac = {x["symbol"]: float(x["quoteVolume"]) for x in tk if x["symbol"] in perp}
         stab = {"USDCUSDT", "BTCDOMUSDT", "DEFIUSDT", "XAUUSDT", "XAGUSDT", "PAXGUSDT", "XAUTUSDT"}
         aday = [x for x in perp if taban(x) not in mevcut_taban and x not in stab and x.isascii()]
