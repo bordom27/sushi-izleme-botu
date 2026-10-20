@@ -676,6 +676,16 @@ def main():
         satir.append("\nHer 4 saatlik mum kapanışındaki sinyaller tek mesajda toplu gelir; her akşam 21:00'de günlük özet.")
         send_telegram("\n".join(satir))
 
+    if not ilk_calisma and not state.get("duyuru_guven_etiketi"):
+        send_telegram("🆕 Yeni: GÜVEN ETİKETİ\n"
+                      "Bundan sonra her 🟢/🔴 GİRİŞ mesajının ikinci satırında şu etiketlerden biri olacak:\n"
+                      "⭐⭐ ÇOK YÜKSEK GÜVEN — son 24 saatte 8+ coin aynı yönde sinyal verdi (testte isabet ~%80)\n"
+                      "⭐ YÜKSEK GÜVEN — 5–7 coin aynı yönde (testte ~%73)\n"
+                      "Tekil sinyal — 5'ten az (testte ~%53, kazancı çok düşük): sadece yıldızlıları alıyorsan pas geç.\n"
+                      "Sadece yıldızlıları almak testte kârın ~%80'ini korudu, en büyük düşüşü yarıya indirdi; ayda ~3 işlem. "
+                      "Yıldızlı sinyaller toplu gelir: o günlerde toplam riske dikkat (ör. 10 işlem × %0.5 = %5).")
+        state["duyuru_guven_etiketi"] = True
+
     eski_pozisyonlari_yonet(state, veriler)
 
     if cfg["TREND_PORTFOY"]:
