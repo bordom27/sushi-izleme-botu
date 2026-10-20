@@ -1216,13 +1216,18 @@ def simule_et(symbol: str, df: pd.DataFrame, gunluk: pd.DataFrame | None,
                     pos["stop"] = max(pos["stop"], be) if isL else min(pos["stop"], be)
                     olaylar.append(Olay(ot[i], "TP1", d, {"fiyat": dolum, "yeni_stop": pos["stop"],
                                                           "giris": pos["giris"], "tp2": pos["tp2"]}))
+                    if tp1_pct >= 0.999:          # TP1'de tamamini kapat
+                        cikis = dolum
+                        neden = "TP1"
                 if (not pos["tp1_done"]) and p["erken_be_r"] > 0 and \
                         (h[i] >= pos["giris"] + p["erken_be_r"] * pos["risk"] if isL
                          else l[i] <= pos["giris"] - p["erken_be_r"] * pos["risk"]):
                     pos["stop"] = max(pos["stop"], pos["giris"]) if isL else min(pos["stop"], pos["giris"])
                 tp2_dok = h[i] >= pos["tp2"] if isL else l[i] <= pos["tp2"]
                 trend_ters = c[i] < tr_ema[i] if isL else c[i] > tr_ema[i]
-                if tp2_dok:
+                if not math.isnan(cikis):
+                    pass
+                elif tp2_dok:
                     cikis = max(pos["tp2"], o[i]) if isL else min(pos["tp2"], o[i])
                     neden = "TP2"
                 elif p["basarisiz_cikis"] and (not pos["tp1_done"]) and not math.isnan(pos.get("seviye", np.nan)) \

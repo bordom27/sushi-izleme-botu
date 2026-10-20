@@ -189,6 +189,30 @@ def main():
                 tr = A.calistir(prm, liste, iv, hv)
                 rows.append(ozet(tr, ad)); print(rows[-1], flush=True)
         pd.DataFrame(rows).to_csv(f"{OUT}/buyuk_btcf.csv", index=False)
+    elif mod.startswith("isabet"):
+        iv = "4h"
+        A.DATA["btc_4h"] = veri.mumlar_onbellekli("BTCUSDT", "4h", A.VERI_BAS)
+        A.DATA[iv] = A.yukle(liste, iv)
+        p = b66(A.DATA[iv])
+        S = [("v6.6", p)]
+        import itertools
+        for tp, tpp, bc, be, ms in itertools.product((0.5, 0.6, 0.7, 0.9), (90.0, 100.0), (True, False), (0.0, 0.5), (3.5, 5.0)):
+            S.append((f"TP1 {tp}R %{int(tpp)} | BC {'acik' if bc else 'kapali'} | erkenBE {be} | maxstop {ms}",
+                      dict(p, tp1_r=tp, use_fib_tp=False, tp1_pct=tpp, basarisiz_cikis=bc, erken_be_r=be, max_stop_atr=ms)))
+        for ad, kw in [("coklu kanal 240", dict(ek_R=240)), ("min yer 0.8R", dict(min_room_r=0.8)),
+                       ("coklu kanal 240 + min yer 0.8R", dict(ek_R=240, min_room_r=0.8)),
+                       ("hacim 3.0x", dict(vol_mult=3.0)), ("zaman stopu kapali", dict(use_time_stop=False))]:
+            S.append((ad, dict(p, **kw)))
+            S.append((ad + " + TP1 0.6R %100 + BC kapali", dict(p, tp1_r=0.6, use_fib_tp=False, tp1_pct=100.0, basarisiz_cikis=False, **kw)))
+        K = 12
+        parca = int(mod.split("-")[1])
+        senaryo = S[:1] + S[1 + parca::K]
+        rows = []
+        with mp.Pool(4) as hv:
+            for ad, prm in senaryo:
+                tr = A.calistir(prm, liste, iv, hv)
+                rows.append(ozet(tr, ad)); print(rows[-1], flush=True)
+        pd.DataFrame(rows).to_csv(f"{OUT}/buyuk_{mod}.csv", index=False)
     elif mod.startswith("uzun"):
         # buyuk orneklem: 2020'den bugune (2021 boga, 2022 ayi, 2023 toparlanma dahil)
         A.VERI_BAS = "2019-09-01"

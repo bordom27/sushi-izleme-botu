@@ -17,7 +17,7 @@ jobs:
       fail-fast: false
       max-parallel: 20
       matrix:
-        mod: [retest-sikis_3d_dar, retest-sikis_3d_genis, retest-sikis_1d_dar, retest-sikis_1d_genis]
+        mod: [buyuk-isabet-0, buyuk-isabet-1, buyuk-isabet-2, buyuk-isabet-3, buyuk-isabet-4, buyuk-isabet-5, buyuk-isabet-6, buyuk-isabet-7, buyuk-isabet-8, buyuk-isabet-9, buyuk-isabet-10, buyuk-isabet-11]
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
