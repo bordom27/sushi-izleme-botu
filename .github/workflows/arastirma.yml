@@ -17,7 +17,7 @@ jobs:
       fail-fast: false
       max-parallel: 20
       matrix:
-        mod: [retest-1h, retest-4h, retest-1d, retest-1w]
+        mod: [retest-sikis_3d_dar, retest-sikis_3d_genis, retest-sikis_1d_dar, retest-sikis_1d_genis]
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5

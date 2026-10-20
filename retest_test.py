@@ -25,7 +25,7 @@ P = dict(baseLen=20, maxWidth=40.0, useVol=True, volMult=1.5, retestTol=3.0, ret
          tp1Pct=50, trailLen=5, kom=0.0005)
 
 
-def sim(sym: str, df: pd.DataFrame, p=P) -> list[dict]:
+def sim(sym: str, df: pd.DataFrame, p=P, btc_ok=None) -> list[dict]:
     o = df["open"].to_numpy(float); h = df["high"].to_numpy(float); l = df["low"].to_numpy(float)
     c = df["close"].to_numpy(float); v = df["volume"].to_numpy(float); t = df["open_time"].to_numpy()
     n = len(c); L = p["baseLen"]
@@ -66,7 +66,7 @@ def sim(sym: str, df: pd.DataFrame, p=P) -> list[dict]:
                         kapat(sl, pos["kalan"], "STOP_TP1" if pos["tp1Hit"] else "STOP")
             if pos["kalan"] <= 1e-9:
                 r_ = pos["pnl"] * pos["giris"] / pos["risk"] if pos["risk"] > 0 else np.nan
-                out.append(dict(symbol=sym, giris_zaman=pd.Timestamp(pos["zaman"]), cikis_zaman=pd.Timestamp(t[i]),
+                out.append(dict(symbol=sym, giris_zaman=pd.Timestamp(pos["zaman"]), cikis_zaman=pd.Timestamp(t[i]), giris=pos["giris"],
                                 getiri=pos["pnl"], sonuc_r=r_, tp1=pos["tp1Hit"], bar=i - pos["bar"],
                                 risk_pct=pos["risk"] / pos["giris"] * 100))
                 pos = None
@@ -85,7 +85,9 @@ def sim(sym: str, df: pd.DataFrame, p=P) -> list[dict]:
             waiting = True; lvl = rh[i]; bl = rl[i]; brk = i
         retest = waiting and i > brk and l[i] <= lvl * (1 + p["retestTol"] / 100) and c[i] > lvl
         invalid = waiting and (c[i] < bl or i - brk > p["retestWin"])
-        if retest and flat:
+        if retest and flat and btc_ok is not None and not btc_ok[i]:
+            waiting = False
+        elif retest and flat:
             sl = bl * (1 - p["slBuf"] / 100)
             if c[i] > sl:
                 bekleyen = dict(sl=sl, tp1=c[i] + (c[i] - sl) * p["tp1R"])
@@ -150,5 +152,80 @@ def main():
     print(d.to_string(index=False), flush=True)
 
 
+def _is2(a):
+    s, iv, bas, p, btc = a
+    try:
+        df = veri.mumlar_onbellekli(s, iv, bas)
+        if len(df) < p["baseLen"] + 25:
+            return []
+        ok = None
+        if btc is not None:
+            ok = btc.reindex(pd.to_datetime(df["open_time"])).to_numpy()
+            ok = np.where(np.isnan(ok.astype(float)), 0, ok).astype(bool)
+        return sim(s, df, p, ok)
+    except Exception as exc:
+        print("hata", s, exc, flush=True)
+        return []
+
+
+def ozet_satir(ad, x):
+    if len(x) == 0:
+        return dict(ayar=ad, n=0)
+    x = x.sort_values("giris_zaman")
+    eq = x.sort_values("cikis_zaman").sonuc_r.cumsum()
+    gw = x.getiri[x.getiri > 0].sum(); gl = -x.getiri[x.getiri <= 0].sum()
+    # dalga: girisler arasi 30 gunden fazla bosluk yeni dalga
+    bos = x.giris_zaman.diff().dt.days.fillna(999)
+    dalga = int((bos > 30).sum())
+    yil = x.groupby(x.giris_zaman.dt.year).agg(n=("getiri", "size"), w=("getiri", lambda g: round(100 * (g > 0).mean())),
+                                               R=("sonuc_r", "sum"))
+    return dict(ayar=ad, n=len(x), isabet=round(100 * (x.getiri > 0).mean(), 1), kar_faktoru=round(gw / gl, 2) if gl > 0 else np.inf,
+                R=round(x.sonuc_r.sum(), 1), R_islem=round(x.sonuc_r.mean(), 3), maxdd_R=round((eq.cummax().clip(lower=0) - eq).max(), 1),
+                ort_risk_pct=round(x.risk_pct.median(), 1), dalga=dalga,
+                yillar="; ".join(f"{y}: {int(r.n)} isl %{int(r.w)} {r.R:+.1f}R" for y, r in yil.iterrows()))
+
+
+def sikisma(iv, genis):
+    bas = "2019-06-01"
+    tick = veri._get("/api/v3/ticker/24hr", {})
+    from coin_listesi import COINLER
+    stab = {"USDCUSDT", "FDUSDUSDT", "TUSDUSDT", "DAIUSDT", "EURUSDT", "USDPUSDT", "RLUSDUSDT", "USD1USDT", "PYUSDUSDT",
+            "AEURUSDT", "XUSDUSDT", "BFUSDUSDT", "WBTCUSDT", "WBETHUSDT", "BNSOLUSDT", "EURIUSDT", "USDEUSDT", "PAXGUSDT"}
+    aday = [d for d in tick if d["symbol"].endswith("USDT") and d["symbol"] not in stab and d["symbol"] not in COINLER
+            and not any(x in d["symbol"] for x in ("UP", "DOWN", "BULL", "BEAR")) and not d["symbol"].endswith("BUSDT")]
+    aday.sort(key=lambda d: float(d["quoteVolume"]), reverse=True)
+    liste = list(COINLER) + [d["symbol"] for d in aday[:(300 if genis else 70)]]
+    for s_ in liste:
+        try:
+            veri.mumlar_onbellekli(s_, iv, bas)
+        except Exception as exc:
+            print("veri yok", s_, exc, flush=True)
+        time.sleep(0.05)
+    b = veri.mumlar_onbellekli("BTCUSDT", iv, bas)
+    bc = pd.Series(b["close"].to_numpy(float), index=pd.to_datetime(b["open_time"]))
+    btc_ok = (bc > bc.rolling(50).mean())
+    L = 20 if iv == "3d" else 40
+    sen = []
+    for w in (60.0, 45.0, 30.0):
+        sen.append((f"{iv} {L} mum bant<=%{int(w)}", dict(P, baseLen=L, maxWidth=w), None))
+    sen.append((f"{iv} {L} mum bant<=%30 + BTC>SMA50", dict(P, baseLen=L, maxWidth=30.0), btc_ok))
+    sen.append((f"{iv} {L} mum bant<=%45 + BTC>SMA50", dict(P, baseLen=L, maxWidth=45.0), btc_ok))
+    rows = []
+    for ad, p, bok in sen:
+        with mp.Pool(4) as hv:
+            sonuc = hv.map(_is2, [(s_, iv, bas, p, bok) for s_ in liste])
+        tr = pd.DataFrame([x for lst in sonuc for x in lst])
+        if len(tr):
+            tr = tr[tr.giris_zaman >= "2020-01-01"]
+            tr.to_csv(f"{OUT}/sikis_islem_{iv}_{'genis' if genis else 'dar'}_{len(rows)}.csv.gz", index=False, compression="gzip")
+        rows.append(dict(ozet_satir(ad, tr), evren=len(liste)))
+        print(rows[-1], flush=True)
+    pd.DataFrame(rows).to_csv(f"{OUT}/sikis_{iv}_{'genis' if genis else 'dar'}.csv", index=False)
+
+
 if __name__ == "__main__":
-    main()
+    if sys.argv[1].startswith("sikis"):
+        _, iv, ev = sys.argv[1].split("_")
+        sikisma(iv, ev == "genis")
+    else:
+        main()
