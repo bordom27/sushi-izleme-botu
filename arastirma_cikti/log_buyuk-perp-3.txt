@@ -1,0 +1,7 @@
+Traceback (most recent call last):
+  File "/home/runner/work/sushi-izleme-botu/sushi-izleme-botu/buyuk.py", line 524, in <module>
+    main()
+  File "/home/runner/work/sushi-izleme-botu/sushi-izleme-botu/buyuk.py", line 202, in main
+    perp = {x["symbol"]: x.get("onboardDate", 0) for x in j["symbols"] if x.get("contractType") == "PERPETUAL"
+                                                          ~^^^^^^^^^^^
+KeyError: 'symbols'
