@@ -189,6 +189,54 @@ def main():
                 tr = A.calistir(prm, liste, iv, hv)
                 rows.append(ozet(tr, ad)); print(rows[-1], flush=True)
         pd.DataFrame(rows).to_csv(f"{OUT}/buyuk_btcf.csv", index=False)
+    elif mod.startswith("perp"):
+        import requests as rq, subprocess, re as _re
+        subprocess.run(["git", "fetch", "-q", "origin", "main"])
+        ns = {}
+        exec(subprocess.run(["git", "show", "origin/main:coin_listesi.py"], capture_output=True, text=True).stdout, ns)
+        mevcut = set(ns["COINLER"])
+        taban = lambda x: _re.sub(r"^(1000000|1000|1M)", "", x)
+        mevcut_taban = {taban(x) for x in mevcut}
+        A.VERI_BAS = "2019-09-01"; A.IS_BAS = "2020-01-01"
+        j = rq.get("https://fapi.binance.com/fapi/v1/exchangeInfo", timeout=30).json()
+        perp = {x["symbol"]: x.get("onboardDate", 0) for x in j["symbols"] if x.get("contractType") == "PERPETUAL"
+                and x.get("quoteAsset") == "USDT" and x.get("status") == "TRADING"}
+        tk = rq.get("https://fapi.binance.com/fapi/v1/ticker/24hr", timeout=30).json()
+        hac = {x["symbol"]: float(x["quoteVolume"]) for x in tk if x["symbol"] in perp}
+        stab = {"USDCUSDT", "BTCDOMUSDT", "DEFIUSDT", "XAUUSDT", "XAGUSDT", "PAXGUSDT", "XAUTUSDT"}
+        aday = [x for x in perp if taban(x) not in mevcut_taban and x not in stab and x.isascii()]
+        aday.sort(key=lambda x: -hac.get(x, 0))
+        parca = int(mod.split("-")[1])
+        dilim = aday[parca * 50:(parca + 1) * 50]
+        print("kalan aday", len(aday), "dilim", len(dilim), flush=True)
+        A.DATA["btc_4h"] = veri.mumlar_onbellekli("BTCUSDT", "4h", A.VERI_BAS)
+        spot = A.yukle(GEN30, "4h")
+        gen = genislik(spot)
+        d4 = {}
+        for s_ in dilim:
+            try:
+                df = veri.mumlar_onbellekli("F:" + s_, "4h", A.VERI_BAS)
+                gd = veri.mumlar_onbellekli("F:" + s_, "1d", "2019-06-01")
+                wd = veri.mumlar_onbellekli("F:" + s_, "1w", "2019-06-01")
+                if len(df) > 300:
+                    d4["F:" + s_] = (df, gd, wd)
+            except Exception as exc:
+                print("veri yok", s_, exc, flush=True)
+            time.sleep(0.05)
+        A.DATA["4h"] = d4
+        p = dict(A._B3, ters_s=gen, ters_max=0, vol_mult=2.5, use_fib=False, tp1_r=0.9, break_buf_atr=0.05, bc_atr=0.1,
+                 time_stop_min_r=0.8)
+        with mp.Pool(4) as hv:
+            tr = A.calistir(p, list(d4), "4h", hv)
+        if len(tr):
+            tr = tr[tr.giris_zaman >= "2020-01-01"]
+            tr.drop(columns=[c for c in tr.columns if tr[c].dtype == object and c not in ("symbol", "neden")], errors="ignore") \
+                .to_csv(f"{OUT}/perp_islem_{parca}.csv.gz", index=False, compression="gzip")
+        bilgi = pd.DataFrame([{"symbol": s_, "hacim_musd": round(hac.get(s_, 0) / 1e6, 2),
+                               "veri_bas": str(d4["F:" + s_][0]["open_time"].iloc[0])[:10] if "F:" + s_ in d4 else "",
+                               "n": int((tr.symbol == "F:" + s_).sum()) if len(tr) else 0} for s_ in dilim])
+        bilgi.to_csv(f"{OUT}/perp_bilgi_{parca}.csv", index=False)
+        print(bilgi.to_string(), flush=True)
     elif mod.startswith("katman"):
         import requests as rq
         from coin_listesi import COINLER as CL
