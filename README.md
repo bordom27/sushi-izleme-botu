@@ -55,6 +55,10 @@ Kural: `GENISLIK_COINLER`'deki 30 büyük coinden herhangi biri son 6 mumda (24 
 "En fazla 1 coin" gibi gevşek eşikler iyileştirmiyor: kural "hiç ters kırılım yok" olarak çalışıyor.
 Ayrıca test edilip eklenmeyenler: ortalamaya dönüş sistemi (48 varyasyon, hepsi zararda), momentum rotasyonu (tutarsız, %35–55 düşüş), dinamik RSI, z-skor, verimlilik oranı, choppiness, FVG, BTC korelasyonu.
 
+## Güven etiketi (20 Ekim 2026)
+Her giriş mesajında: son 24 saatte (6 × 4s mum, bu mum dahil) aynı yönde kaç coin giriş sinyali verdi. Test (2020+, 759 işlem): **5+ → ⭐ isabet %73** (265 işlem, +113R, en kötü düşüş 8.4R), **8+ → ⭐⭐ isabet %80** (179 işlem, çoğu 2025–26), 5'in altı → isabet %53, işlem başı +0.06R (494 işlem, +32R). Yıllara göre 5+: 2021 %88, 2022 %67, 2023 %60, 2024 %57, 2025 %78, 2026 %71 — her yıl kârda; sert/toplu piyasa hareketlerinde güçlü, sakin dönemde zayıf. 5+ işlemlerin %91'i short. Filtre değil etiket: hepsi bildirilir, yıldızsızları almak kullanıcıya kalmış. (Eşik bu veriye bakılarak seçildi.)
+Ayrıca: modelle seçim (lojistik regresyon / karar ağacı, yıl yıl ileriye yürüyen test) bu tek kuraldan daha iyi değil; isabeti %80'e çıkarmak için çıkış ayarlarıyla oynamak (TP1 0.5–0.7R'de tam kapanış) kârı yarıya indiriyor.
+
 ## İkinci sistem: günlük trend portföyü (19 Ekim 2026)
 `zarattini.py` — Zarattini, Pagani, Barbon (2025) "Catching Crypto Trends" yaklaşımı, sadece LONG, günlük grafik. Her coin için 9 bakış süresinde (5–360 gün) kapanış kırılımı + kanal ortası iz süren stop; sinyal = trendde olan sürelerin oranı; boyut = %25 hedef oynaklık / coinin oynaklığı (en fazla 2 kat), en likit 20 coin, her biri sermayenin 1/20'si üzerinden.
 Bot her günlük kapanıştan sonra (03:07 TR) hedefleri hesaplar; değişiklik varsa tek mesaj: 🟢 AL / ⬆️ ARTIR / ⬇️ AZALT / 🔴 KAPAT, yüzdeler toplam sermayenin oranı. Küçük değişiklikte işlem yok (fark sermayenin %1'inden ve mevcut payın %33'ünden küçükse). 21:00 özetinde portföy satırı var.

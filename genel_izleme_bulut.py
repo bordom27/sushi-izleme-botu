@@ -207,6 +207,22 @@ def mesaj_giris(sym, o: k.Olay, cfg) -> str:
     )
 
 
+def guven_etiketi(metin: str, n: int, yon: int) -> str:
+    """Giris mesajina guven etiketi ekler (ilk satirin altina)."""
+    yon_ad = YON[yon]
+    if n >= 8:
+        satir = (f"⭐⭐ ÇOK YÜKSEK GÜVEN: son 24 saatte {n} coin aynı yönde ({yon_ad}) sinyal verdi "
+                 f"(testte bu durumda isabet ~%80).")
+    elif n >= 5:
+        satir = (f"⭐ YÜKSEK GÜVEN: son 24 saatte {n} coin aynı yönde ({yon_ad}) sinyal verdi "
+                 f"(testte bu durumda isabet ~%73).")
+    else:
+        satir = (f"Tekil sinyal: son 24 saatte aynı yönde sadece {n} sinyal "
+                 f"(testte bu durumda isabet ~%53, işlem başı ~+0.06R) — sadece yıldızlıları alıyorsan pas geç.")
+    ilk, _, kalan = metin.partition("\n")
+    return ilk + "\n" + satir + ("\n" + kalan if kalan else "")
+
+
 def mesaj_tp1(sym, o: k.Olay, cfg) -> str:
     v = o.veri
     return (f"🟠 TP1 — {sym} {YON[o.yon]}\n"
@@ -479,6 +495,7 @@ def main():
     sonuclar: dict[str, k.Sonuc] = {}
     veriler: dict[str, pd.DataFrame] = {}
     mesajlar: list[tuple[pd.Timestamp, str]] = []
+    giris_idx: dict[int, int] = {}
     bildirilen_liste = list(state.get("bildirilen", []))
     bildirilen = set(bildirilen_liste)
     hatali = []
@@ -542,6 +559,8 @@ def main():
                 elif o.tur in ("SAHTE", "ZAMAN_ASIMI") and cfg["BILDIR_KIRILIM"]:
                     metin = mesaj_iptal(sym, o)
                 if metin:
+                    if o.tur == "GIRIS":
+                        giris_idx[len(mesajlar)] = o.yon
                     mesajlar.append((o.zaman, metin))
                     bildirilen.add(anahtar)
                     bildirilen_liste.append(anahtar)
@@ -557,6 +576,14 @@ def main():
                     state["son_stop_bildirimi"][sym] = a["stop"]
         if r.son_bar is not None:
             state["son_bar"][sym] = str(r.son_bar)
+
+    # Guven etiketi: son 24 saatte (6 x 4s mum, bu mum dahil) ayni yonde kac coin giris sinyali verdi
+    # (19 Eki 2026 testi, 2020+: 5+ -> isabet ~%73, 8+ -> ~%80, 5'in alti -> ~%53)
+    tum_giris = [(o.zaman, o.yon) for r_ in sonuclar.values() for o in r_.olaylar if o.tur == "GIRIS"]
+    for idx, yon_ in giris_idx.items():
+        z_, metin_ = mesajlar[idx]
+        n_ = sum(1 for zz, yy in tum_giris if yy == yon_ and z_ - pd.Timedelta(hours=20) <= zz <= z_)
+        mesajlar[idx] = (z_, guven_etiketi(metin_, n_, yon_))
 
     simdi_utc = pd.Timestamp.now(tz="UTC").tz_localize(None)
     bayat_sinir = simdi_utc - pd.Timedelta(hours=cfg["BAYAT_SAAT"] + 4)
