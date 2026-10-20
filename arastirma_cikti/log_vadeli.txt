@@ -1,0 +1,2 @@
+https://fapi.binance.com/fapi/v1/exchangeInfo 'symbols'
+524
