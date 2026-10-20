@@ -1,7 +1,52 @@
-Traceback (most recent call last):
-  File "/home/runner/work/sushi-izleme-botu/sushi-izleme-botu/buyuk.py", line 524, in <module>
-    main()
-  File "/home/runner/work/sushi-izleme-botu/sushi-izleme-botu/buyuk.py", line 202, in main
-    perp = {x["symbol"]: x.get("onboardDate", 0) for x in j["symbols"] if x.get("contractType") == "PERPETUAL"
-                                                          ~^^^^^^^^^^^
-KeyError: 'symbols'
+kalan aday 364 dilim 50
+            symbol  hacim_musd    veri_bas   n
+0          YGGUSDT        1.08  2023-08-05   5
+1         BICOUSDT        1.08  2023-09-28   4
+2         MOVEUSDT        1.07  2024-12-09   4
+3            TUSDT        1.07  2023-02-01   3
+4            CUSDT        1.06  2025-07-15   0
+5          SXTUSDT        1.05  2025-05-02   4
+6     CHILLGUYUSDT        1.05  2024-11-27   4
+7          BASUSDT        1.04  2025-08-26   2
+8          ZRXUSDT        1.04  2020-06-24   6
+9         CELRUSDT        1.03  2021-03-29   7
+10         KSMUSDT        1.01  2020-10-14   8
+11         CVCUSDT        1.01  2025-05-16   2
+12        BARDUSDT        1.01  2025-09-18   0
+13        FLUXUSDT        1.00  2024-09-03   5
+14        XPINUSDT        1.00  2025-09-12   0
+15        CGPTUSDT        1.00  2024-12-20   2
+16        ALCHUSDT        1.00  2025-01-07   1
+17         UMAUSDT        1.00  2023-05-10   6
+18         FHEUSDT        0.99  2025-04-12   2
+19         STOUSDT        0.98  2025-04-12   3
+20        SIGNUSDT        0.98  2025-04-28   3
+21        SOMIUSDT        0.97  2025-08-25   2
+22         GLMUSDT        0.96  2024-02-22   1
+23       LAYERUSDT        0.96  2025-02-11   1
+24         BSVUSDT        0.96  2023-10-20   5
+25        ZESTUSDT        0.96  2026-06-04   1
+26        VANAUSDT        0.95  2024-12-16   2
+27        TREEUSDT        0.95  2025-07-29   0
+28         WETUSDT        0.95  2025-12-10   0
+29        COAIUSDT        0.94  2025-09-25   0
+30     1000CATUSDT        0.93  2024-10-21   2
+31       USUALUSDT        0.93  2024-12-18   1
+32        TNSRUSDT        0.92  2024-04-08   6
+33         ZKCUSDT        0.92  2025-09-15   0
+34        CARVUSDT        0.92  2025-08-07   0
+35         ILVUSDT        0.91  2023-11-10   7
+36  1MBABYDOGEUSDT        0.90  2024-09-16   5
+37         MEWUSDT        0.89  2024-06-17   3
+38        BANDUSDT        0.89  2020-07-29  11
+39     BIGTIMEUSDT        0.88  2023-10-12   5
+40        MIRAUSDT        0.88  2025-09-26   1
+41        LQTYUSDT        0.87  2023-03-10   9
+42      NAORISUSDT        0.87  2025-07-31   0
+43        ANKRUSDT        0.87  2021-01-26  15
+44         MTLUSDT        0.85  2021-03-31   8
+45           FUSDT        0.85  2025-06-18   1
+46     1000XECUSDT        0.83  2021-09-17  10
+47         GASUSDT        0.83  2023-10-25   5
+48          INUSDT        0.83  2025-08-07   0
+49      SWARMSUSDT        0.82  2025-01-07   0
