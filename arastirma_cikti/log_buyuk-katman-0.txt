@@ -1,0 +1,53 @@
+fapi https://fapi.binance.com/fapi/v1/exchangeInfo 'symbols'
+vadeli kontrat 524
+          symbol  sira  hacim_musd  vadeli    veri_bas   n     R
+0        XRPUSDT   103      100.11    True  2019-09-01  14  5.70
+1        WLDUSDT   104       81.10    True  2023-07-24   6 -1.87
+2       HYPEUSDT   105       31.68    True               0  0.00
+3       PUMPUSDT   106       23.36    True  2025-09-11   1  0.91
+4        GTCUSDT   107       20.85    True  2021-06-10   6  1.00
+5        PHAUSDT   108       19.68    True  2021-06-25   7  1.54
+6        TAOUSDT   109       18.80    True  2024-04-11   2  0.41
+7        ZROUSDT   110       15.36    True  2024-06-20   1  0.87
+8        ALTUSDT   111       12.99    True  2024-01-25   9  3.73
+9       ONDOUSDT   112       11.08    True  2025-04-11   5  1.47
+10       QNTUSDT   113        9.61    True  2021-07-29   7  0.73
+11       BCHUSDT   114        9.34    True  2019-11-28  14 -0.76
+12       ERAUSDT   115        9.05    True  2025-07-17   3  2.24
+13      STRKUSDT   116        8.67    True  2024-02-20   8  2.55
+14     TRUMPUSDT   117        8.45    True  2025-01-19   4  0.69
+15      WLFIUSDT   118        7.97    True  2025-09-01   1 -1.03
+16       AVAUSDT   119        7.79    True  2020-11-24   9  0.08
+17       TONUSDT   120        7.72   False  2024-08-08   5  2.54
+18       BMTUSDT   121        7.64    True  2025-03-18   2  1.81
+19       NILUSDT   122        6.73    True  2025-03-24   2  1.67
+20         SUSDT   123        6.62    True  2025-01-16   3  1.98
+21       BATUSDT   124        6.34    True  2019-09-01  11  1.30
+22      AEROUSDT   125        6.05    True  2026-07-17   2  0.34
+23     ASTERUSDT   126        5.84    True  2025-10-06   1  0.68
+24      DASHUSDT   127        5.70    True  2019-09-01   9  2.49
+25      EPICUSDT   128        5.49   False  2025-03-13   2  1.56
+26      PYTHUSDT   129        4.92    True  2024-02-02   5  0.91
+27      CHIPUSDT   130        4.72    True  2026-04-21   0  0.00
+28      GRAMUSDT   131        4.68    True  2026-07-02   0  0.00
+29     PENGUUSDT   132        4.67    True  2024-12-17   3  0.58
+30       XPLUSDT   133        4.41    True  2025-09-25   1  0.87
+31       RLCUSDT   134        3.96    True  2019-11-14  15 -0.41
+32        牛来USDT   135        3.96    True               0  0.00
+33       NFPUSDT   136        3.83   False  2023-12-27   5 -1.47
+34      ZAMAUSDT   137        3.83    True  2026-02-02   0  0.00
+35      ENSOUSDT   138        3.81    True  2025-10-14   0  0.00
+36      OSMOUSDT   139        3.74   False  2022-10-28   4  1.38
+37   MUBARAKUSDT   140        3.70    True  2025-03-27   2  1.44
+38     BEAMXUSDT   141        3.44    True  2023-11-14  12 -1.37
+39         AUSDT   142        3.40    True  2025-05-28   2  0.11
+40       RAYUSDT   143        3.39   False  2021-08-10   2  1.58
+41  MARSCOINUSDT   144        3.37    True               0  0.00
+42    MORPHOUSDT   145        3.37    True  2025-10-03   0  0.00
+43       GNSUSDT   146        3.32   False  2023-02-17   3 -1.71
+44        IOUSDT   147        3.24    True  2024-06-11   3  0.28
+45       AMPUSDT   148        3.24   False  2021-11-23   3  0.50
+46     EIGENUSDT   149        3.23    True  2024-10-01   7  1.14
+47      COMPUSDT   150        3.21    True  2020-06-25  16 -2.26
+48      OPENUSDT   151        3.13    True  2025-09-08   3 -0.25
+49     ETHFIUSDT   152        3.08    True  2024-03-18   0  0.00
