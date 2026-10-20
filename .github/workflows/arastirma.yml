@@ -17,7 +17,7 @@ jobs:
       fail-fast: false
       max-parallel: 20
       matrix:
-        mod: [durum]
+        mod: [buyuk-katman-0, buyuk-katman-1, buyuk-katman-2]
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5

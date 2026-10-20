@@ -189,6 +189,50 @@ def main():
                 tr = A.calistir(prm, liste, iv, hv)
                 rows.append(ozet(tr, ad)); print(rows[-1], flush=True)
         pd.DataFrame(rows).to_csv(f"{OUT}/buyuk_btcf.csv", index=False)
+    elif mod.startswith("katman"):
+        import requests as rq
+        from coin_listesi import COINLER as CL
+        A.VERI_BAS = "2019-09-01"; A.IS_BAS = "2020-01-01"
+        # vadeli (USDT-M perpetual) listesi
+        perp = set()
+        for url in ("https://fapi.binance.com/fapi/v1/exchangeInfo", "https://www.binance.com/fapi/v1/exchangeInfo"):
+            try:
+                j = rq.get(url, timeout=30).json()
+                perp = {x["symbol"] for x in j["symbols"] if x.get("contractType") == "PERPETUAL" and x.get("quoteAsset") == "USDT"
+                        and x.get("status") == "TRADING"}
+                if perp:
+                    break
+            except Exception as exc:
+                print("fapi", url, exc, flush=True)
+        print("vadeli kontrat", len(perp), flush=True)
+        tick = veri._get("/api/v3/ticker/24hr", {})
+        stab = {"USDCUSDT", "FDUSDUSDT", "TUSDUSDT", "DAIUSDT", "EURUSDT", "USDPUSDT", "RLUSDUSDT", "USD1USDT", "PYUSDUSDT",
+                "AEURUSDT", "XUSDUSDT", "BFUSDUSDT", "WBTCUSDT", "WBETHUSDT", "BNSOLUSDT", "EURIUSDT", "USDEUSDT", "PAXGUSDT", "XAUTUSDT"}
+        aday = [d for d in tick if d["symbol"].endswith("USDT") and d["symbol"] not in stab and d["symbol"] not in CL
+                and not any(x in d["symbol"] for x in ("UP", "DOWN", "BULL", "BEAR")) and not d["symbol"].endswith("BUSDT")
+                and d["symbol"] not in A.STOK_HARIC]
+        aday.sort(key=lambda d: float(d["quoteVolume"]), reverse=True)
+        hacim = {d["symbol"]: float(d["quoteVolume"]) for d in aday}
+        parca = int(mod.split("-")[1])
+        dilim = [d["symbol"] for d in aday][parca * 50:(parca + 1) * 50]
+        A.DATA["btc_4h"] = veri.mumlar_onbellekli("BTCUSDT", "4h", A.VERI_BAS)
+        # genislik serisi icin GEN30 + dilim
+        A.DATA["4h"] = A.yukle(list(dict.fromkeys(GEN30 + dilim)), "4h")
+        p = b66(A.DATA["4h"])
+        with mp.Pool(4) as hv:
+            tr = A.calistir(p, [s_ for s_ in dilim if s_ in A.DATA["4h"]], "4h", hv)
+        if len(tr):
+            tr = tr[tr.giris_zaman >= "2020-01-01"]
+            tr.drop(columns=[c for c in tr.columns if tr[c].dtype == object and c not in ("symbol", "neden")], errors="ignore") \
+                .to_csv(f"{OUT}/katman_islem_{parca}.csv.gz", index=False, compression="gzip")
+        bilgi = pd.DataFrame([{"symbol": s_, "sira": 103 + parca * 50 + i, "hacim_musd": round(hacim[s_] / 1e6, 2),
+                               "vadeli": s_ in perp, "veri_bas": str(A.DATA["4h"][s_][0]["open_time"].iloc[0])[:10] if s_ in A.DATA["4h"] else "",
+                               "n": int((tr.symbol == s_).sum()) if len(tr) else 0,
+                               "R": round(float(tr[tr.symbol == s_].sonuc_r.sum()), 2) if len(tr) else 0.0} for i, s_ in enumerate(dilim)])
+        bilgi.to_csv(f"{OUT}/katman_bilgi_{parca}.csv", index=False)
+        if parca == 0:
+            pd.DataFrame({"symbol": list(CL), "vadeli": [s_ in perp for s_ in CL]}).to_csv(f"{OUT}/katman_mevcut_vadeli.csv", index=False)
+        print(bilgi.to_string(), flush=True)
     elif mod == "oz":
         A.VERI_BAS = "2019-09-01"
         A.IS_BAS = "2020-01-01"
