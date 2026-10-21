@@ -140,6 +140,9 @@ PARAMS = {
 
     # 17) Seviye tanimi (varsayilan = son R mumun en yuksek fitili)
     "seviye_tipi": "fitil",         # "fitil" | "kapanis" (govde kapanislarinin en yuksegi)
+    "haftalik_seviye": 0,           # >0: direnc/destek = son N kapanmis haftanin en yuksek/en dusuk degeri (haftalik kutu)
+    "haftalik_genislik_max": 0.0,   # >0: haftalik kutu genisligi (tepe/dip - 1, %) bundan buyukse kirilim yok (sikisma sarti)
+    "taze_kirilim": False,          # True: onceki 4s kapanis seviyenin icindeydi (ilk kesisim)
     "gunluk_seviye": 0,             # >0: direnc = son N kapanmis gunun en yuksek degeri (gunluk veri gerekir)
     "rsi_dinamik": "",              # "" | "ust" | "orta" | "ikisi": RSI eşikleri yerine RSI'nin 200 mumluk Bollinger bandi
     "z_max": 0.0,                   # >0: kapanisin z-skoru (SMA z_len'den sapma / std) bu degeri asarsa red
@@ -554,6 +557,18 @@ def simule_et(symbol: str, df: pd.DataFrame, gunluk: pd.DataFrame | None,
         resistance = GL["h"]
         support = GL["l"]
 
+    HS = p["haftalik_seviye"]
+    if HS > 0 and haftalik is not None and len(haftalik):
+        whh = pd.Series(haftalik["high"].to_numpy(float)).rolling(HS).max().to_numpy()
+        wll = pd.Series(haftalik["low"].to_numpy(float)).rolling(HS).min().to_numpy()
+        HL = _htf_onceki(ot, haftalik, "W", {"h": whh, "l": wll})
+        resistance = HL["h"].copy()
+        support = HL["l"].copy()
+        if p["haftalik_genislik_max"] > 0:
+            gen_ = (resistance / support - 1) * 100
+            genis = ~(gen_ <= p["haftalik_genislik_max"])
+            resistance[genis] = np.nan
+            support[genis] = np.nan
     if btc_gunluk is not None and len(btc_gunluk):
         bc = btc_gunluk["close"].to_numpy(float)
         _, _, bh = macd(bc, p["macd_fast"], p["macd_slow"], p["macd_signal"])
@@ -924,6 +939,9 @@ def simule_et(symbol: str, df: pd.DataFrame, gunluk: pd.DataFrame | None,
         range_ok = a <= 0 or rng <= p["max_candle_range_atr"] * a
         c_brk_l = c[i] > resistance[i] + p["break_buf_atr"] * a
         c_brk_s = c[i] < support[i] - p["break_buf_atr"] * a
+        if p["taze_kirilim"] and i >= 1:
+            c_brk_l = c_brk_l and c[i - 1] <= resistance[i] + p["break_buf_atr"] * a
+            c_brk_s = c_brk_s and c[i - 1] >= support[i] - p["break_buf_atr"] * a
         c_vol = (not p["use_volume"]) or (v[i] > vol_avg[i] * p["vol_mult"])
         c_mum_l = c[i] > o[i] and close_pos >= p["min_close_pos"] and range_ok
         c_mum_s = c[i] < o[i] and close_pos <= 1 - p["min_close_pos"] and range_ok

@@ -189,6 +189,32 @@ def main():
                 tr = A.calistir(prm, liste, iv, hv)
                 rows.append(ozet(tr, ad)); print(rows[-1], flush=True)
         pd.DataFrame(rows).to_csv(f"{OUT}/buyuk_btcf.csv", index=False)
+    elif mod.startswith("hsik"):
+        iv = "4h"
+        A.DATA["btc_4h"] = veri.mumlar_onbellekli("BTCUSDT", "4h", A.VERI_BAS)
+        A.DATA[iv] = A.yukle(liste, iv)
+        p = b66(A.DATA[iv])
+        sade = dict(use_adx=False, use_ltf_macd=False, rsi_min=0.0, def_rsi_max=101.0, use_auto_params=False,
+                    use_ema_dizilim=False, vol_mult=1.5, use_room=False)
+        S = [("SU ANKI v6.6 (80 mum direnc)", p)]
+        for K_ in (8, 12, 20):
+            for G_ in (20.0, 30.0, 45.0):
+                S.append((f"haftalik kutu {K_} hafta, genislik <= %{int(G_)} + v6.6 filtreleri",
+                          dict(p, haftalik_seviye=K_, haftalik_genislik_max=G_, taze_kirilim=True)))
+        for K_ in (8, 12, 20):
+            for G_ in (30.0, 45.0):
+                S.append((f"SADE: haftalik kutu {K_} hafta, <= %{int(G_)}, hacim 1.5x, az filtre",
+                          dict(p, haftalik_seviye=K_, haftalik_genislik_max=G_, taze_kirilim=True, **sade)))
+        S.append(("haftalik kutu 12 hafta, genislik sarti yok + v6.6", dict(p, haftalik_seviye=12, taze_kirilim=True)))
+        K = 5
+        parca = int(mod.split("-")[1])
+        senaryo = S[:1] + S[1 + parca::K]
+        rows = []
+        with mp.Pool(4) as hv:
+            for ad, prm in senaryo:
+                tr = A.calistir(prm, liste, iv, hv)
+                rows.append(ozet(tr, ad)); print(rows[-1], flush=True)
+        pd.DataFrame(rows).to_csv(f"{OUT}/buyuk_{mod}.csv", index=False)
     elif mod.startswith("perp"):
         import requests as rq, subprocess, re as _re
         subprocess.run(["git", "fetch", "-q", "origin", "main"])
