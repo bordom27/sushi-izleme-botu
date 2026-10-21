@@ -55,6 +55,11 @@ Kural: `GENISLIK_COINLER`'deki 30 büyük coinden herhangi biri son 6 mumda (24 
 "En fazla 1 coin" gibi gevşek eşikler iyileştirmiyor: kural "hiç ters kırılım yok" olarak çalışıyor.
 Ayrıca test edilip eklenmeyenler: ortalamaya dönüş sistemi (48 varyasyon, hepsi zararda), momentum rotasyonu (tutarsız, %35–55 düşüş), dinamik RSI, z-skor, verimlilik oranı, choppiness, FVG, BTC korelasyonu.
 
+## Denenip eklenmeyenler (20–21 Ekim 2026)
+- **Haftalık sıkışma kutusu + 4s kapanış kırılımı** (son 8/12/20 haftanın tepe/dibi, genişlik ≤ %20/30/45, ilk kesişim): v6.6 filtreleriyle 0–28 işlem (2.3 yılda), sade filtrelerle 7–125 işlem, isabet %52–58, işlem başı ~+0.1R, son dönemde hepsi zararda. Genişlik şartsız 12 haftalık kutu: 148 işlem, +47.8R (v6.6: 407 işlem, +119.7R).
+- **Kalan vadeli kontratlar** (344 coin, vadeli fiyat verisiyle): 1094 işlem, isabet %52, işlem başı +0.07R, son dönemde negatif — eklenmedi; 160 coin pratik sınır.
+- **Kullanıcının kırılım-retest stratejisi** (1s/4s/1G/1H) ve **3 günlük dar bant** varyasyonu: günlük/3 günlük kağıt üstünde iyi ama gün sonu değerine göre düşüş %17–59, Sharpe 0.8–1.0; son 2 yılda isabet belirgin düşük.
+
 ## Liste genişletme 2: 102 → 160 coin (20 Ekim 2026)
 Kurala göre: hacim sırasında listenin ardındaki ilk 100 coin içinden Binance vadelide (USDT-M) kontratı olan ve en az 6 aylık geçmişi olan 58 coin (E grubu). Test (v6.6, 2020+): ilk 50'lik dilim 141 işlem / %55 / +15.2R, 51–100 dilimi 174 işlem / %56 / +26.0R; ikisi de A/B/C dönemlerinin üçünde kârda; işlem başı +0.11–0.15R (çekirdek 102'de +0.2R). Sinyal sayısı ~%40 artar. Sonraki 50 (günlük hacim < ~0.8M$) eklenmedi.
 Güven etiketi sayımı çekirdek 102 coinle yapılır (eşikler o evrende ölçüldü). Vadelide farklı adla işlem görenler (1000PEPE, 1000BONK, 1000FLOKI) ve vadeli kontratı olmayanlar (EPIC, AMP, TON, RAD, NFP, STRAX, AUDIO, RAY) giriş mesajında belirtilir.
