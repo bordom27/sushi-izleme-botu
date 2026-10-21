@@ -17,7 +17,7 @@ jobs:
       fail-fast: false
       max-parallel: 20
       matrix:
-        mod: [buyuk-hsik-0, buyuk-hsik-1, buyuk-hsik-2, buyuk-hsik-3, buyuk-hsik-4]
+        mod: [buyuk-gsik-0, buyuk-gsik-1, buyuk-gsik-2, buyuk-gsik-3, buyuk-gsik-4, buyuk-gsik-5, buyuk-gsik-6, buyuk-gsik-7]
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5

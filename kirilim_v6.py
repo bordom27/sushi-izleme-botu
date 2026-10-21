@@ -142,6 +142,7 @@ PARAMS = {
     "seviye_tipi": "fitil",         # "fitil" | "kapanis" (govde kapanislarinin en yuksegi)
     "haftalik_seviye": 0,           # >0: direnc/destek = son N kapanmis haftanin en yuksek/en dusuk degeri (haftalik kutu)
     "haftalik_genislik_max": 0.0,   # >0: haftalik kutu genisligi (tepe/dip - 1, %) bundan buyukse kirilim yok (sikisma sarti)
+    "gunluk_genislik_max": 0.0,     # >0: gunluk kutu (gunluk_seviye) genisligi bundan buyukse kirilim yok
     "taze_kirilim": False,          # True: onceki 4s kapanis seviyenin icindeydi (ilk kesisim)
     "gunluk_seviye": 0,             # >0: direnc = son N kapanmis gunun en yuksek degeri (gunluk veri gerekir)
     "rsi_dinamik": "",              # "" | "ust" | "orta" | "ikisi": RSI eşikleri yerine RSI'nin 200 mumluk Bollinger bandi
@@ -554,8 +555,13 @@ def simule_et(symbol: str, df: pd.DataFrame, gunluk: pd.DataFrame | None,
         gh_ = pd.Series(gunluk["high"].to_numpy(float)).rolling(GS).max().to_numpy()
         gl_ = pd.Series(gunluk["low"].to_numpy(float)).rolling(GS).min().to_numpy()
         GL = _htf_onceki(ot, gunluk, "D", {"h": gh_, "l": gl_})
-        resistance = GL["h"]
-        support = GL["l"]
+        resistance = GL["h"].copy()
+        support = GL["l"].copy()
+        if p["gunluk_genislik_max"] > 0:
+            gen_ = (resistance / support - 1) * 100
+            genis = ~(gen_ <= p["gunluk_genislik_max"])
+            resistance[genis] = np.nan
+            support[genis] = np.nan
 
     HS = p["haftalik_seviye"]
     if HS > 0 and haftalik is not None and len(haftalik):

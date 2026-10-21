@@ -189,6 +189,31 @@ def main():
                 tr = A.calistir(prm, liste, iv, hv)
                 rows.append(ozet(tr, ad)); print(rows[-1], flush=True)
         pd.DataFrame(rows).to_csv(f"{OUT}/buyuk_btcf.csv", index=False)
+    elif mod.startswith("gsik"):
+        iv = "4h"
+        A.DATA["btc_4h"] = veri.mumlar_onbellekli("BTCUSDT", "4h", A.VERI_BAS)
+        A.DATA[iv] = A.yukle(liste, iv)
+        p = b66(A.DATA[iv])
+        sade = dict(use_adx=False, use_ltf_macd=False, rsi_min=0.0, def_rsi_max=101.0, use_auto_params=False,
+                    use_ema_dizilim=False, vol_mult=1.5, use_room=False)
+        S = [("SU ANKI v6.6 (80 mum direnc)", p)]
+        for N_ in (10, 20, 30, 60):
+            for G_ in (10.0, 15.0, 20.0, 30.0):
+                S.append((f"gunluk kutu {N_} gun, genislik <= %{int(G_)} + v6.6", dict(p, gunluk_seviye=N_, gunluk_genislik_max=G_, taze_kirilim=True)))
+        for N_ in (10, 20, 30):
+            for G_ in (15.0, 30.0):
+                S.append((f"SADE: gunluk kutu {N_} gun, <= %{int(G_)}, hacim 1.5x", dict(p, gunluk_seviye=N_, gunluk_genislik_max=G_, taze_kirilim=True, **sade)))
+        for N_ in (10, 20):
+            S.append((f"gunluk kutu {N_} gun, genislik sarti yok + v6.6", dict(p, gunluk_seviye=N_, taze_kirilim=True)))
+        K = 8
+        parca = int(mod.split("-")[1])
+        senaryo = S[:1] + S[1 + parca::K]
+        rows = []
+        with mp.Pool(4) as hv:
+            for ad, prm in senaryo:
+                tr = A.calistir(prm, liste, iv, hv)
+                rows.append(ozet(tr, ad)); print(rows[-1], flush=True)
+        pd.DataFrame(rows).to_csv(f"{OUT}/buyuk_{mod}.csv", index=False)
     elif mod.startswith("hsik"):
         iv = "4h"
         A.DATA["btc_4h"] = veri.mumlar_onbellekli("BTCUSDT", "4h", A.VERI_BAS)
