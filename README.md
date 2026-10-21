@@ -57,6 +57,7 @@ Ayrıca test edilip eklenmeyenler: ortalamaya dönüş sistemi (48 varyasyon, he
 
 ## Denenip eklenmeyenler (20–21 Ekim 2026)
 - **Haftalık sıkışma kutusu + 4s kapanış kırılımı** (son 8/12/20 haftanın tepe/dibi, genişlik ≤ %20/30/45, ilk kesişim): v6.6 filtreleriyle 0–28 işlem (2.3 yılda), sade filtrelerle 7–125 işlem, isabet %52–58, işlem başı ~+0.1R, son dönemde hepsi zararda. Genişlik şartsız 12 haftalık kutu: 148 işlem, +47.8R (v6.6: 407 işlem, +119.7R).
+- **Günlük sıkışma kutusu + 4s kapanış kırılımı** (son 10/20/30/60 günün tepe/dibi, genişlik ≤ %10/15/20/30, ilk kesişim): en iyisi 20 gün + ≤%30 + v6.6 filtreleri → 112 işlem, isabet %70, +32.3R, son dönem +2.3R. Genişlik şartsız 20 gün: 317 işlem, %66, +91.3R. Sade filtrelerle isabet %40–54, çoğu zararda. Hiçbiri v6.6'yı (407 işlem, +119.7R) geçmedi; 80 mumluk (≈13 gün) direnç zaten bu işi yapıyor.
 - **Kalan vadeli kontratlar** (344 coin, vadeli fiyat verisiyle): 1094 işlem, isabet %52, işlem başı +0.07R, son dönemde negatif — eklenmedi; 160 coin pratik sınır.
 - **Kullanıcının kırılım-retest stratejisi** (1s/4s/1G/1H) ve **3 günlük dar bant** varyasyonu: günlük/3 günlük kağıt üstünde iyi ama gün sonu değerine göre düşüş %17–59, Sharpe 0.8–1.0; son 2 yılda isabet belirgin düşük.
 
