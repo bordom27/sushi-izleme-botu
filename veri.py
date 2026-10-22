@@ -26,6 +26,7 @@ def _get(path: str, params: dict, bases: list | None = None):
     sira = list(bases or BASE_URLS)
     sira = [b for b in sira if b not in _KOTU] + [b for b in sira if b in _KOTU]
     for base in sira:
+        ag_hatasi = False
         for deneme in range(3):
             try:
                 r = requests.get(base + path, params=params, headers=HEADERS, timeout=20)
@@ -40,9 +41,10 @@ def _get(path: str, params: dict, bases: list | None = None):
                 return r.json()
             except Exception as exc:  # ag hatasi -> tekrar dene / diger adres
                 son_hata = exc
+                ag_hatasi = not isinstance(exc, requests.HTTPError)
                 time.sleep(1 + deneme)
         else:
-            if len(sira) > 1:
+            if ag_hatasi and len(sira) > 1:      # baglanti hic kurulamadi (HTTP hatasi degil)
                 _KOTU.add(base)
     raise RuntimeError(f"Binance istegi basarisiz: {path} {params} ({son_hata})")
 
