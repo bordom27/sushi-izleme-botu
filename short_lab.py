@@ -327,6 +327,7 @@ def retest_olaylari(g, x, R_=80, vm=1.5, min_bar=2, maks_bek=30, yak=0.2, maks=3
                 row = {"giris": T[i], "e": e, "risk": risk, "bekle": si - k, "kir_v": kir_v,
                        "vor3": v[si - 2:si + 1].mean() / va[si], "vsig": v[si] / va[si],
                        "kirmizi3": int((c[si - 2:si + 1] < o[si - 2:si + 1]).sum()),
+                       "sev": sev, "k_ix": k, "si_ix": si,
                        "derin": (sev - dip) / a, "ema200": c[i] / ema200[i] - 1, "atrp": a / c[i],
                        "fitil": (h[i] - max(o[i], c[i])) / max(h[i] - l[i], 1e-12), "qv": q[i],
                        "dip_hedef": (e - dip) / (st - e)}
