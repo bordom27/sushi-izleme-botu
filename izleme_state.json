@@ -520,8 +520,8 @@
     }
   ],
   "eski_pozisyonlar": {},
-  "son_ozet_gunu": "2026-10-22",
-  "son_calisma": "2026-10-22T20:22:36+00:00",
+  "son_ozet_gunu": "2026-10-23",
+  "son_calisma": "2026-10-22T21:42:08+00:00",
   "ayar_parmak_izi": "bb60a74e14",
   "trend_portfoy": {
     "BTCUSDT": 0.0327,
@@ -1059,5 +1059,6 @@
     "龙虾USDT": "2026-10-22 16:00:00"
   },
   "short_acik": {},
-  "duyuru_short_retest": true
+  "duyuru_short_retest": true,
+  "duyuru_short_retest2": true
 }
