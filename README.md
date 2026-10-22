@@ -109,3 +109,16 @@ Binance'teki ~615 USDT paritesi hacim sırasına göre katmanlara ayrılıp v6.3
 
 ## Elle çalıştırma
 GitHub → Actions → *Genel Izleme Botu* → *Run workflow* (`test_mesaji` = true yalnızca Telegram bağlantısını dener).
+
+## Üçüncü sistem: K69 SHORT — düşük hacimli retest short (22 Ekim 2026)
+
+`short_retest.py`, bot içinde `short_retest_sistemi()`. Tüm likit USDT-M vadeli coinler (günde ≥5M$ hacim, ~500 coin), 4 saatlik.
+
+1. Destek (son 80 veya 160 mumun dibi) 0.05 ATR altında, hacim ≥1.5× ortalama ile kırılır. Destek kırılmadan önce en az 2 kez test edilmiş, kırılım mumu < 2.7 ATR.
+2. 2–30 mum içinde fiyat kırılan seviyeye geri yükselir (tepe seviyenin 0.2 ATR yakınında), son 3 mumun hacmi < 0.7× ortalama, ret mumundan önceki 2 mum yeşil.
+3. Ret mumu seviyenin altında kırmızı kapanır → short. Stop: max(seviye, mum tepesi) + 0.8 ATR. Hedef 0.5R (tamamı). Zaman stopu 30 mum.
+4. ⭐⭐ = destek 3+ kez test edilmiş.
+
+Test (2020–Eki 2026, 656 vadeli sözleşme, delist olanlar dahil, maliyet %0.2 + funding): 458 işlem, isabet %84.5, işlem başı +0.23R; ⭐⭐ ~%86. Yıllar: 2022 %84, 2023 %82, 2024 %93, 2025 %77, 2026 %86. 2020–23 ile 2024+ aynı isabet. Eşikler tüm veriye bakılarak seçildi (iyimser olabilir).
+
+Araştırmada denenip alınmayanlar (kod: `arastirma` dalı `short_arastirma/`): pompa sönmesi (funding filtreli dahil) zararda; boğa tuzağı ve zayıf coin sepeti zayıf; destek kırılımı short'u (sakin kırılım filtreleriyle Sharpe ~1.0) Mart 2026'dan beri zararda; güçlü dirence düşük hacimli yaklaşma reddi zararda; yeni listeleme short'u küçük; BTC düşüş rejimi filtresi short'ları kötüleştiriyor; v6.6 short'ta BTC filtresini kapatmak isabeti düşürüyor; teyit mumu beklemek, daha geniş stop, BTC/funding/RSI/EMA filtreleri isabeti artırmadı.

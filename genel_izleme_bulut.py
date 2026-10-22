@@ -34,6 +34,7 @@ import requests
 
 import kirilim_v6 as k
 import veri
+import short_retest as SR
 import zarattini as Z
 from coin_listesi import CEKIRDEK, COINLER, GENISLIK_COINLER, VADELI_AD, VADELI_YOK
 
@@ -57,7 +58,12 @@ CONFIG = {
     # %0.5 riskiyle ayni oynaklik (testte birlikte: 2020+ yillik ~%23, Sharpe ~1.9). Ikisini birlikte buyutmek icin
     # hesap_risk ile ayni oranda artir.
     "TREND_PORTFOY": True,
-    "TREND_OLCEK": 1.0,                # bundan eski olaylar tek tek degil, tek ozet mesajinda gonderilir
+    "TREND_OLCEK": 1.0,
+    # UCUNCU SISTEM: K69 SHORT - dusuk hacimli retest short (short_retest.py), tum likit USDT-M vadeli sozlesmeler.
+    "SHORT_RETEST": True,
+    "SHORT_VERI_BAS": "2026-04-01",    # sabit baslangic (160 mum seviye + 180 mum hacim medyani icin yeterli)
+    "SHORT_MAKS_ACIK": 5,
+    "SHORT_RISK": "%0.5 (ilk ay %0.25)",                # bundan eski olaylar tek tek degil, tek ozet mesajinda gonderilir
 }
 
 TR = timezone(timedelta(hours=3))
@@ -403,6 +409,131 @@ def gunluk_ozet(state, sonuclar, btc_bilgi) -> str:
     return "\n".join(satir)
 
 
+# ------------------------------------------------------------------------------------
+# K69 SHORT - dusuk hacimli retest short (tum likit vadeli coinler)
+# ------------------------------------------------------------------------------------
+def vadeli_semboller() -> list[str]:
+    info = veri._get("/fapi/v1/exchangeInfo", {}, veri.FAPI_URLS)
+    return sorted(s["symbol"] for s in info["symbols"]
+                  if s.get("contractType") == "PERPETUAL" and s.get("quoteAsset") == "USDT"
+                  and s.get("status") == "TRADING" and s.get("underlyingType", "COIN") == "COIN")
+
+
+def _vadeli_df(sym: str, cfg) -> pd.DataFrame:
+    df = veri.mumlar_onbellekli("F:" + sym, "4h", cfg["SHORT_VERI_BAS"])
+    return df.set_index("open_time").rename(columns={"open": "o", "high": "h", "low": "l", "close": "c", "volume": "v"})[
+        ["o", "h", "l", "c", "v"]]
+
+
+def short_grafik(sym: str) -> str:
+    return f"https://www.tradingview.com/chart/?symbol=BINANCE:{sym}.P&interval=240"
+
+
+def short_retest_sistemi(state: dict, cfg: dict) -> list[str]:
+    """Yeni retest short sinyallerini ve acik short'larin kapanislarini mesaj olarak dondurur."""
+    try:
+        semboller = vadeli_semboller()
+    except Exception as exc:
+        print(f"short: vadeli listesi alinamadi: {exc}", flush=True)
+        return []
+    son_bar = state.setdefault("short_son_bar", {})
+    acik = state.setdefault("short_acik", {})
+    ilk = not son_bar
+    simdi = pd.Timestamp.now(tz="UTC").tz_localize(None)
+    bayat = simdi - pd.Timedelta(hours=cfg["BAYAT_SAAT"] + 4)
+    veri_ = {}
+    kapanis_m, giris_m = [], []
+    hata = 0
+    for sym in semboller:
+        try:
+            g = _vadeli_df(sym, cfg)
+        except Exception as exc:
+            hata += 1
+            print(f"short {sym} veri yok: {exc}", flush=True)
+            continue
+        finally:
+            time.sleep(cfg["ISTEK_BEKLEME"])
+        if len(g) < 250:
+            continue
+        veri_[sym] = g
+    # 1) acik short'lari takip et
+    for anahtar, poz in list(acik.items()):
+        sym = poz["sym"]
+        g = veri_.get(sym)
+        if g is None:
+            continue
+        r = SR.sonuc_takip(g, poz)
+        if r is None:
+            continue
+        neden, fiyat, t, R = r
+        simge = "✅" if R > 0 else "❌"
+        ad = {"HEDEF": "HEDEF (0.5R)", "STOP": "STOP", "ZAMAN": "ZAMAN STOPU (30 mum)"}[neden]
+        kapanis_m.append(f"{simge} SHORT RETEST kapandı — {sym}: {ad} @ {fmt(fiyat)} ({tr_saat(t + pd.Timedelta(hours=4))})\n"
+                         f"Giriş {fmt(poz['giris'])} | Sonuç {R:+.2f}R")
+        state.setdefault("trade_log", []).append({"zaman": str(t), "varlik": sym, "yon": "SHORT", "sonuc": neden,
+                                                  "sonuc_r": round(float(R), 3), "sistem": "short_retest"})
+        del acik[anahtar]
+    # 2) yeni sinyaller
+    for sym, g in veri_.items():
+        onceki = son_bar.get(sym)
+        son_bar[sym] = str(g.index[-1])
+        if onceki is None:
+            continue                     # yeni gorulen sembol: gecmis sinyaller gonderilmez
+        for x in SR.sinyaller(g):
+            if x["zaman"] <= pd.Timestamp(onceki):
+                continue
+            if any(p["sym"] == sym for p in acik.values()):
+                continue
+            anahtar = f"{sym}|{x['zaman']}"
+            poz = {"sym": sym, "zaman": str(x["zaman"]), "giris": float(x["giris"]), "stop": float(x["stop"]),
+                   "hedef": float(x["hedef"]), "guclu": bool(x["guclu"])}
+            acik[anahtar] = poz
+            if x["zaman"] < bayat:           # bot uzun sure calisamadiysa eski sinyal gonderilmez (takip edilir)
+                continue
+            yild = "⭐⭐ GÜÇLÜ" if x["guclu"] else "⭐"
+            ad = sym.replace("USDT", "")
+            giris_m.append(
+                f"🔻 SHORT RETEST {yild} — {ad} (vadeli {sym})\n"
+                f"Giriş ~{fmt(x['giris'])} (4s kapanış {tr_saat(x['zaman'] + pd.Timedelta(hours=4))}) | "
+                f"Stop {fmt(x['stop'])} (%{x['risk_pct']:.1f}) | Hedef {fmt(x['hedef'])} (0.5R, tamamını kapat)\n"
+                f"Kırılan destek {fmt(x['seviye'])}: kırılmadan önce {x['dokunus']} kez test edilmiş, "
+                f"{tr_saat(x['kirilim_zaman'] + pd.Timedelta(hours=4))}'te kırıldı ({x['seviye_mum']} mumluk dip). "
+                f"Geri yükseliş düşük hacimli (ortalamanın {x['hacim_orani']:.2f} katı), 2 yeşil mumdan sonra ret.\n"
+                f"Zaman stopu: 30 mum (5 gün). Testte isabet {'~%86' if x['guclu'] else '~%84'}.\n"
+                f"{short_grafik(sym)}")
+    if hata > len(semboller) // 2:
+        print(f"short: {hata} sembolde veri hatasi", flush=True)
+    mesajlar = kapanis_m[:]
+    if giris_m:
+        n_acik = len(acik)
+        not_ = (f"Açık retest short: {n_acik} (öneri: aynı anda en fazla {cfg['SHORT_MAKS_ACIK']}, işlem başı risk {cfg['SHORT_RISK']})")
+        if n_acik > cfg["SHORT_MAKS_ACIK"]:
+            not_ += " — limit aşıldı, ⭐⭐ olanları öncelikle."
+        mesajlar.append("\n\n".join(giris_m) + "\n\n" + not_)
+    if ilk:
+        mesajlar = []
+    return mesajlar
+
+
+def short_ozet(state) -> str:
+    acik = state.get("short_acik") or {}
+    satir = []
+    if acik:
+        satir.append(f"K69 SHORT açık retest short ({len(acik)}): " + ", ".join(
+            f"{p['sym'].replace('USDT', '')} (giriş {fmt(p['giris'])}, stop {fmt(p['stop'])}, hedef {fmt(p['hedef'])})"
+            for p in acik.values()))
+    else:
+        satir.append("K69 SHORT: açık retest short yok.")
+    log = [t for t in state.get("trade_log", []) if t.get("sistem") == "short_retest"]
+    simdi = pd.Timestamp.now(tz="UTC").tz_localize(None)
+    son30 = [t for t in log if pd.Timestamp(t["zaman"]) >= simdi - pd.Timedelta(days=30)]
+    if son30:
+        rr = [t["sonuc_r"] for t in son30]
+        satir.append(f"K69 SHORT son 30 gün (canlı): {len(rr)} işlem | isabet %{100 * sum(x > 0 for x in rr) / len(rr):.0f} | "
+                     f"toplam {sum(rr):+.2f}R")
+    return "\n".join(satir)
+
+
 def trend_portfoyu(state: dict, cfg: dict, btc_d: pd.DataFrame) -> str | None:
     """Gunluk trend portfoyu: son kapanan gunluk mumdan sonra bir kez calisir, degisiklik varsa mesaj dondurur."""
     son_gun = str(btc_d["open_time"].iloc[-1])[:10]
@@ -703,12 +834,37 @@ def main():
         except Exception as exc:
             print(f"trend portfoyu hata: {exc}", flush=True)
 
+    if cfg["SHORT_RETEST"]:
+        try:
+            for m in short_retest_sistemi(state, cfg):
+                send_telegram(m)
+            if not state.get("duyuru_short_retest") and state.get("short_son_bar"):
+                send_telegram(
+                    "🆕 Yeni sistem: K69 SHORT (düşük hacimli retest short)\n"
+                    "Tüm likit Binance vadeli coinlerinde (günde ≥5M$ hacim, ~500 coin) 4 saatlik tarama:\n"
+                    "1) Destek (80 veya 160 mumluk dip) hacimli kırılır; destek kırılmadan önce en az 2 kez test edilmiş olmalı\n"
+                    "2) Fiyat 2–30 mum içinde kırılan seviyeye DÜŞÜK HACİMLE (2 yeşil mum) geri yükselir\n"
+                    "3) Seviyenin altında kırmızı kapanan ret mumunda short\n"
+                    "Stop: seviyenin 0.8 ATR üstü. Hedef: 0.5R'de tamamını kapat. Zaman stopu 30 mum.\n"
+                    "Test (2020–Eki 2026, delist olanlar dahil, maliyet + funding): 458 işlem, isabet %84.5, işlem başı +0.23R; "
+                    "her yıl kârda. ⭐⭐ = destek 3+ kez test edilmiş (~%86), ⭐ = 2 kez (~%84).\n"
+                    "Öneri: işlem başı %0.5 risk (ilk ay %0.25 ile canlıda doğrula), aynı anda en fazla 5 açık short. "
+                    "Küçük hedef isabeti yüksek tutan şey; uzatmaya çalışma.\n"
+                    "Bu sinyaller 🔻 ile gelir; mevcut v6.6 (🟢/🔴) sinyallerinden ayrıdır. "
+                    "Eşikler geçmiş veriye bakılarak seçildi, canlı isabet birkaç puan düşük çıkabilir.")
+                state["duyuru_short_retest"] = True
+        except Exception as exc:
+            print(f"short retest hata: {exc}", flush=True)
+
     # gunluk ozet
     simdi = datetime.now(timezone.utc)
     bugun = simdi.astimezone(TR).strftime("%Y-%m-%d")
     ozet_zorla = os.environ.get("OZET_ZORLA") == "true"
     if ozet_zorla or (simdi.hour >= cfg["GUNLUK_OZET_SAAT_UTC"] and state.get("son_ozet_gunu") != bugun and not ilk_calisma):
-        send_telegram(gunluk_ozet(state, sonuclar, btc_bilgi))
+        oz = gunluk_ozet(state, sonuclar, btc_bilgi)
+        if cfg["SHORT_RETEST"]:
+            oz += "\n" + short_ozet(state)
+        send_telegram(oz)
         state["son_ozet_gunu"] = bugun
 
     if len(hatali) > len(cfg["COINLER"]) // 2:
