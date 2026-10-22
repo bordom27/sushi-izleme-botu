@@ -18,20 +18,32 @@ FAPI_URLS = ["https://fapi.binance.com", "https://www.binance.com"]          # v
 ARALIK_MS = {"1h": 3600_000, "4h": 4 * 3600_000, "6h": 6 * 3600_000, "8h": 8 * 3600_000, "12h": 12 * 3600_000, "1d": 86400_000, "1w": 7 * 86400_000}
 
 
+_KOTU: set = set()     # bu calistirmada erisilemeyen adresler (ornek: GitHub'dan fapi.binance.com) -> sona alinir
+
+
 def _get(path: str, params: dict, bases: list | None = None):
     son_hata = None
-    for base in (bases or BASE_URLS):
+    sira = list(bases or BASE_URLS)
+    sira = [b for b in sira if b not in _KOTU] + [b for b in sira if b in _KOTU]
+    for base in sira:
         for deneme in range(3):
             try:
                 r = requests.get(base + path, params=params, headers=HEADERS, timeout=20)
                 if r.status_code == 429:
                     time.sleep(2 + deneme * 3)
                     continue
+                if r.status_code in (403, 451):          # bolge engeli: bu adresi bir daha ilk deneme
+                    _KOTU.add(base)
+                    son_hata = RuntimeError(f"HTTP {r.status_code}")
+                    break
                 r.raise_for_status()
                 return r.json()
             except Exception as exc:  # ag hatasi -> tekrar dene / diger adres
                 son_hata = exc
                 time.sleep(1 + deneme)
+        else:
+            if len(sira) > 1:
+                _KOTU.add(base)
     raise RuntimeError(f"Binance istegi basarisiz: {path} {params} ({son_hata})")
 
 
