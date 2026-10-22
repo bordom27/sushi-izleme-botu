@@ -6,12 +6,12 @@ Kural (4 saatlik, USDT-M vadeli):
   2) 2..30 mum icinde fiyat kirilan seviyeye geri yukselir: mumun tepesi seviyenin 0.2 ATR yakininda,
      kapanis seviyenin altinda, mum kirmizi
   3) Bu yukselis dusuk hacimli: son 3 mumun ortalama hacmi < 0.7 x ortalama, ret mumundan onceki 2 mum yesil
-  4) Destek kirilmadan once en az 2 kez test edilmis (kirilimdan onceki N mumda dipler seviyenin 0.3 ATR yakininda),
-     kirilim mumu asiri buyuk degil (< 2.7 ATR)
-  5) Coin gunde >= 5 milyon $ islem goruyor (son 30 gunun medyani)
+  4) Kirilim mumu asiri buyuk degil (< 2.7 ATR)
+  5) Coin gunde >= 2 milyon $ islem goruyor (son 30 gunun medyani)
   Giris: ret mumunun kapanisi. Stop: max(seviye, mum tepesi) + 0.8 ATR. Hedef: 0.5R (tamamen kapat). Zaman stopu: 30 mum.
-  Etiket: destek 3+ kez test edildiyse ⭐⭐ (testte isabet ~%86), 2 kez ise ⭐ (~%84).
-Test (2020-10/2026, 656 vadeli sozlesme, delist olanlar dahil, maliyet %0.2 + funding): 458 islem, isabet %84.5, islem basi +0.23R.
+  Etiket (coin >= 5M$ ise): destek kirilmadan once 3+ kez test edildiyse ⭐⭐, 2 kez ise ⭐; digerleri yildizsiz.
+Test (2020-10/2026, 656 vadeli sozlesme, delist olanlar dahil, maliyet %0.2): 822 islem, isabet %81.5, islem basi +0.18R;
+son 12 ay haftada ~4.3 sinyal, isabet %75. (23 Eki 2026: sinyal sayisi icin destek test sarti kaldirildi, hacim siniri 5M -> 2M.)
 """
 from __future__ import annotations
 
@@ -28,10 +28,11 @@ AYAR = {
     "hedef_r": 0.5,
     "zaman_stopu": 30,
     "dusuk_hacim": 0.7,
-    "min_dokunus": 2,
+    "min_dokunus": 0,
     "guclu_dokunus": 3,
     "maks_kirilim_boy": 2.7,
-    "min_hacim_usd": 5e6,
+    "min_hacim_usd": 2e6,
+    "yildiz_hacim_usd": 5e6,          # yildiz icin coin en az bu kadar likit olmali
 }
 
 
@@ -85,7 +86,9 @@ def sinyaller(g: pd.DataFrame, A: dict | None = None) -> list[dict]:
                     s = {"zaman": T[i], "ix": i, "giris": e, "stop": st, "hedef": e - A["hedef_r"] * (st - e),
                          "seviye": sev, "kirilim_zaman": T[k], "dokunus": dokunus, "kirilim_boy": kir_boy,
                          "hacim_orani": vor3, "kirilim_hacim": kir_v, "seviye_mum": R_, "risk_pct": risk * 100,
-                         "gunluk_hacim": q[i], "guclu": dokunus >= A["guclu_dokunus"]}
+                         "gunluk_hacim": q[i], "guclu": dokunus >= A["guclu_dokunus"],
+                         "yildiz": (2 if dokunus >= A["guclu_dokunus"] else 1 if dokunus >= 2 else 0)
+                         if q[i] >= A["yildiz_hacim_usd"] else 0}
                     eski = out.get(T[i])
                     if eski is None or s["dokunus"] > eski["dokunus"]:
                         out[T[i]] = s

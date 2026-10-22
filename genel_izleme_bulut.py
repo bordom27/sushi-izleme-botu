@@ -486,11 +486,12 @@ def short_retest_sistemi(state: dict, cfg: dict) -> list[str]:
                 continue
             anahtar = f"{sym}|{x['zaman']}"
             poz = {"sym": sym, "zaman": str(x["zaman"]), "giris": float(x["giris"]), "stop": float(x["stop"]),
-                   "hedef": float(x["hedef"]), "guclu": bool(x["guclu"])}
+                   "hedef": float(x["hedef"]), "yildiz": int(x["yildiz"])}
             acik[anahtar] = poz
             if x["zaman"] < bayat:           # bot uzun sure calisamadiysa eski sinyal gonderilmez (takip edilir)
                 continue
-            yild = "⭐⭐ GÜÇLÜ" if x["guclu"] else "⭐"
+            yild = {2: "⭐⭐ GÜÇLÜ", 1: "⭐", 0: "(yıldızsız — riski yarıya indir)"}[x["yildiz"]]
+            isabet = {2: "~%87", 1: "~%82", 0: "~%77"}[x["yildiz"]]
             ad = sym.replace("USDT", "")
             giris_m.append(
                 f"🔻 SHORT RETEST {yild} — {ad} (vadeli {sym})\n"
@@ -499,7 +500,7 @@ def short_retest_sistemi(state: dict, cfg: dict) -> list[str]:
                 f"Kırılan destek {fmt(x['seviye'])}: kırılmadan önce {x['dokunus']} kez test edilmiş, "
                 f"{tr_saat(x['kirilim_zaman'] + pd.Timedelta(hours=4))}'te kırıldı ({x['seviye_mum']} mumluk dip). "
                 f"Geri yükseliş düşük hacimli (ortalamanın {x['hacim_orani']:.2f} katı), 2 yeşil mumdan sonra ret.\n"
-                f"Zaman stopu: 30 mum (5 gün). Testte isabet {'~%86' if x['guclu'] else '~%84'}.\n"
+                f"Zaman stopu: 30 mum (5 gün). Testte isabet {isabet}. Coin günlük hacmi ~{x['gunluk_hacim'] / 1e6:.0f}M$.\n"
                 f"{short_grafik(sym)}")
     if hata > len(semboller) // 2:
         print(f"short: {hata} sembolde veri hatasi", flush=True)
@@ -838,16 +839,26 @@ def main():
         try:
             for m in short_retest_sistemi(state, cfg):
                 send_telegram(m)
+            if state.get("duyuru_short_retest") and not state.get("duyuru_short_retest2"):
+                send_telegram(
+                    "⚙️ K69 SHORT güncellendi: daha fazla sinyal\n"
+                    "Destek test şartı kaldırıldı, coin hacim sınırı 5M$ → 2M$. Son 12 ayda haftada ~1.9 → ~4.3 sinyal.\n"
+                    "Etiketler (test, 2020–Eki 2026):\n"
+                    "⭐⭐ = destek 3+ kez test edilmiş, coin ≥5M$ → isabet ~%87 (son 12 ay %80)\n"
+                    "⭐ = destek 2 kez test edilmiş, coin ≥5M$ → ~%82 (son 12 ay %76)\n"
+                    "yıldızsız = diğerleri (destek testi az veya coin sığ) → ~%77 (son 12 ay %72): riski yarıya indir.\n"
+                    "Toplam: isabet ~%81.5, son 12 ayda %75. TradingView'daki K69 SHORT Retest göstergesi de aynı kurala güncellendi.")
+                state["duyuru_short_retest2"] = True
             if not state.get("duyuru_short_retest") and state.get("short_son_bar"):
                 send_telegram(
                     "🆕 Yeni sistem: K69 SHORT (düşük hacimli retest short)\n"
-                    "Tüm likit Binance vadeli coinlerinde (günde ≥5M$ hacim, ~500 coin) 4 saatlik tarama:\n"
-                    "1) Destek (80 veya 160 mumluk dip) hacimli kırılır; destek kırılmadan önce en az 2 kez test edilmiş olmalı\n"
+                    "Tüm likit Binance vadeli coinlerinde (günde ≥2M$ hacim) 4 saatlik tarama:\n"
+                    "1) Destek (80 veya 160 mumluk dip) hacimli kırılır\n"
                     "2) Fiyat 2–30 mum içinde kırılan seviyeye DÜŞÜK HACİMLE (2 yeşil mum) geri yükselir\n"
                     "3) Seviyenin altında kırmızı kapanan ret mumunda short\n"
                     "Stop: seviyenin 0.8 ATR üstü. Hedef: 0.5R'de tamamını kapat. Zaman stopu 30 mum.\n"
-                    "Test (2020–Eki 2026, delist olanlar dahil, maliyet + funding): 458 işlem, isabet %84.5, işlem başı +0.23R; "
-                    "her yıl kârda. ⭐⭐ = destek 3+ kez test edilmiş (~%86), ⭐ = 2 kez (~%84).\n"
+                    "Test (2020–Eki 2026, delist olanlar dahil, maliyet dahil): 822 işlem, isabet %81.5; son 12 ayda %75. "
+                    "⭐⭐ = destek 3+ kez test edilmiş (~%87), ⭐ = 2 kez (~%82), yıldızsız ~%77 (riski yarıya indir).\n"
                     "Öneri: işlem başı %0.5 risk (ilk ay %0.25 ile canlıda doğrula), aynı anda en fazla 5 açık short. "
                     "Küçük hedef isabeti yüksek tutan şey; uzatmaya çalışma.\n"
                     "Bu sinyaller 🔻 ile gelir; mevcut v6.6 (🟢/🔴) sinyallerinden ayrıdır. "
