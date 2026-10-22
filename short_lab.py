@@ -290,7 +290,7 @@ def direnc_olaylari(g, x, L=120, p=3, band=0.3, yak=0.25, maks=30, tRs=(0.5, 0.7
 
 
 def retest_olaylari(g, x, R_=80, vm=1.5, min_bar=2, maks_bek=30, yak=0.2, maks=30, tRs=(0.5, 0.75, 1.0, 1.5, 2.0),
-                    stop_buf=0.3, fr=None, lik=10e6):
+                    stop_buf=0.3, fr=None, lik=10e6, teyit=False):
     """Kirilan destek direnc olur: kapanis 80 mumluk dibin altina (hacimli) -> sonraki min_bar..maks_bek mum icinde
     fiyat o seviyeye geri yukselir (tepe seviyenin yak*ATR yakininda), seviyenin altinda kirmizi kapanir -> short."""
     o, h, l, c, v = (g[k].to_numpy(float) for k in "ohlcv")
@@ -314,12 +314,19 @@ def retest_olaylari(g, x, R_=80, vm=1.5, min_bar=2, maks_bek=30, yak=0.2, maks=3
         dip = min(dip, l[i])
         if i - k >= min_bar and h[i] >= sev - yak * a and c[i] < sev and c[i] < o[i] and q[i] >= lik:
             st = max(sev, h[i]) + stop_buf * a
+            sinyal_i = i
+            if teyit:          # bir sonraki mum, ret mumunun dibinin altinda kapanirsa gir
+                if i + 1 >= n - 1 or h[i + 1] >= st or not (c[i + 1] < l[i]):
+                    sev = np.nan; i += 1; continue
+                i = i + 1
             e = c[i]; risk = (st - e) / e
             if 0.004 <= risk <= 0.25:
                 Hj = h[i + 1:i + 1 + maks]; Lj = l[i + 1:i + 1 + maks]; Cj = c[i + 1:i + 1 + maks]
                 sbl = np.flatnonzero(Hj >= st); sb = sbl[0] if len(sbl) else 10**9
-                row = {"giris": T[i], "e": e, "risk": risk, "bekle": i - k, "kir_v": kir_v,
-                       "vor3": v[i - 2:i + 1].mean() / va[i], "vsig": v[i] / va[i],
+                si = sinyal_i
+                row = {"giris": T[i], "e": e, "risk": risk, "bekle": si - k, "kir_v": kir_v,
+                       "vor3": v[si - 2:si + 1].mean() / va[si], "vsig": v[si] / va[si],
+                       "kirmizi3": int((c[si - 2:si + 1] < o[si - 2:si + 1]).sum()),
                        "derin": (sev - dip) / a, "ema200": c[i] / ema200[i] - 1, "atrp": a / c[i],
                        "fitil": (h[i] - max(o[i], c[i])) / max(h[i] - l[i], 1e-12), "qv": q[i],
                        "dip_hedef": (e - dip) / (st - e)}
