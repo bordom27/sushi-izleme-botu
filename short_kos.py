@@ -7,7 +7,7 @@ import pandas as pd
 
 import short_lab as S
 
-D = FR = META = REJ = X = None
+D = FR = META = REJ = X = DG = SEC = None
 
 
 def _init():
@@ -26,6 +26,18 @@ def _bir(args):
         r = S.aile_tuzak(g, x, REJ, fr=fr, **prm)
     elif aile == "kirilim":
         r = S.aile_kirilim(g, x, REJ, fr=fr, **prm)
+    elif aile == "sepet":
+        d = DG[s]
+        if s not in SEC.columns:
+            return []
+        sec = SEC[s].reindex(d.index).fillna(False).to_numpy(bool)
+        ix = np.flatnonzero(sec)
+        tr_ = pd.concat([d.h - d.l, (d.h - d.c.shift()).abs(), (d.l - d.c.shift()).abs()], axis=1).max(axis=1)
+        atr = tr_.ewm(alpha=1 / 14, adjust=False).mean().to_numpy()
+        e = d.c.to_numpy()[ix]
+        st = e + prm["k"] * atr[ix]
+        hd = S._hedef(e, st, prm.get("tR", 0))
+        r = S.sim(d, ix, st, hd, prm["H"], fr, iz_atr=atr, iz_k=prm.get("iz", 0.0))
     elif aile == "liste":
         S.MAKS_RISK = 3.0
         ob = META.set_index("symbol").onboard.get(s)
@@ -36,7 +48,13 @@ def _bir(args):
 
 
 def calistir(aile, prm, havuz):
-    sonuc = havuz.map(_bir, [(aile, prm, s) for s in D])
+    global DG, SEC
+    if aile == "sepet":
+        if DG is None:
+            DG = {s_: S.gunluk(g_) for s_, g_ in D.items()}
+        SEC = S.sepet_secim(DG, REJ, **{k: v for k, v in prm.items() if k in ("LB", "K", "rejim", "bazli")})
+    isler = [(aile, prm, s) for s in D]
+    sonuc = list(map(_bir, isler)) if aile == "sepet" else havuz.map(_bir, isler)
     return pd.DataFrame([t for l in sonuc for t in l])
 
 
@@ -47,6 +65,8 @@ IZGARA = {
     "tuzak": [dict(m=m, tR=tR, rejim=rj, hacimli=hv) for m in (3, 6, 12) for tR in (1.0, 2.0) for rj in (None, "ayi50") for hv in (False, True)],
     "kirilim": [dict(vm=vm, stop_atr=sa, tR=tR, rejim=rj) for vm in (1.5, 2.5) for sa in (1.0, 2.0) for tR in (1.0, 2.0, 4.0)
                 for rj in (None, "ayi50", "ayi200")],
+    "sepet": [dict(LB=LB, K=5, rejim=rj, k=k, H=H, bazli=bz) for LB in (7, 30) for rj in (None, "ayi50") for k in (2.0, 4.0)
+              for H in (5, 15) for bz in ("ham", "btc")],
     "liste": [dict(gun=g_, maks_gun=m_, stop_k=k_) for g_ in (1, 3, 7, 14) for m_ in (14, 30, 60) for k_ in (0.5, 1.0)],
 }
 

@@ -20,7 +20,7 @@ def yukle():
     K = pd.concat([pd.read_csv(f) for f in sorted(glob.glob(f"{DOK}/k4h_*.csv.gz"))], ignore_index=True)
     F = pd.concat([pd.read_csv(f) for f in sorted(glob.glob(f"{DOK}/fund_*.csv.gz"))], ignore_index=True)
     meta = pd.read_csv(f"{DOK}/meta.csv")
-    K["t"] = pd.to_datetime(K["t"], unit="ms")
+    K["t"] = pd.to_datetime(K["t"], unit="s")      # veri_dok: us cozunurluklu datetime // 1e6 = saniye
     F["t"] = pd.to_datetime(F["t"], unit="ms")
     D = {}
     for s, g in K.groupby("symbol", sort=True):
@@ -193,3 +193,26 @@ def aile_listeleme(g, onboard, gun=3, maks_gun=30, stop_k=1.0, fr=None):
     tepe = g.h.iloc[: i + 1].max()
     s = np.array([max(tepe, g.c.iloc[i] * (1 + stop_k))])
     return sim(g, np.array([i]), s, np.array([np.nan]), 6 * maks_gun, fr)
+
+
+def gunluk(g):
+    d = g.resample("1D").agg({"o": "first", "h": "max", "l": "min", "c": "last", "v": "sum"}).dropna()
+    return d
+
+
+def sepet_secim(DG: dict, rej, LB=30, K=5, lik=20e6, rejim="ayi50", min_yas=120, bazli="ham"):
+    """Her gun kapanisinda: likit coinler arasinda son LB gun getirisi en dusuk K coin (rejim uygunsa)."""
+    C = pd.DataFrame({s: d.c for s, d in DG.items()}).sort_index()
+    QV = pd.DataFrame({s: (d.c * d.v).rolling(30, min_periods=10).median() for s, d in DG.items()}).reindex(C.index)
+    yas = C.notna().cumsum()
+    r = C.pct_change(LB)
+    if bazli == "btc":
+        r = r.sub(C["BTCUSDT"].pct_change(LB), axis=0)
+    uygun = (QV >= lik) & (yas >= min_yas) & r.notna()
+    uygun["BTCUSDT"] = False
+    sira = r.where(uygun).rank(axis=1, ascending=True)
+    sec = sira <= K
+    if rejim:
+        rj = rej[rejim].shift(-1).reindex(C.index).fillna(False).astype(bool)   # rej zaten 1 gun kaydirildi; bugunun kapanisi
+        sec = sec & rj.to_numpy()[:, None]
+    return sec
