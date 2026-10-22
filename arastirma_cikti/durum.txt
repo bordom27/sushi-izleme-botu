@@ -1,4 +1,10 @@
-Hesap zamani (UTC): 2026-10-20 14:26:39.924533+00:00
-BTC son 4s kapanis: 81504.32
+Hesap zamani (UTC): 2026-10-22 21:39:32.419129+00:00
+BTC son 4s kapanis: 81494.39
 ACIK POZISYON: 0
-Son 10 giris sinyali (zaman, yon): 2026-09-28 16:00:00/1, 2026-09-28 20:00:00/1, 2026-09-29 08:00:00/1, 2026-09-30 16:00:00/1, 2026-10-01 00:00:00/1, 2026-10-06 08:00:00/1, 2026-10-12 04:00:00/1, 2026-10-12 08:00:00/1, 2026-10-12 16:00:00/1, 2026-10-13 20:00:00/1
+Son 10 giris sinyali (zaman, yon): 2026-09-30 16:00:00/1, 2026-10-01 00:00:00/1, 2026-10-02 04:00:00/1, 2026-10-02 08:00:00/1, 2026-10-04 00:00:00/1, 2026-10-06 08:00:00/1, 2026-10-12 04:00:00/1, 2026-10-12 08:00:00/1, 2026-10-12 16:00:00/1, 2026-10-13 20:00:00/1
+K69 SHORT ACIK: 0
+K69 SHORT son 10 gunde kapananlar: 4
+{"coin": "COMPUSDT", "yildiz": 0, "sinyal_mum_kapanisi_utc": "2026-10-16 00:00:00", "giris": 22.26, "stop": 23.08560026, "hedef": 21.84719987, "son_fiyat": 24.42, "durum": "HEDEF +0.50R"}
+{"coin": "DATAIPUSDT", "yildiz": 0, "sinyal_mum_kapanisi_utc": "2026-10-16 00:00:00", "giris": 0.1896, "stop": 0.19725324, "hedef": 0.18577338, "son_fiyat": 0.1452, "durum": "HEDEF +0.50R"}
+{"coin": "ESPORTSUSDT", "yildiz": 0, "sinyal_mum_kapanisi_utc": "2026-10-16 16:00:00", "giris": 0.00872, "stop": 0.00920595, "hedef": 0.00847703, "son_fiyat": 0.007978, "durum": "HEDEF +0.50R"}
+{"coin": "MOVEUSDT", "yildiz": 0, "sinyal_mum_kapanisi_utc": "2026-10-16 00:00:00", "giris": 0.00796, "stop": 0.00828567, "hedef": 0.00779716, "son_fiyat": 0.007027, "durum": "HEDEF +0.50R"}
