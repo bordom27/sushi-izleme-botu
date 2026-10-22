@@ -1365,3 +1365,70 @@ if trdGoster and barstate.islast
     table.cell(trdTb, 1, 3, trdVar ? "%" + str.tostring(trdPay, "#.##") + " sermaye" : "-", text_color=color.white, text_size=size.small)
     table.cell(trdTb, 0, 2, "En yakin stop / son stop", text_color=color.white, text_size=size.small)
     table.cell(trdTb, 1, 2, trdVar ? str.tostring(trdYakin, format.mintick) + " / " + str.tostring(trdUzak, format.mintick) : "-", text_color=color.white, text_size=size.small)
+
+// ============================================================================
+// 12) K69 SHORT - dusuk hacimli retest short (ucuncu sistem, bot ile ayni kural: short_retest.py)
+// Destek (80/160 mumluk dip) hacimli kirilir (destek once en az 2 kez test edilmis, kirilim mumu < 2.7 ATR);
+// 2..30 mum icinde fiyat seviyeye dusuk hacimle (son 3 mum < 0.7x ort, 2 yesil mum) geri yukselir;
+// seviyenin altinda kirmizi kapanan ret mumunda SHORT. Stop: max(seviye, tepe) + 0.8 ATR, hedef 0.5R, zaman stopu 30 mum.
+// Sadece 4 saatlik grafikte ve vadeli (USDT-M) verisiyle test edildi. ⭐⭐ = destek 3+ kez test edilmis.
+// ============================================================================
+G_RS = "12) K69 SHORT - retest short (ucuncu sistem)"
+rsGoster = input.bool(true, "Retest short sinyallerini goster", group=G_RS)
+rsSeviye = input.bool(true, "Kirilan destek seviyesini ciz (retest beklerken)", group=G_RS)
+rsMinHacim = input.float(5.0, "En az gunluk hacim (milyon $)", minval=0, group=G_RS)
+
+float rsAtr = ta.rma(ta.tr(true), 14)
+float rsVa = ta.sma(volume, 20)[1]
+float rsQv = ta.median(close * volume, 180) * 6
+
+rs_seviye(int N) =>
+    var float sev = na
+    var int k = na
+    var int dok = 0
+    var float boy = na
+    bool sig = false
+    float st = na
+    float ll = ta.lowest(low, N)[1]
+    bool kirildi = false
+    if not na(sev)
+        if bar_index - k > 30 or close > sev + 0.5 * rsAtr
+            sev := na
+        else if bar_index - k >= 2 and high >= sev - 0.2 * rsAtr and close < sev and close < open and rsQv >= rsMinHacim * 1e6
+            float st_ = math.max(sev, high) + 0.8 * rsAtr
+            float risk = (st_ - close) / close
+            float vor3 = (volume + volume[1] + volume[2]) / 3 / rsVa
+            bool ikiYesil = close[1] >= open[1] and close[2] >= open[2]
+            if risk >= 0.004 and risk <= 0.25 and vor3 < 0.7 and ikiYesil and dok >= 2 and boy < 2.7
+                sig := true
+                st := st_
+            sev := na
+            kirildi := true
+    if na(sev) and not kirildi
+        if close < ll - 0.05 * rsAtr and volume >= 1.5 * rsVa and rsQv >= rsMinHacim * 1e6
+            sev := ll
+            k := bar_index
+            boy := (high - low) / rsAtr
+            int c = 0
+            for j = 1 to N
+                if low[j] <= ll + 0.3 * rsAtr
+                    c += 1
+            dok := c
+    [sig, st, dok, sev]
+
+[rsSig80, rsSt80, rsDok80, rsSev80] = rs_seviye(80)
+[rsSig160, rsSt160, rsDok160, rsSev160] = rs_seviye(160)
+bool rsSig = rsSig80 or rsSig160
+bool rs160 = rsSig160 and (not rsSig80 or rsDok160 > rsDok80)
+float rsStop = rs160 ? rsSt160 : rsSt80
+int rsDok = rs160 ? rsDok160 : rsDok80
+float rsHedef = close - 0.5 * (rsStop - close)
+bool rsGuclu = rsDok >= 3
+plot(rsGoster and rsSeviye ? rsSev80 : na, "Kirilan destek (80)", color=color.new(color.fuchsia, 40), linewidth=1, style=plot.style_linebr)
+plot(rsGoster and rsSeviye ? rsSev160 : na, "Kirilan destek (160)", color=color.new(color.purple, 40), linewidth=1, style=plot.style_linebr)
+if rsGoster and rsSig
+    label.new(bar_index, high, (rsGuclu ? "RS ⭐⭐" : "RS ⭐") + "\nStop " + str.tostring(rsStop, format.mintick) + "\nHedef " + str.tostring(rsHedef, format.mintick),
+              style=label.style_label_down, color=color.new(color.fuchsia, 10), textcolor=color.white, size=size.small)
+    line.new(bar_index, rsStop, bar_index + 30, rsStop, color=color.new(color.red, 30), style=line.style_dashed)
+    line.new(bar_index, rsHedef, bar_index + 30, rsHedef, color=color.new(color.green, 30), style=line.style_dashed)
+alertcondition(rsSig, title="K69 SHORT retest", message="{{ticker}}: K69 SHORT retest short sinyali. Kapanis: {{close}}")
