@@ -1,15 +1,16 @@
 //@version=5
 // K69 SHORT - dusuk hacimli retest short (Telegram botundaki 🔻 sinyallerle ayni kural: short_retest.py)
-// Destek (80/160 mumluk dip) hacimli kirilir (destek once en az 2 kez test edilmis, kirilim mumu < 2.7 ATR);
+// Destek (80/160 mumluk dip) hacimli kirilir (kirilim mumu < 2.7 ATR), coin gunde >= 2M$;
 // 2..30 mum icinde fiyat seviyeye dusuk hacimle (son 3 mum < 0.7x ort, 2 yesil mum) geri yukselir;
 // seviyenin altinda kirmizi kapanan ret mumunda SHORT. Stop: max(seviye, tepe) + 0.8 ATR, hedef 0.5R, zaman stopu 30 mum.
-// Etiket: Giris (ret mumunun kapanisi, beyaz cizgi), Stop (kirmizi kesik), Hedef (yesil kesik). 4 saatlik BINANCE VADELI (.P) grafikte kullan. ⭐⭐ = destek 3+ kez test edilmis (testte ~%86), ⭐ = 2 kez (~%84).
+// Etiket: Giris (ret mumunun kapanisi, beyaz cizgi), Stop (kirmizi kesik), Hedef (yesil kesik). 4 saatlik BINANCE VADELI (.P) grafikte kullan. Etiket (coin >= 5M$): ⭐⭐ = destek kirilmadan once 3+ kez test edilmis (~%87), ⭐ = 2 kez (~%82); digerleri yildizsiz (~%77, risk yarim).
 indicator("K69 SHORT Retest", shorttitle="K69 SHORT", overlay=true, max_labels_count=500, max_lines_count=500)
 
 G_RS = "K69 SHORT - retest short"
 rsGoster = input.bool(true, "Retest short sinyallerini goster", group=G_RS)
 rsSeviye = input.bool(true, "Kirilan destek seviyesini ciz (retest beklerken)", group=G_RS)
-rsMinHacim = input.float(5.0, "En az gunluk hacim (milyon $)", minval=0, group=G_RS)
+rsMinHacim = input.float(2.0, "En az gunluk hacim (milyon $)", minval=0, group=G_RS)
+rsYildizHacim = input.float(5.0, "Yildiz icin en az gunluk hacim (milyon $)", minval=0, group=G_RS)
 
 float rsAtr = ta.rma(ta.tr(true), 14)
 float rsVa = ta.sma(volume, 20)[1]
@@ -32,7 +33,7 @@ rs_seviye(int N) =>
             float risk = (st_ - close) / close
             float vor3 = (volume + volume[1] + volume[2]) / 3 / rsVa
             bool ikiYesil = close[1] >= open[1] and close[2] >= open[2]
-            if risk >= 0.004 and risk <= 0.25 and vor3 < 0.7 and ikiYesil and dok >= 2 and boy < 2.7
+            if risk >= 0.004 and risk <= 0.25 and vor3 < 0.7 and ikiYesil and boy < 2.7
                 sig := true
                 st := st_
             sev := na
@@ -56,12 +57,12 @@ bool rs160 = rsSig160 and (not rsSig80 or rsDok160 > rsDok80)
 float rsStop = rs160 ? rsSt160 : rsSt80
 int rsDok = rs160 ? rsDok160 : rsDok80
 float rsHedef = close - 0.5 * (rsStop - close)
-bool rsGuclu = rsDok >= 3
+int rsYildiz = rsQv >= rsYildizHacim * 1e6 ? (rsDok >= 3 ? 2 : rsDok >= 2 ? 1 : 0) : 0
 plot(rsGoster and rsSeviye ? rsSev80 : na, "Kirilan destek (80)", color=color.new(color.fuchsia, 40), linewidth=1, style=plot.style_linebr)
 plot(rsGoster and rsSeviye ? rsSev160 : na, "Kirilan destek (160)", color=color.new(color.purple, 40), linewidth=1, style=plot.style_linebr)
 if rsGoster and rsSig
-    label.new(bar_index, high, (rsGuclu ? "SHORT ⭐⭐" : "SHORT ⭐") + "\nGiris " + str.tostring(close, format.mintick) + "\nStop " + str.tostring(rsStop, format.mintick) + "\nHedef " + str.tostring(rsHedef, format.mintick),
-              style=label.style_label_down, color=color.new(color.fuchsia, 10), textcolor=color.white, size=size.small)
+    label.new(bar_index, high, (rsYildiz == 2 ? "SHORT ⭐⭐" : rsYildiz == 1 ? "SHORT ⭐" : "SHORT (yildizsiz)") + "\nGiris " + str.tostring(close, format.mintick) + "\nStop " + str.tostring(rsStop, format.mintick) + "\nHedef " + str.tostring(rsHedef, format.mintick),
+              style=label.style_label_down, color=rsYildiz > 0 ? color.new(color.fuchsia, 10) : color.new(color.orange, 20), textcolor=color.white, size=size.small)
     line.new(bar_index, close, bar_index + 30, close, color=color.new(color.white, 20), style=line.style_solid)
     line.new(bar_index, rsStop, bar_index + 30, rsStop, color=color.new(color.red, 30), style=line.style_dashed)
     line.new(bar_index, rsHedef, bar_index + 30, rsHedef, color=color.new(color.green, 30), style=line.style_dashed)
