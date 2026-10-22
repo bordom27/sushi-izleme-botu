@@ -216,3 +216,126 @@ def sepet_secim(DG: dict, rej, LB=30, K=5, lik=20e6, rejim="ayi50", min_yas=120,
         rj = rej[rejim].shift(-1).reindex(C.index).fillna(False).astype(bool)   # rej zaten 1 gun kaydirildi; bugunun kapanisi
         sec = sec & rj.to_numpy()[:, None]
     return sec
+
+
+def direnc_olaylari(g, x, L=120, p=3, band=0.3, yak=0.25, maks=30, tRs=(0.5, 0.75, 1.0, 1.5, 2.0), stop_buf=0.3,
+                    fr=None, lik=10e6, aralik=6):
+    """Guclu dirence (onceki pivot tepeler) yaklasip altinda kapanan mumlar: genis sinyal + ozellikler + coklu hedef sonucu.
+    Direnc: son L mum icindeki (en yeni 'p'+3 mum haric) en yuksek pivot tepe; 'dokunus' = o seviyenin band*ATR yakinindaki pivot sayisi.
+    Sinyal: mumun tepesi direncin yak*ATR yakininda/ustunde, kapanis direncin altinda ve kirmizi mum."""
+    o, h, l, c, v = (g[k].to_numpy(float) for k in "ohlcv")
+    atr = x.atr.to_numpy(); va = x.vavg.to_numpy(); q = x.qv.to_numpy()
+    n = len(c)
+    hs = pd.Series(h)
+    piv = (hs == hs.rolling(2 * p + 1, center=True).max()).to_numpy()   # i'de pivot; i+p'de bilinir
+    ema200 = pd.Series(c).ewm(span=200, adjust=False).mean().to_numpy()
+    ema50 = pd.Series(c).ewm(span=50, adjust=False).mean().to_numpy()
+    T = g.index
+    fon = fr.reindex(T, method="ffill").to_numpy() if fr is not None and len(fr) else np.full(n, np.nan)
+    rows = []
+    son = -10**9
+    piv_ix = np.flatnonzero(piv)
+    for i in range(L + 10, n - 1):
+        if q[i] < lik or i - son < aralik:
+            continue
+        a = atr[i]
+        if not (a > 0):
+            continue
+        # bilinen pivotlar: indeks <= i - p, ve [i-L, i-p-3] araliginda (en yeni tepeler haric)
+        lo_, hi_ = i - L, i - p - 3
+        k0, k1 = np.searchsorted(piv_ix, lo_), np.searchsorted(piv_ix, hi_, side="right")
+        pv = piv_ix[k0:k1]
+        if len(pv) == 0:
+            continue
+        R = h[pv].max()
+        if np.nanmax(c[pv[0]:i]) > R:      # direnc kapanisla kirilmis olmamali (araliktaki kapanislar)
+            continue
+        if not (h[i] >= R - yak * a and c[i] < R and c[i] < o[i]):
+            continue
+        dokunus = int(((h[pv] >= R - band * a)).sum())
+        st = max(R, h[i]) + stop_buf * a
+        e = c[i]
+        risk = (st - e) / e
+        if risk < 0.004 or risk > 0.25:
+            continue
+        # sonuc: her hedef icin
+        Hj = h[i + 1:i + 1 + maks]; Lj = l[i + 1:i + 1 + maks]; Cj = c[i + 1:i + 1 + maks]
+        stop_bar = np.flatnonzero(Hj >= st)
+        sb = stop_bar[0] if len(stop_bar) else 10**9
+        row = {"giris": T[i], "e": e, "risk": risk, "R_lev": R, "dokunus": dokunus,
+               "vor3": v[i - 2:i + 1].mean() / va[i] if va[i] > 0 else np.nan,
+               "vor6": v[i - 5:i + 1].mean() / va[i] if va[i] > 0 else np.nan,
+               "vsig": v[i] / va[i] if va[i] > 0 else np.nan,
+               "ema200": c[i] / ema200[i] - 1, "ema50": c[i] / ema50[i] - 1,
+               "ralli": (h[i] - l[i - 12:i + 1].min()) / a, "fitil": (h[i] - max(o[i], c[i])) / max(h[i] - l[i], 1e-12),
+               "atrp": a / c[i], "fon": fon[i], "yas_piv": i - pv[np.argmax(h[pv])], "qv": q[i]}
+        for tR in tRs:
+            tg = e - tR * (st - e)
+            tb = np.flatnonzero(Lj <= tg)
+            tb_ = tb[0] if len(tb) else 10**9
+            if sb <= tb_ and sb < 10**9:
+                j = sb; cik = st
+            elif tb_ < 10**9:
+                j = tb_; cik = tg
+            else:
+                j = len(Cj) - 1; cik = Cj[-1] if len(Cj) else e
+            fz = 0.0
+            if fr is not None and len(fr):
+                fz = fr[(fr.index > T[i]) & (fr.index <= T[min(n - 1, i + 1 + j)])].sum()
+            row[f"R{tR}"] = ((e - cik) / e - MALIYET + fz) / risk
+            row[f"c{tR}"] = T[min(n - 1, i + 1 + j)]
+        rows.append(row)
+        son = i
+    return rows
+
+
+def retest_olaylari(g, x, R_=80, vm=1.5, min_bar=2, maks_bek=30, yak=0.2, maks=30, tRs=(0.5, 0.75, 1.0, 1.5, 2.0),
+                    stop_buf=0.3, fr=None, lik=10e6):
+    """Kirilan destek direnc olur: kapanis 80 mumluk dibin altina (hacimli) -> sonraki min_bar..maks_bek mum icinde
+    fiyat o seviyeye geri yukselir (tepe seviyenin yak*ATR yakininda), seviyenin altinda kirmizi kapanir -> short."""
+    o, h, l, c, v = (g[k].to_numpy(float) for k in "ohlcv")
+    atr = x.atr.to_numpy(); va = x.vavg.to_numpy(); q = x.qv.to_numpy()
+    ll = g.l.rolling(R_).min().shift(1).to_numpy()
+    ema200 = pd.Series(c).ewm(span=200, adjust=False).mean().to_numpy()
+    T = g.index; n = len(c)
+    rows = []
+    k = -1; sev = np.nan; dip = np.nan; kir_v = np.nan
+    i = R_ + 1
+    while i < n - 1:
+        if np.isnan(sev):
+            if c[i] < ll[i] - 0.05 * atr[i] and v[i] >= vm * va[i] and q[i] >= lik:
+                k = i; sev = ll[i]; dip = l[i]; kir_v = v[i] / va[i]
+            i += 1
+            continue
+        a = atr[i]
+        if i - k > maks_bek or c[i] > sev + 0.5 * a:        # zaman doldu veya seviye geri alindi
+            sev = np.nan
+            continue
+        dip = min(dip, l[i])
+        if i - k >= min_bar and h[i] >= sev - yak * a and c[i] < sev and c[i] < o[i] and q[i] >= lik:
+            st = max(sev, h[i]) + stop_buf * a
+            e = c[i]; risk = (st - e) / e
+            if 0.004 <= risk <= 0.25:
+                Hj = h[i + 1:i + 1 + maks]; Lj = l[i + 1:i + 1 + maks]; Cj = c[i + 1:i + 1 + maks]
+                sbl = np.flatnonzero(Hj >= st); sb = sbl[0] if len(sbl) else 10**9
+                row = {"giris": T[i], "e": e, "risk": risk, "bekle": i - k, "kir_v": kir_v,
+                       "vor3": v[i - 2:i + 1].mean() / va[i], "vsig": v[i] / va[i],
+                       "derin": (sev - dip) / a, "ema200": c[i] / ema200[i] - 1, "atrp": a / c[i],
+                       "fitil": (h[i] - max(o[i], c[i])) / max(h[i] - l[i], 1e-12), "qv": q[i],
+                       "dip_hedef": (e - dip) / (st - e)}
+                for tR in tRs:
+                    tg = e - tR * (st - e)
+                    tbl = np.flatnonzero(Lj <= tg); tb = tbl[0] if len(tbl) else 10**9
+                    if sb <= tb and sb < 10**9:
+                        j, cik = sb, st
+                    elif tb < 10**9:
+                        j, cik = tb, tg
+                    else:
+                        j, cik = len(Cj) - 1, (Cj[-1] if len(Cj) else e)
+                    fz = fr[(fr.index > T[i]) & (fr.index <= T[min(n - 1, i + 1 + j)])].sum() if fr is not None and len(fr) else 0.0
+                    row[f"R{tR}"] = ((e - cik) / e - MALIYET + fz) / risk
+                    row[f"c{tR}"] = T[min(n - 1, i + 1 + j)]
+                rows.append(row)
+            sev = np.nan          # seviye basina tek retest islemi
+        i += 1
+    return rows
