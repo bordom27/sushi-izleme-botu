@@ -37,5 +37,34 @@ for s, a in sorted(acik, key=lambda x: x[1]["zaman"]):
                              "anlik_r": round(a["anlik_r"], 2), "kume_24s": n}, default=str))
 son = sorted(giris_hepsi)[-10:]
 satir.append("Son 10 giris sinyali (zaman, yon): " + ", ".join(f"{z}/{y}" for z, y in son))
+# K69 SHORT retest: son 30 mumda cikip hala acik olanlar (tum likit vadeli)
+try:
+    SR = yukle("short_retest", "main_kod/short_retest.py")
+    info = veri._get("/fapi/v1/exchangeInfo", {}, veri.FAPI_URLS)
+    syms = sorted(x["symbol"] for x in info["symbols"] if x.get("contractType") == "PERPETUAL" and x.get("quoteAsset") == "USDT"
+                  and x.get("status") == "TRADING" and x.get("underlyingType", "COIN") == "COIN")
+    rs_acik, rs_son = [], []
+    for s in syms:
+        try:
+            df = veri.mumlar_onbellekli("F:" + s, "4h", "2026-04-01")
+            g = df.set_index("open_time").rename(columns={"open": "o", "high": "h", "low": "l", "close": "c", "volume": "v"})[["o", "h", "l", "c", "v"]]
+            if len(g) < 250:
+                continue
+            for x in SR.sinyaller(g):
+                if x["zaman"] < g.index[-1] - pd.Timedelta(days=10):
+                    continue
+                r = SR.sonuc_takip(g, x)
+                d = {"coin": s, "yildiz": x["yildiz"], "sinyal_mum_kapanisi_utc": str(x["zaman"] + pd.Timedelta(hours=4)),
+                     "giris": x["giris"], "stop": round(x["stop"], 8), "hedef": round(x["hedef"], 8), "son_fiyat": float(g["c"].iloc[-1]),
+                     "durum": "ACIK" if r is None else f"{r[0]} {r[3]:+.2f}R"}
+                (rs_acik if r is None else rs_son).append(d)
+        except Exception as exc:
+            pass
+    satir.append(f"K69 SHORT ACIK: {len(rs_acik)}")
+    satir += [json.dumps(d, default=str) for d in rs_acik]
+    satir.append(f"K69 SHORT son 10 gunde kapananlar: {len(rs_son)}")
+    satir += [json.dumps(d, default=str) for d in rs_son]
+except Exception as exc:
+    satir.append(f"K69 SHORT hata {exc}")
 open("arastirma_cikti/durum.txt", "w").write("\n".join(satir))
 print("\n".join(satir))
