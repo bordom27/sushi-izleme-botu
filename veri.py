@@ -14,12 +14,13 @@ HEADERS = {
     "Accept": "application/json",
 }
 BASE_URLS = ["https://data-api.binance.vision", "https://api.binance.com"]
-ARALIK_MS = {"4h": 4 * 3600_000, "6h": 6 * 3600_000, "8h": 8 * 3600_000, "12h": 12 * 3600_000, "1d": 86400_000, "1w": 7 * 86400_000}
+FAPI_URLS = ["https://fapi.binance.com", "https://www.binance.com"]          # vadeli (USDT-M); sembol "F:XYZUSDT" ile istenir
+ARALIK_MS = {"1h": 3600_000, "4h": 4 * 3600_000, "6h": 6 * 3600_000, "8h": 8 * 3600_000, "12h": 12 * 3600_000, "1d": 86400_000, "1w": 7 * 86400_000}
 
 
-def _get(path: str, params: dict):
+def _get(path: str, params: dict, bases: list | None = None):
     son_hata = None
-    for base in BASE_URLS:
+    for base in (bases or BASE_URLS):
         for deneme in range(3):
             try:
                 r = requests.get(base + path, params=params, headers=HEADERS, timeout=20)
@@ -36,13 +37,18 @@ def _get(path: str, params: dict):
 
 def mumlar(symbol: str, interval: str, baslangic: str | pd.Timestamp, sadece_kapanmis: bool = True) -> pd.DataFrame:
     """baslangic tarihinden bugune tum mumlar (sayfa sayfa, 1000'er)."""
+    vadeli = symbol.startswith("F:")
+    sembol = symbol[2:] if vadeli else symbol
     ts = pd.Timestamp(baslangic)
     if ts.tzinfo is None:
         ts = ts.tz_localize("UTC")
     start_ms = int(ts.timestamp() * 1000)
     rows = []
     while True:
-        data = _get("/api/v3/klines", {"symbol": symbol, "interval": interval, "startTime": start_ms, "limit": 1000})
+        if vadeli:
+            data = _get("/fapi/v1/klines", {"symbol": sembol, "interval": interval, "startTime": start_ms, "limit": 1000}, FAPI_URLS)
+        else:
+            data = _get("/api/v3/klines", {"symbol": sembol, "interval": interval, "startTime": start_ms, "limit": 1000})
         if not data:
             break
         rows.extend(data)
@@ -73,7 +79,7 @@ def mumlar_onbellekli(symbol: str, interval: str, baslangic: str, klasor: str = 
     Onbellek GitHub Actions cache ile calistirmalar arasinda korunur; yoksa bastan ceker.
     """
     os.makedirs(klasor, exist_ok=True)
-    yol = os.path.join(klasor, f"{symbol}_{interval}_{str(baslangic)[:10]}.csv.gz")
+    yol = os.path.join(klasor, f"{symbol.replace(':', '_')}_{interval}_{str(baslangic)[:10]}.csv.gz")
     eski = None
     if os.path.exists(yol):
         try:
