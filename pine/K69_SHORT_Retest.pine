@@ -1,6 +1,6 @@
 //@version=5
 // K69 SHORT - dusuk hacimli retest short (Telegram botundaki 🔻 sinyallerle ayni kural: short_retest.py)
-// Destek (80/160 mumluk dip) hacimli kirilir (kirilim mumu < 2.7 ATR), coin gunde >= 2M$;
+// Destek (80/160 mumluk dip) hacimli kirilir (kirilim mumu < 2.7 ATR), coin gunde >= 1M$;
 // 2..30 mum icinde fiyat seviyeye dusuk hacimle (son 3 mum < 0.7x ort, 2 yesil mum) geri yukselir;
 // seviyenin altinda kirmizi kapanan ret mumunda SHORT. Stop: max(seviye, tepe) + 0.8 ATR, hedef 0.5R, zaman stopu 30 mum.
 // Etiket: Giris (ret mumunun kapanisi, beyaz cizgi), Stop (kirmizi kesik), Hedef (yesil kesik). 4 saatlik BINANCE VADELI (.P) grafikte kullan. Etiket (coin >= 5M$): ⭐⭐ = destek kirilmadan once 3+ kez test edilmis (~%87), ⭐ = 2 kez (~%82); digerleri yildizsiz (~%77, risk yarim).
@@ -9,7 +9,7 @@ indicator("K69 SHORT Retest", shorttitle="K69 SHORT", overlay=true, max_labels_c
 G_RS = "K69 SHORT - retest short"
 rsGoster = input.bool(true, "Retest short sinyallerini goster", group=G_RS)
 rsSeviye = input.bool(true, "Kirilan destek seviyesini ciz (retest beklerken)", group=G_RS)
-rsMinHacim = input.float(2.0, "En az gunluk hacim (milyon $)", minval=0, group=G_RS)
+rsMinHacim = input.float(1.0, "En az gunluk hacim (milyon $)", minval=0, group=G_RS)
 rsYildizHacim = input.float(5.0, "Yildiz icin en az gunluk hacim (milyon $)", minval=0, group=G_RS)
 
 float rsAtr = ta.rma(ta.tr(true), 14)
