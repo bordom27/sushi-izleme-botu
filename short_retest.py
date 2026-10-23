@@ -8,11 +8,14 @@ Kural (4 saatlik, USDT-M vadeli):
   3) Bu yukselis dusuk hacimli: son 3 mumun ortalama hacmi < 0.7 x ortalama, ret mumundan onceki 2 mum yesil
   4) Kirilim mumu asiri buyuk degil (< 2.7 ATR)
   5) Coin gunde >= 1 milyon $ islem goruyor (son 30 gunun medyani)
-  Giris: ret mumunun kapanisi. Stop: max(seviye, mum tepesi) + 0.8 ATR. Hedef: 0.5R (tamamen kapat). Zaman stopu: 30 mum.
+  Giris: ret mumunun kapanisi. Stop: max(seviye, mum tepesi) + 0.8 ATR. Hedef: 0.5R (tamamen kapat); coin gunde < 5M$ ise 0.4R.
+  Zaman stopu: 30 mum.
   Etiket (coin >= 5M$ ise): destek kirilmadan once 3+ kez test edildiyse ⭐⭐, 2 kez ise ⭐; digerleri yildizsiz.
 Test (2020-10/2026, 656 vadeli sozlesme, delist olanlar dahil, maliyet %0.2): 822 islem, isabet %81.5, islem basi +0.18R;
 son 12 ay haftada ~4.3 sinyal, isabet %75. (23 Eki 2026: sinyal sayisi icin destek test sarti kaldirildi, hacim siniri 5M -> 2M -> 1M;
 1M ile: 936 islem, isabet %80.3, son 12 ay haftada ~6.2 sinyal, isabet %74.)
+(23 Eki 2026: 1-5M$ coinlerde hedef 0.4R -> ayni 936 islem, isabet %81.5, son 12 ay %76.8, islem basi R 0.164 -> 0.155.
+ Ek filtreler (BTC rejimi, piyasa genisligi, RSI, model) yillar arasinda tutarli fark yaratmadi; kar kilitleyen stop 4s mumda gercekci dolumla zararli.)
 """
 from __future__ import annotations
 
@@ -27,6 +30,8 @@ AYAR = {
     "yakin_atr": 0.2,
     "stop_atr": 0.8,
     "hedef_r": 0.5,
+    "hedef_r_sig": 0.4,               # sig coin (gunluk hacim < sig_hacim_usd) hedefi
+    "sig_hacim_usd": 5e6,
     "zaman_stopu": 30,
     "dusuk_hacim": 0.7,
     "min_dokunus": 0,
@@ -84,7 +89,8 @@ def sinyaller(g: pd.DataFrame, A: dict | None = None) -> list[dict]:
                 kirmizi3 = int((c[i - 2:i + 1] < o[i - 2:i + 1]).sum())
                 if (0.004 <= risk <= 0.25 and vor3 < A["dusuk_hacim"] and kirmizi3 == 1
                         and dokunus >= A["min_dokunus"] and kir_boy < A["maks_kirilim_boy"]):
-                    s = {"zaman": T[i], "ix": i, "giris": e, "stop": st, "hedef": e - A["hedef_r"] * (st - e),
+                    hr = A["hedef_r"] if q[i] >= A["sig_hacim_usd"] else A["hedef_r_sig"]
+                    s = {"zaman": T[i], "ix": i, "giris": e, "stop": st, "hedef": e - hr * (st - e), "hedef_r": hr,
                          "seviye": sev, "kirilim_zaman": T[k], "dokunus": dokunus, "kirilim_boy": kir_boy,
                          "hacim_orani": vor3, "kirilim_hacim": kir_v, "seviye_mum": R_, "risk_pct": risk * 100,
                          "gunluk_hacim": q[i], "guclu": dokunus >= A["guclu_dokunus"],

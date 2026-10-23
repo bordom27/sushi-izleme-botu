@@ -467,7 +467,7 @@ def short_retest_sistemi(state: dict, cfg: dict) -> list[str]:
             continue
         neden, fiyat, t, R = r
         simge = "✅" if R > 0 else "❌"
-        ad = {"HEDEF": "HEDEF (0.5R)", "STOP": "STOP", "ZAMAN": "ZAMAN STOPU (30 mum)"}[neden]
+        ad = {"HEDEF": f"HEDEF ({poz.get('hedef_r', 0.5)}R)", "STOP": "STOP", "ZAMAN": "ZAMAN STOPU (30 mum)"}[neden]
         kapanis_m.append(f"{simge} SHORT RETEST kapandı — {sym}: {ad} @ {fmt(fiyat)} ({tr_saat(t + pd.Timedelta(hours=4))})\n"
                          f"Giriş {fmt(poz['giris'])} | Sonuç {R:+.2f}R")
         state.setdefault("trade_log", []).append({"zaman": str(t), "varlik": sym, "yon": "SHORT", "sonuc": neden,
@@ -498,17 +498,17 @@ def short_retest_sistemi(state: dict, cfg: dict) -> list[str]:
                 continue
             anahtar = f"{sym}|{x['zaman']}"
             poz = {"sym": sym, "zaman": str(x["zaman"]), "giris": float(x["giris"]), "stop": float(x["stop"]),
-                   "hedef": float(x["hedef"]), "yildiz": int(x["yildiz"])}
+                   "hedef": float(x["hedef"]), "hedef_r": float(x["hedef_r"]), "yildiz": int(x["yildiz"])}
             acik[anahtar] = poz
             if x["zaman"] < bayat:           # bot uzun sure calisamadiysa eski sinyal gonderilmez (takip edilir)
                 continue
             yild = {2: "⭐⭐ GÜÇLÜ", 1: "⭐", 0: "(yıldızsız — riski yarıya indir)"}[x["yildiz"]]
-            isabet = {2: "~%87", 1: "~%82", 0: "~%77"}[x["yildiz"]]
+            isabet = {2: "~%87", 1: "~%82", 0: "~%78"}[x["yildiz"]]
             ad = sym.replace("USDT", "")
             giris_m.append(
                 f"🔻 SHORT RETEST {yild} — {ad} (vadeli {sym})\n"
                 f"Giriş ~{fmt(x['giris'])} (4s kapanış {tr_saat(x['zaman'] + pd.Timedelta(hours=4))}) | "
-                f"Stop {fmt(x['stop'])} (%{x['risk_pct']:.1f}) | Hedef {fmt(x['hedef'])} (0.5R, tamamını kapat)\n"
+                f"Stop {fmt(x['stop'])} (%{x['risk_pct']:.1f}) | Hedef {fmt(x['hedef'])} ({x['hedef_r']}R, tamamını kapat)\n"
                 f"Kırılan destek {fmt(x['seviye'])}: kırılmadan önce {x['dokunus']} kez test edilmiş, "
                 f"{tr_saat(x['kirilim_zaman'] + pd.Timedelta(hours=4))}'te kırıldı ({x['seviye_mum']} mumluk dip). "
                 f"Geri yükseliş düşük hacimli (ortalamanın {x['hacim_orani']:.2f} katı), 2 yeşil mumdan sonra ret.\n"
@@ -875,6 +875,12 @@ def main():
                               "Son 12 ayda haftada ~6 sinyal, isabet aynı (~%74). 1–5M$ hacimli coinler yıldızsız gelir ve sığdır: "
                               "pozisyonu küçük tut (mesajda coinin günlük hacmi yazıyor).")
                 state["duyuru_short_retest3"] = True
+            if state.get("duyuru_short_retest3") and not state.get("duyuru_short_retest4"):
+                send_telegram("⚙️ K69 SHORT: günlük hacmi 5M$ altındaki (sığ) coinlerde hedef 0.5R → 0.4R. "
+                              "Sinyal sayısı aynı; test isabeti %80.3 → %81.5, son 12 ayda %74 → %77. "
+                              "Kâr hafif düşer (işlem başı 0.164R → 0.155R). Mesajdaki hedef fiyatı buna göre gelir; "
+                              "açık pozisyonların hedefi değişmedi.")
+                state["duyuru_short_retest4"] = True
             if not state.get("duyuru_short_retest") and state.get("short_son_bar"):
                 send_telegram(
                     "🆕 Yeni sistem: K69 SHORT (düşük hacimli retest short)\n"
