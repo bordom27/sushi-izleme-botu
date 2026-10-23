@@ -473,7 +473,19 @@ def short_retest_sistemi(state: dict, cfg: dict) -> list[str]:
         state.setdefault("trade_log", []).append({"zaman": str(t), "varlik": sym, "yon": "SHORT", "sonuc": neden,
                                                   "sonuc_r": round(float(R), 3), "sistem": "short_retest"})
         del acik[anahtar]
-    # 2) yeni sinyaller
+    # 2) retest bekleyenler (akşam özeti icin)
+    bek = []
+    for sym, g in veri_.items():
+        try:
+            for b in SR.bekleyenler(g):
+                bek.append({"sym": sym, "seviye": float(b["seviye"]), "uzaklik": round(float(b["uzaklik_pct"]), 1),
+                            "dokunus": int(b["dokunus"]), "yildiz": int(b["yildiz"]), "kalan": int(b["kalan_mum"]),
+                            "hacim_m": round(float(b["gunluk_hacim"]) / 1e6, 1)})
+        except Exception as exc:
+            print(f"short bekleyen {sym}: {exc}", flush=True)
+    bek = [b for b in bek if b["kalan"] >= 1 and b["uzaklik"] <= 10]     # seviyeye %10'dan uzak olanlar pratikte retest etmez
+    state["short_bekleyen"] = sorted(bek, key=lambda d: (-d["yildiz"], abs(d["uzaklik"])))
+    # 3) yeni sinyaller
     for sym, g in veri_.items():
         onceki = son_bar.get(sym)
         son_bar[sym] = str(g.index[-1])
@@ -525,6 +537,15 @@ def short_ozet(state) -> str:
             for p in acik.values()))
     else:
         satir.append("K69 SHORT: açık retest short yok.")
+    bek = state.get("short_bekleyen") or []
+    if bek:
+        satir.append(f"K69 SHORT retest bekleyen ({len(bek)}) — kırılan seviyeye düşük hacimle 2 yeşil mumla yükselip altında kırmızı kapanırsa sinyal:")
+        for b in bek[:15]:
+            yer = (f"%{abs(b['uzaklik']):.1f} {'üstünde' if b['uzaklik'] > 0 else 'altında'}" if abs(b["uzaklik"]) >= 0.1 else "seviyede")
+            satir.append(f"• {b['sym'].replace('USDT', '')} {'⭐' * b['yildiz'] or '(yıldızsız)'}: seviye {fmt(b['seviye'])}, "
+                         f"seviye fiyatın {yer} | destek testi {b['dokunus']} | hacim {b['hacim_m']:g}M$ | {b['kalan']} mum kaldı")
+        if len(bek) > 15:
+            satir.append(f"... ve {len(bek) - 15} coin daha")
     log = [t for t in state.get("trade_log", []) if t.get("sistem") == "short_retest"]
     simdi = pd.Timestamp.now(tz="UTC").tz_localize(None)
     son30 = [t for t in log if pd.Timestamp(t["zaman"]) >= simdi - pd.Timedelta(days=30)]

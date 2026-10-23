@@ -112,3 +112,45 @@ def sonuc_takip(g: pd.DataFrame, poz: dict, A: dict | None = None):
         if j >= A["zaman_stopu"]:
             return "ZAMAN", r["c"], t, (e - r["c"]) / (st - e)
     return None
+
+
+def bekleyenler(g: pd.DataFrame, A: dict | None = None) -> list[dict]:
+    """Su an retest beklenen kirilimlar (sinyaller() ile ayni durum makinesi; son mumda hala aktif olan seviyeler).
+    Kirilim mumu asiri buyukse (sinyal veremeyecegi icin) listelenmez."""
+    A = dict(AYAR, **(A or {}))
+    x = gostergeler(g)
+    o, h, l, c, v, atr, va, q = (x[k] for k in ("o", "h", "l", "c", "v", "atr", "va", "qv"))
+    T = g.index
+    n = len(c)
+    out = []
+    for R_ in A["seviyeler"]:
+        ll = pd.Series(l).rolling(R_).min().shift(1).to_numpy()
+        sev, k = np.nan, -1
+        i = R_ + 1
+        while i < n:
+            if np.isnan(sev):
+                if c[i] < ll[i] - 0.05 * atr[i] and v[i] >= A["kirilim_hacim"] * va[i] and q[i] >= A["min_hacim_usd"]:
+                    k, sev = i, ll[i]
+                i += 1
+                continue
+            a = atr[i]
+            if i - k > A["maks_bekle"] or c[i] > sev + 0.5 * a:
+                sev = np.nan
+                continue
+            if i - k >= A["min_bar"] and h[i] >= sev - A["yakin_atr"] * a and c[i] < sev and c[i] < o[i] \
+                    and q[i] >= A["min_hacim_usd"]:
+                sev = np.nan
+            i += 1
+        if not np.isnan(sev):
+            ka = atr[k]
+            boy = (h[k] - l[k]) / ka
+            if boy >= A["maks_kirilim_boy"]:
+                continue
+            dok = int((l[max(0, k - R_):k] <= sev + 0.3 * ka).sum())
+            yildiz = (2 if dok >= A["guclu_dokunus"] else 1 if dok >= 2 else 0) if q[-1] >= A["yildiz_hacim_usd"] else 0
+            out.append({"seviye": sev, "kirilim_zaman": T[k], "kalan_mum": A["maks_bekle"] - (n - 1 - k), "dokunus": dok,
+                        "yildiz": yildiz, "son_fiyat": c[-1], "uzaklik_pct": (sev / c[-1] - 1) * 100, "seviye_mum": R_,
+                        "gunluk_hacim": q[-1]})
+    if len(out) > 1:
+        out = [max(out, key=lambda d: d["dokunus"])]
+    return out
