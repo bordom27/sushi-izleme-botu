@@ -112,14 +112,14 @@ GitHub → Actions → *Genel Izleme Botu* → *Run workflow* (`test_mesaji` = t
 
 ## Üçüncü sistem: K69 SHORT — düşük hacimli retest short (22 Ekim 2026)
 
-`short_retest.py`, bot içinde `short_retest_sistemi()`. Tüm likit USDT-M vadeli coinler (günde ≥2M$ hacim), 4 saatlik.
+`short_retest.py`, bot içinde `short_retest_sistemi()`. Tüm likit USDT-M vadeli coinler (günde ≥1M$ hacim, ~460 coin), 4 saatlik.
 
 1. Destek (son 80 veya 160 mumun dibi) 0.05 ATR altında, hacim ≥1.5× ortalama ile kırılır. Kırılım mumu < 2.7 ATR.
 2. 2–30 mum içinde fiyat kırılan seviyeye geri yükselir (tepe seviyenin 0.2 ATR yakınında), son 3 mumun hacmi < 0.7× ortalama, ret mumundan önceki 2 mum yeşil.
 3. Ret mumu seviyenin altında kırmızı kapanır → short. Stop: max(seviye, mum tepesi) + 0.8 ATR. Hedef 0.5R (tamamı). Zaman stopu 30 mum.
 4. Etiket (coin ≥5M$ ise): ⭐⭐ = destek kırılmadan önce 3+ kez test edilmiş (~%87), ⭐ = 2 kez (~%82); diğerleri yıldızsız (~%77, risk yarım).
 
-23 Ekim 2026: sinyal sayısı için destek test şartı kaldırıldı ve hacim sınırı 5M$ → 2M$ (son 12 ayda haftada 1.9 → 4.3 sinyal; toplam isabet %84.7 → %81.5, son 12 ay %77 → %75, toplam R arttı). 8s/12s/günlük/haftalık denendi: 4s en iyi (8s %77, 12s başa baş, günlük yılda ~2 sinyal).
+23 Ekim 2026: sinyal sayısı için destek test şartı kaldırıldı ve hacim sınırı 5M$ → 2M$ (son 12 ayda haftada 1.9 → 4.3 sinyal; aynı gün sınır 1M$'a indi: haftada ~6.2, isabet son 12 ay %74, toplam %80.3; toplam isabet %84.7 → %81.5, son 12 ay %77 → %75, toplam R arttı). 8s/12s/günlük/haftalık denendi: 4s en iyi (8s %77, 12s başa baş, günlük yılda ~2 sinyal).
 
 Test (2020–Eki 2026, 656 vadeli sözleşme, delist olanlar dahil, maliyet %0.2 + funding): 458 işlem, isabet %84.5, işlem başı +0.23R; ⭐⭐ ~%86. Yıllar: 2022 %84, 2023 %82, 2024 %93, 2025 %77, 2026 %86. 2020–23 ile 2024+ aynı isabet. Eşikler tüm veriye bakılarak seçildi (iyimser olabilir).
 

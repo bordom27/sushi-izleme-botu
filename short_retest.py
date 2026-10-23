@@ -7,11 +7,12 @@ Kural (4 saatlik, USDT-M vadeli):
      kapanis seviyenin altinda, mum kirmizi
   3) Bu yukselis dusuk hacimli: son 3 mumun ortalama hacmi < 0.7 x ortalama, ret mumundan onceki 2 mum yesil
   4) Kirilim mumu asiri buyuk degil (< 2.7 ATR)
-  5) Coin gunde >= 2 milyon $ islem goruyor (son 30 gunun medyani)
+  5) Coin gunde >= 1 milyon $ islem goruyor (son 30 gunun medyani)
   Giris: ret mumunun kapanisi. Stop: max(seviye, mum tepesi) + 0.8 ATR. Hedef: 0.5R (tamamen kapat). Zaman stopu: 30 mum.
   Etiket (coin >= 5M$ ise): destek kirilmadan once 3+ kez test edildiyse ⭐⭐, 2 kez ise ⭐; digerleri yildizsiz.
 Test (2020-10/2026, 656 vadeli sozlesme, delist olanlar dahil, maliyet %0.2): 822 islem, isabet %81.5, islem basi +0.18R;
-son 12 ay haftada ~4.3 sinyal, isabet %75. (23 Eki 2026: sinyal sayisi icin destek test sarti kaldirildi, hacim siniri 5M -> 2M.)
+son 12 ay haftada ~4.3 sinyal, isabet %75. (23 Eki 2026: sinyal sayisi icin destek test sarti kaldirildi, hacim siniri 5M -> 2M -> 1M;
+1M ile: 936 islem, isabet %80.3, son 12 ay haftada ~6.2 sinyal, isabet %74.)
 """
 from __future__ import annotations
 
@@ -31,7 +32,7 @@ AYAR = {
     "min_dokunus": 0,
     "guclu_dokunus": 3,
     "maks_kirilim_boy": 2.7,
-    "min_hacim_usd": 2e6,
+    "min_hacim_usd": 1e6,
     "yildiz_hacim_usd": 5e6,          # yildiz icin coin en az bu kadar likit olmali
 }
 

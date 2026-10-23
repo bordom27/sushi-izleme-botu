@@ -849,10 +849,15 @@ def main():
                     "yıldızsız = diğerleri (destek testi az veya coin sığ) → ~%77 (son 12 ay %72): riski yarıya indir.\n"
                     "Toplam: isabet ~%81.5, son 12 ayda %75. TradingView'daki K69 SHORT Retest göstergesi de aynı kurala güncellendi.")
                 state["duyuru_short_retest2"] = True
+            if state.get("duyuru_short_retest2") and not state.get("duyuru_short_retest3"):
+                send_telegram("⚙️ K69 SHORT: taranan coin sayısı arttı (günlük hacim sınırı 2M$ → 1M$, ~320 → ~460 coin). "
+                              "Son 12 ayda haftada ~6 sinyal, isabet aynı (~%74). 1–5M$ hacimli coinler yıldızsız gelir ve sığdır: "
+                              "pozisyonu küçük tut (mesajda coinin günlük hacmi yazıyor).")
+                state["duyuru_short_retest3"] = True
             if not state.get("duyuru_short_retest") and state.get("short_son_bar"):
                 send_telegram(
                     "🆕 Yeni sistem: K69 SHORT (düşük hacimli retest short)\n"
-                    "Tüm likit Binance vadeli coinlerinde (günde ≥2M$ hacim) 4 saatlik tarama:\n"
+                    "Tüm likit Binance vadeli coinlerinde (günde ≥1M$ hacim) 4 saatlik tarama:\n"
                     "1) Destek (80 veya 160 mumluk dip) hacimli kırılır\n"
                     "2) Fiyat 2–30 mum içinde kırılan seviyeye DÜŞÜK HACİMLE (2 yeşil mum) geri yükselir\n"
                     "3) Seviyenin altında kırmızı kapanan ret mumunda short\n"
