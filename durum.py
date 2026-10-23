@@ -43,7 +43,7 @@ try:
     info = veri._get("/fapi/v1/exchangeInfo", {}, veri.FAPI_URLS)
     syms = sorted(x["symbol"] for x in info["symbols"] if x.get("contractType") == "PERPETUAL" and x.get("quoteAsset") == "USDT"
                   and x.get("status") == "TRADING" and x.get("underlyingType", "COIN") == "COIN")
-    rs_acik, rs_son = [], []
+    rs_acik, rs_son, rs_bek = [], [], []
     for s in syms:
         try:
             df = veri.mumlar_onbellekli("F:" + s, "4h", "2026-04-01")
@@ -58,8 +58,27 @@ try:
                      "giris": x["giris"], "stop": round(x["stop"], 8), "hedef": round(x["hedef"], 8), "son_fiyat": float(g["c"].iloc[-1]),
                      "durum": "ACIK" if r is None else f"{r[0]} {r[3]:+.2f}R"}
                 (rs_acik if r is None else rs_son).append(d)
+            # retest bekleyenler: son 30 mumda hacimli destek kirilimi, fiyat hala seviyenin altinda
+            x_ = SR.gostergeler(g); c_, l_, v_, a_, va_, q_ = x_["c"], x_["l"], x_["v"], x_["atr"], x_["va"], x_["qv"]
+            n_ = len(c_)
+            for R_ in (80, 160):
+                ll_ = pd.Series(l_).rolling(R_).min().shift(1).to_numpy()
+                for k_ in range(max(R_ + 1, n_ - 30), n_):
+                    if c_[k_] < ll_[k_] - 0.05 * a_[k_] and v_[k_] >= 1.5 * va_[k_] and q_[k_] >= 1e6:
+                        sev_ = ll_[k_]
+                        sonra = c_[k_ + 1:]
+                        if len(sonra) and (sonra > sev_ + 0.5 * a_[-1]).any():
+                            continue
+                        dok_ = int((l_[max(0, k_ - R_):k_] <= sev_ + 0.3 * a_[k_]).sum())
+                        rs_bek.append({"coin": s, "seviye": sev_, "son_fiyat": float(c_[-1]), "uzaklik_pct": round((sev_ / c_[-1] - 1) * 100, 1),
+                                       "kirilim_utc": str(g.index[k_] + pd.Timedelta(hours=4)), "dokunus": dok_, "gunluk_hacim_M": round(q_[-1] / 1e6, 1),
+                                       "kirilim_boy_atr": round((x_["h"][k_] - l_[k_]) / a_[k_], 2)})
+                        break
         except Exception as exc:
             pass
+    rs_bek = sorted({d["coin"]: d for d in rs_bek}.values(), key=lambda d: d["uzaklik_pct"])
+    satir.append(f"K69 SHORT RETEST BEKLEYEN: {len(rs_bek)}")
+    satir += [json.dumps(d, default=str) for d in rs_bek]
     satir.append(f"K69 SHORT ACIK: {len(rs_acik)}")
     satir += [json.dumps(d, default=str) for d in rs_acik]
     satir.append(f"K69 SHORT son 10 gunde kapananlar: {len(rs_son)}")
