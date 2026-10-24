@@ -1,0 +1,37 @@
+name: Telegram tani (gecici)
+on:
+  push:
+    branches: [arastirma]
+    paths: [".github/workflows/telegram-tani.yml"]
+  workflow_dispatch: {}
+permissions:
+  contents: write
+jobs:
+  t:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - env:
+          TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          CHAT: ${{ secrets.TELEGRAM_CHAT_ID }}
+        run: |
+          python3 - <<'PY' > tani.txt
+          import os, json, urllib.request, urllib.parse
+          T=os.environ.get("TOKEN",""); C=os.environ.get("CHAT","")
+          print("token var:", bool(T), "uzunluk:", len(T)); print("chat_id var:", bool(C), "bicim:", ("-" if C.startswith("-") else "") + ("sayi" if C.lstrip("-").isdigit() else "sayi degil"), "uzunluk:", len(C))
+          def api(m, d=None):
+              try:
+                  r=urllib.request.urlopen(f"https://api.telegram.org/bot{T}/{m}", data=urllib.parse.urlencode(d).encode() if d else None, timeout=20)
+                  return json.loads(r.read())
+              except urllib.error.HTTPError as e:
+                  return json.loads(e.read() or b"{}") | {"http": e.code}
+              except Exception as e:
+                  return {"istisna": str(e)}
+          me=api("getMe"); print("getMe:", me.get("ok"), (me.get("result") or {}).get("username"), me.get("description"))
+          ch=api("getChat", {"chat_id": C}); r=ch.get("result") or {}; print("getChat:", ch.get("ok"), r.get("type"), ch.get("description"))
+          s=api("sendMessage", {"chat_id": C, "text": "🔧 Bot tanı testi: bu mesajı görüyorsan Telegram bağlantısı çalışıyor."}); print("sendMessage:", s.get("ok"), s.get("error_code"), s.get("description"))
+          u=api("getUpdates"); print("getUpdates:", u.get("ok"), "kayit:", len(u.get("result") or []), u.get("description"))
+          PY
+          cat tani.txt; mkdir -p arastirma_cikti; mv tani.txt arastirma_cikti/telegram_tani.txt
+          git config user.name a; git config user.email a@users.noreply.github.com
+          git add arastirma_cikti/telegram_tani.txt; git commit -m "telegram tani [skip ci]"; git pull --rebase origin arastirma; git push
