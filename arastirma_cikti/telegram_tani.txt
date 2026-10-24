@@ -1,0 +1,6 @@
+token var: True uzunluk: 46
+chat_id var: True bicim: sayi uzunluk: 10
+getMe: True ddemirrr_bot None
+getChat: True private None
+sendMessage: True None None
+getUpdates: True kayit: 0 None
