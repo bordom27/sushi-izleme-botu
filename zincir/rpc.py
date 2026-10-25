@@ -174,7 +174,7 @@ def _bs(zincir, path, params=None, deneme=12):
     else:
         url0 = BS[zincir] + path
     for d in range(deneme):
-        bekle = 0.7 - (time.time() - _bs_son[0])          # istekler arasi en az 0.7 sn
+        bekle = (0.3 if url0.startswith("https://api.etherscan") else 0.7) - (time.time() - _bs_son[0])   # etherscan ~3/sn
         if bekle > 0:
             time.sleep(bekle)
         _bs_son[0] = time.time()
@@ -205,7 +205,7 @@ def _h(x):
     return int(x, 16) if x and x not in ("0x", "0X") else 0
 
 
-def bs_transferler(zincir, kontrat, b0, b1, log=print):
+def bs_transferler(zincir, kontrat, b0, b1, log=print, maks=None):
     """Blockscout logs API (sayfa basi en fazla 1000 kayit): (blok, tx, log_ix, from, to, deger_ham, ts)."""
     out, b, adim = [], b0, 20000
     while b <= b1:
@@ -226,6 +226,8 @@ def bs_transferler(zincir, kontrat, b0, b1, log=print):
         if (e - b0) // 200000 != (b - 1 - b0) // 200000:
             log(f"  {len(out)} transfer, blok {e - b0}/{b1 - b0}")
         b = e + 1
+        if maks and len(out) >= maks:
+            break
         if len(res) < 300:
             adim = min(200000, adim * 2)
     return out
