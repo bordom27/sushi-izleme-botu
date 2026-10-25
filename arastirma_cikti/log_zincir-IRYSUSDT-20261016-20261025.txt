@@ -1,0 +1,23 @@
+coin IRYSUSDT zincir bsc kontrat 0x91152b4ef635403efbae860edd0f8c321d7c035d
+bloklar 127878732 129606058
+  uc https://bsc-rpc.publicnode.com: {'jsonrpc': '2.0', 'error': {'code': -32602, 'message': 'Archive requests require a personal token. Get one at: https:// 0.1s
+  uc https://bsc.drpc.org: {'id': 1, 'jsonrpc': '2.0', 'error': {'message': 'ranges over 10000 blocks are not supported on free plan', 'code': 35}} 0.3s
+  uc https://binance.llamarpc.com: hata HTTPSConnectionPool(host='binance.llamarpc.com', port=443): Max retries exceeded
+  uc https://1rpc.io/bnb: {'jsonrpc': '2.0', 'error': {'code': -32602, 'message': 'eth_getLogs is limited to 0 - 50 blocks range'}, 'id': 1} 1.4s
+  uc https://rpc-bsc.48.club: TAMAM 1487 kayit 27.5s
+  uc https://bsc-mainnet.public.blastapi.io: {'jsonrpc': '2.0', 'id': 1, 'error': {'code': -32000, 'message': 'Your request has been rate-limited due to unusually hi 0.3s
+  uc https://bsc-dataseed.bnbchain.org: {'jsonrpc': '2.0', 'id': 1, 'error': {'code': -32005, 'message': 'limit exceeded'}} 0.2s
+  uc https://bsc-dataseed1.defibit.io: {'jsonrpc': '2.0', 'id': 1, 'error': {'code': -32005, 'message': 'limit exceeded'}} 0.2s
+calisan uclar: ['https://rpc-bsc.48.club']
+Traceback (most recent call last):
+  File "/home/runner/work/sushi-izleme-botu/sushi-izleme-botu/zincir/vaka.py", line 158, in <module>
+    main()
+  File "/home/runner/work/sushi-izleme-botu/sushi-izleme-botu/zincir/vaka.py", line 62, in main
+    tr = rpc.transferler(z, adr, b0, b1, log=lambda s: print(s, flush=True))
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/runner/work/sushi-izleme-botu/sushi-izleme-botu/zincir/rpc.py", line 111, in transferler
+    res = cagir(zincir, "eth_getLogs", [{"address": kontrat, "topics": [TRANSFER], "fromBlock": hex(b), "toBlock": hex(e)}])
+          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/runner/work/sushi-izleme-botu/sushi-izleme-botu/zincir/rpc.py", line 53, in cagir
+    raise RuntimeError(f"RPC basarisiz {zincir} {method}: {son}")
+RuntimeError: RPC basarisiz bsc eth_getLogs: {'code': -32000, 'message': 'header not found'}
