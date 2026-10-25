@@ -2,7 +2,8 @@
 Short arastirmasi icin ham veri dokumu (GitHub Actions'ta calisir).
 Tum USDT-M surekli vadeli sozlesmeler (kapanmis/delist olanlar dahil, hayatta kalma yanliligini azaltmak icin):
   4 saatlik vadeli mumlar (2019-09'dan) + funding gecmisi.
-Kullanim: python veri_dok.py <parca> <toplam_parca>
+Kullanim: python veri_dok.py <parca> <toplam_parca> [aralik]
+  aralik verilirse (or. 1h): 2024-01'den o aralikta mumlar, cikti dok<aralik>/k<aralik>_<parca>.csv.gz (funding yok)
 Cikti: arastirma_cikti/dok/meta.csv, dok/k4h_<parca>.csv.gz, dok/fund_<parca>.csv.gz
 """
 from __future__ import annotations
@@ -48,7 +49,11 @@ def funding(sym):
 
 
 def main():
+    global OUT, BAS
     parca, toplam = int(sys.argv[1]), int(sys.argv[2])
+    aralik = sys.argv[3] if len(sys.argv) > 3 else "4h"
+    if aralik != "4h":
+        OUT, BAS = f"arastirma_cikti/dok{aralik}", "2024-01-01"
     os.makedirs(OUT, exist_ok=True)
     meta = semboller()
     if parca == 0:
@@ -58,18 +63,23 @@ def main():
     K, F = [], []
     for i, s in enumerate(benim):
         try:
-            df = veri.mumlar("F:" + s, "4h", BAS)
+            df = veri.mumlar("F:" + s, aralik, BAS)
             if len(df):
                 K.append(pd.DataFrame({"symbol": s, "t": (df.open_time.astype("int64") // 10**6),
                                        "o": df.open, "h": df.high, "l": df.low, "c": df.close, "v": df.volume}))
         except Exception as exc:
             print("mum yok", s, exc, flush=True)
+        if aralik != "4h":
+            print(i + 1, len(benim), s, len(K[-1]) if K else 0, flush=True)
+            continue
         try:
             F.append(funding(s))
         except Exception as exc:
             print("funding yok", s, exc, flush=True)
         print(i + 1, len(benim), s, len(K[-1]) if K else 0, flush=True)
-    pd.concat(K).to_csv(f"{OUT}/k4h_{parca}.csv.gz", index=False, compression="gzip", float_format="%.7g")
+    pd.concat(K).to_csv(f"{OUT}/k{aralik}_{parca}.csv.gz", index=False, compression="gzip", float_format="%.7g")
+    if aralik != "4h":
+        return
     pd.concat(F).to_csv(f"{OUT}/fund_{parca}.csv.gz", index=False, compression="gzip", float_format="%.6g")
 
 
