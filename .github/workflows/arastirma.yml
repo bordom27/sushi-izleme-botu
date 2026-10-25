@@ -17,7 +17,7 @@ jobs:
       fail-fast: false
       max-parallel: 20
       matrix:
-        mod: [bak-JSTUSDT]
+        mod: [zincir-IRYSUSDT-20261012-20261025]
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
@@ -37,7 +37,7 @@ jobs:
             arastirma-kovalama-
             arastirma-limit-
             arastirma-profesyonel-
-      - run: python $( case "${{ matrix.mod }}" in ozellik) echo ozellik.py;; vadeli) echo vadeli_liste.py;; bak-*) mkdir -p main_kod; for f in veri.py short_retest.py; do git fetch -q origin main; git show origin/main:$f > main_kod/$f; done; echo coin_bak.py $(echo ${{ matrix.mod }} | sed s/^bak-//);; durum) mkdir -p main_kod; for f in veri.py kirilim_v6.py coin_listesi.py short_retest.py; do git fetch -q origin main; git show origin/main:$f > main_kod/$f; done; echo durum.py;; buyuk-*) echo buyuk.py $(echo ${{ matrix.mod }} | sed s/^buyuk-//);; dok1h-*) echo veri_dok.py $(echo ${{ matrix.mod }} | sed s/^dok1h-//) 20 1h;; dok-*) echo veri_dok.py $(echo ${{ matrix.mod }} | sed s/^dok-//) 10;; retest-*) echo retest_test.py $(echo ${{ matrix.mod }} | sed s/^retest-//);; dogruluk) echo dogruluk.py;; *) echo "arastirma.py ${{ matrix.mod }}";; esac ) 2>&1 | grep -v " mum (" | tee log_${{ matrix.mod }}.txt
+      - run: python $( case "${{ matrix.mod }}" in ozellik) echo ozellik.py;; vadeli) echo vadeli_liste.py;; bak-*) mkdir -p main_kod; for f in veri.py short_retest.py; do git fetch -q origin main; git show origin/main:$f > main_kod/$f; done; echo coin_bak.py $(echo ${{ matrix.mod }} | sed s/^bak-//);; durum) mkdir -p main_kod; for f in veri.py kirilim_v6.py coin_listesi.py short_retest.py; do git fetch -q origin main; git show origin/main:$f > main_kod/$f; done; echo durum.py;; buyuk-*) echo buyuk.py $(echo ${{ matrix.mod }} | sed s/^buyuk-//);; zincir-*) echo zincir/vaka.py $(echo ${{ matrix.mod }} | sed 's/^zincir-//; s/-/ /g');; dok1h-*) echo veri_dok.py $(echo ${{ matrix.mod }} | sed s/^dok1h-//) 20 1h;; dok-*) echo veri_dok.py $(echo ${{ matrix.mod }} | sed s/^dok-//) 10;; retest-*) echo retest_test.py $(echo ${{ matrix.mod }} | sed s/^retest-//);; dogruluk) echo dogruluk.py;; *) echo "arastirma.py ${{ matrix.mod }}";; esac ) 2>&1 | grep -v " mum (" | tee log_${{ matrix.mod }}.txt
       - run: |
           mkdir -p arastirma_cikti && mv log_${{ matrix.mod }}.txt arastirma_cikti/
           git config user.name "arastirma"; git config user.email "a@users.noreply.github.com"
