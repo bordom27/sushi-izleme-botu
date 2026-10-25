@@ -1,0 +1,15 @@
+coin PHAUSDT zincir eth kontrat 0x6c5ba91642f10282b576d91922ae6448c9d52f4e
+kaynak blockscout, bloklar 25943260 26057904
+  465 transfer, blok 4999/114644
+Traceback (most recent call last):
+  File "/home/runner/work/sushi-izleme-botu/sushi-izleme-botu/zincir/vaka.py", line 193, in <module>
+    main()
+  File "/home/runner/work/sushi-izleme-botu/sushi-izleme-botu/zincir/vaka.py", line 66, in main
+    tr = rpc.bs_transferler(z, adr, b0, b1, log=log)
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/runner/work/sushi-izleme-botu/sushi-izleme-botu/zincir/rpc.py", line 180, in bs_transferler
+    j = _bs(zincir, "/api", {"module": "logs", "action": "getLogs", "fromBlock": b, "toBlock": e,
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/runner/work/sushi-izleme-botu/sushi-izleme-botu/zincir/rpc.py", line 167, in _bs
+    raise RuntimeError(f"blockscout {zincir} {path}: {son}")
+RuntimeError: blockscout eth /api: 429
