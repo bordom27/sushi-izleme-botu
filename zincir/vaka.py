@@ -62,7 +62,7 @@ def main():
     log = lambda s: print(s, flush=True)
     if bs:
         b0 = rpc.bs_zamandan_blok(z, int(t0.timestamp())); b1 = rpc.bs_zamandan_blok(z, int(t1.timestamp()))
-        print("kaynak blockscout, bloklar", b0, b1, flush=True)
+        print("kaynak", "etherscan" if rpc.es_var(z) else "blockscout", "bloklar", b0, b1, flush=True)
         tr = rpc.bs_transferler(z, adr, b0, b1, log=log)
         T = pd.DataFrame(tr, columns=["blok", "tx", "ix", "kimden", "kime", "ham", "ts"])
     else:

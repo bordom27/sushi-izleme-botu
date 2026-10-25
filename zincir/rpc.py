@@ -201,6 +201,10 @@ def bs_zamandan_blok(zincir, ts):
     return int(r["blockNumber"] if isinstance(r, dict) else r)
 
 
+def _h(x):
+    return int(x, 16) if x and x not in ("0x", "0X") else 0
+
+
 def bs_transferler(zincir, kontrat, b0, b1, log=print):
     """Blockscout logs API (sayfa basi en fazla 1000 kayit): (blok, tx, log_ix, from, to, deger_ham, ts)."""
     out, b, adim = [], b0, 20000
@@ -217,9 +221,8 @@ def bs_transferler(zincir, kontrat, b0, b1, log=print):
             t = [y for y in x["topics"] if y]
             if len(t) < 3:
                 continue
-            out.append((int(x["blockNumber"], 16), x["transactionHash"], int(x.get("logIndex") or "0x0", 16),
-                        "0x" + t[1][-40:], "0x" + t[2][-40:], int(x["data"], 16) if x["data"] not in ("0x", "") else 0,
-                        int(x["timeStamp"], 16)))
+            out.append((_h(x["blockNumber"]), x["transactionHash"], _h(x.get("logIndex")),
+                        "0x" + t[1][-40:], "0x" + t[2][-40:], _h(x.get("data")), _h(x["timeStamp"])))
         if (e - b0) // 200000 != (b - 1 - b0) // 200000:
             log(f"  {len(out)} transfer, blok {e - b0}/{b1 - b0}")
         b = e + 1
