@@ -1,0 +1,14 @@
+Zincir ustu pump onculeri - sistematik test (25 Eki 2026), Etherscan (eth), kod: zincir/olay_tarama.py
+Orneklem: 2025-01..2026-10, Ethereum kontrati olan vadeli coinlerde 24s icinde +%50 pump: 340 olay; ayni coinin 18-45 gun onceki
+pump olmayan donemleri: 336 kontrol (78 pencere veri yetersiz). Ozellik: pump oncesi son 48s / onceki 6 gun.
+
+Medyanlar (kontrol -> olay): transfer orani 0.87 -> 1.05, aktif adres 0.93 -> 1.04, buyuk transfer 0.71 -> 1.00,
+  token hacmi 0.76 -> 1.07; borsa/havuz net cikisi ve alim yogunlugu: fark yok.
+Tek ozellik AUC: transfer 0.61, hacim 0.60, adres 0.59, buyuk tx 0.57, yeni adres 0.54, borsa akisi 0.48-0.51.
+  Karsilastirma: vadeli hacim birikimi (vx18) tek basina 0.64.
+Model (lojistik, coin bazli CV): fiyat/hacim 0.638 -> + zincir 0.657; zaman bolmesi (2026 testi) 0.626 -> 0.656.
+Zincir aktivitesi en ust %20: olay payi %68 (dengeli orneklemde taban %50) -> olabilirlik orani ~2.
+Gercek taban oran (%0.34 / 24s) ile: ~%0.7 -> uyarilarin ~%99'u bos.
+Sonuc: zincir ustu aktivite pump oncesi HAFIF artiyor ve fiyat verisine kucuk ama tutarli katki yapiyor; tek basina ongorucu degil.
+Vakalar (GTC/PHA/QNT): arastirma_cikti/zincir/*_ozet.txt
+BSC (pump'larin cogu) Etherscan ucretsiz paketinde yok -> NodeReal anahtari gerekir.
