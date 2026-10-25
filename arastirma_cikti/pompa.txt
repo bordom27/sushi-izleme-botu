@@ -1,0 +1,17 @@
+Pump/dump arastirmasi (25 Eki 2026) - 656 USDT-M vadeli (delist dahil), 4s mum, 2019-09 .. 2026-10-22, maliyet %0.2 + funding.
+Kod: pompa_arastirma/panel.py (ozellik paneli), lab.py (kurallar), kos.py (tarama).
+
+1) Onceden sezme: 24 saatte +%50 pump, gunluk >= 1M$ coinlerde herhangi bir 4s mumda %0.34 ihtimal (2231 ayri olay; 2025: 790, 2026: 755).
+   En guclu isaretler (en ust %10 dilim): hacim patlamasi, 7 gunluk genis fiyat araligi, yuksek ATR, zaten yukselmis fiyat,
+   negatif funding, yeni coin -> ihtimal ~%1.4-1.8 (4-5 kat). Sikisma (dar aralik) pump'tan ONCE gelmiyor, tersi.
+   Sonuc: pump baslamadan once sezmek pratikte zayif (%98'i bos alarm).
+
+2) Ateslemede LONG (en iyi): 4s mum >= +%12, hacim >= 5x (30 gun medyani), kapanis mumun ust %25'inde, gunluk >= 1M$,
+   7 gunde zaten +%100 olmamis. Stop: mum dibi. +1R olunca iz stop (tepe - 1R). 18 mum (3 gun) zaman stopu.
+   3983 islem, isabet %46.7, islem basi +0.105R (2020-24: +0.116, 2025-26: +0.098, son 12 ay +0.131, haftada ~33 sinyal).
+   Ekstra %0.2 kayma ile her yil hala arti. Sabit hedef (1R/2R/3R) ~0 -> kazanc iz stoptan.
+   UYARI: kazancin neredeyse tamami en buyuk %1 pump'tan (en iyi 40 islem cikinca +0.011R). Aylarin %59'u arti.
+   Ortalama risk (giris-stop) %15.6 -> kucuk pozisyon sart.
+
+3) Cokus SHORT (tepe sonrasi): 64-216 varyasyonda (pump %50-%200, tepeden %10-%40 dusus, cesitli stop/hedef)
+   maliyet sonrasi basa bas; sadece 5/64 varyasyon iki donemde de arti, onlar da kucuk orneklem (n=60). Kenar yok.
