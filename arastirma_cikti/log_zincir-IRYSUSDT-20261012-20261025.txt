@@ -1,0 +1,24 @@
+vadeli coin 523 | eslesen 411
+zincir
+eth     249
+bsc     231
+base    115
+sol     102
+arb      61
+       symbol  base cg_id  piyasa_degeri zincir                                       adres
+759  IRYSUSDT  IRYS  irys     77294622.0    eth  0x50f41f589afaca2ef41fdf590fe7b90cd26dee64
+760  IRYSUSDT  IRYS  irys     77294622.0    bsc  0x91152b4ef635403efbae860edd0f8c321d7c035d
+coin IRYSUSDT zincir bsc kontrat 0x91152b4ef635403efbae860edd0f8c321d7c035d
+bloklar 127111630 129606058
+Traceback (most recent call last):
+  File "/home/runner/work/sushi-izleme-botu/sushi-izleme-botu/zincir/vaka.py", line 157, in <module>
+    main()
+  File "/home/runner/work/sushi-izleme-botu/sushi-izleme-botu/zincir/vaka.py", line 61, in main
+    tr = rpc.transferler(z, adr, b0, b1, log=lambda s: print(s, flush=True))
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/runner/work/sushi-izleme-botu/sushi-izleme-botu/zincir/rpc.py", line 78, in transferler
+    res = cagir(zincir, "eth_getLogs", [{"address": kontrat, "topics": [TRANSFER], "fromBlock": hex(b), "toBlock": hex(e)}])
+          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/runner/work/sushi-izleme-botu/sushi-izleme-botu/zincir/rpc.py", line 34, in cagir
+    raise AralikBuyuk(str(son))
+zincir.rpc.AralikBuyuk: {'code': -32005, 'message': 'limit exceeded'}
