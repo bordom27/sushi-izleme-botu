@@ -16,6 +16,8 @@ son 12 ay haftada ~4.3 sinyal, isabet %75. (23 Eki 2026: sinyal sayisi icin dest
 1M ile: 936 islem, isabet %80.3, son 12 ay haftada ~6.2 sinyal, isabet %74.)
 (23 Eki 2026: 1-5M$ coinlerde hedef 0.4R -> ayni 936 islem, isabet %81.5, son 12 ay %76.8, islem basi R 0.164 -> 0.155.
  Ek filtreler (BTC rejimi, piyasa genisligi, RSI, model) yillar arasinda tutarli fark yaratmadi; kar kilitleyen stop 4s mumda gercekci dolumla zararli.)
+(25 Eki 2026: TP1'de %50/%33 kapat + BE + iz stop (1-2 ATR) testi, short_arastirma/iz_stop_test.py: isabet 1-3 puan dusuyor,
+ iz 2.0 ATR'nin R artisi neredeyse tamamen 2024'ten, 2025'te mevcuttan kotu -> mevcut kural (tamamen kapat) korundu.)
 """
 from __future__ import annotations
 
