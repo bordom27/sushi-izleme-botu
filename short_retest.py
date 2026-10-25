@@ -44,7 +44,14 @@ AYAR = {
     "maks_kirilim_boy": 2.7,
     "min_hacim_usd": 1e6,
     "yildiz_hacim_usd": 5e6,          # yildiz icin coin en az bu kadar likit olmali
+    "min_kume": 3,                    # ayni 4s mumda en az bu kadar coinde sinyal varsa al (⭐⭐ ise sart yok)
 }
+
+
+def alinir(yildiz: int, kume: int, A: dict | None = None) -> bool:
+    """25 Eki 2026 filtresi: ayni mumda >= min_kume coinde K69 SHORT sinyali varsa ya da sinyal ⭐⭐ ise islem acilir."""
+    A = dict(AYAR, **(A or {}))
+    return kume >= A["min_kume"] or yildiz == 2
 
 
 def gostergeler(g: pd.DataFrame) -> dict:
