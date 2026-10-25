@@ -1,0 +1,4 @@
+# SYMBOL  baslangic  bitis  zincir   (pump tarihi)
+GTCUSDT 20261001 20261016 eth   # 11 Eki +%94
+PHAUSDT 20260910 20260926 eth   # 20 Eyl +%103
+QNTUSDT 20260915 20261001 eth   # 25 Eyl +%148

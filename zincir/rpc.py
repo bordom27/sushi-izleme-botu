@@ -153,13 +153,20 @@ if _os.environ.get("NODEREAL_KEY"):
     RPC["bsc"].insert(0, f"https://bsc-mainnet.nodereal.io/v1/{_os.environ['NODEREAL_KEY']}")
 
 
-def _bs(zincir, path, params=None, deneme=8):
+_bs_son = [0.0]
+
+
+def _bs(zincir, path, params=None, deneme=12):
     son = None
     for d in range(deneme):
+        bekle = 0.7 - (time.time() - _bs_son[0])          # istekler arasi en az 0.7 sn
+        if bekle > 0:
+            time.sleep(bekle)
+        _bs_son[0] = time.time()
         try:
             r = requests.get(BS[zincir] + path, params=params, timeout=60, headers={"accept": "application/json"})
             if r.status_code == 429:
-                time.sleep(3 + 3 * d); son = 429; continue
+                time.sleep(min(120, 5 * 2 ** min(d, 5))); son = 429; continue
             r.raise_for_status()
             return r.json()
         except Exception as exc:
