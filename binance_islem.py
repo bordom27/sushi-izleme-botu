@@ -23,6 +23,9 @@ from urllib.parse import urlencode
 
 import pandas as pd
 import requests
+import urllib3.util.connection as _u3c
+
+_u3c.HAS_IPV6 = False      # API anahtari IPv4 adresine kilitli: istekler hep IPv4'ten gitsin
 
 AYAR = {
     "risk": 0.0025,              # islem basi hesap riski (stopa gelirse kayip / bakiye); yildizsizda yarisi
@@ -31,6 +34,7 @@ AYAR = {
     "zaman_stopu_mum": 30,
     "geç_giris_ust": 0.3,        # fiyat stopa (risk x bu) kadar yaklastiysa girme
     "geç_giris_alt": 0.2,        # fiyat hedefe dogru (risk x bu) kadar gittiyse girme
+    "maks_gecikme_saat": 3,      # sinyal mumu kapandiktan bu kadar saat sonra artik acma (bilgisayar uykudaydi vb.)
 }
 URL = {"demo": ["https://demo-fapi.binance.com", "https://testnet.binancefuture.com"],
        "gercek": ["https://fapi.binance.com"]}
@@ -263,6 +267,11 @@ def calistir(state: dict, gonder) -> None:
                 continue
             if sym in poz or sym in takip:
                 gonder(f"ℹ️ {etiket} {sym} K69 SHORT açılmadı: bu coinde zaten açık pozisyon var.")
+                continue
+            kapanis = pd.Timestamp(s["zaman"]) + pd.Timedelta(hours=4)
+            if simdi - kapanis > pd.Timedelta(hours=AYAR["maks_gecikme_saat"]):
+                gonder(f"ℹ️ {etiket} {sym} K69 SHORT açılmadı: sinyal {int((simdi - kapanis).total_seconds() // 3600)} saat önce "
+                       f"oluştu (bot o sırada çalışmıyordu), geç giriş yapılmıyor.")
                 continue
             f = c.filtre(sym)
             if f["durum"] != "TRADING":
