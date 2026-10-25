@@ -17,7 +17,7 @@ jobs:
       fail-fast: false
       max-parallel: 20
       matrix:
-        mod: [dok1h-0, dok1h-1, dok1h-2, dok1h-3, dok1h-4, dok1h-5, dok1h-6, dok1h-7, dok1h-8, dok1h-9, dok1h-10, dok1h-11, dok1h-12, dok1h-13, dok1h-14, dok1h-15, dok1h-16, dok1h-17, dok1h-18, dok1h-19]
+        mod: [bak-JSTUSDT]
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5

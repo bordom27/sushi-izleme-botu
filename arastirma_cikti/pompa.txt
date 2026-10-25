@@ -15,3 +15,10 @@ Kod: pompa_arastirma/panel.py (ozellik paneli), lab.py (kurallar), kos.py (taram
 
 3) Cokus SHORT (tepe sonrasi): 64-216 varyasyonda (pump %50-%200, tepeden %10-%40 dusus, cesitli stop/hedef)
    maliyet sonrasi basa bas; sadece 5/64 varyasyon iki donemde de arti, onlar da kucuk orneklem (n=60). Kenar yok.
+
+4) 1 SAATLIK VERI (2024-01 .. 2026-10, 650 coin, kod: pompa_arastirma/kos1h.py), 288 varyasyon:
+   Ayni donemde 4s taban: 3230 islem, isabet %46.5, +0.105R (en iyi %1 cikinca +0.007R).
+   1s en iyi: 1 saatlik mum >= +%12, hacim >= 20x, ust fitil <= %25, stop mum ortasi, iz stop (+1.5R'den sonra tepe-0.75R), 72 mum:
+     1859 islem, isabet %39.3, +0.093R (2024: +0.065, 2025-26: +0.097), en iyi %1 cikinca +0.032R, son 12 ay haftada ~22.
+   288 varyasyonun ortalamasi +0.047R, isabet %41; en iyi %1 cikinca ortalama -0.025R.
+   Sonuc: daha erken giris kenari BUYUTMUYOR (gurultu artiyor), isabet daha da dusuyor. Kazanc yine birkac dev pump'a bagli.
