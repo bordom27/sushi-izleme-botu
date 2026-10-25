@@ -18,7 +18,7 @@ import hmac
 import math
 import os
 import time
-from decimal import Decimal, ROUND_DOWN, ROUND_HALF_UP
+from decimal import Decimal, ROUND_DOWN, ROUND_HALF_UP, ROUND_UP
 from urllib.parse import urlencode
 
 import pandas as pd
@@ -34,6 +34,8 @@ AYAR = {
     "zaman_stopu_mum": 30,
     "geç_giris_ust": 0.3,        # fiyat stopa (risk x bu) kadar yaklastiysa girme
     "geç_giris_alt": 0.2,        # fiyat hedefe dogru (risk x bu) kadar gittiyse girme
+    "kucuk_hesap_maks_risk": 0.02,   # hesaplanan pozisyon Binance'in en kucuk emrinin altindaysa en kucuk emirle gir,
+                                     # ama o islemin riski bakiyenin bu oranini asmiyorsa (kucuk hesap modu)
     "maks_gecikme_saat": 3,      # sinyal mumu kapandiktan bu kadar saat sonra artik acma (bilgisayar uykudaydi vb.)
 }
 URL = {"demo": ["https://demo-fapi.binance.com", "https://testnet.binancefuture.com"],
@@ -288,10 +290,17 @@ def calistir(state: dict, gonder) -> None:
             mik = Decimal(_yuvarla(risk_usdt / (st - fy), f["adim"], ROUND_DOWN))
             mik = min(mik, f["maks_mik"])
             tutar = float(mik) * fy
+            kucuk_not = ""
             if mik < f["min_mik"] or Decimal(str(tutar)) < f["min_tutar"]:
-                gonder(f"ℹ️ {etiket} {sym} K69 SHORT açılmadı: hesap bu risk için çok küçük "
-                       f"(gereken en az {f['min_tutar']} USDT pozisyon, hesaplanan {tutar:.2f}).")
-                continue
+                gerek = max(float(f["min_tutar"]) * 1.1 / fy, float(f["min_mik"]))
+                mik = Decimal(_yuvarla(gerek, f["adim"], ROUND_UP))
+                tutar = float(mik) * fy
+                risk_min = float(mik) * (st - fy)
+                if risk_min > bakiye * AYAR["kucuk_hesap_maks_risk"]:
+                    gonder(f"ℹ️ {etiket} {sym} K69 SHORT açılmadı: en küçük emirle ({tutar:.1f} USDT) risk "
+                           f"{risk_min:.2f} USDT olurdu, bakiyenin %{AYAR['kucuk_hesap_maks_risk'] * 100:.0f} sınırını aşıyor.")
+                    continue
+                kucuk_not = "\n(Küçük hesap modu: Binance'in en küçük emir tutarıyla girildi.)"
             if tutar / AYAR["kaldirac"] > serbest * 0.95:
                 gonder(f"ℹ️ {etiket} {sym} K69 SHORT açılmadı: yetersiz serbest marjin ({serbest:.2f} USDT).")
                 continue
@@ -329,7 +338,7 @@ def calistir(state: dict, gonder) -> None:
             gonder(f"🤖 {etiket} K69 SHORT AÇILDI — {sym}\n"
                    f"Giriş {_fmt(giris)} | miktar {_fmt(dolan)} (~{dolan * giris:.0f} USDT, {AYAR['kaldirac']}x izole)\n"
                    f"Stop {stop_str} | Hedef {hedef_str} (borsada emir olarak bekliyor)\n"
-                   f"Risk {gercek_risk:.2f} USDT (bakiyenin %{gercek_risk / bakiye * 100:.2f})" + tp_not)
+                   f"Risk {gercek_risk:.2f} USDT (bakiyenin %{gercek_risk / bakiye * 100:.2f})" + kucuk_not + tp_not)
         except Exception as exc:
             print(f"islem: {sym} acma hatasi: {exc}", flush=True)
             gonder(f"⚠️ {etiket} {sym} K69 SHORT açılırken hata: {exc}")
