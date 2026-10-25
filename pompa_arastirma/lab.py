@@ -9,6 +9,7 @@ import numpy as np, pandas as pd
 import short_lab as S
 
 MALIYET = 0.002
+BPD = 6          # gunde mum sayisi (4s=6, 1s=24)
 
 
 _CACHE = {}
@@ -25,8 +26,8 @@ def temel(g):
     tr = np.nanmax(np.vstack([h - l, np.abs(h - pc), np.abs(l - pc)]), axis=0)
     atr = pd.Series(tr).ewm(alpha=1 / 14, adjust=False).mean().to_numpy()
     V = pd.Series(v)
-    vmed = V.rolling(180, min_periods=60).median().shift(1).to_numpy()
-    qv = (pd.Series(c * v).rolling(180, min_periods=60).median() * 6).to_numpy()
+    vmed = V.rolling(30 * BPD, min_periods=10 * BPD).median().shift(1).to_numpy()
+    qv = (pd.Series(c * v).rolling(30 * BPD, min_periods=10 * BPD).median() * BPD).to_numpy()
     _CACHE[k] = (o, h, l, c, v, atr, vmed, qv)
     return _CACHE[k]
 
@@ -65,7 +66,8 @@ def _cik(yon, i, e, st, tg, h, l, c, maks, T, fr, iz=None):
         j = min(n - 1, i + maks); cik, ne = c[j], "ZAMAN"
     fz = 0.0
     if fr is not None and len(fr):
-        t0 = T[i] + pd.Timedelta(hours=4); t1 = T[j] + pd.Timedelta(hours=4)
+        dt = pd.Timedelta(hours=24 // BPD)
+        t0 = T[i] + dt; t1 = T[j] + dt
         fz = fr[(fr.index > t0) & (fr.index <= t1)].sum()
     getiri = yon * (cik - e) / e - MALIYET - yon * fz          # long funding oder, short alir
     return getiri / (risk / e), ne, j
@@ -74,12 +76,13 @@ def _cik(yon, i, e, st, tg, h, l, c, maks, T, fr, iz=None):
 def long_ates(g, fr=None, r1=0.12, vx=5.0, fitil=0.3, maks_r42=1.0, stop="mum", tR=2.0, maks=18, iz=None, lik=1e6):
     o, h, l, c, v, atr, vmed, qv = temel(g)
     T = g.index; n = len(c); pc = np.r_[np.nan, c[:-1]]
-    r42 = c / np.r_[np.full(42, np.nan), c[:-42]] - 1
+    w7 = 7 * BPD
+    r42 = c / np.r_[np.full(w7, np.nan), c[:-w7]] - 1
     ust = (h - c) / np.maximum(h - l, 1e-12)
     m = (c / pc - 1 >= r1) & (v >= vx * vmed) & (ust <= fitil) & (qv >= lik) & ~(r42 > maks_r42)
     out = []; serbest = -1
     for i in np.flatnonzero(m):
-        if i <= serbest or i >= n - 1 or i < 200:
+        if i <= serbest or i >= n - 1 or i < 10 * BPD:
             continue
         e = c[i]
         st = l[i] if stop == "mum" else (o[i] + l[i]) / 2 if stop == "orta" else e - stop * atr[i]
