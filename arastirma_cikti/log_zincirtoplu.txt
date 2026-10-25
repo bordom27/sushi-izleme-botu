@@ -2,46 +2,58 @@
 ###### GTCUSDT 20261001 20261016 eth
 coin GTCUSDT zincir eth kontrat 0xde30da39c46104798bb5aa3fe8b9e0e1f348163f
 kaynak blockscout, bloklar 26093737 26201364
-  794 transfer, blok 4999/107627
 Traceback (most recent call last):
   File "/home/runner/work/sushi-izleme-botu/sushi-izleme-botu/zincir/toplu.py", line 13, in <module>
     vaka.main()
   File "/home/runner/work/sushi-izleme-botu/sushi-izleme-botu/zincir/vaka.py", line 66, in main
     tr = rpc.bs_transferler(z, adr, b0, b1, log=log)
          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "/home/runner/work/sushi-izleme-botu/sushi-izleme-botu/zincir/rpc.py", line 187, in bs_transferler
-    j = _bs(zincir, "/api", {"module": "logs", "action": "getLogs", "fromBlock": b, "toBlock": e,
-        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "/home/runner/work/sushi-izleme-botu/sushi-izleme-botu/zincir/rpc.py", line 174, in _bs
-    raise RuntimeError(f"blockscout {zincir} {path}: {son}")
-RuntimeError: blockscout eth /api: 429
+  File "/home/runner/work/sushi-izleme-botu/sushi-izleme-botu/zincir/rpc.py", line 220, in bs_transferler
+    out.append((int(x["blockNumber"], 16), x["transactionHash"], int(x.get("logIndex") or "0x0", 16),
+                                                                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+ValueError: invalid literal for int() with base 16: '0x'
+
+###### IRYSUSDT 20261016 20261025 bsc
+coin IRYSUSDT zincir bsc kontrat 0x91152b4ef635403efbae860edd0f8c321d7c035d
+Traceback (most recent call last):
+  File "/home/runner/work/sushi-izleme-botu/sushi-izleme-botu/zincir/toplu.py", line 13, in <module>
+    vaka.main()
+  File "/home/runner/work/sushi-izleme-botu/sushi-izleme-botu/zincir/vaka.py", line 64, in main
+    b0 = rpc.bs_zamandan_blok(z, int(t0.timestamp())); b1 = rpc.bs_zamandan_blok(z, int(t1.timestamp()))
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/runner/work/sushi-izleme-botu/sushi-izleme-botu/zincir/rpc.py", line 199, in bs_zamandan_blok
+    j = _bs(zincir, "/api", {"module": "block", "action": "getblocknobytime", "timestamp": ts, "closest": "before"})
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/runner/work/sushi-izleme-botu/sushi-izleme-botu/zincir/rpc.py", line 195, in _bs
+    raise RuntimeError(f"blockscout/etherscan {zincir} {path}: {son}")
+RuntimeError: blockscout/etherscan bsc /api: Free API access is not supported for this chain. Please upgrade your api plan for full chain coverage. https://etherscan.io/apis
 
 ###### PHAUSDT 20260910 20260926 eth
 coin PHAUSDT zincir eth kontrat 0x6c5ba91642f10282b576d91922ae6448c9d52f4e
+kaynak blockscout, bloklar 25943260 26057904
+  465 transfer, blok 4999/114644
 Traceback (most recent call last):
   File "/home/runner/work/sushi-izleme-botu/sushi-izleme-botu/zincir/toplu.py", line 13, in <module>
     vaka.main()
-  File "/home/runner/work/sushi-izleme-botu/sushi-izleme-botu/zincir/vaka.py", line 64, in main
-    b0 = rpc.bs_zamandan_blok(z, int(t0.timestamp())); b1 = rpc.bs_zamandan_blok(z, int(t1.timestamp()))
-         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "/home/runner/work/sushi-izleme-botu/sushi-izleme-botu/zincir/rpc.py", line 178, in bs_zamandan_blok
-    j = _bs(zincir, "/api", {"module": "block", "action": "getblocknobytime", "timestamp": ts, "closest": "before"})
-        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "/home/runner/work/sushi-izleme-botu/sushi-izleme-botu/zincir/rpc.py", line 174, in _bs
-    raise RuntimeError(f"blockscout {zincir} {path}: {son}")
-RuntimeError: blockscout eth /api: 429
+  File "/home/runner/work/sushi-izleme-botu/sushi-izleme-botu/zincir/vaka.py", line 66, in main
+    tr = rpc.bs_transferler(z, adr, b0, b1, log=log)
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/runner/work/sushi-izleme-botu/sushi-izleme-botu/zincir/rpc.py", line 220, in bs_transferler
+    out.append((int(x["blockNumber"], 16), x["transactionHash"], int(x.get("logIndex") or "0x0", 16),
+                                                                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+ValueError: invalid literal for int() with base 16: '0x'
 
 ###### QNTUSDT 20260915 20261001 eth
 coin QNTUSDT zincir eth kontrat 0x4a220e6096b25eadb88358cb44068a3248254675
+kaynak blockscout, bloklar 25979136 26093737
+  298 transfer, blok 1249/114601
 Traceback (most recent call last):
   File "/home/runner/work/sushi-izleme-botu/sushi-izleme-botu/zincir/toplu.py", line 13, in <module>
     vaka.main()
-  File "/home/runner/work/sushi-izleme-botu/sushi-izleme-botu/zincir/vaka.py", line 64, in main
-    b0 = rpc.bs_zamandan_blok(z, int(t0.timestamp())); b1 = rpc.bs_zamandan_blok(z, int(t1.timestamp()))
-         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "/home/runner/work/sushi-izleme-botu/sushi-izleme-botu/zincir/rpc.py", line 178, in bs_zamandan_blok
-    j = _bs(zincir, "/api", {"module": "block", "action": "getblocknobytime", "timestamp": ts, "closest": "before"})
-        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "/home/runner/work/sushi-izleme-botu/sushi-izleme-botu/zincir/rpc.py", line 174, in _bs
-    raise RuntimeError(f"blockscout {zincir} {path}: {son}")
-RuntimeError: blockscout eth /api: 429
+  File "/home/runner/work/sushi-izleme-botu/sushi-izleme-botu/zincir/vaka.py", line 66, in main
+    tr = rpc.bs_transferler(z, adr, b0, b1, log=log)
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/runner/work/sushi-izleme-botu/sushi-izleme-botu/zincir/rpc.py", line 220, in bs_transferler
+    out.append((int(x["blockNumber"], 16), x["transactionHash"], int(x.get("logIndex") or "0x0", 16),
+                                                                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+ValueError: invalid literal for int() with base 16: '0x'
