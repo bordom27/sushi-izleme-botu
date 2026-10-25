@@ -485,16 +485,32 @@ def short_retest_sistemi(state: dict, cfg: dict) -> list[str]:
             print(f"short bekleyen {sym}: {exc}", flush=True)
     bek = [b for b in bek if b["kalan"] >= 1 and b["uzaklik"] <= 10]     # seviyeye %10'dan uzak olanlar pratikte retest etmez
     state["short_bekleyen"] = sorted(bek, key=lambda d: (-d["yildiz"], abs(d["uzaklik"])))
-    # 3) yeni sinyaller
+    # 3) yeni sinyaller. Once tum coinlerin sinyalleri: ayni 4s mumda kac coinde sinyal var (kume) -> filtre
+    tum_sig = {}
+    kume = {}
+    for sym, g in veri_.items():
+        try:
+            tum_sig[sym] = SR.sinyaller(g)
+        except Exception as exc:
+            print(f"short sinyal {sym}: {exc}", flush=True)
+            tum_sig[sym] = []
+        for x in tum_sig[sym]:
+            kume[x["zaman"]] = kume.get(x["zaman"], 0) + 1
+    elenen = 0
     for sym, g in veri_.items():
         onceki = son_bar.get(sym)
         son_bar[sym] = str(g.index[-1])
         if onceki is None:
             continue                     # yeni gorulen sembol: gecmis sinyaller gonderilmez
-        for x in SR.sinyaller(g):
+        for x in tum_sig[sym]:
             if x["zaman"] <= pd.Timestamp(onceki):
                 continue
             if any(p["sym"] == sym for p in acik.values()):
+                continue
+            k = kume.get(x["zaman"], 1)
+            if not SR.alinir(x["yildiz"], k):
+                elenen += 1
+                print(f"short {sym} {x['zaman']}: filtre disi (ayni mumda {k} sinyal, yildiz {x['yildiz']})", flush=True)
                 continue
             anahtar = f"{sym}|{x['zaman']}"
             poz = {"sym": sym, "zaman": str(x["zaman"]), "giris": float(x["giris"]), "stop": float(x["stop"]),
@@ -503,7 +519,7 @@ def short_retest_sistemi(state: dict, cfg: dict) -> list[str]:
             if x["zaman"] < bayat:           # bot uzun sure calisamadiysa eski sinyal gonderilmez (takip edilir)
                 continue
             yild = {2: "⭐⭐ GÜÇLÜ", 1: "⭐", 0: "(yıldızsız — riski yarıya indir)"}[x["yildiz"]]
-            isabet = {2: "~%87", 1: "~%82", 0: "~%78"}[x["yildiz"]]
+            isabet = ({2: "~%92", 1: "~%91", 0: "~%83"}[x["yildiz"]] if k >= SR.AYAR["min_kume"] else "~%80")
             ad = sym.replace("USDT", "")
             giris_m.append(
                 f"🔻 SHORT RETEST {yild} — {ad} (vadeli {sym})\n"
@@ -512,8 +528,11 @@ def short_retest_sistemi(state: dict, cfg: dict) -> list[str]:
                 f"Kırılan destek {fmt(x['seviye'])}: kırılmadan önce {x['dokunus']} kez test edilmiş, "
                 f"{tr_saat(x['kirilim_zaman'] + pd.Timedelta(hours=4))}'te kırıldı ({x['seviye_mum']} mumluk dip). "
                 f"Geri yükseliş düşük hacimli (ortalamanın {x['hacim_orani']:.2f} katı), 2 yeşil mumdan sonra ret.\n"
+                f"Aynı 4s mumda {k} coinde K69 SHORT sinyali var.\n"
                 f"Zaman stopu: 30 mum (5 gün). Testte isabet {isabet}. Coin günlük hacmi ~{x['gunluk_hacim'] / 1e6:.0f}M$.\n"
                 f"{short_grafik(sym)}")
+    if elenen:
+        print(f"short: {elenen} sinyal filtre disi kaldi", flush=True)
     if hata > len(semboller) // 2:
         print(f"short: {hata} sembolde veri hatasi", flush=True)
     mesajlar = kapanis_m[:]
@@ -881,6 +900,15 @@ def main():
                               "Kâr hafif düşer (işlem başı 0.164R → 0.155R). Mesajdaki hedef fiyatı buna göre gelir; "
                               "açık pozisyonların hedefi değişmedi.")
                 state["duyuru_short_retest4"] = True
+            if state.get("duyuru_short_retest4") and not state.get("duyuru_short_retest5"):
+                send_telegram("⚙️ K69 SHORT: yeni filtre. Sinyal artık sadece aynı 4 saatlik mumda en az 3 coinde "
+                              "K69 SHORT sinyali varsa ya da sinyal ⭐⭐ ise geliyor. Tek başına gelen zayıf sinyaller "
+                              "(testte isabet ~%68, işlem başı ~-0.05R) eleniyor.\n"
+                              "Test (2020–Eki 2026): isabet %81.5 → %85.9, işlem başı 0.154R → 0.226R, toplam R 144 → 158 "
+                              "(sinyallerin ~%25'i eleniyor). 1 saatlik doğrulama (2024+): %81.7 → %86.6, toplam R 124 → 140.\n"
+                              "Mesajda aynı mumda kaç coinde sinyal olduğu yazıyor. Açık pozisyonlar etkilenmedi. "
+                              "TradingView göstergesi tek grafiğe baktığı için bu filtreyi göremez: bot mesajını esas al.")
+                state["duyuru_short_retest5"] = True
             if not state.get("duyuru_short_retest") and state.get("short_son_bar"):
                 send_telegram(
                     "🆕 Yeni sistem: K69 SHORT (düşük hacimli retest short)\n"
