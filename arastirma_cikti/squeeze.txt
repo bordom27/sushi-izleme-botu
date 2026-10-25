@@ -1,0 +1,16 @@
+K69 SHORT squeeze/pump filtresi arastirmasi (25 Eki 2026)
+Veri: 2020-10/2026, tum USDT-M vadeli (delist dahil), canli kurallar (short_retest.py), maliyet %0.2 + funding.
+Taban: 936 islem, isabet %81.5 (2020-24: %89.1, 2025-26: %77.0), islem basi 0.155R.
+Kayiplarin yarisi girişten sonraki 4 mum (16 saat) icinde stop oluyor -> ani yukari hareket.
+
+Ise yarayan (her iki donemde de elenen islemler belirgin kotu):
+  Yeni coin (vadelide < 200 gun):           elenen 185 islem isabet %70.8; kalan 751 islem %84.2
+      2020-24: %89.1 -> %90.7 (topR 100.7 -> 89.4) | 2025-26: %77.0 -> %80.0 (topR 44.0 -> 53.4)
+      son 12 ay: %76.7 -> %78.1, haftada 6.2 -> 5.4 sinyal
+  + son 30 gunde tek mumda > %20 sicrama:    kalan 684 islem %84.5 (2025-26: %80.6, topR 51.2)
+  Son 30 gunde 2+ kez > %10'luk mum:          kalan 681 %83.8 (topR dusuyor, tek basina zayif)
+Ise yaramayan:
+  Negatif funding (short kalabaligi): elenen islemler neredeyse ayni isabette -> filtre degil.
+  Riskli islemlerde hedefi 0.3R'ye cekmek: isabet %80'de kaliyor, kayiplar hizli stop -> kurtarmiyor.
+  Open Interest: Binance gecmisi sadece 30 gun veriyor, test edilemedi (canli toplanmaya baslanabilir).
+Kod: short_arastirma/squeeze_islemler.py (islemler+ozellikler), short_arastirma/squeeze_analiz.py (kurallar).
