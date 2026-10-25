@@ -17,7 +17,7 @@ jobs:
       fail-fast: false
       max-parallel: 20
       matrix:
-        mod: [zincir-IRYSUSDT-20261012-20261025]
+        mod: [zincir-IRYSUSDT-20261016-20261025]
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5

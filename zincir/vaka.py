@@ -57,6 +57,7 @@ def main():
     print("coin", sym, "zincir", z, "kontrat", adr, flush=True)
     b0 = rpc.zamandan_blok(z, int(t0.timestamp())); b1 = rpc.zamandan_blok(z, int(t1.timestamp()))
     print("bloklar", b0, b1, flush=True)
+    print("calisan uclar:", rpc.uclari_sec(z, adr, b1, log=lambda s: print(s, flush=True)), flush=True)
     dec = rpc.ondalik(z, adr)
     tr = rpc.transferler(z, adr, b0, b1, log=lambda s: print(s, flush=True))
     T = pd.DataFrame(tr, columns=["blok", "tx", "ix", "kimden", "kime", "ham"])
