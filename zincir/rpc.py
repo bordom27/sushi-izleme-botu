@@ -143,3 +143,84 @@ def ondalik(zincir: str, kontrat: str) -> int:
         return int(cagir(zincir, "eth_call", [{"to": kontrat, "data": "0x313ce567"}, "latest"]), 16)
     except Exception:
         return 18
+
+
+# ---- Blockscout (anahtarsiz, gecmis kayitlar + etiketler): eth / base / arb ----
+import os as _os
+
+BS = {"eth": "https://eth.blockscout.com", "base": "https://base.blockscout.com", "arb": "https://arbitrum.blockscout.com"}
+if _os.environ.get("NODEREAL_KEY"):
+    RPC["bsc"].insert(0, f"https://bsc-mainnet.nodereal.io/v1/{_os.environ['NODEREAL_KEY']}")
+
+
+def _bs(zincir, path, params=None, deneme=8):
+    son = None
+    for d in range(deneme):
+        try:
+            r = requests.get(BS[zincir] + path, params=params, timeout=60, headers={"accept": "application/json"})
+            if r.status_code == 429:
+                time.sleep(3 + 3 * d); son = 429; continue
+            r.raise_for_status()
+            return r.json()
+        except Exception as exc:
+            son = exc; time.sleep(2 + d)
+    raise RuntimeError(f"blockscout {zincir} {path}: {son}")
+
+
+def bs_zamandan_blok(zincir, ts):
+    j = _bs(zincir, "/api", {"module": "block", "action": "getblocknobytime", "timestamp": ts, "closest": "before"})
+    return int(j["result"]["blockNumber"])
+
+
+def bs_transferler(zincir, kontrat, b0, b1, log=print):
+    """Blockscout logs API (sayfa basi en fazla 1000 kayit): (blok, tx, log_ix, from, to, deger_ham, ts)."""
+    out, b, adim = [], b0, 20000
+    while b <= b1:
+        e = min(b1, b + adim - 1)
+        j = _bs(zincir, "/api", {"module": "logs", "action": "getLogs", "fromBlock": b, "toBlock": e,
+                                 "address": kontrat, "topic0": TRANSFER})
+        res = j.get("result") or []
+        if isinstance(res, str):
+            res = []
+        if len(res) >= 1000 and adim > 1:
+            adim = max(1, adim // 4); continue
+        for x in res:
+            t = [y for y in x["topics"] if y]
+            if len(t) < 3:
+                continue
+            out.append((int(x["blockNumber"], 16), x["transactionHash"], int(x["logIndex"] or "0x0", 16),
+                        "0x" + t[1][-40:], "0x" + t[2][-40:], int(x["data"], 16) if x["data"] not in ("0x", "") else 0,
+                        int(x["timeStamp"], 16)))
+        if (e - b0) // 200000 != (b - 1 - b0) // 200000:
+            log(f"  {len(out)} transfer, blok {e - b0}/{b1 - b0}")
+        b = e + 1
+        if len(res) < 300:
+            adim = min(200000, adim * 2)
+    return out
+
+
+def bs_adres(zincir, adres):
+    """Blockscout adres bilgisi: (kontrat_mi, isim/etiket)."""
+    try:
+        j = _bs(zincir, f"/api/v2/addresses/{adres}", deneme=3)
+    except Exception:
+        return None, ""
+    tags = [t.get("label") or t.get("display_name") or "" for t in (j.get("public_tags") or [])]
+    md = j.get("metadata") or {}
+    tags += [t.get("name", "") for t in (md.get("tags") or [])]
+    ad = j.get("name") or ""
+    return bool(j.get("is_contract")), ", ".join([x for x in [ad] + tags if x])[:80]
+
+
+def bs_holderlar(zincir, kontrat, sayfa=4):
+    out, params = [], None
+    for _ in range(sayfa):
+        j = _bs(zincir, f"/api/v2/tokens/{kontrat}/holders", params)
+        for x in j.get("items", []):
+            a = x["address"]
+            out.append({"adres": a["hash"].lower(), "deger": int(x["value"]), "kontrat": a.get("is_contract"),
+                        "isim": (a.get("name") or "") + " " + ",".join(t.get("label", "") for t in (a.get("public_tags") or []))})
+        params = j.get("next_page_params")
+        if not params:
+            break
+    return out

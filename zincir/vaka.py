@@ -50,24 +50,37 @@ def main():
     base = sym.replace("USDT", "").lower()
     if len(sys.argv) > 5:
         z, adr = sys.argv[4], sys.argv[5].lower()
+    elif len(sys.argv) > 4:
+        k = pd.read_csv(f"{OUT}/kontratlar.csv") if os.path.exists(f"{OUT}/kontratlar.csv") else (KE.main(), pd.read_csv(f"{OUT}/kontratlar.csv"))[1]
+        z = sys.argv[4]; adr = k[(k.symbol == sym) & (k.zincir == z)].adres.iloc[0]
     else:
         z, adr = kontrat_bul(sym)
+    bs = z in rpc.BS
     os.makedirs(OUT, exist_ok=True)
     t0, t1 = pd.Timestamp(d0), pd.Timestamp(d1)
     print("coin", sym, "zincir", z, "kontrat", adr, flush=True)
-    b0 = rpc.zamandan_blok(z, int(t0.timestamp())); b1 = rpc.zamandan_blok(z, int(t1.timestamp()))
-    print("bloklar", b0, b1, flush=True)
-    print("calisan uclar:", rpc.uclari_sec(z, adr, b1, log=lambda s: print(s, flush=True)), flush=True)
-    dec = rpc.ondalik(z, adr)
-    tr = rpc.transferler(z, adr, b0, b1, log=lambda s: print(s, flush=True))
-    T = pd.DataFrame(tr, columns=["blok", "tx", "ix", "kimden", "kime", "ham"])
+    log = lambda s: print(s, flush=True)
+    if bs:
+        b0 = rpc.bs_zamandan_blok(z, int(t0.timestamp())); b1 = rpc.bs_zamandan_blok(z, int(t1.timestamp()))
+        print("kaynak blockscout, bloklar", b0, b1, flush=True)
+        tr = rpc.bs_transferler(z, adr, b0, b1, log=log)
+        T = pd.DataFrame(tr, columns=["blok", "tx", "ix", "kimden", "kime", "ham", "ts"])
+    else:
+        b0 = rpc.zamandan_blok(z, int(t0.timestamp())); b1 = rpc.zamandan_blok(z, int(t1.timestamp()))
+        print("kaynak rpc, bloklar", b0, b1, flush=True)
+        print("calisan uclar:", rpc.uclari_sec(z, adr, b1, log=log), flush=True)
+        tr = rpc.transferler(z, adr, b0, b1, log=log)
+        T = pd.DataFrame(tr, columns=["blok", "tx", "ix", "kimden", "kime", "ham"])
     if T.empty:
         raise SystemExit("transfer yok")
+    dec = rpc.ondalik(z, adr)
     T["miktar"] = T.ham.astype(float) / 10 ** dec
-    # blok -> zaman (orneklenmis bloklardan ara degerleme)
-    orn = np.unique(np.linspace(T.blok.min(), T.blok.max(), 60).astype(int))
-    zt = np.array([rpc.blok_zaman(z, int(b)) for b in orn])
-    T["t"] = pd.to_datetime(np.interp(T.blok, orn, zt), unit="s")
+    if "ts" in T:
+        T["t"] = pd.to_datetime(T.ts, unit="s"); T = T.drop(columns="ts")
+    else:   # blok -> zaman (orneklenmis bloklardan ara degerleme)
+        orn = np.unique(np.linspace(T.blok.min(), T.blok.max(), 60).astype(int))
+        zt = np.array([rpc.blok_zaman(z, int(b)) for b in orn])
+        T["t"] = pd.to_datetime(np.interp(T.blok, orn, zt), unit="s")
     T = T.drop(columns="ham").sort_values(["blok", "ix"]).reset_index(drop=True)
     T.to_csv(f"{OUT}/{base}_transferler.csv.gz", index=False, compression="gzip")
     print("transfer", len(T), "tekil adres", pd.concat([T.kimden, T.kime]).nunique(), flush=True)
@@ -81,11 +94,17 @@ def main():
     A = A.drop(index=[SIFIR], errors="ignore")
     ust = A.sort_values("brut", ascending=False).head(80).index.tolist()
     ust += [a for a in A.sort_values("net", ascending=False).head(40).index if a not in ust]
-    A["kontrat"] = pd.Series(None, index=A.index, dtype=object); A["bakiye_simdi"] = np.nan
+    A["kontrat"] = pd.Series(None, index=A.index, dtype=object); A["bakiye_simdi"] = np.nan; A["isim"] = ""
     A.index.name = "adres"
     for a in ust:
         try:
-            A.loc[a, "kontrat"] = rpc.kontrat_mi(z, a)
+            if bs:
+                km, isim = rpc.bs_adres(z, a)
+                A.loc[a, "isim"] = isim
+                if km is not None:
+                    A.loc[a, "kontrat"] = km
+            if A.loc[a, "kontrat"] is None:
+                A.loc[a, "kontrat"] = rpc.kontrat_mi(z, a)
             A.loc[a, "bakiye_simdi"] = rpc.bakiye(z, adr, a) / 10 ** dec
         except Exception as exc:
             print("adres sorgu", a, exc)
@@ -94,6 +113,10 @@ def main():
     cok = (A.gonderen >= 100) & (A.alici >= 50)
     A.loc[cok & (A.kontrat == True), "etiket"] = "havuz"          # DEX havuzu / router
     A.loc[cok & (A.kontrat != True), "etiket"] = "borsa"          # borsa sicak cuzdani (cok kaynaktan toplar, cok yere gonderir)
+    BORSA_AD = ("binance", "okx", "bybit", "coinbase", "kraken", "kucoin", "gate", "bitget", "mexc", "htx", "huobi",
+                "upbit", "bithumb", "crypto.com", "bitfinex", "bitstamp", "gemini", "bingx", "bitmart", "lbank")
+    isimli = A.isim.str.lower().apply(lambda x: any(b in x for b in BORSA_AD))
+    A.loc[isimli & (A.kontrat != True), "etiket"] = "borsa"
     borsa = set(A.index[A.etiket == "borsa"])
     # yatirma adresleri: cikisinin >=%90'i borsa cuzdanina gidenler
     kb = T[T.kime.isin(borsa)].groupby("kimden").miktar.sum()
@@ -146,12 +169,24 @@ def main():
         p("etiketler:", A.etiket.replace("", "-").str.split(":").str[0].value_counts().to_dict())
         p("borsa cuzdanlari:", len(borsa), "yatirma adresleri:", len(yat), "dagitici kume:", len(kume),
           {k[:10]: len(v) for k, v in list(kume.items())[:8]})
+        if bs:
+            try:
+                H = pd.DataFrame(rpc.bs_holderlar(z, adr))
+                arz = int(rpc.cagir_arz(z, adr)) / 10 ** dec if hasattr(rpc, "cagir_arz") else None
+                H["miktar"] = H.deger.astype(float) / 10 ** dec
+                H["kume"] = H.adres.map(A.etiket).fillna("")
+                H.to_csv(f"{OUT}/{base}_holderlar.csv", index=False)
+                top = H.miktar.sum()
+                p(f"\nEN BUYUK {len(H)} HOLDER toplam {top:,.0f} token; ilk 10 payi (bu listede): {H.miktar.head(10).sum() / top:.1%}")
+                p(H.head(15)[["adres", "miktar", "kontrat", "isim", "kume"]].to_string())
+            except Exception as exc:
+                p("holder listesi alinamadi", exc)
         p("\nGUNLUK (miktarlar token):")
         p(G.round(0).to_string())
         p("\nEN BUYUK NET BIRIKIM (EOA, borsa/havuz disi):")
-        p(aday.sort_values("net", ascending=False).head(15)[["net", "giris", "cikis", "gonderen", "ilk_giris", "bakiye_simdi", "etiket"]].round({"net": 0, "giris": 0, "cikis": 0, "bakiye_simdi": 0}).to_string())
+        p(aday.sort_values("net", ascending=False).head(15)[["net", "giris", "cikis", "gonderen", "ilk_giris", "bakiye_simdi", "etiket", "isim"]].round({"net": 0, "giris": 0, "cikis": 0, "bakiye_simdi": 0}).to_string())
         p("\nEN BUYUK NET CIKIS (satanlar):")
-        p(aday.sort_values("net").head(15)[["net", "giris", "cikis", "alici", "bakiye_simdi", "etiket"]].round(0).to_string())
+        p(aday.sort_values("net").head(15)[["net", "giris", "cikis", "alici", "bakiye_simdi", "etiket", "isim"]].round(0).to_string())
 
 
 if __name__ == "__main__":
