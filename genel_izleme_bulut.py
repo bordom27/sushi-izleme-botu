@@ -518,6 +518,10 @@ def short_retest_sistemi(state: dict, cfg: dict) -> list[str]:
             acik[anahtar] = poz
             if x["zaman"] < bayat:           # bot uzun sure calisamadiysa eski sinyal gonderilmez (takip edilir)
                 continue
+            if state.get("islem_aktif"):     # sadece k69_islem_kos.py (islem botu) kendi durumunda acar
+                state.setdefault("islem_kuyruk", []).append(
+                    {"sym": sym, "zaman": str(x["zaman"]), "giris": float(x["giris"]), "stop": float(x["stop"]),
+                     "hedef": float(x["hedef"]), "yildiz": int(x["yildiz"])})
             yild = {2: "⭐⭐ GÜÇLÜ", 1: "⭐", 0: "(yıldızsız — riski yarıya indir)"}[x["yildiz"]]
             isabet = ({2: "~%92", 1: "~%91", 0: "~%83"}[x["yildiz"]] if k >= SR.AYAR["min_kume"] else "~%80")
             ad = sym.replace("USDT", "")
