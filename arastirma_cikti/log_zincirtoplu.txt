@@ -1,59 +1,257 @@
 
 ###### GTCUSDT 20261001 20261016 eth
 coin GTCUSDT zincir eth kontrat 0xde30da39c46104798bb5aa3fe8b9e0e1f348163f
-kaynak blockscout, bloklar 26093737 26201364
-Traceback (most recent call last):
-  File "/home/runner/work/sushi-izleme-botu/sushi-izleme-botu/zincir/toplu.py", line 13, in <module>
-    vaka.main()
-  File "/home/runner/work/sushi-izleme-botu/sushi-izleme-botu/zincir/vaka.py", line 66, in main
-    tr = rpc.bs_transferler(z, adr, b0, b1, log=log)
-         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "/home/runner/work/sushi-izleme-botu/sushi-izleme-botu/zincir/rpc.py", line 220, in bs_transferler
-    out.append((int(x["blockNumber"], 16), x["transactionHash"], int(x.get("logIndex") or "0x0", 16),
-                                                                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-ValueError: invalid literal for int() with base 16: '0x'
+kaynak etherscan bloklar 26093737 26201364
+  794 transfer, blok 4999/107627
+transfer 47436 tekil adres 4473
+GTCUSDT zincir=eth kontrat=0xde30da39c46104798bb5aa3fe8b9e0e1f348163f 20261001-20261016 transfer=47436 adres=4473
+etiketler: {'-': 2257, 'kume': 1463, 'borsa_yatirma': 726, 'dagitici': 20, 'borsa': 4, 'havuz': 3}
+borsa cuzdanlari: 4 yatirma adresleri: 726 dagitici kume: 20 {'0xcc90105d': 383, '0x0e3efd5b': 334, '0x00f4a4df': 165, '0xe8f5d112': 107, '0xdfd5293d': 66, '0x21a31ee1': 50, '0x9642b23e': 54, '0x666fedd4': 52}
 
-###### IRYSUSDT 20261016 20261025 bsc
-coin IRYSUSDT zincir bsc kontrat 0x91152b4ef635403efbae860edd0f8c321d7c035d
-Traceback (most recent call last):
-  File "/home/runner/work/sushi-izleme-botu/sushi-izleme-botu/zincir/toplu.py", line 13, in <module>
-    vaka.main()
-  File "/home/runner/work/sushi-izleme-botu/sushi-izleme-botu/zincir/vaka.py", line 64, in main
-    b0 = rpc.bs_zamandan_blok(z, int(t0.timestamp())); b1 = rpc.bs_zamandan_blok(z, int(t1.timestamp()))
-         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "/home/runner/work/sushi-izleme-botu/sushi-izleme-botu/zincir/rpc.py", line 199, in bs_zamandan_blok
-    j = _bs(zincir, "/api", {"module": "block", "action": "getblocknobytime", "timestamp": ts, "closest": "before"})
-        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "/home/runner/work/sushi-izleme-botu/sushi-izleme-botu/zincir/rpc.py", line 195, in _bs
-    raise RuntimeError(f"blockscout/etherscan {zincir} {path}: {son}")
-RuntimeError: blockscout/etherscan bsc /api: Free API access is not supported for this chain. Please upgrade your api plan for full chain coverage. https://etherscan.io/apis
+EN BUYUK 200 HOLDER toplam 100,323,849 token; ilk 10 payi (bu listede): 71.7%
+                                         adres        miktar  kontrat              isim           kume
+0   0x14d7cee42d4643f0c767a1d504d9ca24c890f86c  1.581077e+07    False                    borsa_yatirma
+1   0x28c6c06298d514db089934071355e5743bf21d60  1.367048e+07    False                            borsa
+2   0x57a8865cfb1ecef7253c27da6b4bc3daee5be518  1.250850e+07     True         Timelock                
+3   0x74be0cf1c9972c00ed4ef290e0e5bcfd18873f13  9.851824e+06    False                                 
+4   0x4da8853217d0d5b59e8fcde36d1bebb0a1932a14  6.703538e+06    False                                 
+5   0x42c7df3f6bfe02eb61c0c2bd2d73c69eec6023cd  3.825619e+06    False                            borsa
+6   0x15da7556d5ed888306839bed06f868aeaedcb0d7  2.913228e+06    False                    kume:0xe8f5d1
+7   0xdfd5293d8e347dfe59e90efd55b2956a1343963d  2.605535e+06    False                         dagitici
+8   0x00ebf4f968a507a4404e643eecb35449262861a1  2.546978e+06    False                                 
+9   0xa9d1e08c7793af67e9d92fe308d5697fb81d3e43  1.537709e+06     True                            havuz
+10  0x931896a8a9313f622a2afca76d1471b97955e551  1.430000e+06     True  GnosisSafeProxy                
+11  0xab782bc7d4a2b306825de5a7730034f8f63ee1bc  1.241165e+06    False                         dagitici
+12  0x900a248296691385357551cc7d5fae9e256dce8e  1.088774e+06    False                                 
+13  0xe8f5d1128d4aceed83bd1da259372298b31a028a  1.075306e+06    False                         dagitici
+14  0x2aa5d15eb36e5960d056e8fea6e7bb3e2a06a351  9.687969e+05     True          Hedgeys                
+
+GUNLUK (miktarlar token):
+            fiyat  transfer  yeni_adres  borsaya_giris  borsadan_cikis  borsa_net_giris  balina_net   kume_net  havuzdan_alim  havuza_satis
+saat                                                                                                                                       
+2026-10-01    0.0    1947.0       279.0      2272919.0       2737463.0        -464544.0   2815818.0  3671023.0      2767262.0     2415390.0
+2026-10-02    0.0    5406.0       352.0      4938982.0       8621460.0       -3682478.0   1903801.0  8417482.0      6794719.0     5424592.0
+2026-10-03    0.0    1706.0       147.0      1893573.0       2721352.0        -827779.0    656580.0  1810727.0      1001662.0     1704508.0
+2026-10-04    0.0    3071.0       181.0      6985683.0       2043182.0        4942502.0    -17716.0  2162876.0      2996187.0     2086758.0
+2026-10-05    0.0    5880.0       334.0      5645984.0      12259859.0       -6613875.0   2193070.0  8024203.0     10126234.0     9513930.0
+2026-10-06    0.0    1615.0        84.0      2714222.0        468312.0        2245910.0  -1003290.0  1846506.0      2363254.0     2729933.0
+2026-10-07    0.0    2776.0        93.0      7624145.0       7262418.0         361727.0   -975616.0  4658263.0      3342066.0     3449613.0
+2026-10-08    0.0    1828.0        69.0      3559195.0       2893991.0         665204.0   -688673.0  2546648.0      2432902.0     2675853.0
+2026-10-09    0.0    1947.0       210.0      1943482.0        326078.0        1617404.0   1404306.0  1991548.0      1953024.0     1667962.0
+2026-10-10    0.0    1218.0        76.0       593998.0        797229.0        -203231.0   -248174.0   774410.0       384503.0      298362.0
+2026-10-11    0.0     953.0       129.0       970191.0         89019.0         881172.0    575988.0   721938.0       175870.0      274424.0
+2026-10-12    0.0   10707.0      1388.0     16820915.0      10457754.0        6363161.0  -3058994.0  7443272.0      7510204.0     6877303.0
+2026-10-13    0.0    4452.0       432.0      6355380.0       6250706.0         104673.0   3136676.0  2900517.0      3776903.0     3957742.0
+2026-10-14    0.0    2515.0       140.0      1387486.0       1069782.0         317704.0    553917.0  3465219.0      1166269.0     1189549.0
+2026-10-15    0.0    1415.0        93.0       943287.0        292166.0         651121.0     58111.0  1534805.0       667220.0      462491.0
+2026-10-16    0.0       0.0         0.0            0.0             0.0              0.0         0.0        0.0            0.0           0.0
+
+EN BUYUK NET BIRIKIM (EOA, borsa/havuz disi):
+                                                  net       giris       cikis  gonderen           ilk_giris  bakiye_simdi         etiket isim
+adres                                                                                                                                        
+0x00ebf4f968a507a4404e643eecb35449262861a1  3245165.0   5102887.0   1857722.0       1.0 2026-10-08 21:09:11     2546978.0                    
+0x00f4a4df8a2db5df0354502803b68365a5c69ddf   697720.0  12080000.0  11382280.0       1.0 2026-10-01 05:26:59      648155.0       dagitici     
+0xe8f5d1128d4aceed83bd1da259372298b31a028a   604273.0  17133805.0  16529532.0      27.0 2026-10-01 00:36:35     1078600.0       dagitici     
+0x15da7556d5ed888306839bed06f868aeaedcb0d7   530172.0  12161179.0  11631007.0       3.0 2026-10-01 00:37:47     2913228.0  kume:0xe8f5d1     
+0x0d0707963952f2fba59dd06f2b425ace40b492fe   270895.0    857817.0    586922.0      36.0 2026-10-01 08:31:11      364639.0                    
+0xed9ab5bc05a0152b9dc2f7902e8369af7bc18771   238322.0    239730.0      1408.0       2.0 2026-10-01 16:57:35      237466.0                    
+0x9642b23ed1e01df1092b92641051881a322f5d4e   212736.0   4414744.0   4202008.0      35.0 2026-10-01 02:59:35      274161.0       dagitici     
+0xe19ed11103265687a351662aab588a890ec598b4   172554.0    273123.0    100569.0       1.0 2026-10-01 12:17:59       92746.0  kume:0xe8f5d1     
+0x4da8853217d0d5b59e8fcde36d1bebb0a1932a14   165419.0   5894184.0   5728765.0       2.0 2026-10-01 20:35:11     6703538.0                    
+0xab782bc7d4a2b306825de5a7730034f8f63ee1bc   159104.0   5003612.0   4844509.0      11.0 2026-10-01 08:18:47     1241165.0       dagitici     
+0x1a9d699aee3a56ca49d0cc3b542ae3a37885a3e1   144184.0   1136538.0    992354.0       5.0 2026-10-01 04:12:47      426147.0       dagitici     
+0xcffad3200574698b78f32232aa9d63eabd290703   140528.0   1182234.0   1041705.0       9.0 2026-10-01 01:21:23      876719.0                    
+0xa023f08c70a23abc7edfc5b6b5e171d78dfc947e   126639.0    126639.0         0.0       2.0 2026-10-02 00:33:11      625277.0                    
+0x9aab0bf3b1ed07ca2109582dbcf962a994cce3d5    90609.0    600000.0    509391.0       1.0 2026-10-05 02:31:59      155068.0                    
+0xfa2176d82cba00d54998e6c37616b75cecef08a0    70000.0     70000.0         0.0       1.0 2026-10-12 11:29:35           0.0                    
+
+EN BUYUK NET CIKIS (satanlar):
+                                                  net       giris       cikis  alici  bakiye_simdi    etiket isim
+adres                                                                                                            
+0x74be0cf1c9972c00ed4ef290e0e5bcfd18873f13 -3302162.0   8777838.0  12080000.0    2.0     9851824.0               
+0x3896ab65f7191a446f5ba550a92f9fbe5dd658af  -800000.0         0.0    800000.0    1.0           NaN               
+0x2fa784b519a372975c0b81fbb62e25717bd24b0c  -700000.0         0.0    700000.0    1.0           NaN               
+0x21a31ee1afc51d94c2efccaa2092ad1028285549  -677442.0  19629396.0  20306838.0  162.0      763081.0  dagitici     
+0x3cc936b795a188f0e246cbb2d74c5bd190aecf18  -652901.0   2148882.0   2801783.0    1.0       89814.0               
+0x7ad3d9819b06e800f8a65f3440d599a23d6a0bdf  -600000.0         0.0    600000.0    1.0           NaN               
+0x74d3d473a44bc6b2b806861be511d52e2ce530af  -502500.0         0.0    502500.0    1.0           NaN               
+0x748ec4f17c8fcc8ff422f44b8dc016e7146d2679  -450000.0         0.0    450000.0    1.0           NaN               
+0xcea57d85fc1587eb8185f8d5809630887def4587  -420000.0         0.0    420000.0    1.0           NaN               
+0xdfd5293d8e347dfe59e90efd55b2956a1343963d  -370413.0  20980314.0  21350727.0  185.0     2605535.0  dagitici     
+0x26209d9f0dc3ac0129c3fb1badabfeb9ee728c66  -239652.0         0.0    239652.0    1.0           NaN               
+0x98adef6f2ac8572ec48965509d69a8dd5e8bba9d  -239181.0    955495.0   1194675.0    1.0      311351.0               
+0xceb69f6342ece283b2f5c9088ff249b5d0ae66ea  -215908.0       348.0    216256.0    2.0           NaN               
+0xef5d1ebb6337f2ac97a7a0d27485c0aef7d7e020  -197892.0         0.0    197892.0    7.0           NaN               
+0x1020304e9543fcbf130862ea2a157dfaeefac93b  -145000.0         0.0    145000.0    4.0           NaN               
 
 ###### PHAUSDT 20260910 20260926 eth
 coin PHAUSDT zincir eth kontrat 0x6c5ba91642f10282b576d91922ae6448c9d52f4e
-kaynak blockscout, bloklar 25943260 26057904
+kaynak etherscan bloklar 25943260 26057904
   465 transfer, blok 4999/114644
-Traceback (most recent call last):
-  File "/home/runner/work/sushi-izleme-botu/sushi-izleme-botu/zincir/toplu.py", line 13, in <module>
-    vaka.main()
-  File "/home/runner/work/sushi-izleme-botu/sushi-izleme-botu/zincir/vaka.py", line 66, in main
-    tr = rpc.bs_transferler(z, adr, b0, b1, log=log)
-         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "/home/runner/work/sushi-izleme-botu/sushi-izleme-botu/zincir/rpc.py", line 220, in bs_transferler
-    out.append((int(x["blockNumber"], 16), x["transactionHash"], int(x.get("logIndex") or "0x0", 16),
-                                                                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-ValueError: invalid literal for int() with base 16: '0x'
+transfer 22895 tekil adres 2708
+PHAUSDT zincir=eth kontrat=0x6c5ba91642f10282b576d91922ae6448c9d52f4e 20260910-20260926 transfer=22895 adres=2708
+etiketler: {'-': 1382, 'kume': 872, 'borsa_yatirma': 431, 'dagitici': 19, 'borsa': 3, 'havuz': 1}
+borsa cuzdanlari: 3 yatirma adresleri: 431 dagitici kume: 20 {'0x1231deb6': 156, '0xb92fe925': 155, '0x25b4a48f': 66, '0xb9fa2e2c': 74, '0xb9391e43': 53, '0x9642b23e': 47, '0x21a31ee1': 48, '0xdfd5293d': 46}
+
+EN BUYUK 200 HOLDER toplam 947,067,394 token; ilk 10 payi (bu listede): 73.1%
+                                         adres        miktar  kontrat                          isim           kume
+0   0xf977814e90da44bfa03b6295a0616a897441acec  2.848137e+08    False                                borsa_yatirma
+1   0x4a396b5c9a6fbc1bc0525f24ac0a246766f3ebef  1.390109e+08     True                    SafeProxy                
+2   0x21d6ec8fc14caacc55afa23cba66798dab3a0ec0  1.329631e+08     True                  Phala Vault        dagitici
+3   0x073f564419b625a45d8aea3bb0de4d5647113ad7  2.799194e+07    False                                kume:0x91d40e
+4   0x28c6c06298d514db089934071355e5743bf21d60  2.086231e+07    False                                        borsa
+5   0xa94828b16ace4f58dc4233a031c0d745839a1676  2.026982e+07    False                                             
+6   0xd2dd7b597fd2435b6db61ddf48544fd931e6869f  1.812665e+07    False                                kume:0xb9fa2e
+7   0x999e77c988c4c1451d3b1c104a6cca7813a9946e  1.688714e+07    False                                             
+8   0xb9fa2e2cb2f0f00bb2e06e317e6da3a41372f366  1.609530e+07    False                                     dagitici
+9   0x0d0707963952f2fba59dd06f2b425ace40b492fe  1.506437e+07    False                                        borsa
+10  0xab782bc7d4a2b306825de5a7730034f8f63ee1bc  1.154627e+07    False                                     dagitici
+11  0x289aabda9717e8693bd162b0f9b0bfed9b9ea16f  1.031227e+07    False                                             
+12  0x7dafba1d69f6c01ae7567ffd7b046ca03b706f83  1.014746e+07    False                                             
+13  0x8b6d7ab0be8d1f6ae40738c4cff75134110a777f  9.453266e+06     True                 ERC1967Proxy                
+14  0xa139f849000c5438855032ebfeed9ee104023a73  9.452924e+06     True  TransparentUpgradeableProxy                
+
+GUNLUK (miktarlar token):
+            fiyat  transfer  yeni_adres  borsaya_giris  borsadan_cikis  borsa_net_giris  balina_net    kume_net  havuzdan_alim  havuza_satis
+saat                                                                                                                                        
+2026-09-10    0.0     568.0       152.0      1656663.0       7314871.0       -5658208.0   7676072.0   6520483.0       394969.0      480828.0
+2026-09-11    0.0     620.0        91.0       697086.0       4968202.0       -4271116.0   -921700.0   8422543.0      2298161.0     2397143.0
+2026-09-12    0.0     582.0        83.0      9255939.0       1193926.0        8062013.0  -2017390.0   1597338.0       635282.0      546930.0
+2026-09-13    0.0     747.0        78.0      8415231.0       9630329.0       -1215098.0   5277059.0  11210104.0       787172.0      769414.0
+2026-09-14    0.0     271.0        39.0      1441370.0        236831.0        1204540.0   -254538.0    788972.0       333893.0      349178.0
+2026-09-15    0.0     401.0        58.0      3113280.0        887985.0        2225294.0    714115.0    936709.0       382532.0      323316.0
+2026-09-16    0.0     409.0        66.0      2577559.0       1063825.0        1513734.0   -922293.0    392764.0       702700.0      709534.0
+2026-09-17    0.0     537.0        48.0      3717142.0        409191.0        3307952.0   -253807.0   1779967.0       572958.0      385534.0
+2026-09-18    0.0     614.0        66.0      7287629.0       5751599.0        1536030.0    933221.0  17023986.0      1038471.0     1053213.0
+2026-09-19    0.0     754.0        81.0      6258151.0       2502201.0        3755951.0  -1563681.0   4516318.0      1086764.0      972390.0
+2026-09-20    0.0     762.0        67.0      5976178.0       2958022.0        3018156.0     52386.0   3786740.0       848541.0      785316.0
+2026-09-21    0.0    4479.0       416.0     36600342.0      15140892.0       21459450.0  -4377203.0  19867370.0      6371434.0     6083403.0
+2026-09-22    0.0    2191.0       207.0     10641802.0      39138548.0      -28496746.0  17098592.0  18731784.0      2650487.0     2663488.0
+2026-09-23    0.0    1106.0        67.0     20752075.0      11800657.0        8951419.0  -4755672.0  18643203.0      1663786.0     1687496.0
+2026-09-24    0.0    1178.0        56.0     16274952.0       7484379.0        8790573.0  19375615.0  21965312.0      1458406.0     1367905.0
+2026-09-25    0.0    7676.0       680.0     25906387.0      30940058.0       -5033672.0  21917097.0  30748050.0     14615073.0    14088542.0
+2026-09-26    0.0       0.0         0.0            0.0             0.0              0.0         0.0         0.0            0.0           0.0
+
+EN BUYUK NET BIRIKIM (EOA, borsa/havuz disi):
+                                                   net       giris       cikis  gonderen           ilk_giris  bakiye_simdi         etiket isim
+adres                                                                                                                                         
+0xa94828b16ace4f58dc4233a031c0d745839a1676  20269822.0  20269822.0         0.0       1.0 2026-09-24 08:03:47    20269822.0                    
+0x58edf78281334335effa23101bbe3371b6a36a51   9301771.0  39651668.0  30349897.0      42.0 2026-09-10 02:32:35     1814194.0       dagitici     
+0x622e90171efb4df79fbc0f1598322a96788f153d   6050537.0   6050537.0         0.0       1.0 2026-09-25 10:01:35           0.0                    
+0x289aabda9717e8693bd162b0f9b0bfed9b9ea16f   3907399.0   9653399.0   5746000.0      24.0 2026-09-10 04:12:23    10312273.0                    
+0x3cc936b795a188f0e246cbb2d74c5bd190aecf18   3436397.0   7436397.0   4000000.0      11.0 2026-09-10 04:18:23     4986487.0                    
+0x26209d9f0dc3ac0129c3fb1badabfeb9ee728c66   2860986.0   2860986.0         0.0       1.0 2026-09-10 08:33:23           0.0                    
+0xe19ed11103265687a351662aab588a890ec598b4   1659654.0   4350326.0   2690672.0       1.0 2026-09-10 12:11:59     1175144.0  kume:0xb9fa2e     
+0x9dc2f2eb768704ca32afebc751e11a7827f0ab15    935865.0    935865.0         0.0       1.0 2026-09-16 11:20:47      935865.0                    
+0xdfd5293d8e347dfe59e90efd55b2956a1343963d    905797.0  27974263.0  27068466.0       1.0 2026-09-10 05:42:47     4243817.0       dagitici     
+0xa78b912ac6e21e6fa8fa4e17f105a50a01234b40    849121.0   1000000.0    150879.0       1.0 2026-09-24 05:51:47      888933.0                    
+0x0529ea5885702715e83923c59746ae8734c553b7    838497.0    838497.0         0.0       3.0 2026-09-17 15:19:35     5122448.0  kume:0x21a31e     
+0x889daccd527e1744bb855ae0a9d9663527b0e893    747793.0    747793.0         0.0       2.0 2026-09-24 15:23:23     1057352.0                    
+0x687c802162e79ad95309df8eedcb8e814c7f459e    603493.0    907030.0    303537.0       3.0 2026-09-10 05:08:59      561026.0                    
+0x0252f92ee3f4430ac419fc3e9ae31df718990842    566268.0    566268.0         0.0       1.0 2026-09-25 19:53:47           0.0  kume:0xb92fe9     
+0xffddc7a71b8953d0038ff0912c6d45e1c44de69c    510400.0    510400.0         0.0      14.0 2026-09-25 11:51:59           0.0                    
+
+EN BUYUK NET CIKIS (satanlar):
+                                                  net       giris       cikis  alici  bakiye_simdi         etiket isim
+adres                                                                                                                 
+0xab782bc7d4a2b306825de5a7730034f8f63ee1bc -9289588.0  19209049.0  28498637.0   17.0    11546269.0       dagitici     
+0xd2dd7b597fd2435b6db61ddf48544fd931e6869f -6168670.0   2077645.0   8246315.0    1.0    18126648.0  kume:0xb9fa2e     
+0x9642b23ed1e01df1092b92641051881a322f5d4e -5580547.0  14057843.0  19638389.0   67.0     5368347.0       dagitici     
+0x636858d62f2e81deb7fd563621faef1a6a14d6c5 -3737698.0         0.0   3737698.0    3.0           NaN                    
+0x3dd537c87e700ecff3040604123af6dff9f495d3 -2911689.0         0.0   2911689.0    3.0           NaN                    
+0xb9fa2e2cb2f0f00bb2e06e317e6da3a41372f366 -2907168.0  32029695.0  34936862.0   96.0    16061680.0       dagitici     
+0x5bdf85216ec1e38d6458c870992a69e38e03f7ef -2897249.0   4960358.0   7857607.0   26.0           0.0                    
+0x073f564419b625a45d8aea3bb0de4d5647113ad7 -2681172.0   4469857.0   7151030.0    1.0    27991942.0  kume:0x91d40e     
+0x446b86a33e2a438f569b15855189e3da28d027ba -2174287.0    540043.0   2714330.0    1.0           NaN  kume:0x58edf7     
+0x1b14376ee2d46ae5c27a43d902d96d4f3f264b83 -1600406.0    449316.0   2049722.0    1.0           NaN  kume:0x58edf7     
+0x608c27519c5e65a61cfc1d2c9e658e5c57a2e3d7 -1322961.0   2604661.0   3927622.0    2.0     2490227.0                    
+0xfb9b785ff227a8990d5d2e25ffc8c57cb35f50e8 -1306102.0         0.0   1306102.0    3.0           NaN                    
+0xf63d9948e7ca486a1f0d51c12f0a4aab0ff224a6 -1300000.0         0.0   1300000.0    3.0           NaN                    
+0x4a4aaa0155237881fbd5c34bfae16e985a7b068d -1064240.0  13938860.0  15003099.0   12.0     3546442.0                    
+0xf6fc530369cbe3ce503ffe986ac5c0828d831a9c -1000000.0         0.0   1000000.0    2.0           NaN                    
 
 ###### QNTUSDT 20260915 20261001 eth
 coin QNTUSDT zincir eth kontrat 0x4a220e6096b25eadb88358cb44068a3248254675
-kaynak blockscout, bloklar 25979136 26093737
+kaynak etherscan bloklar 25979136 26093737
   298 transfer, blok 1249/114601
-Traceback (most recent call last):
-  File "/home/runner/work/sushi-izleme-botu/sushi-izleme-botu/zincir/toplu.py", line 13, in <module>
-    vaka.main()
-  File "/home/runner/work/sushi-izleme-botu/sushi-izleme-botu/zincir/vaka.py", line 66, in main
-    tr = rpc.bs_transferler(z, adr, b0, b1, log=log)
-         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "/home/runner/work/sushi-izleme-botu/sushi-izleme-botu/zincir/rpc.py", line 220, in bs_transferler
-    out.append((int(x["blockNumber"], 16), x["transactionHash"], int(x.get("logIndex") or "0x0", 16),
-                                                                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-ValueError: invalid literal for int() with base 16: '0x'
+transfer 337199 tekil adres 50116
+QNTUSDT zincir=eth kontrat=0x4a220e6096b25eadb88358cb44068a3248254675 20260915-20261001 transfer=337199 adres=50116
+etiketler: {'-': 36310, 'borsa_yatirma': 7127, 'kume': 6637, 'dagitici': 20, 'borsa': 14, 'havuz': 8}
+borsa cuzdanlari: 14 yatirma adresleri: 7127 dagitici kume: 20 {'0xa3222357': 1146, '0x5450d2c4': 841, '0x21a31ee1': 425, '0xdfd5293d': 423, '0x8b604c68': 506, '0x11111112': 444, '0x46340b20': 317, '0xd78d199f': 341}
+
+EN BUYUK 200 HOLDER toplam 19,168,895 token; ilk 10 payi (bu listede): 68.4%
+                                         adres        miktar  kontrat            isim           kume
+0   0x4a220e6096b25eadb88358cb44068a3248254675  9.550889e+06     True  StandardToken                
+1   0x826678ad6b1aaa5e1f20e079333d9b66ab22d78b  6.000000e+05    False                               
+2   0x48e9af81fb93d144ad4683fcf219974c8304a170  5.999990e+05    False                               
+3   0xf977814e90da44bfa03b6295a0616a897441acec  5.533819e+05    False                  kume:0xdfd529
+4   0x7513ae7e87290094b17b35e26cdb537170634c57  4.427220e+05    False                               
+5   0xf3516fb9d0c114a38033e1252851447dc669e930  2.812779e+05    False                               
+6   0x33d13254497f486867608c9bec8fd97c2836ffdd  2.807980e+05    False                               
+7   0xaf99cc3b1786736a7acab781fa771e7c9c43f4e1  2.804012e+05    False                               
+8   0x9ed7f474cf149ba8b8c86ab3c2b8d533211494fe  2.650892e+05    False                               
+9   0x94e11ec19e399df87e701b4ce095a06f63823e38  2.556752e+05    False                               
+10  0x8a6ec57731e00b9feedea91ccf2404eb2672a516  2.504016e+05    False                               
+11  0x9e86b2299a73208ab7196be3148f77a88825efdd  2.350005e+05    False                               
+12  0x377b8ce04761754e8ac153b47805a9cf6b190873  2.093582e+05    False                               
+13  0x841ed663f2636863d40be4ee76243377dff13a34  1.970818e+05    False                               
+14  0xd2dd7b597fd2435b6db61ddf48544fd931e6869f  1.919784e+05    False                  borsa_yatirma
+
+GUNLUK (miktarlar token):
+            fiyat  transfer  yeni_adres  borsaya_giris  borsadan_cikis  borsa_net_giris  balina_net  kume_net  havuzdan_alim  havuza_satis
+saat                                                                                                                                      
+2026-09-15   61.0    1669.0       573.0         5082.0          4104.0            978.0       345.0    2213.0         3194.0        4466.0
+2026-09-16   61.0    2117.0       563.0         6683.0          4238.0           2445.0       433.0     619.0         5160.0        6432.0
+2026-09-17   61.0    1804.0       485.0         6344.0          5327.0           1017.0       647.0    2358.0         3696.0        5429.0
+2026-09-18   63.0    2474.0       429.0        10534.0          7245.0           3289.0       451.0     801.0         9345.0        7859.0
+2026-09-19   66.0    2127.0       385.0         6103.0          5451.0            652.0       126.0    1689.0         3573.0        4053.0
+2026-09-20   64.0    1823.0       363.0         4169.0          1517.0           2652.0       367.0    1463.0         1906.0        1788.0
+2026-09-21   67.0    2203.0       467.0         7425.0         11139.0          -3714.0      1531.0    1798.0         6954.0        4650.0
+2026-09-22   74.0    3803.0       508.0        12577.0         15483.0          -2906.0       872.0    4167.0        11344.0       10551.0
+2026-09-23   71.0    2764.0       398.0         6285.0         11270.0          -4985.0      3242.0    2941.0        11133.0        6470.0
+2026-09-24   90.0    5187.0       748.0        14356.0         27272.0         -12916.0      6899.0    8461.0        14297.0       14187.0
+2026-09-25   99.0    9753.0      1338.0        43496.0         60081.0         -16585.0     25871.0   11331.0        41825.0       35795.0
+2026-09-26  151.0   18577.0      1938.0        63508.0         79867.0         -16360.0     27564.0   20837.0        50978.0       48974.0
+2026-09-27  286.0   72422.0      9040.0       235389.0        234393.0            995.0    103882.0   44302.0       178698.0      171273.0
+2026-09-28  231.0  124834.0      9724.0       238994.0        188636.0          50358.0    234878.0  117105.0       195485.0      195144.0
+2026-09-29  267.0   33601.0      4961.0       107639.0        264934.0        -157294.0    317107.0  320455.0        95828.0       95293.0
+2026-09-30  287.0   52041.0      6490.0       126763.0        129201.0          -2438.0    525613.0   28671.0        86750.0       85772.0
+2026-10-01  293.0       0.0         0.0            0.0             0.0              0.0         0.0       0.0            0.0           0.0
+
+EN BUYUK NET BIRIKIM (EOA, borsa/havuz disi):
+                                                 net     giris     cikis  gonderen           ilk_giris  bakiye_simdi         etiket isim
+adres                                                                                                                                   
+0x7513ae7e87290094b17b35e26cdb537170634c57  442722.0  492722.0   50000.0       1.0 2026-09-29 14:41:47      442722.0                    
+0xf977814e90da44bfa03b6295a0616a897441acec  210491.0  210491.0       0.0       3.0 2026-09-29 20:44:59      553382.0  kume:0xdfd529     
+0x841ed663f2636863d40be4ee76243377dff13a34  110170.0  112734.0    2565.0       7.0 2026-09-15 17:45:59      197082.0                    
+0x80fab68ffa51aa308b80b3bb66e59a7b9602ebb0   87332.0   89848.0    2516.0       1.0 2026-09-28 07:05:35      106001.0                    
+0x0529ea5885702715e83923c59746ae8734c553b7   72859.0  148511.0   75652.0       4.0 2026-09-18 04:03:59       72277.0  kume:0x21a31e     
+0x26dc9ce211ce5db699d3ab60f61dd3752a243823   58728.0   62356.0    3627.0       1.0 2026-09-26 16:32:11      125514.0                    
+0x8a6ec57731e00b9feedea91ccf2404eb2672a516   24658.0   25590.0     932.0       4.0 2026-09-23 02:16:47      250402.0                    
+0x2071fd0bcbc6e076aef49bb598946bb37c48b65a   16776.0   25776.0    9000.0       1.0 2026-09-29 21:08:47       16776.0                    
+0xfbb40e9817b4575882450b7e36e7db43a31cb9e6   16259.0   17890.0    1631.0       1.0 2026-09-30 04:06:59       78833.0                    
+0x21a31ee1afc51d94c2efccaa2092ad1028285549   14943.0  188825.0  173883.0       1.0 2026-09-15 19:22:47       11763.0       dagitici     
+0xdfd5293d8e347dfe59e90efd55b2956a1343963d   13947.0  184518.0  170571.0       1.0 2026-09-16 15:23:11        8526.0       dagitici     
+0xd2fda4f628a3a428dfe9893029cf6a05246c265d   12922.0   14422.0    1500.0       1.0 2026-09-28 12:45:59       12922.0                    
+0x9fc0c58c46316194862435aa34abbf66b1fbc703   12807.0   12807.0       0.0       1.0 2026-09-29 17:43:35       12807.0                    
+0x98adef6f2ac8572ec48965509d69a8dd5e8bba9d   11841.0   13530.0    1689.0       3.0 2026-09-20 07:16:59       27337.0                    
+0x203a1a9185856544c9f2c4af82c5259ef578dcab   11611.0   14611.0    3000.0       1.0 2026-09-27 13:18:47       10010.0                    
+
+EN BUYUK NET CIKIS (satanlar):
+                                                 net    giris     cikis  alici  bakiye_simdi etiket isim
+adres                                                                                                   
+0xdf3b5a5b7af53ac8dda95b55fb7822152da98eb6 -492722.0      0.0  492722.0    3.0      123180.0            
+0xf197c6f2ac14d25ee2789a73e4847732c7f16bc9 -100143.0  42857.0  143000.0    1.0      103101.0            
+0xd6334e41270fc6db62d1048faf0eb1ad6fce6b26  -34201.0      0.0   34201.0    4.0           0.0            
+0x0d04261dd372f6ecdadb004eb249ad0de23a75cf  -30563.0      0.0   30563.0    1.0           0.0            
+0x48e9af81fb93d144ad4683fcf219974c8304a170  -25776.0      0.0   25776.0    3.0           NaN            
+0x826678ad6b1aaa5e1f20e079333d9b66ab22d78b  -22807.0      0.0   22807.0    2.0           NaN            
+0xcffad3200574698b78f32232aa9d63eabd290703  -22469.0  14524.0   36994.0    2.0      186742.0            
+0xad339e4f59412373ec6274af9456e9bdf62bad7e  -21392.0      0.0   21392.0    1.0           NaN            
+0xa0ba601c986493416713b5423d30b2a390e55d73  -14698.0   1458.0   16156.0   13.0           NaN            
+0x97b81db494e09048a99bd42373b3a277ffa02216  -14611.0      0.0   14611.0    1.0           NaN            
+0x57d0f992d224adca9829ba1996d07c72cdd29bf8  -14488.0   5081.0   19568.0    1.0           NaN            
+0x0be87fbf5833a51804e211647007f2b2a1272d1d  -14422.0      0.0   14422.0    3.0           NaN            
+0x72c283b7244e83b4684f43171ee6520fcd39f08f  -13552.0      0.0   13552.0    3.0           NaN            
+0x71956a1cd5a4233177f7bf9a2d5778851e201934  -12702.0    526.0   13228.0    1.0           NaN            
+0x02710b1405fe7a2fe1f970a57aaa10f48a28110d  -10910.0   9066.0   19975.0    5.0         264.0            
