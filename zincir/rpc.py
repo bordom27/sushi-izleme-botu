@@ -156,27 +156,49 @@ if _os.environ.get("NODEREAL_KEY"):
 _bs_son = [0.0]
 
 
+ES_ZINCIR = {"eth": 1, "bsc": 56, "base": 8453, "arb": 42161}
+
+
+def es_var(zincir):
+    return bool(_os.environ.get("ETHERSCAN_KEY")) and zincir in ES_ZINCIR
+
+
 def _bs(zincir, path, params=None, deneme=12):
+    """path == '/api' ve ETHERSCAN_KEY varsa ayni sorgu Etherscan V2'ye gider (etherscan uyumlu format)."""
     son = None
+    if path == "/api" and es_var(zincir):
+        params = dict(params or {}, chainid=ES_ZINCIR[zincir], apikey=_os.environ["ETHERSCAN_KEY"])
+        if params.get("module") == "logs":
+            params.update(page=1, offset=1000)
+        url0 = "https://api.etherscan.io/v2/api"
+    else:
+        url0 = BS[zincir] + path
     for d in range(deneme):
         bekle = 0.7 - (time.time() - _bs_son[0])          # istekler arasi en az 0.7 sn
         if bekle > 0:
             time.sleep(bekle)
         _bs_son[0] = time.time()
         try:
-            r = requests.get(BS[zincir] + path, params=params, timeout=60, headers={"accept": "application/json"})
+            r = requests.get(url0, params=params, timeout=60, headers={"accept": "application/json"})
             if r.status_code == 429:
                 time.sleep(min(120, 5 * 2 ** min(d, 5))); son = 429; continue
             r.raise_for_status()
-            return r.json()
+            j = r.json()
+            if url0.startswith("https://api.etherscan") and str(j.get("message", "")).upper().startswith("NOTOK"):
+                if "rate" in str(j.get("result", "")).lower():
+                    time.sleep(2 + d); son = j; continue
+                if "no records" not in str(j.get("result", "")).lower():
+                    raise RuntimeError(str(j.get("result")))
+            return j
         except Exception as exc:
             son = exc; time.sleep(2 + d)
-    raise RuntimeError(f"blockscout {zincir} {path}: {son}")
+    raise RuntimeError(f"blockscout/etherscan {zincir} {path}: {son}")
 
 
 def bs_zamandan_blok(zincir, ts):
     j = _bs(zincir, "/api", {"module": "block", "action": "getblocknobytime", "timestamp": ts, "closest": "before"})
-    return int(j["result"]["blockNumber"])
+    r = j["result"]
+    return int(r["blockNumber"] if isinstance(r, dict) else r)
 
 
 def bs_transferler(zincir, kontrat, b0, b1, log=print):
@@ -195,7 +217,7 @@ def bs_transferler(zincir, kontrat, b0, b1, log=print):
             t = [y for y in x["topics"] if y]
             if len(t) < 3:
                 continue
-            out.append((int(x["blockNumber"], 16), x["transactionHash"], int(x["logIndex"] or "0x0", 16),
+            out.append((int(x["blockNumber"], 16), x["transactionHash"], int(x.get("logIndex") or "0x0", 16),
                         "0x" + t[1][-40:], "0x" + t[2][-40:], int(x["data"], 16) if x["data"] not in ("0x", "") else 0,
                         int(x["timeStamp"], 16)))
         if (e - b0) // 200000 != (b - 1 - b0) // 200000:

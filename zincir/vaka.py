@@ -55,7 +55,7 @@ def main():
         z = sys.argv[4]; adr = k[(k.symbol == sym) & (k.zincir == z)].adres.iloc[0]
     else:
         z, adr = kontrat_bul(sym)
-    bs = z in rpc.BS
+    bs = z in rpc.BS or rpc.es_var(z)        # etherscan anahtari varsa bsc de bu yoldan
     os.makedirs(OUT, exist_ok=True)
     t0, t1 = pd.Timestamp(d0), pd.Timestamp(d1)
     print("coin", sym, "zincir", z, "kontrat", adr, flush=True)
@@ -98,7 +98,7 @@ def main():
     A.index.name = "adres"
     for a in ust:
         try:
-            if bs:
+            if z in rpc.BS:
                 km, isim = rpc.bs_adres(z, a)
                 A.loc[a, "isim"] = isim
                 if km is not None:
@@ -169,7 +169,7 @@ def main():
         p("etiketler:", A.etiket.replace("", "-").str.split(":").str[0].value_counts().to_dict())
         p("borsa cuzdanlari:", len(borsa), "yatirma adresleri:", len(yat), "dagitici kume:", len(kume),
           {k[:10]: len(v) for k, v in list(kume.items())[:8]})
-        if bs:
+        if z in rpc.BS:
             try:
                 H = pd.DataFrame(rpc.bs_holderlar(z, adr))
                 arz = int(rpc.cagir_arz(z, adr)) / 10 ** dec if hasattr(rpc, "cagir_arz") else None
