@@ -1,5 +1,5 @@
-# SYMBOL  baslangic  bitis  zincir   (pump tarihi)
-IRYSUSDT 20261016 20261025 bsc   # 23 Eki +%570
+# SYMBOL  baslangic  bitis  zincir   (pump tarihi) - ETHERSCAN_KEY ile
 GTCUSDT 20261001 20261016 eth   # 11 Eki +%94
+IRYSUSDT 20261016 20261025 bsc   # 23 Eki +%570
 PHAUSDT 20260910 20260926 eth   # 20 Eyl +%103
 QNTUSDT 20260915 20261001 eth   # 25 Eyl +%148
