@@ -625,7 +625,7 @@
   ],
   "eski_pozisyonlar": {},
   "son_ozet_gunu": "2026-10-25",
-  "son_calisma": "2026-10-25T16:17:55+00:00",
+  "son_calisma": "2026-10-25T17:11:54+00:00",
   "ayar_parmak_izi": "bb60a74e14",
   "trend_portfoy": {
     "NEARUSDT": 0.0103,
@@ -1317,5 +1317,6 @@
       "hacim_m": 1.5
     }
   ],
-  "duyuru_short_retest4": true
+  "duyuru_short_retest4": true,
+  "duyuru_short_retest5": true
 }
