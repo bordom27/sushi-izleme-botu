@@ -101,7 +101,7 @@ def zamandan_blok(zincir: str, ts: int) -> int:
     return lo
 
 
-def transferler(zincir: str, kontrat: str, b0: int, b1: int, adim: int = 2000, log=print):
+def transferler(zincir: str, kontrat: str, b0: int, b1: int, adim: int = 2000, log=print, tavan: int = 2000, maks=None):
     """[b0, b1] arasindaki ERC20 Transfer kayitlari: (blok, tx, log_ix, from, to, deger_ham)."""
     out = []
     b = b0
@@ -119,12 +119,15 @@ def transferler(zincir: str, kontrat: str, b0: int, b1: int, adim: int = 2000, l
             if len(t) < 3:
                 continue
             out.append((int(x["blockNumber"], 16), x["transactionHash"], int(x["logIndex"], 16),
-                        "0x" + t[1][-40:], "0x" + t[2][-40:], int(x["data"], 16) if x["data"] not in ("0x", "") else 0))
+                        "0x" + t[1][-40:], "0x" + t[2][-40:], int(x["data"], 16) if x["data"] not in ("0x", "") else 0,
+                        int(x["blockTimestamp"], 16) if x.get("blockTimestamp") else 0))
         if (e - b0) // 100000 != (b - 1 - b0) // 100000:
             log(f"  {len(out)} transfer, blok {e - b0}/{b1 - b0}")
         b = e + 1
-        if len(res) < 2000 and adim < 2000:
-            adim = min(2000, adim * 2)
+        if maks and len(out) >= maks:
+            break
+        if len(res) < 2000 and adim < tavan:
+            adim = min(tavan, adim * 2)
     return out
 
 
@@ -258,3 +261,36 @@ def bs_holderlar(zincir, kontrat, sayfa=4):
         if not params:
             break
     return out
+
+
+_capa = {}
+
+
+def tahmini_blok(zincir: str, ts: int) -> int:
+    """Zamana gore blok (secant arama, ~5-8 cagri). Donus: zamani <= ts olan en buyuk bloga yakin blok."""
+    if zincir not in _capa:
+        b = blok_no(zincir); _capa[zincir] = [(b, blok_zaman(zincir, b))]
+    pts = _capa[zincir]
+    b_son, t_son = max(pts)
+    if ts >= t_son:
+        return b_son
+    # en yakin iki capa
+    alt = [p for p in pts if p[1] <= ts]; ust = [p for p in pts if p[1] > ts]
+    hiz = 0.75 if zincir == "bsc" else 12.0
+    b = int(min(ust)[0] - (min(ust)[1] - ts) / hiz)
+    for _ in range(12):
+        b = max(1, b)
+        t = blok_zaman(zincir, b)
+        pts.append((b, t))
+        alt = [p for p in pts if p[1] <= ts]; ust = [p for p in pts if p[1] > ts]
+        if alt and ust:
+            (b1, t1), (b2, t2) = max(alt), min(ust)
+            if b2 - b1 <= 2 or ts - t1 <= 3:
+                return b1
+            hiz = (t2 - t1) / max(1, b2 - b1)
+            b = int(b1 + (ts - t1) / max(hiz, 1e-3))
+            if b <= b1 or b >= b2:
+                b = (b1 + b2) // 2
+        else:
+            b = int(b - (t - ts) / hiz)
+    return max(alt)[0] if alt else b

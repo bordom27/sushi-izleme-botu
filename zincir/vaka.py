@@ -70,7 +70,9 @@ def main():
         print("kaynak rpc, bloklar", b0, b1, flush=True)
         print("calisan uclar:", rpc.uclari_sec(z, adr, b1, log=log), flush=True)
         tr = rpc.transferler(z, adr, b0, b1, log=log)
-        T = pd.DataFrame(tr, columns=["blok", "tx", "ix", "kimden", "kime", "ham"])
+        T = pd.DataFrame(tr, columns=["blok", "tx", "ix", "kimden", "kime", "ham", "ts"])
+        if (T.ts == 0).any():
+            T = T.drop(columns="ts")
     if T.empty:
         raise SystemExit("transfer yok")
     dec = rpc.ondalik(z, adr)
