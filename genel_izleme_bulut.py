@@ -35,6 +35,7 @@ import requests
 import kirilim_v6 as k
 import veri
 import short_retest as SR
+import v66_short as V66
 import zarattini as Z
 from coin_listesi import CEKIRDEK, COINLER, GENISLIK_COINLER, VADELI_AD, VADELI_YOK
 
@@ -63,7 +64,9 @@ CONFIG = {
     "SHORT_RETEST": True,
     "SHORT_VERI_BAS": "2026-04-01",    # sabit baslangic (160 mum seviye + 180 mum hacim medyani icin yeterli)
     "SHORT_MAKS_ACIK": 5,
-    "SHORT_RISK": "%0.5 (ilk ay %0.25)",                # bundan eski olaylar tek tek degil, tek ozet mesajinda gonderilir
+    "SHORT_RISK": "%0.5 (ilk ay %0.25)",
+    # DORDUNCU SISTEM: K69 PRO SHORT - v6.6 motoru, sadece short, tum likit vadeli coinler, kume>=5 + kalite B (v66_short.py)
+    "V66_SHORT": True,                # bundan eski olaylar tek tek degil, tek ozet mesajinda gonderilir
 }
 
 TR = timezone(timedelta(hours=3))
@@ -456,6 +459,8 @@ def short_retest_sistemi(state: dict, cfg: dict) -> list[str]:
         if len(g) < 250:
             continue
         veri_[sym] = g
+    VADELI_VERI.clear()
+    VADELI_VERI.update(veri_)
     # 1) acik short'lari takip et
     for anahtar, poz in list(acik.items()):
         sym = poz["sym"]
@@ -549,6 +554,74 @@ def short_retest_sistemi(state: dict, cfg: dict) -> list[str]:
     if ilk:
         mesajlar = []
     return mesajlar
+
+
+VADELI_VERI: dict = {}          # short_retest_sistemi'nin bu turda cektigi vadeli 4s veriler (K69 PRO SHORT da kullanir)
+
+
+def v66_short_sistemi(state: dict, cfg: dict, btc_d, btc_4h, genislik) -> list[str]:
+    """K69 PRO SHORT: yeni 4s mum kapandiginda tum vadeli coinlerde v6.6 short motorunu calistirir."""
+    if not VADELI_VERI:
+        return []
+    son = max(g.index[-1] for g in VADELI_VERI.values())
+    if state.get("v66s_tur") == str(son):
+        return []                                   # yeni 4s mum yok
+    veri_m = {s: V66.motor_verisi(g) for s, g in VADELI_VERI.items()}
+    sonuc = V66.tara(veri_m, btc_d, btc_4h, genislik)
+    kume = V66.kume_sayaci(sonuc)
+    son_bar = state.setdefault("v66s_son_bar", {})
+    acik = state.setdefault("v66s_acik", {})
+    ilk = not son_bar
+    simdi = pd.Timestamp.now(tz="UTC").tz_localize(None)
+    bayat = simdi - pd.Timedelta(hours=cfg["BAYAT_SAAT"] + 4)
+    giris_m, kapanis_m = [], []
+    for sym, r in sonuc.items():
+        onceki = son_bar.get(sym)
+        if r.son_bar is not None:
+            son_bar[sym] = str(r.son_bar)
+        if onceki is None:
+            continue
+        for o in r.olaylar:
+            if o.zaman <= pd.Timestamp(onceki):
+                continue
+            p = acik.get(sym)
+            if o.tur == "GIRIS" and V66.gecer(o, kume):
+                v = o.veri
+                if o.zaman < bayat:                 # bot uzun sure calisamadiysa eski sinyal bildirilmez/izlenmez
+                    continue
+                acik[sym] = {"zaman": str(o.zaman), "giris": float(v["giris"]), "stop": float(v["stop"]),
+                             "tp1": float(v["tp1"]), "risk": float(v["risk"])}
+                tp1r = abs(v["tp1"] - v["giris"]) / v["risk"]
+                giris_m.append(
+                    f"🔻 K69 PRO SHORT — {sym.replace('USDT', '')} (vadeli {sym})\n"
+                    f"Tip: {TIP_ADI.get(v['tip'], v['tip'])} | Kalite: {v['kalite']} | aynı 4s mumda {kume.get(o.zaman, 0)} coinde short kırılımı\n"
+                    f"Giriş: {fmt(v['giris'])} (4s kapanış {tr_saat(o.zaman + pd.Timedelta(hours=4))})\n"
+                    f"Stop: {fmt(v['stop'])} ({pct(v['stop'], v['giris'])})\n"
+                    f"Hedef (TP1): {fmt(v['tp1'])} ({tp1r:.1f}R) → pozisyonun TAMAMINI kapat\n"
+                    f"İlk {k.PARAMS['bc_bar']} mumda kapanış kırılan seviyenin {k.PARAMS['bc_atr']:g} ATR üstüne dönerse stopu bekleme, çık (bot bildirir). "
+                    f"{k.PARAMS['time_stop_bars']} mumda hedef gelmezse ve kâr {k.PARAMS['time_stop_min_r']:g}R altındaysa çık.\n"
+                    f"Test (2020–Eki 2026, tüm vadeli coinler): isabet ~%71, işlem başı ~+0.37R. Bot otomatik işlem açmaz, sadece sinyal.\n"
+                    f"{short_grafik(sym)}")
+            elif p and o.tur == "TP1" and pd.Timestamp(p["zaman"]) < o.zaman:
+                R = V66.tp1_r(p["giris"], float(o.veri["fiyat"]), p["risk"])
+                kapanis_m.append(f"✅ K69 PRO SHORT HEDEF — {sym}: {fmt(o.veri['fiyat'])} "
+                                 f"({tr_saat(o.zaman + pd.Timedelta(hours=4))}) | {R:+.2f}R → pozisyonu kapat")
+                state.setdefault("trade_log", []).append({"zaman": str(o.zaman), "varlik": sym, "yon": "SHORT",
+                                                          "sonuc": "HEDEF", "sonuc_r": round(R, 3), "sistem": "v66_short"})
+                del acik[sym]
+            elif p and o.tur == "CIKIS" and str(o.veri.get("giris_zaman")) == p["zaman"]:
+                v = o.veri
+                R = float(v["sonuc_r"])
+                ad = NEDEN_ADI.get(v["neden"], v["neden"])
+                kapanis_m.append(f"{'✅' if R > 0 else '❌'} K69 PRO SHORT kapandı — {sym}: {ad} @ {fmt(v['cikis'])} "
+                                 f"({tr_saat(o.zaman + pd.Timedelta(hours=4))}) | {R:+.2f}R")
+                state.setdefault("trade_log", []).append({"zaman": str(o.zaman), "varlik": sym, "yon": "SHORT",
+                                                          "sonuc": v["neden"], "sonuc_r": round(R, 3), "sistem": "v66_short"})
+                del acik[sym]
+    state["v66s_tur"] = str(son)
+    if ilk:
+        return []
+    return kapanis_m + giris_m
 
 
 def short_ozet(state) -> str:
@@ -930,6 +1003,22 @@ def main():
                 state["duyuru_short_retest"] = True
         except Exception as exc:
             print(f"short retest hata: {exc}", flush=True)
+    if cfg.get("V66_SHORT") and cfg["SHORT_RETEST"]:
+        try:
+            for m in v66_short_sistemi(state, cfg, btc_d, btc_4h, genislik):
+                send_telegram(m)
+            if not state.get("duyuru_v66s") and state.get("v66s_son_bar"):
+                send_telegram("🆕 Yeni sinyal sistemi: K69 PRO SHORT\n"
+                              "Kirilim69 PRO (v6.6) motoru artık tüm likit Binance vadeli coinlerinde SADECE SHORT tarıyor.\n"
+                              "Sinyal şartı: aynı 4 saatlik mumda en az 5 coinde short kırılımı + giriş kalitesi B. "
+                              "Hedef TP1'de pozisyonun tamamını kapat.\n"
+                              "Test (2020–Eki 2026, tüm vadeli coinler, komisyon dahil): 705 işlem, isabet %71, işlem başı +0.37R, "
+                              "en büyük düşüş 27R (filtresiz hali: isabet %60, düşüş 36R).\n"
+                              "K69 SHORT'tan (🔻 SHORT RETEST) farklı bir kurulum; ikisi nadiren aynı coinde çakışır. "
+                              "Şimdilik sadece sinyal: otomatik işlem botu açmaz. 2–4 hafta canlı izleyelim.")
+                state["duyuru_v66s"] = True
+        except Exception as exc:
+            print(f"v66 short hata: {exc}", flush=True)
 
     # gunluk ozet
     simdi = datetime.now(timezone.utc)
