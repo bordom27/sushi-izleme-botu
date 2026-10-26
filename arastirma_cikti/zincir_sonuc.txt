@@ -12,3 +12,13 @@ Gercek taban oran (%0.34 / 24s) ile: ~%0.7 -> uyarilarin ~%99'u bos.
 Sonuc: zincir ustu aktivite pump oncesi HAFIF artiyor ve fiyat verisine kucuk ama tutarli katki yapiyor; tek basina ongorucu degil.
 Vakalar (GTC/PHA/QNT): arastirma_cikti/zincir/*_ozet.txt
 BSC (pump'larin cogu) Etherscan ucretsiz paketinde yok -> NodeReal anahtari gerekir.
+
+AKILLI PARA TESTI (26 Eki 2026) - kod: zincir/akilli.py (toplama), zincir/akilli_analiz.py (yuruyen test)
+Pencereler: eth 343 olay + 337 kontrol; bsc 206 olay + 339 kontrol (bsc'de 447 pencere > 120k transfer -> atlandi, cogu pump penceresi).
+'Erken karli' cuzdan: pump oncesi 7 gunde net alim >= on-donem hacminin %0.5'i ve pump sonrasi 3 gunde bunun >= yarisini satmis.
+  582 kayit, 384 cuzdan; >= 2 farkli coinde 59, >= 3 coinde 27.
+Yuruyen test (her an icin sadece o ana kadarki pump'lardan akilli set; 2025-07 sonrasi pencereler):
+  akilli setten biri son 48s / 7 gunde alim yaptiysa isabet. Olay/kontrol isabet orani TUM varyantlarda 0.72-0.92 (eth ve bsc):
+  akilli cuzdanlar pump oncesinde, siradan donemlere gore DAHA FAZLA degil (biraz daha az) alim yapiyor.
+  Her yerde alim yapan botlari eleyen secici set (gecmis isabet kesinligi >= %30/50/70): oran 0.3-1.1, orneklem cok kucuk, tutarsiz.
+Sonuc: bu tanimla 'akilli para' takibi pump ongormuyor. 'Erken alip satan' cuzdanlarin cogu her coinde islem yapan bot/piyasa yapici.
