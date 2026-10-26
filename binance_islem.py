@@ -55,7 +55,7 @@ class Istemci:
         self.base = None
         self.fark = 0
         son = None
-        for b in URL[ortam]:
+        for b in URL[ortam] * 3:                 # gecici ag kopmalarina karsi 3 tur dene
             try:
                 r = requests.get(b + "/fapi/v1/time", timeout=15)
                 r.raise_for_status()
@@ -64,21 +64,31 @@ class Istemci:
                 break
             except Exception as exc:
                 son = exc
+                time.sleep(5)
         if self.base is None:
             raise RuntimeError(f"Binance ({ortam}) erisilemedi: {son}")
         self._bilgi = None
 
-    def istek(self, yontem: str, yol: str, params: dict | None = None, imzali: bool = True):
-        p = {k: v for k, v in (params or {}).items() if v is not None}
-        if imzali:
-            p["timestamp"] = int(time.time() * 1000) + self.fark
-            p["recvWindow"] = 10000
-            q = urlencode(p)
-            q += "&signature=" + hmac.new(self.secret, q.encode(), hashlib.sha256).hexdigest()
-        else:
-            q = urlencode(p)
+    def istek(self, yontem: str, yol: str, params: dict | None = None, imzali: bool = True, tekrar: bool | None = None):
+        """tekrar: ag hatasinda yeniden dene (varsayilan: GET/DELETE evet, POST hayir - emir iki kez gitmesin)."""
+        if tekrar is None:
+            tekrar = yontem != "POST"
         for deneme in range(3):
-            r = requests.request(yontem, f"{self.base}{yol}?{q}", headers={"X-MBX-APIKEY": self.key}, timeout=20)
+            p = {k: v for k, v in (params or {}).items() if v is not None}
+            if imzali:
+                p["timestamp"] = int(time.time() * 1000) + self.fark
+                p["recvWindow"] = 10000
+                q = urlencode(p)
+                q += "&signature=" + hmac.new(self.secret, q.encode(), hashlib.sha256).hexdigest()
+            else:
+                q = urlencode(p)
+            try:
+                r = requests.request(yontem, f"{self.base}{yol}?{q}", headers={"X-MBX-APIKEY": self.key}, timeout=20)
+            except requests.exceptions.RequestException:
+                if not tekrar or deneme == 2:
+                    raise
+                time.sleep(3 + 3 * deneme)
+                continue
             if r.status_code in (429, 418) or r.status_code >= 500:
                 time.sleep(2 + 3 * deneme)
                 continue
@@ -130,10 +140,21 @@ class Istemci:
             print(f"islem: {sym} algo iptal: {exc}", flush=True)
 
     def kosullu(self, sym, tip, tetik, hedge, cid):
-        return self.istek("POST", "/fapi/v1/algoOrder", {
-            "algoType": "CONDITIONAL", "symbol": sym, "side": "BUY", "type": tip, "triggerPrice": tetik,
-            "closePosition": "true", "workingType": "CONTRACT_PRICE", "priceProtect": "true",
-            "positionSide": "SHORT" if hedge else None, "clientAlgoId": cid})
+        prm = {"algoType": "CONDITIONAL", "symbol": sym, "side": "BUY", "type": tip, "triggerPrice": tetik,
+               "closePosition": "true", "workingType": "CONTRACT_PRICE", "priceProtect": "true",
+               "positionSide": "SHORT" if hedge else None, "clientAlgoId": cid}
+        for deneme in range(3):
+            try:
+                return self.istek("POST", "/fapi/v1/algoOrder", prm)
+            except requests.exceptions.RequestException:
+                time.sleep(3)
+                try:                             # ag koptu: emir yine de gittiyse tekrar gonderme
+                    if any(a.get("clientAlgoId") == cid for a in self.algo_acik(sym)):
+                        return {"clientAlgoId": cid}
+                except Exception:
+                    pass
+                if deneme == 2:
+                    raise
 
     def piyasa_kapat(self, sym, miktar, hedge):
         return self.istek("POST", "/fapi/v1/order", {
@@ -188,6 +209,10 @@ def calistir(state: dict, gonder) -> None:
         poz = c.pozisyonlar()
     except Exception as exc:
         print(f"islem: baglanti/yetki hatasi: {exc}", flush=True)
+        yetki = "-2015" in str(exc) or "-2014" in str(exc) or "-1022" in str(exc)
+        I["hata_sayisi"] = I.get("hata_sayisi", 0) + 1
+        if not yetki and I["hata_sayisi"] < 2:
+            return                               # tek seferlik ag kopmasi: sonraki turda zaten tekrar denenecek
         if I.get("son_hata") != str(exc)[:120]:
             ip_not = ""
             if "-2015" in str(exc) or "-2014" in str(exc):
@@ -198,11 +223,19 @@ def calistir(state: dict, gonder) -> None:
                               f"eski IP'yi silip bunu ekle, Save.")
                 except Exception:
                     pass
-            gonder(f"⚠️ K69 işlem botu ({etiket}) Binance'e bağlanamadı: {exc}\n"
-                   f"API anahtarını, Futures iznini ve IP kısıtını kontrol et. Bu turdaki {len(kuyruk)} sinyal açılmadı." + ip_not)
+            if yetki:
+                ne = "API anahtarı / IP / Futures izni reddedildi."
+            else:
+                ne = (f"{I['hata_sayisi']} turdur bağlantı kurulamıyor (internet ya da Binance kaynaklı). "
+                      f"Açık pozisyonlar borsadaki stop/hedef emirleriyle korunuyor.")
+            gonder(f"⚠️ K69 işlem botu ({etiket}) Binance'e bağlanamadı: {exc}\n{ne}"
+                   + (f" Bu turdaki {len(kuyruk)} sinyal açılmadı." if kuyruk else "") + ip_not)
             I["son_hata"] = str(exc)[:120]
         return
+    if I.get("son_hata"):
+        gonder(f"✅ K69 işlem botu ({etiket}) Binance bağlantısı yeniden kuruldu.")
     I.pop("son_hata", None)
+    I.pop("hata_sayisi", None)
     simdi = pd.Timestamp.now(tz="UTC").tz_localize(None)
 
     # 1) takipteki pozisyonlar
@@ -320,9 +353,17 @@ def calistir(state: dict, gonder) -> None:
                     print(f"islem: {sym} marginType: {exc}", flush=True)
             c.istek("POST", "/fapi/v1/leverage", {"symbol": sym, "leverage": AYAR["kaldirac"]})
             acilis_ms = int(time.time() * 1000) + c.fark - 5000
-            emir = c.istek("POST", "/fapi/v1/order", {
-                "symbol": sym, "side": "SELL", "type": "MARKET", "quantity": format(mik.normalize(), "f"),
-                "positionSide": "SHORT" if hedge else None, "newOrderRespType": "RESULT"})
+            try:
+                emir = c.istek("POST", "/fapi/v1/order", {
+                    "symbol": sym, "side": "SELL", "type": "MARKET", "quantity": format(mik.normalize(), "f"),
+                    "positionSide": "SHORT" if hedge else None, "newOrderRespType": "RESULT"})
+            except requests.exceptions.RequestException as exc:
+                time.sleep(3)                    # ag koptu: emir borsaya ulastiysa pozisyonu korumaya al
+                p_ = [x for x in c.pozisyonlar().get(sym, []) if x["miktar"] < 0]
+                if not p_:
+                    gonder(f"ℹ️ {etiket} {sym} K69 SHORT açılmadı: emir gönderilirken bağlantı koptu ({exc}).")
+                    continue
+                emir = {"avgPrice": p_[0]["giris"], "executedQty": abs(p_[0]["miktar"])}
             giris = float(emir.get("avgPrice") or fy)
             dolan = float(emir.get("executedQty") or mik)
             stop_str = _yuvarla(st, f["tick"])
