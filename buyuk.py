@@ -416,6 +416,30 @@ def main():
         # coinlerin veri baslangici (orneklemin hangi yilda kac coin icerdigi)
         bas = {s_: str(d[0]["open_time"].iloc[0])[:10] for s_, d in A.DATA[iv].items()}
         pd.Series(bas).to_csv(f"{OUT}/buyuk_uzun_coin_baslangic.csv")
+    elif mod == "hedef":
+        # Kucuk sabit hedef: TP1'de tamamini kapat (K69 SHORT gibi). Isabet / kazanc dengesi.
+        iv = "4h"
+        A.DATA["btc_4h"] = veri.mumlar_onbellekli("BTCUSDT", "4h", A.VERI_BAS)
+        A.DATA[iv] = A.yukle(liste, iv)
+        p = b66(A.DATA[iv])
+        senaryo = [("SU ANKI v6.6", p)]
+        for x in (0.3, 0.4, 0.5, 0.6, 0.7, 0.9):
+            senaryo.append((f"sabit {x}R tam kapanis", dict(p, tp1_r=x, tp1_min_r=x, tp1_max_r=x, tp1_pct=100.0)))
+        senaryo.append(("sabit 0.5R tam + zaman 10 mum", dict(p, tp1_r=0.5, tp1_min_r=0.5, tp1_max_r=0.5, tp1_pct=100.0,
+                                                               time_stop_bars=10, time_stop_min_r=0.5)))
+        senaryo.append(("sabit 0.5R tam + basarisiz cikis yok", dict(p, tp1_r=0.5, tp1_min_r=0.5, tp1_max_r=0.5,
+                                                                      tp1_pct=100.0, basarisiz_cikis=False)))
+        rows, hepsi = [], []
+        with mp.Pool(4) as hv:
+            for ad, prm in senaryo:
+                tr = A.calistir(prm, liste, iv, hv)
+                rows.append(ozet(tr, ad)); print(rows[-1], flush=True)
+                if len(tr):
+                    tr["senaryo"] = ad
+                    hepsi.append(tr[["symbol", "yon", "giris_zaman", "cikis_zaman", "neden", "sonuc_r", "senaryo"]])
+        pd.DataFrame(rows).to_csv(f"{OUT}/buyuk_hedef.csv", index=False)
+        if hepsi:
+            pd.concat(hepsi).to_csv(f"{OUT}/buyuk_hedef_islem.csv.gz", index=False, compression="gzip")
     elif mod == "zar-gercek":
         import zarattini as Z
         G = {}
