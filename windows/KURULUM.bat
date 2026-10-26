@@ -39,6 +39,7 @@ if errorlevel 1 (
   pause
   exit /b 1
 )
+powershell -NoProfile -Command "$s = New-ScheduledTaskSettingsSet -AllowStartIfOnBatteries -DontStopIfGoingOnBatteries -StartWhenAvailable -ExecutionTimeLimit (New-TimeSpan -Minutes 50); Set-ScheduledTask -TaskName 'K69 Islem Botu' -Settings $s | Out-Null"
 echo.
 echo Kurulum tamam. Bot her saatin 7. dakikasinda arka planda calisacak.
 echo Kayitlar: %CD%\k69_log.txt
