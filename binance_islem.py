@@ -189,8 +189,17 @@ def calistir(state: dict, gonder) -> None:
     except Exception as exc:
         print(f"islem: baglanti/yetki hatasi: {exc}", flush=True)
         if I.get("son_hata") != str(exc)[:120]:
+            ip_not = ""
+            if "-2015" in str(exc) or "-2014" in str(exc):
+                try:
+                    ip = requests.get("https://api.ipify.org", timeout=10).text.strip()
+                    ip_not = (f"\n🌐 Bu bilgisayarın şu anki IP adresi: {ip}\n"
+                              f"IP değişmiş olabilir: Binance → API Management → K69 → Edit restrictions bölümünde "
+                              f"eski IP'yi silip bunu ekle, Save.")
+                except Exception:
+                    pass
             gonder(f"⚠️ K69 işlem botu ({etiket}) Binance'e bağlanamadı: {exc}\n"
-                   f"API anahtarını, Futures iznini ve IP kısıtını kontrol et. Bu turdaki {len(kuyruk)} sinyal açılmadı.")
+                   f"API anahtarını, Futures iznini ve IP kısıtını kontrol et. Bu turdaki {len(kuyruk)} sinyal açılmadı." + ip_not)
             I["son_hata"] = str(exc)[:120]
         return
     I.pop("son_hata", None)
