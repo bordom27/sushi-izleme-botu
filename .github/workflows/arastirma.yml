@@ -17,7 +17,7 @@ jobs:
       fail-fast: false
       max-parallel: 20
       matrix:
-        mod: [ak-eth-0-1, ak-bsc-0-3, ak-bsc-1-3, ak-bsc-2-3]
+        mod: [ak-bsc-1-400]
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
