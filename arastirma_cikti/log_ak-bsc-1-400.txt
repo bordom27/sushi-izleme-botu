@@ -1,2 +1,4 @@
-1 HANAUSDT bsc olay None hata:RPC basarisiz bsc eth_blockNumber: http 403 0 dk
-2 FHEUSDT bsc kontrol None hata:RPC basarisiz bsc eth_blockNumber: http 403 1 dk
+anahtar uzunlugu 67 | tam adres mi: True | bicim: https://bsc-mainnet.nodereal.io
+deneme: 401 {"jsonrpc":"2.0","id":null,"error":{"code":-32000,"message":"Unauthorized"}}
+1 HANAUSDT bsc olay None hata:RPC basarisiz bsc eth_blockNumber: {'code': -32000; 'message': 'Unauthorized'} 0 dk
+2 FHEUSDT bsc kontrol None hata:RPC basarisiz bsc eth_blockNumber: {'code': -32000; 'message': 'Unauthorized'} 0 dk
