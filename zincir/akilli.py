@@ -60,7 +60,13 @@ def main():
     if z == "bsc":
         if not os.environ.get("NODEREAL_KEY"):
             print("NODEREAL_KEY yok, bsc atlandi"); return
-        rpc._sira["bsc"] = [f"https://bsc-mainnet.nodereal.io/v1/{os.environ['NODEREAL_KEY']}"]
+        k = os.environ["NODEREAL_KEY"].strip().strip('"').strip("'")
+        url = k if k.startswith("http") else f"https://bsc-mainnet.nodereal.io/v1/{k.split('/')[-1]}"
+        print("anahtar uzunlugu", len(k), "| tam adres mi:", k.startswith("http"), "| bicim:", url.split("/v1/")[0], flush=True)
+        import requests
+        r = requests.post(url, json={"jsonrpc": "2.0", "id": 1, "method": "eth_blockNumber", "params": []}, timeout=30)
+        print("deneme:", r.status_code, r.text[:300].replace(k, "***"), flush=True)
+        rpc._sira["bsc"] = [url]
     os.makedirs(OUTD, exist_ok=True)
     fc, fp = f"{OUTD}/cuzdan_{z}_{parca}.csv", f"{OUTD}/pencere_{z}_{parca}.csv"
     W = pd.read_csv("zincir/akilli_pencereler.csv", parse_dates=["t"])
