@@ -1,3 +1,0 @@
-pid,n,not
-801,,hata:RPC basarisiz bsc eth_blockNumber: {'code': -32000; 'message': 'Unauthorized'}
-1201,,hata:RPC basarisiz bsc eth_blockNumber: {'code': -32000; 'message': 'Unauthorized'}
