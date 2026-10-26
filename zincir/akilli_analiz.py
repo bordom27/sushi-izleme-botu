@@ -53,3 +53,36 @@ if __name__ == "__main__":
                              "olay_n": (R.tip == "olay").sum(), "kontrol_n": (R.tip == "kontrol").sum(),
                              "olay_isabet": o, "kontrol_isabet": c, "oran": o / c if c else np.nan})
     print(pd.DataFrame(rows).round(3).to_string())
+
+
+def test_secici(on_min=0.005, sat_oran=0.5, k=2, kesinlik=0.5, alim_min=0.001, alan="on48", bas="2025-07-01"):
+    """Akilli set: gecmiste >= k coinde erken-karli VE gorundugu pencerelerin (olay+kontrol, alim yapmis) >= kesinlik kadarinda karli.
+    (Her yerde alim yapan bot / piyasa yapici / toplayici cuzdanlari eler.)"""
+    C2 = C.copy()
+    C2["karli"] = (C2.tip == "olay") & (C2.on >= on_min) & (C2.sonra <= -sat_oran * C2.on)
+    C2["gor"] = C2.on >= on_min
+    C2["bitis"] = C2.t + pd.to_timedelta(np.where(C2.tip == "olay", 3, 0), unit="D")
+    sonuc = []
+    for _, w in W[W.t >= bas].iterrows():
+        g = C2[C2.bitis < w.t]
+        st = g.groupby("adres").agg(k_=("karli", "sum"), gor=("gor", "sum"))
+        ks = g[g.karli].groupby("adres").symbol.nunique()
+        st["coin"] = ks.reindex(st.index).fillna(0)
+        S = set(st[(st.coin >= k) & (st.k_ / st.gor.clip(lower=1) >= kesinlik)].index)
+        a = C2[(C2.pid == w.pid) & (C2[alan] >= alim_min)]
+        hit = a[a.adres.isin(S)]
+        sonuc.append({"tip": w.tip, "S": len(S), "isabet": int(len(hit) > 0)})
+    R = pd.DataFrame(sonuc)
+    return R, R[R.tip == "olay"].isabet.mean(), R[R.tip == "kontrol"].isabet.mean()
+
+
+def secici_tablo():
+    rows = []
+    for on_min in (0.002, 0.005):
+        for k in (2, 3):
+            for kes in (0.3, 0.5, 0.7):
+                for alan, am in (("on48", 0.001), ("on", 0.003)):
+                    R, o, c = test_secici(on_min, 0.5, k, kes, am, alan)
+                    rows.append({"on_min": on_min, "k": k, "kesinlik": kes, "alan": alan, "ort_S": R.S.mean(),
+                                 "olay_isabet": o, "kontrol_isabet": c, "oran": o / c if c else np.nan})
+    print(pd.DataFrame(rows).round(3).to_string())
