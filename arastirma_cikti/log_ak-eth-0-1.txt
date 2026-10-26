@@ -1,0 +1,754 @@
+1 ETHFIUSDT eth kontrol 7496  0 dk
+2 ACHUSDT eth kontrol 1599  0 dk
+3 CAKEUSDT eth kontrol 990  0 dk
+4 USUALUSDT eth kontrol 22710  1 dk
+5 RPLUSDT eth kontrol 1272  1 dk
+6 XVSUSDT eth kontrol 185  1 dk
+7 COWUSDT eth kontrol 3239  1 dk
+8 SPELLUSDT eth olay 6555  1 dk
+9 BANANAUSDT eth kontrol 3935  1 dk
+10 ACHUSDT eth olay 17967  2 dk
+11 RAREUSDT eth kontrol 644  2 dk
+12 SAFEUSDT eth kontrol 1599  2 dk
+13 VANAUSDT eth kontrol 704  2 dk
+14 USUALUSDT eth olay 21219  2 dk
+15 REZUSDT eth kontrol 2415  2 dk
+16 ETHFIUSDT eth olay 10663  2 dk
+17 WUSDT eth kontrol 2654  2 dk
+18 CAKEUSDT eth olay 4454  2 dk
+19 RPLUSDT eth olay 8860  3 dk
+20 AUCTIONUSDT eth kontrol 644  3 dk
+21 XVSUSDT eth olay 418  3 dk
+22 ARKMUSDT eth kontrol 10417  3 dk
+23 API3USDT eth kontrol 3161  3 dk
+24 ZETAUSDT eth kontrol 559  3 dk
+25 COMPUSDT eth kontrol 2947  3 dk
+26 VANAUSDT eth olay 1917  3 dk
+27 COWUSDT eth olay 19382  4 dk
+28 EDUUSDT eth kontrol 259  4 dk
+29 SAFEUSDT eth olay 9632  4 dk
+30 CAKEUSDT eth kontrol 4000  4 dk
+31 TUSDT eth kontrol 1487  4 dk
+32 REZUSDT eth olay 15275  5 dk
+33 BIGTIMEUSDT eth kontrol 3470  5 dk
+34 RAREUSDT eth olay 12172  5 dk
+35 ENJUSDT eth kontrol 1583  5 dk
+36 AUCTIONUSDT eth olay 5339  5 dk
+37 ARKMUSDT eth olay 9922  6 dk
+38 BANANAUSDT eth olay 9954  6 dk
+39 SYNUSDT eth kontrol 1518  6 dk
+40 PIXELUSDT eth kontrol 331  6 dk
+41 CAKEUSDT eth olay 6420  6 dk
+42 API3USDT eth olay 11252  6 dk
+43 TURBOUSDT eth kontrol 4114  6 dk
+44 ZETAUSDT eth olay 3185  7 dk
+45 PEOPLEUSDT eth kontrol 447  7 dk
+46 WUSDT eth olay 3215  7 dk
+47 MAGICUSDT eth kontrol 491  7 dk
+48 ETHFIUSDT eth kontrol 4179  7 dk
+49 LPTUSDT eth kontrol 2099  7 dk
+50 PEOPLEUSDT eth kontrol 515  7 dk
+51 COMPUSDT eth olay 17058  7 dk
+52 BIGTIMEUSDT eth olay 20558  8 dk
+53 BIOUSDT eth kontrol 2728  9 dk
+54 1000PEPEUSDT eth kontrol 37821  9 dk
+55 EDUUSDT eth olay 734  9 dk
+56 XAIUSDT eth kontrol 444  9 dk
+57 VIRTUALUSDT eth kontrol 4933  9 dk
+58 LPTUSDT eth kontrol 2842  10 dk
+59 NEIROUSDT eth kontrol 3473  10 dk
+60 TUSDT eth olay 11670  10 dk
+61 MAGICUSDT eth olay 2096  10 dk
+62 PEOPLEUSDT eth olay 1513  10 dk
+63 EIGENUSDT eth kontrol 13814  10 dk
+64 ENJUSDT eth olay 5068  10 dk
+65 PIXELUSDT eth olay 1389  10 dk
+66 TURBOUSDT eth olay 21368  11 dk
+67 LPTUSDT eth olay 4954  11 dk
+68 BIOUSDT eth olay 12825  11 dk
+69 SYNUSDT eth olay 10189  12 dk
+70 COOKIEUSDT eth kontrol 0 transfer_yok 12 dk
+71 TRBUSDT eth kontrol 5848  12 dk
+72 VIRTUALUSDT eth olay 24065  12 dk
+73 EIGENUSDT eth olay 17501  13 dk
+74 NEIROUSDT eth olay 13740  13 dk
+75 1000PEPEUSDT eth olay 75258  14 dk
+76 PEOPLEUSDT eth olay 1421  14 dk
+77 XAIUSDT eth olay 666  14 dk
+78 ETHFIUSDT eth olay 13738  14 dk
+79 BRUSDT eth kontrol 0 transfer_yok 15 dk
+80 AXLUSDT eth kontrol 1528  15 dk
+81 COOKIEUSDT eth olay 0 transfer_yok 15 dk
+82 MAGICUSDT eth kontrol 748  15 dk
+83 ALTUSDT eth kontrol 3971  15 dk
+84 TRBUSDT eth olay 12450  15 dk
+85 PORTALUSDT eth kontrol 2703  16 dk
+86 LPTUSDT eth olay 37914  16 dk
+87 LUMIAUSDT eth kontrol 317  16 dk
+88 DOLOUSDT eth kontrol 6797  17 dk
+89 TURBOUSDT eth kontrol 7368  17 dk
+90 MAVUSDT eth kontrol 167  17 dk
+91 ALTUSDT eth kontrol 2684  17 dk
+92 USUALUSDT eth kontrol 6785  17 dk
+93 REZUSDT eth kontrol 1043  17 dk
+94 AXLUSDT eth olay 11790  17 dk
+95 MAGICUSDT eth kontrol 232  17 dk
+96 STOUSDT eth kontrol 33  18 dk
+97 HYPERUSDT eth kontrol 2443  18 dk
+98 MOCAUSDT eth kontrol 3272  18 dk
+99 ALTUSDT eth olay 34873  21 dk
+100 MAGICUSDT eth olay 1072  21 dk
+101 CYBERUSDT eth kontrol 1610  21 dk
+102 KNCUSDT eth kontrol 791  21 dk
+103 DIAUSDT eth kontrol 920  21 dk
+104 BRUSDT eth olay 0 transfer_yok 21 dk
+105 BIOUSDT eth kontrol 2073  21 dk
+106 KERNELUSDT eth kontrol 937  21 dk
+107 MAVUSDT eth olay 2645  21 dk
+108 SYNUSDT eth kontrol 2567  21 dk
+109 ILVUSDT eth kontrol 2885  21 dk
+110 UMAUSDT eth kontrol 1911  21 dk
+111 MAVIAUSDT eth kontrol 608  21 dk
+112 MAVUSDT eth kontrol 2740  22 dk
+113 API3USDT eth kontrol 1176  22 dk
+114 MAGICUSDT eth olay 2591  22 dk
+115 HYPERUSDT eth olay 13698  22 dk
+116 STOUSDT eth olay 48 az_veri 22 dk
+117 DOLOUSDT eth olay 4584  22 dk
+118 REZUSDT eth olay 13178  23 dk
+119 CYBERUSDT eth olay 2019  23 dk
+120 ALTUSDT eth olay 9317  23 dk
+121 PORTALUSDT eth olay 3854  23 dk
+122 LUMIAUSDT eth olay 301  23 dk
+123 MAGICUSDT eth kontrol 2395  24 dk
+124 KNCUSDT eth olay 12253  24 dk
+125 MOCAUSDT eth olay 7962  24 dk
+126 CYBERUSDT eth kontrol 1635  24 dk
+127 BANDUSDT eth kontrol 546  24 dk
+128 USUALUSDT eth olay 13593  25 dk
+129 TURBOUSDT eth olay 15749  25 dk
+130 DOLOUSDT eth kontrol 6377  25 dk
+131 SKLUSDT eth kontrol 3751  25 dk
+132 BRUSDT eth kontrol 0 transfer_yok 25 dk
+133 CTSIUSDT eth kontrol 1553  26 dk
+134 DIAUSDT eth olay 15894  26 dk
+135 UMAUSDT eth olay 6697  26 dk
+136 SYNUSDT eth olay 5563  26 dk
+137 REDUSDT eth kontrol 1273  26 dk
+138 FHEUSDT eth kontrol 74  26 dk
+139 KERNELUSDT eth olay 17998  27 dk
+140 GTCUSDT eth kontrol 1614  27 dk
+141 MAVUSDT eth olay 1117  27 dk
+142 FUSDT eth kontrol 219  27 dk
+143 WLDUSDT eth kontrol 8615  28 dk
+144 BRUSDT eth kontrol 0 transfer_yok 28 dk
+145 ATHUSDT eth kontrol 8950  28 dk
+146 NMRUSDT eth kontrol 1331  28 dk
+147 MAGICUSDT eth olay 3143  28 dk
+148 ILVUSDT eth olay 18055  28 dk
+149 MERLUSDT eth kontrol 2 az_veri 29 dk
+150 BIOUSDT eth olay 19381  29 dk
+151 RLCUSDT eth kontrol 556  29 dk
+152 SIGNUSDT eth kontrol 77  29 dk
+153 LAUSDT eth kontrol 1288  29 dk
+154 CYBERUSDT eth olay 8683  30 dk
+155 MAVIAUSDT eth olay 3762  30 dk
+156 SKLUSDT eth olay 12744  30 dk
+157 GTCUSDT eth olay 6762  30 dk
+158 SNXUSDT eth kontrol 3210  30 dk
+159 HUSDT eth kontrol 0 transfer_yok 30 dk
+160 CTSIUSDT eth olay 6479  30 dk
+161 YGGUSDT eth kontrol 1155  30 dk
+162 SUPERUSDT eth kontrol 6412  30 dk
+163 API3USDT eth olay 21195  31 dk
+164 NAORISUSDT eth kontrol 605  31 dk
+165 BANDUSDT eth olay 6496  31 dk
+166 FHEUSDT eth olay 1265  32 dk
+167 BRUSDT eth olay 0 transfer_yok 32 dk
+168 AEVOUSDT eth kontrol 3166  32 dk
+169 NAORISUSDT eth kontrol 443  32 dk
+170 NMRUSDT eth olay 25375  32 dk
+171 DOLOUSDT eth olay 63947  34 dk
+172 RLCUSDT eth olay 6971  34 dk
+173 INUSDT eth kontrol 170  34 dk
+174 BELUSDT eth kontrol 226  35 dk
+175 STOUSDT eth kontrol 75  35 dk
+176 C98USDT eth kontrol 584  35 dk
+177 REDUSDT eth olay 19906  35 dk
+178 FHEUSDT eth kontrol 197  35 dk
+179 WLDUSDT eth olay 34451  36 dk
+180 ATHUSDT eth olay 18241  36 dk
+181 BRUSDT eth olay 0 transfer_yok 36 dk
+182 NAORISUSDT eth olay 8947  36 dk
+183 FUSDT eth olay 1662  37 dk
+184 BATUSDT eth kontrol 2401  37 dk
+185 YGGUSDT eth olay 6514  37 dk
+186 HUSDT eth olay 0 transfer_yok 37 dk
+187 HEIUSDT eth kontrol 112  37 dk
+188 MERLUSDT eth olay 2 az_veri 37 dk
+189 TOWNSUSDT eth kontrol 489  37 dk
+190 LAUSDT eth olay 4076  37 dk
+191 ALICEUSDT eth kontrol 432  37 dk
+192 ZKUSDT eth kontrol 133  37 dk
+193 HUSDT eth kontrol 0 transfer_yok 37 dk
+194 UMAUSDT eth kontrol 2060  38 dk
+195 TREEUSDT eth kontrol 272  38 dk
+196 SNXUSDT eth kontrol 2847  38 dk
+197 YGGUSDT eth kontrol 2790  38 dk
+198 MAVIAUSDT eth kontrol 1293  38 dk
+199 ICNTUSDT eth kontrol 0 transfer_yok 38 dk
+200 ERAUSDT eth kontrol 1564  38 dk
+201 KERNELUSDT eth kontrol 2174  38 dk
+202 AVAUSDT eth kontrol 1632  38 dk
+203 SIGNUSDT eth olay 980  38 dk
+204 FETUSDT eth kontrol 9606  38 dk
+205 1INCHUSDT eth kontrol 4470  38 dk
+206 AUCTIONUSDT eth kontrol 840  38 dk
+207 INUSDT eth olay 2265  39 dk
+208 RENDERUSDT eth kontrol 6202  39 dk
+209 SNXUSDT eth olay 27454  39 dk
+210 DUSKUSDT eth kontrol 299  39 dk
+211 SYNUSDT eth kontrol 1162  39 dk
+212 ICPUSDT eth kontrol 291  39 dk
+213 AEVOUSDT eth olay 18079  40 dk
+214 METISUSDT eth kontrol 1542  40 dk
+215 DIAUSDT eth kontrol 1598  40 dk
+216 SUPERUSDT eth olay 18494  40 dk
+217 BIOUSDT eth kontrol 17684  40 dk
+218 FUSDT eth kontrol 458  40 dk
+219 0GUSDT eth kontrol 404  40 dk
+220 TOWNSUSDT eth kontrol 57  41 dk
+221 C98USDT eth olay 2831  41 dk
+222 COTIUSDT eth kontrol 1846  41 dk
+223 VIRTUALUSDT eth kontrol 4024  41 dk
+224 PEOPLEUSDT eth kontrol 487  41 dk
+225 STRKUSDT eth kontrol 5825  41 dk
+226 AIXBTUSDT eth kontrol 192  41 dk
+227 STOUSDT eth olay 799  41 dk
+228 NAORISUSDT eth olay 3066  41 dk
+229 PHAUSDT eth kontrol 1090  41 dk
+230 LUMIAUSDT eth kontrol 275  41 dk
+231 1000000MOGUSDT eth kontrol 36192  42 dk
+232 ALICEUSDT eth olay 3688  43 dk
+233 LSKUSDT eth kontrol 502  43 dk
+234 BELUSDT eth olay 2433  43 dk
+235 PORTALUSDT eth kontrol 868  43 dk
+236 FLUIDUSDT eth kontrol 11519  43 dk
+237 SNXUSDT eth olay 42910  44 dk
+238 RESOLVUSDT eth kontrol 8564  45 dk
+239 BATUSDT eth olay 16593  45 dk
+240 HUSDT eth olay 0 transfer_yok 46 dk
+241 UMAUSDT eth olay 8228  46 dk
+242 ANIMEUSDT eth kontrol 1609  46 dk
+243 YGGUSDT eth olay 11162  46 dk
+244 HEIUSDT eth olay 413  46 dk
+245 NMRUSDT eth kontrol 5996  46 dk
+246 FHEUSDT eth olay 592  46 dk
+247 TOWNSUSDT eth olay 440  46 dk
+248 MAVUSDT eth kontrol 1006  46 dk
+249 XAIUSDT eth kontrol 218  46 dk
+250 UNIUSDT eth kontrol 39282  47 dk
+251 AUCTIONUSDT eth olay 5223  47 dk
+252 BIOUSDT eth olay 36449  48 dk
+253 TREEUSDT eth olay 519  48 dk
+254 FUSDT eth olay 7444  48 dk
+255 XANUSDT eth kontrol 3238  48 dk
+256 MERLUSDT eth kontrol 10 az_veri 48 dk
+257 SYNUSDT eth olay 2175  49 dk
+258 INUSDT eth kontrol 39440  49 dk
+259 QUSDT eth kontrol 41  49 dk
+260 VIRTUALUSDT eth olay 12927  50 dk
+261 AIXBTUSDT eth olay 2018  50 dk
+262 MAVIAUSDT eth olay 8263  50 dk
+263 DIAUSDT eth olay 11879  50 dk
+264 KERNELUSDT eth olay 8586  51 dk
+265 AVAUSDT eth olay 1497  51 dk
+266 ICNTUSDT eth olay 0 transfer_yok 51 dk
+267 CTSIUSDT eth kontrol 1260  51 dk
+268 ZKUSDT eth olay 2063  51 dk
+269 1000000MOGUSDT eth olay 48334  52 dk
+270 0GUSDT eth olay 299  52 dk
+271 ICNTUSDT eth kontrol 0 transfer_yok 52 dk
+272 ICPUSDT eth olay 5543  53 dk
+273 PORTALUSDT eth olay 1029  53 dk
+274 TURBOUSDT eth kontrol 4587  53 dk
+275 RIVERUSDT eth kontrol 138  53 dk
+276 ERAUSDT eth olay 21491  53 dk
+277 1INCHUSDT eth olay 23178  54 dk
+278 RESOLVUSDT eth olay 8057  54 dk
+279 METISUSDT eth olay 5040  54 dk
+280 DUSKUSDT eth olay 6341  54 dk
+281 PHAUSDT eth olay 4089  54 dk
+282 FETUSDT eth olay 39916  55 dk
+283 RENDERUSDT eth olay 12195  55 dk
+284 PEOPLEUSDT eth olay 1507  55 dk
+285 LUMIAUSDT eth olay 269  55 dk
+286 STRKUSDT eth olay 12945  56 dk
+287 NAORISUSDT eth kontrol 2017  56 dk
+288 ANIMEUSDT eth kontrol 881  56 dk
+289 TOWNSUSDT eth olay 268  56 dk
+290 COTIUSDT eth olay 10353  56 dk
+291 UNIUSDT eth olay 120461 cok_yogun 59 dk
+292 LSKUSDT eth olay 8713  59 dk
+293 SOPHUSDT eth kontrol 275  59 dk
+294 HEMIUSDT eth kontrol 1132  59 dk
+295 FHEUSDT eth kontrol 204  59 dk
+296 EDENUSDT eth kontrol 4313  59 dk
+297 QUSDT eth olay 10 az_veri 60 dk
+298 HUSDT eth kontrol 0 transfer_yok 60 dk
+299 XANUSDT eth olay 12056  60 dk
+300 XAIUSDT eth olay 356  60 dk
+301 CTSIUSDT eth olay 5533  60 dk
+302 NMRUSDT eth olay 16747  61 dk
+303 TLMUSDT eth kontrol 124  61 dk
+304 INUSDT eth olay 1400  61 dk
+305 ANIMEUSDT eth olay 3940  61 dk
+306 FLUIDUSDT eth olay 20350  62 dk
+307 MAVUSDT eth olay 1847  62 dk
+308 MERLUSDT eth olay 0 transfer_yok 62 dk
+309 PIEVERSEUSDT eth kontrol 4727  62 dk
+310 RESOLVUSDT eth kontrol 8751  62 dk
+311 QUSDT eth kontrol 0 transfer_yok 62 dk
+312 TURBOUSDT eth olay 17638  63 dk
+313 NAORISUSDT eth olay 1420  63 dk
+314 ATUSDT eth kontrol 0 transfer_yok 63 dk
+315 ZBTUSDT eth kontrol 549  63 dk
+316 HEMIUSDT eth olay 2748  63 dk
+317 FHEUSDT eth olay 735  63 dk
+318 AXSUSDT eth kontrol 2556  63 dk
+319 SXTUSDT eth kontrol 1256  63 dk
+320 BTRUSDT eth kontrol 175  63 dk
+321 DOLOUSDT eth kontrol 1313  63 dk
+322 ICNTUSDT eth olay 5 az_veri 63 dk
+323 QUSDT eth kontrol 0 transfer_yok 63 dk
+324 EDENUSDT eth olay 7090  64 dk
+325 ZKCUSDT eth kontrol 2423  64 dk
+326 INUSDT eth kontrol 385  64 dk
+327 HUSDT eth olay 0 transfer_yok 64 dk
+328 ARPAUSDT eth kontrol 353  64 dk
+329 RIVERUSDT eth olay 561  64 dk
+330 FHEUSDT eth kontrol 1317  64 dk
+331 RESOLVUSDT eth olay 7227  64 dk
+332 SOPHUSDT eth olay 1564  64 dk
+333 FLUIDUSDT eth kontrol 5866  64 dk
+334 ANIMEUSDT eth olay 6981  65 dk
+335 DUSKUSDT eth kontrol 784  65 dk
+336 NAORISUSDT eth kontrol 900  65 dk
+337 ZBTUSDT eth olay 3104  65 dk
+338 STOUSDT eth kontrol 21  65 dk
+339 ATUSDT eth olay 0 transfer_yok 65 dk
+340 SENTUSDT eth kontrol 0 transfer_yok 65 dk
+341 QUSDT eth olay 55 az_veri 65 dk
+342 TLMUSDT eth olay 849  65 dk
+343 AUCTIONUSDT eth kontrol 1109  65 dk
+344 0GUSDT eth kontrol 105  65 dk
+345 ENSOUSDT eth kontrol 1615  65 dk
+346 PIEVERSEUSDT eth olay 1173  66 dk
+347 ZKPUSDT eth kontrol 28231  66 dk
+348 NOMUSDT eth kontrol 1419  66 dk
+349 C98USDT eth kontrol 366  66 dk
+350 POWERUSDT eth kontrol 4943  66 dk
+351 BIOUSDT eth kontrol 5970  67 dk
+352 DOLOUSDT eth olay 11273  67 dk
+353 ENSOUSDT eth kontrol 1179  67 dk
+354 EULUSDT eth kontrol 5170  67 dk
+355 FHEUSDT eth olay 695  67 dk
+356 DUSKUSDT eth olay 16190  67 dk
+357 AXSUSDT eth olay 27459  68 dk
+358 STOUSDT eth olay 503  68 dk
+359 ARPAUSDT eth olay 3558  68 dk
+360 LAUSDT eth kontrol 865  68 dk
+361 RAVEUSDT eth kontrol 2571  68 dk
+362 NAORISUSDT eth kontrol 672  69 dk
+363 NAORISUSDT eth olay 4937  69 dk
+364 PHAUSDT eth kontrol 1984  69 dk
+365 SXTUSDT eth olay 21174  69 dk
+366 SENTUSDT eth olay 44586  70 dk
+367 INUSDT eth olay 4532  71 dk
+368 ENSOUSDT eth olay 6857  71 dk
+369 ALLOUSDT eth kontrol 700  71 dk
+370 FLUIDUSDT eth olay 24162  72 dk
+371 NOMUSDT eth olay 8619  72 dk
+372 BTRUSDT eth kontrol 1718  72 dk
+373 ZKCUSDT eth olay 10471  72 dk
+374 AUCTIONUSDT eth olay 5978  72 dk
+375 OGNUSDT eth kontrol 2197  72 dk
+376 BTRUSDT eth olay 4977  73 dk
+377 AGLDUSDT eth kontrol 2967  73 dk
+378 SIGNUSDT eth kontrol 30  73 dk
+379 BARDUSDT eth kontrol 5744  73 dk
+380 FHEUSDT eth kontrol 1032  73 dk
+381 QUSDT eth olay 44 az_veri 73 dk
+382 C98USDT eth olay 2120  73 dk
+383 ZKPUSDT eth olay 7666  73 dk
+384 XAIUSDT eth kontrol 105  74 dk
+385 RESOLVUSDT eth kontrol 5503  74 dk
+386 SAHARAUSDT eth kontrol 5268  74 dk
+387 NAORISUSDT eth kontrol 1927  74 dk
+388 JCTUSDT eth kontrol 44  74 dk
+389 ALICEUSDT eth kontrol 583  74 dk
+390 LAUSDT eth olay 6236  74 dk
+391 HUSDT eth kontrol 0 transfer_yok 74 dk
+392 XANUSDT eth kontrol 1064  74 dk
+393 POWERUSDT eth olay 7384  75 dk
+394 JCTUSDT eth kontrol 49  75 dk
+395 0GUSDT eth olay 234  75 dk
+396 BTRUSDT eth olay 3468  75 dk
+397 NAORISUSDT eth olay 4146  75 dk
+398 NOMUSDT eth kontrol 3760  75 dk
+399 EULUSDT eth olay 27907  76 dk
+400 PIXELUSDT eth kontrol 191  76 dk
+401 QUSDT eth kontrol 10 az_veri 76 dk
+402 REZUSDT eth kontrol 1303  76 dk
+403 ENSOUSDT eth olay 9799  76 dk
+404 BIOUSDT eth olay 21184  77 dk
+405 ALLOUSDT eth olay 3465  77 dk
+406 SOLVUSDT eth kontrol 0 transfer_yok 77 dk
+407 KERNELUSDT eth kontrol 1335  77 dk
+408 AGLDUSDT eth olay 8169  77 dk
+409 PROVEUSDT eth kontrol 2007  77 dk
+410 ONUSDT eth kontrol 45  77 dk
+411 FFUSDT eth kontrol 1882  77 dk
+412 RAVEUSDT eth olay 12835  78 dk
+413 SAHARAUSDT eth olay 9523  78 dk
+414 ENJUSDT eth kontrol 1190  78 dk
+415 ALICEUSDT eth olay 2617  78 dk
+416 HEMIUSDT eth kontrol 731  78 dk
+417 ENJUSDT eth kontrol 1131  78 dk
+418 STOUSDT eth kontrol 131  78 dk
+419 PHAUSDT eth olay 8507  78 dk
+420 AXLUSDT eth kontrol 3443  78 dk
+421 ILVUSDT eth kontrol 2302  78 dk
+422 YBUSDT eth kontrol 10134  79 dk
+423 RAVEUSDT eth kontrol 5765  79 dk
+424 BIOUSDT eth kontrol 8476  79 dk
+425 BARDUSDT eth olay 34676  80 dk
+426 SIGNUSDT eth olay 676  80 dk
+427 HUSDT eth olay 0 transfer_yok 80 dk
+428 JCTUSDT eth olay 84 az_veri 81 dk
+429 ZAMAUSDT eth kontrol 20587  81 dk
+430 RESOLVUSDT eth olay 6861  81 dk
+431 FHEUSDT eth olay 983  81 dk
+432 NAORISUSDT eth olay 4874  81 dk
+433 PIEVERSEUSDT eth kontrol 10299  82 dk
+434 XANUSDT eth kontrol 608  82 dk
+435 API3USDT eth kontrol 2086  82 dk
+436 PIXELUSDT eth olay 2123  82 dk
+437 XAIUSDT eth olay 171  82 dk
+438 OGNUSDT eth olay 11974  83 dk
+439 YBUSDT eth kontrol 6215  83 dk
+440 ZBTUSDT eth kontrol 763  83 dk
+441 SPACEUSDT eth kontrol 2504  83 dk
+442 XANUSDT eth olay 5982  83 dk
+443 AXSUSDT eth kontrol 6695  83 dk
+444 INUSDT eth kontrol 662  83 dk
+445 REZUSDT eth olay 5019  84 dk
+446 REDUSDT eth kontrol 2972  84 dk
+447 NEIROUSDT eth kontrol 3356  84 dk
+448 INXUSDT eth kontrol 3775  84 dk
+449 APRUSDT eth kontrol 460  84 dk
+450 UBUSDT eth kontrol 5 az_veri 84 dk
+451 EULUSDT eth kontrol 15485  84 dk
+452 PORTALUSDT eth kontrol 1551  84 dk
+453 TRBUSDT eth kontrol 7157  85 dk
+454 ENJUSDT eth olay 2926  85 dk
+455 CTSIUSDT eth kontrol 1478  85 dk
+456 SKLUSDT eth kontrol 1212  85 dk
+457 FHEUSDT eth kontrol 920  85 dk
+458 EDUUSDT eth kontrol 526  85 dk
+459 JCTUSDT eth olay 525  85 dk
+460 PROVEUSDT eth olay 6079  85 dk
+461 FHEUSDT eth kontrol 701  85 dk
+462 SPKUSDT eth kontrol 3623  85 dk
+463 QUSDT eth olay 38 az_veri 85 dk
+464 NOMUSDT eth olay 4801  85 dk
+465 NAORISUSDT eth kontrol 4127  86 dk
+466 HYPERUSDT eth kontrol 674  86 dk
+467 ALICEUSDT eth kontrol 509  86 dk
+468 PROMUSDT eth kontrol 343  86 dk
+469 KERNELUSDT eth olay 7673  86 dk
+470 STOUSDT eth olay 3366  86 dk
+471 ENSOUSDT eth kontrol 2874  86 dk
+472 SOLVUSDT eth olay 0 transfer_yok 86 dk
+473 HEMIUSDT eth olay 4987  86 dk
+474 ONUSDT eth olay 366  86 dk
+475 BRUSDT eth olay 0 transfer_yok 86 dk
+476 APEUSDT eth kontrol 10948  87 dk
+477 QUSDT eth kontrol 41  87 dk
+478 YBUSDT eth olay 13151  87 dk
+479 BIOUSDT eth kontrol 2968  87 dk
+480 EDENUSDT eth kontrol 2043  87 dk
+481 NILUSDT eth kontrol 2900  87 dk
+482 REDUSDT eth olay 20428  88 dk
+483 ENJUSDT eth olay 4577  88 dk
+484 RAVEUSDT eth olay 17704  88 dk
+485 INXUSDT eth kontrol 4058  89 dk
+486 ILVUSDT eth olay 9396  89 dk
+487 FFUSDT eth olay 11144  89 dk
+488 BRUSDT eth kontrol 3 az_veri 89 dk
+489 INXUSDT eth olay 26430  90 dk
+490 SPACEUSDT eth kontrol 1578  90 dk
+491 QUSDT eth kontrol 37  90 dk
+492 ZAMAUSDT eth olay 38347  91 dk
+493 APRUSDT eth olay 2028  91 dk
+494 INUSDT eth olay 4312  91 dk
+495 IDUSDT eth kontrol 4107  91 dk
+496 CTSIUSDT eth olay 6552  92 dk
+497 BIOUSDT eth olay 38324  93 dk
+498 NEIROUSDT eth olay 19979  93 dk
+499 SPACEUSDT eth olay 2470  93 dk
+500 AXLUSDT eth olay 8357  93 dk
+501 TRBUSDT eth olay 10730  93 dk
+502 EULUSDT eth olay 37611  94 dk
+503 SKLUSDT eth olay 4534  94 dk
+504 PORTALUSDT eth olay 2097  94 dk
+505 YBUSDT eth olay 13865  95 dk
+506 FHEUSDT eth olay 856  95 dk
+507 ALICEUSDT eth olay 3936  95 dk
+508 API3USDT eth olay 10600  95 dk
+509 PROMUSDT eth olay 4053  95 dk
+510 PIEVERSEUSDT eth olay 11647  96 dk
+511 EDUUSDT eth olay 1767  96 dk
+512 XANUSDT eth kontrol 3750  96 dk
+513 XANUSDT eth olay 7014  97 dk
+514 ALLOUSDT eth kontrol 875  97 dk
+515 PORTALUSDT eth kontrol 2994  97 dk
+516 UBUSDT eth olay 65  97 dk
+517 SPKUSDT eth olay 41892  98 dk
+518 IRYSUSDT eth kontrol 952  98 dk
+519 APEUSDT eth olay 41026  99 dk
+520 QUSDT eth olay 4 az_veri 99 dk
+521 AXSUSDT eth olay 11579  99 dk
+522 HYPERUSDT eth olay 5067  99 dk
+523 FHEUSDT eth kontrol 519  99 dk
+524 ENSOUSDT eth olay 7529  100 dk
+525 ZBTUSDT eth olay 6532  100 dk
+526 NAORISUSDT eth olay 8256  100 dk
+527 BRUSDT eth olay 25 az_veri 100 dk
+528 PROVEUSDT eth kontrol 1948  100 dk
+529 BIOUSDT eth olay 34887  101 dk
+530 SPACEUSDT eth olay 3645  101 dk
+531 FHEUSDT eth olay 1917  101 dk
+532 BSBUSDT eth kontrol 14282  101 dk
+533 HUSDT eth kontrol 0 transfer_yok 101 dk
+534 NILUSDT eth olay 15369  102 dk
+535 JCTUSDT eth kontrol 319  102 dk
+536 QUSDT eth olay 64 az_veri 102 dk
+537 INXUSDT eth olay 17606  102 dk
+538 ALICEUSDT eth kontrol 695  102 dk
+539 NAORISUSDT eth kontrol 6015  102 dk
+540 GTCUSDT eth olay 8732  103 dk
+541 OPNUSDT eth kontrol 2750  103 dk
+542 BELUSDT eth kontrol 240  103 dk
+543 GWEIUSDT eth kontrol 4868  103 dk
+544 APRUSDT eth kontrol 236  103 dk
+545 RIFUSDT eth kontrol 0 transfer_yok 103 dk
+546 STOUSDT eth kontrol 165  103 dk
+547 IRYSUSDT eth olay 14850  103 dk
+548 SPACEUSDT eth kontrol 1589  103 dk
+549 BICOUSDT eth kontrol 920  103 dk
+550 EDENUSDT eth olay 5561  104 dk
+551 MOVEUSDT eth kontrol 5124  104 dk
+552 ALLOUSDT eth kontrol 713  104 dk
+553 LUMIAUSDT eth kontrol 31  104 dk
+554 DEXEUSDT eth kontrol 4795  104 dk
+555 PROVEUSDT eth olay 7702  104 dk
+556 RAVEUSDT eth kontrol 1597  104 dk
+557 BRUSDT eth kontrol 0 transfer_yok 104 dk
+558 RESOLVUSDT eth kontrol 1269  104 dk
+559 TLMUSDT eth kontrol 240  104 dk
+560 XANUSDT eth olay 6263  105 dk
+561 POWERUSDT eth kontrol 252  105 dk
+562 BLURUSDT eth kontrol 1559  105 dk
+563 ALLOUSDT eth olay 10250  105 dk
+564 IDUSDT eth olay 11657  105 dk
+565 PORTALUSDT eth olay 5437  105 dk
+566 HUSDT eth olay 0 transfer_yok 106 dk
+567 FHEUSDT eth olay 855  106 dk
+568 UBUSDT eth kontrol 80  106 dk
+569 EDGEUSDT eth kontrol 5170  106 dk
+570 INUSDT eth kontrol 1909  106 dk
+571 YFIUSDT eth kontrol 2467  106 dk
+572 APRUSDT eth olay 1194  106 dk
+573 ICNTUSDT eth kontrol 0 transfer_yok 106 dk
+574 OPNUSDT eth olay 16025  106 dk
+575 STOUSDT eth olay 490  106 dk
+576 GWEIUSDT eth kontrol 4944  106 dk
+577 HEIUSDT eth olay 2635  107 dk
+578 BREVUSDT eth kontrol 959  107 dk
+579 GWEIUSDT eth olay 10856  107 dk
+580 BSBUSDT eth olay 2405  107 dk
+581 NOMUSDT eth kontrol 1144  107 dk
+582 AGLDUSDT eth kontrol 2658  107 dk
+583 MOVEUSDT eth olay 9081  107 dk
+584 SPACEUSDT eth olay 4262  108 dk
+585 RIFUSDT eth kontrol 7 az_veri 108 dk
+586 LUMIAUSDT eth olay 139  108 dk
+587 NAORISUSDT eth olay 6423  108 dk
+588 JCTUSDT eth olay 1215  108 dk
+589 RIFUSDT eth olay 31 az_veri 108 dk
+590 DEXEUSDT eth kontrol 16024  108 dk
+591 BRUSDT eth olay 12 az_veri 108 dk
+592 SYNUSDT eth olay 18208  109 dk
+593 LAUSDT eth kontrol 1492  109 dk
+594 ESPUSDT eth kontrol 1674  109 dk
+595 SKLUSDT eth kontrol 930  109 dk
+596 BICOUSDT eth olay 13883  109 dk
+597 BELUSDT eth olay 3845  109 dk
+598 ALICEUSDT eth olay 2620  109 dk
+599 SXTUSDT eth kontrol 1277  109 dk
+600 RESOLVUSDT eth olay 3839  110 dk
+601 UBUSDT eth olay 110  110 dk
+602 ONUSDT eth kontrol 40  110 dk
+603 DEXEUSDT eth olay 22093  110 dk
+604 BTWUSDT eth kontrol 0 transfer_yok 110 dk
+605 GUSDT eth kontrol 1020  110 dk
+606 BICOUSDT eth kontrol 18256  111 dk
+607 HEIUSDT eth kontrol 1575  111 dk
+608 AGLDUSDT eth olay 7882  111 dk
+609 ICNTUSDT eth olay 13 az_veri 111 dk
+610 PUNDIXUSDT eth olay 2313  111 dk
+611 HEMIUSDT eth kontrol 345  111 dk
+612 RIFUSDT eth kontrol 0 transfer_yok 111 dk
+613 INXUSDT eth kontrol 1283  111 dk
+614 RAVEUSDT eth olay 10699  112 dk
+615 ICNTUSDT eth kontrol 13 az_veri 112 dk
+616 GWEIUSDT eth olay 11756  112 dk
+617 PROMUSDT eth kontrol 325  112 dk
+618 INUSDT eth olay 10771  112 dk
+619 EDENUSDT eth kontrol 2813  112 dk
+620 NOMUSDT eth olay 1900  112 dk
+621 TLMUSDT eth olay 2676  112 dk
+622 RIFUSDT eth olay 12 az_veri 112 dk
+623 BREVUSDT eth olay 5248  113 dk
+624 ALLOUSDT eth olay 3221  113 dk
+625 HEMIUSDT eth kontrol 680  113 dk
+626 PIEVERSEUSDT eth kontrol 904  113 dk
+627 YFIUSDT eth olay 13136  113 dk
+628 BLURUSDT eth olay 10811  113 dk
+629 EDGEUSDT eth olay 7730  114 dk
+630 POWERUSDT eth olay 5264  114 dk
+631 NEIROUSDT eth kontrol 3478  114 dk
+632 SKLUSDT eth olay 7421  114 dk
+633 ENAUSDT eth kontrol 20387  114 dk
+634 SXTUSDT eth olay 4653  114 dk
+635 ZBTUSDT eth kontrol 556  114 dk
+636 PEOPLEUSDT eth kontrol 719  115 dk
+637 XANUSDT eth kontrol 1382  115 dk
+638 TRBUSDT eth kontrol 733  115 dk
+639 SYNUSDT eth kontrol 12112  115 dk
+640 GUSDT eth olay 6115  115 dk
+641 GWEIUSDT eth kontrol 13244  115 dk
+642 HEMIUSDT eth olay 2286  115 dk
+643 ALICEUSDT eth kontrol 1552  116 dk
+644 RIFUSDT eth olay 37 az_veri 116 dk
+645 DEXEUSDT eth olay 97762  118 dk
+646 APRUSDT eth kontrol 1950  118 dk
+647 APRUSDT eth kontrol 2167  118 dk
+648 PIEVERSEUSDT eth olay 1767  118 dk
+649 TRIAUSDT eth kontrol 1991  118 dk
+650 BICOUSDT eth kontrol 1230  118 dk
+651 ESPUSDT eth olay 6274  118 dk
+652 ONUSDT eth olay 519  118 dk
+653 BTWUSDT eth olay 2 az_veri 118 dk
+654 LAUSDT eth olay 16760  119 dk
+655 PORTALUSDT eth kontrol 670  119 dk
+656 BRUSDT eth kontrol 17 az_veri 119 dk
+657 TUSDT eth kontrol 2916  119 dk
+658 BICOUSDT eth olay 8704  119 dk
+659 ICNTUSDT eth olay 10 az_veri 119 dk
+660 HEIUSDT eth olay 5344  119 dk
+661 SYNUSDT eth olay 13262  120 dk
+662 ZAMAUSDT eth kontrol 21552  120 dk
+663 GUSDT eth kontrol 3186  120 dk
+664 ZBTUSDT eth olay 4410  120 dk
+665 FLOCKUSDT eth kontrol 0 transfer_yok 120 dk
+666 EDGEUSDT eth kontrol 1951  120 dk
+667 GWEIUSDT eth olay 7841  121 dk
+668 ARBUSDT eth kontrol 2429  121 dk
+669 XANUSDT eth olay 11700  121 dk
+670 FOLKSUSDT eth kontrol 60  121 dk
+671 SYNUSDT eth kontrol 9835  121 dk
+672 INXUSDT eth olay 10994  122 dk
+673 PROMUSDT eth olay 10645  122 dk
+674 APRUSDT eth olay 3358  122 dk
+675 KERNELUSDT eth kontrol 912  122 dk
+676 EDENUSDT eth olay 6166  122 dk
+677 ALICEUSDT eth olay 4864  122 dk
+678 HEMIUSDT eth olay 4140  123 dk
+679 BTWUSDT eth kontrol 5 az_veri 123 dk
+680 QNTUSDT eth kontrol 7890  123 dk
+681 PORTALUSDT eth olay 3729  123 dk
+682 STRKUSDT eth kontrol 3233  123 dk
+683 PIEVERSEUSDT eth kontrol 453  123 dk
+684 POWERUSDT eth kontrol 2184  123 dk
+685 COTIUSDT eth kontrol 22349  124 dk
+686 SANDUSDT eth kontrol 3859  124 dk
+687 PHAUSDT eth kontrol 1383  124 dk
+688 NEIROUSDT eth olay 16770  124 dk
+689 PEOPLEUSDT eth olay 3220  124 dk
+690 ENAUSDT eth olay 53398  125 dk
+691 TRBUSDT eth olay 2063  125 dk
+692 CAPUSDT eth kontrol 7640  125 dk
+693 NOMUSDT eth kontrol 343  125 dk
+694 RLCUSDT eth kontrol 1339  125 dk
+695 BTRUSDT eth olay 9507  126 dk
+696 BICOUSDT eth olay 17269  126 dk
+697 WUSDT eth kontrol 1428  126 dk
+698 MAGICUSDT eth kontrol 144  126 dk
+699 ALICEUSDT eth kontrol 806  126 dk
+700 XAIUSDT eth kontrol 14 az_veri 126 dk
+701 ONUSDT eth kontrol 218  126 dk
+702 FLOCKUSDT eth olay 1870  127 dk
+703 NILUSDT eth kontrol 9658  127 dk
+704 BRUSDT eth kontrol 15 az_veri 127 dk
+705 TUSDT eth olay 13197  127 dk
+706 BRUSDT eth olay 40 az_veri 127 dk
+707 EDGEUSDT eth olay 5081  127 dk
+708 APRUSDT eth olay 774  127 dk
+709 TRIAUSDT eth olay 11425  128 dk
+710 QUSDT eth kontrol 20  128 dk
+711 ARBUSDT eth olay 21364  128 dk
+712 BTWUSDT eth kontrol 0 transfer_yok 128 dk
+713 SOPHUSDT eth olay 18399  129 dk
+714 NMRUSDT eth kontrol 37262  130 dk
+715 LSKUSDT eth olay 38250  131 dk
+716 POWERUSDT eth olay 9940  131 dk
+717 CAPUSDT eth olay 5649  132 dk
+718 STRKUSDT eth kontrol 4416  132 dk
+719 QUSDT eth kontrol 16 az_veri 132 dk
+720 SYNUSDT eth olay 13727  132 dk
+721 COTIUSDT eth olay 25821  133 dk
+722 GUSDT eth olay 21039  134 dk
+723 STRKUSDT eth olay 12551  134 dk
+724 ALTUSDT eth kontrol 3208  134 dk
+725 JCTUSDT eth kontrol 121  134 dk
+726 PIEVERSEUSDT eth olay 1848  134 dk
+727 ZAMAUSDT eth olay 38250  135 dk
+728 RSRUSDT eth kontrol 5614  135 dk
+729 BTWUSDT eth olay 0 transfer_yok 135 dk
+730 NILUSDT eth olay 12049  135 dk
+731 PHAUSDT eth olay 11339  136 dk
+732 KERNELUSDT eth olay 6303  136 dk
+733 DOSUSDT eth kontrol 3263  136 dk
+734 FOLKSUSDT eth olay 492  136 dk
+735 NOMUSDT eth olay 2586  136 dk
+736 XAIUSDT eth olay 13 az_veri 136 dk
+737 QUSDT eth olay 206 az_veri 136 dk
+738 QNTUSDT eth olay 120559 cok_yogun 139 dk
+739 NMRUSDT eth olay 39751  140 dk
+740 ALICEUSDT eth olay 2882  140 dk
+741 SANDUSDT eth olay 33941  141 dk
+742 RLCUSDT eth olay 7202  141 dk
+743 BRUSDT eth olay 61  141 dk
+744 ONUSDT eth olay 353  142 dk
+745 JCTUSDT eth olay 1900  142 dk
+746 MAGICUSDT eth olay 1942  142 dk
+747 STRKUSDT eth olay 63427  143 dk
+748 WUSDT eth olay 14544  143 dk
+749 RSRUSDT eth olay 27484  144 dk
+750 GTCUSDT eth olay 24816  144 dk
+751 DOSUSDT eth olay 9872  144 dk
+752 BTWUSDT eth olay 0 transfer_yok 145 dk
+753 QUSDT eth olay 1069  145 dk
+754 ALTUSDT eth olay 19021  146 dk
