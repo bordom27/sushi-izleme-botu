@@ -286,6 +286,7 @@ def calistir(state: dict, gonder) -> None:
                         if tip == "STOP_MARKET":
                             c.piyasa_kapat(sym, _yuvarla(miktar, c.filtre(sym)["adim"], ROUND_DOWN), hedge)
                             gonder(f"⚠️ {etiket} {sym}: stop emri yeniden konamadı ({exc}), pozisyon piyasadan kapatıldı.")
+                            I["korumasiz"] = I.get("korumasiz", 0) + 1
                             c.algo_iptal_hepsi(sym)
                             del takip[sym]
                             break
@@ -374,6 +375,7 @@ def calistir(state: dict, gonder) -> None:
             except Exception as exc:
                 c.piyasa_kapat(sym, format(Decimal(str(dolan)).normalize(), "f"), hedge)
                 gonder(f"⚠️ {etiket} {sym}: short açıldı ama stop emri konamadı ({exc}); pozisyon hemen kapatıldı.")
+                I["korumasiz"] = I.get("korumasiz", 0) + 1
                 continue
             tp_not = ""
             try:
@@ -397,15 +399,42 @@ def calistir(state: dict, gonder) -> None:
 
 
 def ozet(state: dict) -> str:
+    """Akşam özeti: açık pozisyonlar + canlı performans + büyütme / durdurma kontrol listesi."""
     I = state.get("islem") or {}
     if not I.get("ortam"):
         return ""
     etiket = "GERÇEK" if I["ortam"] == "gercek" else "DEMO"
     s = [f"🤖 K69 işlem botu ({etiket}): açık {len(I.get('acik', {}))} short"
-         + (": " + ", ".join(I["acik"]) if I.get("acik") else "")]
+         + (": " + ", ".join(x.replace("USDT", "") for x in I["acik"]) if I.get("acik") else "")]
     log = [x for x in I.get("log", []) if x.get("ortam") == I["ortam"] and x.get("R") is not None]
-    if log:
-        rr = [x["R"] for x in log]
-        s.append(f"Bot işlemleri ({etiket}, toplam): {len(rr)} | isabet %{100 * sum(r > 0 for r in rr) / len(rr):.0f} | "
-                 f"{sum(rr):+.2f}R | {sum(x['pnl'] or 0 for x in log):+.2f} USDT")
+    if not log:
+        s.append("Canlı işlem henüz yok. (Hedef: büyütme kararı için en az 30 canlı işlem)")
+        return "\n".join(s)
+    rr = [x["R"] for x in log]
+    n = len(rr)
+    isabet = 100 * sum(r > 0 for r in rr) / n
+    ort = sum(rr) / n
+    tepe, eq, dd = 0.0, 0.0, 0.0
+    for r in rr:
+        eq += r
+        tepe = max(tepe, eq)
+        dd = max(dd, tepe - eq)
+    usdt = sum(x["pnl"] or 0 for x in log)
+    s.append(f"📊 Canlı performans: {n} işlem | isabet %{isabet:.0f} (test ~%85) | {sum(rr):+.2f}R | "
+             f"işlem başı {ort:+.3f}R (test ~+0.23) | en büyük düşüş {dd:.1f}R | {usdt:+.2f} USDT")
+    simdi = pd.Timestamp.now(tz="UTC").tz_localize(None)
+    son30 = [x["R"] for x in log if pd.Timestamp(x["zaman"]) >= simdi - pd.Timedelta(days=30)]
+    if son30 and len(son30) < n:
+        s.append(f"Son 30 gün: {len(son30)} işlem | isabet %{100 * sum(r > 0 for r in son30) / len(son30):.0f} | {sum(son30):+.2f}R")
+    kor = I.get("korumasiz", 0)
+    ok = lambda b: "✅" if b else "⬜"
+    s.append("Büyütme şartları: "
+             f"{ok(n >= 30)} 30+ işlem ({n}/30) · {ok(isabet >= 78)} isabet ≥%78 · {ok(ort > 0)} R/işlem > 0 · "
+             f"{ok(kor == 0)} korumasız pozisyon yok" + (f" ({kor} kez)" if kor else ""))
+    if n >= 30 and isabet >= 78 and ort > 0 and kor == 0:
+        s.append("✅ Şartların hepsi sağlandı: bakiyeyi büyütmeyi düşünebilirsin (işlem başı risk en fazla %0.5).")
+    if n >= 30 and isabet < 70:
+        s.append("🛑 DUR SİNYALİ: 30+ işlemde isabet %70'in altında. Botu durdurup (DURDUR.bat) sistemi inceleyelim.")
+    if dd > 25:
+        s.append("🛑 DUR SİNYALİ: düşüş 25R'yi aştı (testteki en kötü dönemden derin). Botu durdurup inceleyelim.")
     return "\n".join(s)
