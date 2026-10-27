@@ -177,7 +177,7 @@ def _bs(zincir, path, params=None, deneme=12):
     else:
         url0 = BS[zincir] + path
     for d in range(deneme):
-        bekle = (0.3 if url0.startswith("https://api.etherscan") else 0.7) - (time.time() - _bs_son[0])   # etherscan ~3/sn
+        bekle = (float(_os.environ.get("ES_ARALIK", "0.3")) if url0.startswith("https://api.etherscan") else 0.7) - (time.time() - _bs_son[0])   # etherscan ~3/sn
         if bekle > 0:
             time.sleep(bekle)
         _bs_son[0] = time.time()
