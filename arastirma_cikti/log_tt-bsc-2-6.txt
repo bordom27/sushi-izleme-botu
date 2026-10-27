@@ -1,0 +1,355 @@
+1 MEMEUSDT bsc kontrol_dump 80  0 dk
+2 ATOMUSDT bsc kontrol_dump 8773  0 dk
+3 NEIROUSDT bsc kontrol_dump 0 transfer_yok 0 dk
+4 THEUSDT bsc kontrol_dump 46341  1 dk
+5 ZROUSDT bsc kontrol_dump 3966  1 dk
+6 APEUSDT bsc kontrol_dump 0 transfer_yok 1 dk
+7 AAVEUSDT bsc kontrol_dump 7003  1 dk
+8 IDUSDT bsc kontrol_dump 3137  1 dk
+9 1000CHEEMSUSDT bsc kontrol_dump 76981  2 dk
+10 USUALUSDT bsc pump 0 transfer_yok 2 dk
+11 CTSIUSDT bsc dump 274  2 dk
+12 EDUUSDT bsc dump 8004  2 dk
+13 ROSEUSDT bsc dump 525  2 dk
+14 ONEUSDT bsc dump 0 transfer_yok 2 dk
+15 PENGUUSDT bsc dump 26 az_veri 2 dk
+16 ZILUSDT bsc dump 2300  2 dk
+17 INJUSDT bsc dump 8384  2 dk
+18 IDUSDT bsc dump 1882  2 dk
+19 UNIUSDT bsc dump 22582  2 dk
+20 1000FLOKIUSDT bsc dump 47424  2 dk
+21 ACEUSDT bsc dump 346  2 dk
+22 1000CATUSDT bsc dump 50318  3 dk
+23 ANKRUSDT bsc dump 2895  3 dk
+24 CAKEUSDT bsc pump 151662 cok_yogun 4 dk
+25 THEUSDT bsc pump 42734  4 dk
+26 ZETAUSDT bsc pump 71  4 dk
+27 EDUUSDT bsc pump 1416  4 dk
+28 SOLVUSDT bsc kontrol_dump 3855  5 dk
+29 KOMAUSDT bsc pump 21995  5 dk
+30 SYNUSDT bsc pump 502  5 dk
+31 BANANAS31USDT bsc kontrol_pump 46441  5 dk
+32 CYBERUSDT bsc kontrol_pump 3252  5 dk
+33 SOLVUSDT bsc dump 7285  6 dk
+34 STOUSDT bsc kontrol_pump 2755  6 dk
+35 ALTUSDT bsc pump 1755  6 dk
+36 BRUSDT bsc pump 150884 cok_yogun 9 dk
+37 BANANAS31USDT bsc dump 153621 cok_yogun 10 dk
+38 SKYAIUSDT bsc pump 81295  11 dk
+39 BRUSDT bsc dump 158495 cok_yogun 13 dk
+40 AIOTUSDT bsc kontrol_pump 77616  14 dk
+41 CYBERUSDT bsc kontrol_pump 1486  14 dk
+42 LUMIAUSDT bsc pump 4 az_veri 14 dk
+43 AGTUSDT bsc kontrol_dump 77306  15 dk
+44 USUALUSDT bsc pump 0 transfer_yok 15 dk
+45 DIAUSDT bsc pump 1501  15 dk
+46 BRUSDT bsc kontrol_pump 170335 cok_yogun 17 dk
+47 MERLUSDT bsc dump 86157  18 dk
+48 FHEUSDT bsc kontrol_dump 24562  18 dk
+49 MYXUSDT bsc kontrol_dump 63894  19 dk
+50 MYXUSDT bsc dump 160172 cok_yogun 21 dk
+51 B2USDT bsc kontrol_pump 107586  23 dk
+52 ALPINEUSDT bsc dump 260  23 dk
+53 FUSDT bsc kontrol_dump 28994  23 dk
+54 RESOLVUSDT bsc kontrol_dump 38461  23 dk
+55 BANKUSDT bsc kontrol_pump 89194  24 dk
+56 THEUSDT bsc kontrol_pump 43817  25 dk
+57 SOONUSDT bsc kontrol_pump 74380  26 dk
+58 AIOTUSDT bsc kontrol_dump 161053 cok_yogun 27 dk
+59 ALPINEUSDT bsc kontrol_dump 105  27 dk
+60 TUTUSDT bsc kontrol_pump 17412  27 dk
+61 COOKIEUSDT bsc kontrol_dump 13237  28 dk
+62 NEWTUSDT bsc kontrol_dump 1651  28 dk
+63 MEMEUSDT bsc kontrol_dump 1094  28 dk
+64 AIOTUSDT bsc dump 153405 cok_yogun 29 dk
+65 BRUSDT bsc pump 100681  30 dk
+66 ACEUSDT bsc kontrol_dump 471  30 dk
+67 VELVETUSDT bsc pump 48309  30 dk
+68 BELUSDT bsc kontrol_pump 243  30 dk
+69 FUSDT bsc pump 23071  31 dk
+70 MYXUSDT bsc dump 159048 cok_yogun 34 dk
+71 YGGUSDT bsc pump 104  34 dk
+72 MAVUSDT bsc kontrol_dump 346  34 dk
+73 DIAUSDT bsc kontrol_dump 445  34 dk
+74 BANANAS31USDT bsc kontrol_pump 25347  34 dk
+75 MERLUSDT bsc pump 15001  34 dk
+76 1000BONKUSDT bsc kontrol_dump 4675  34 dk
+77 1000CHEEMSUSDT bsc kontrol_pump 3497  34 dk
+78 LAUSDT bsc pump 19582  34 dk
+79 CYBERUSDT bsc kontrol_dump 2101  34 dk
+80 HEIUSDT bsc kontrol_pump 19 az_veri 34 dk
+81 STOUSDT bsc kontrol_dump 4915  35 dk
+82 AGTUSDT bsc kontrol_dump 67400  35 dk
+83 ARPAUSDT bsc kontrol_dump 644  36 dk
+84 XNYUSDT bsc kontrol_pump 150711 cok_yogun 37 dk
+85 SOONUSDT bsc kontrol_pump 79685  38 dk
+86 MAVIAUSDT bsc kontrol_pump 0 transfer_yok 38 dk
+87 MUSDT bsc dump 7584  38 dk
+88 TAUSDT bsc kontrol_pump 74366  39 dk
+89 TUTUSDT bsc pump 63378  40 dk
+90 ERAUSDT bsc kontrol_pump 25665  40 dk
+91 USUALUSDT bsc dump 0 transfer_yok 40 dk
+92 TAGUSDT bsc dump 50316  41 dk
+93 XVSUSDT bsc dump 32208  41 dk
+94 SKYAIUSDT bsc dump 69686  42 dk
+95 ROSEUSDT bsc dump 83  42 dk
+96 VANAUSDT bsc dump 11 az_veri 42 dk
+97 STOUSDT bsc dump 23638  42 dk
+98 SUSHIUSDT bsc dump 3514  42 dk
+99 BRUSDT bsc dump 14826  42 dk
+100 LISTAUSDT bsc dump 62268  43 dk
+101 JOEUSDT bsc dump 98  43 dk
+102 BASUSDT bsc dump 152923 cok_yogun 44 dk
+103 AIOTUSDT bsc dump 108932  45 dk
+104 COOKIEUSDT bsc dump 17273  45 dk
+105 AINUSDT bsc dump 53698  46 dk
+106 ATOMUSDT bsc dump 19510  46 dk
+107 AAVEUSDT bsc dump 12733  46 dk
+108 BELUSDT bsc pump 781  46 dk
+109 TAGUSDT bsc pump 74280  47 dk
+110 AGTUSDT bsc pump 57878  48 dk
+111 YGGUSDT bsc pump 453  48 dk
+112 TOWNSUSDT bsc pump 39610  49 dk
+113 1000RATSUSDT bsc kontrol_pump 1236  49 dk
+114 SOONUSDT bsc dump 91719  50 dk
+115 RESOLVUSDT bsc kontrol_dump 16332  50 dk
+116 XNYUSDT bsc kontrol_dump 153049 cok_yogun 51 dk
+117 MAVIAUSDT bsc pump 313  52 dk
+118 B2USDT bsc dump 154018 cok_yogun 54 dk
+119 USELESSUSDT bsc kontrol_dump 3608  54 dk
+120 TRADOORUSDT bsc kontrol_pump 140163  55 dk
+121 ASTERUSDT bsc dump 152419 cok_yogun 56 dk
+122 XPINUSDT bsc dump 153269 cok_yogun 58 dk
+123 SOONUSDT bsc pump 103951  59 dk
+124 DUSKUSDT bsc pump 17238  59 dk
+125 FETUSDT bsc pump 10462  59 dk
+126 FORMUSDT bsc kontrol_pump 37937  60 dk
+127 EVAAUSDT bsc dump 152619 cok_yogun 61 dk
+128 SOONUSDT bsc dump 156154 cok_yogun 63 dk
+129 QUSDT bsc pump 79736  64 dk
+130 AKEUSDT bsc dump 22170  64 dk
+131 LIGHTUSDT bsc dump 158930 cok_yogun 68 dk
+132 EDENUSDT bsc kontrol_pump 2923  68 dk
+133 1000RATSUSDT bsc pump 85  68 dk
+134 TAKEUSDT bsc kontrol_pump 150069 cok_yogun 69 dk
+135 TACUSDT bsc pump 0 transfer_yok 69 dk
+136 RIVERUSDT bsc kontrol_pump 150177 cok_yogun 70 dk
+137 TAKEUSDT bsc kontrol_dump 135591  71 dk
+138 SQDUSDT bsc kontrol_pump 197253 cok_yogun 75 dk
+139 TRADOORUSDT bsc kontrol_pump 150316 cok_yogun 76 dk
+140 FHEUSDT bsc pump 2707  76 dk
+141 AIOTUSDT bsc dump 87307  78 dk
+142 LYNUSDT bsc kontrol_pump 76164  78 dk
+143 AINUSDT bsc pump 34355  79 dk
+144 BASUSDT bsc dump 158211 cok_yogun 80 dk
+145 BEATUSDT bsc dump 152325 cok_yogun 81 dk
+146 GIGGLEUSDT bsc kontrol_dump 12007  82 dk
+147 SOLVUSDT bsc kontrol_dump 3546  82 dk
+148 币安人生USDT bsc kontrol_dump 62478  82 dk
+149 USELESSUSDT bsc kontrol_dump 2067  82 dk
+150 ARPAUSDT bsc kontrol_pump 217  82 dk
+151 LYNUSDT bsc dump 138710  84 dk
+152 ENSOUSDT bsc kontrol_pump 47916  84 dk
+153 NAORISUSDT bsc kontrol_pump 5339  85 dk
+154 PIEVERSEUSDT bsc dump 156491 cok_yogun 86 dk
+155 GPSUSDT bsc kontrol_pump 923  86 dk
+156 HUMAUSDT bsc kontrol_dump 24744  87 dk
+157 CLOUSDT bsc pump 154926 cok_yogun 88 dk
+158 BEATUSDT bsc kontrol_dump 153899 cok_yogun 90 dk
+159 ENSOUSDT bsc kontrol_pump 30848  90 dk
+160 ALLOUSDT bsc kontrol_pump 10601  90 dk
+161 SAHARAUSDT bsc kontrol_pump 8278  90 dk
+162 DUSKUSDT bsc pump 7378  91 dk
+163 AXSUSDT bsc pump 10779  91 dk
+164 HANAUSDT bsc dump 99391  92 dk
+165 XNYUSDT bsc pump 44499  92 dk
+166 HANAUSDT bsc pump 94750  94 dk
+167 TAKEUSDT bsc kontrol_pump 24779  94 dk
+168 ENSOUSDT bsc dump 148659  96 dk
+169 MYXUSDT bsc kontrol_pump 115036  97 dk
+170 QUSDT bsc kontrol_dump 69866  98 dk
+171 QUSDT bsc pump 64177  99 dk
+172 QUSDT bsc dump 96168  100 dk
+173 YBUSDT bsc dump 18126  100 dk
+174 BULLAUSDT bsc dump 175491 cok_yogun 104 dk
+175 BARDUSDT bsc kontrol_dump 423  104 dk
+176 GIGGLEUSDT bsc dump 8822  104 dk
+177 LYNUSDT bsc kontrol_dump 57939  104 dk
+178 MUSDT bsc dump 8472  105 dk
+179 XNYUSDT bsc kontrol_dump 60236  105 dk
+180 JCTUSDT bsc kontrol_dump 34774  106 dk
+181 BLESSUSDT bsc pump 42870  106 dk
+182 SIRENUSDT bsc pump 171689 cok_yogun 110 dk
+183 NAORISUSDT bsc pump 19001  110 dk
+184 ONUSDT bsc kontrol_pump 138763  111 dk
+185 YBUSDT bsc kontrol_pump 12321  112 dk
+186 MYXUSDT bsc pump 154877 cok_yogun 113 dk
+187 BLUAIUSDT bsc kontrol_pump 25074  113 dk
+188 RAVEUSDT bsc pump 153659 cok_yogun 115 dk
+189 SKYAIUSDT bsc dump 28071  115 dk
+190 BANKUSDT bsc kontrol_pump 47494  116 dk
+191 JCTUSDT bsc pump 108695  117 dk
+192 FHEUSDT bsc dump 7104  117 dk
+193 RESOLVUSDT bsc pump 5651  117 dk
+194 NAORISUSDT bsc dump 3272  117 dk
+195 FHEUSDT bsc pump 14017  117 dk
+196 ALICEUSDT bsc kontrol_dump 2129  117 dk
+197 PIEVERSEUSDT bsc kontrol_pump 65627  118 dk
+198 QUSDT bsc kontrol_dump 81694  119 dk
+199 LYNUSDT bsc dump 161932 cok_yogun 121 dk
+200 EULUSDT bsc kontrol_pump 27 az_veri 121 dk
+201 BLESSUSDT bsc kontrol_pump 44827  121 dk
+202 INXUSDT bsc kontrol_pump 4464  121 dk
+203 AGTUSDT bsc kontrol_pump 49753  122 dk
+204 BLESSUSDT bsc kontrol_dump 91538  123 dk
+205 4USDT bsc kontrol_pump 12225  123 dk
+206 SIRENUSDT bsc pump 153452 cok_yogun 124 dk
+207 NAORISUSDT bsc kontrol_dump 7010  124 dk
+208 EDUUSDT bsc kontrol_pump 1150  124 dk
+209 SPACEUSDT bsc kontrol_pump 69525  125 dk
+210 ZBTUSDT bsc kontrol_dump 8180  125 dk
+211 SKYAIUSDT bsc kontrol_dump 12764  125 dk
+212 GIGGLEUSDT bsc kontrol_pump 7391  125 dk
+213 EVAAUSDT bsc kontrol_pump 22021  126 dk
+214 我踏马来了USDT bsc kontrol_dump 15732  126 dk
+215 PROVEUSDT bsc pump 6062  126 dk
+216 ZBTUSDT bsc kontrol_pump 5832  126 dk
+217 BASUSDT bsc dump 152889 cok_yogun 128 dk
+218 ACEUSDT bsc kontrol_pump 234  128 dk
+219 TSTUSDT bsc kontrol_pump 3901  128 dk
+220 USELESSUSDT bsc kontrol_pump 2934  128 dk
+221 STOUSDT bsc pump 15097  128 dk
+222 BANKUSDT bsc dump 81413  129 dk
+223 YBUSDT bsc pump 12930  129 dk
+224 FHEUSDT bsc kontrol_pump 3391  129 dk
+225 INXUSDT bsc kontrol_pump 14068  130 dk
+226 BULLAUSDT bsc dump 176372 cok_yogun 131 dk
+227 4USDT bsc pump 96957  132 dk
+228 4USDT bsc dump 130063  134 dk
+229 FFUSDT bsc pump 22839  134 dk
+230 FFUSDT bsc dump 68972  134 dk
+231 AGTUSDT bsc kontrol_pump 154025 cok_yogun 136 dk
+232 TSTUSDT bsc pump 2650  136 dk
+233 INXUSDT bsc dump 39805  137 dk
+234 APRUSDT bsc pump 152847 cok_yogun 139 dk
+235 INUSDT bsc pump 71315  140 dk
+236 CTSIUSDT bsc pump 243  140 dk
+237 AKEUSDT bsc pump 152351 cok_yogun 142 dk
+238 AKEUSDT bsc dump 155396 cok_yogun 143 dk
+239 SPACEUSDT bsc pump 44334  144 dk
+240 我踏马来了USDT bsc dump 93683  144 dk
+241 FHEUSDT bsc kontrol_pump 14059  145 dk
+242 EDUUSDT bsc pump 4475  145 dk
+243 BASUSDT bsc dump 154915 cok_yogun 147 dk
+244 STABLEUSDT bsc pump 35511  147 dk
+245 SKYAIUSDT bsc kontrol_pump 150905 cok_yogun 150 dk
+246 GUAUSDT bsc kontrol_pump 19581  150 dk
+247 ENSOUSDT bsc pump 15193  150 dk
+248 ZBTUSDT bsc pump 121473  152 dk
+249 BLUAIUSDT bsc kontrol_dump 60715  152 dk
+250 BUSDT bsc pump 122840  154 dk
+251 BLUAIUSDT bsc kontrol_pump 102670  155 dk
+252 TSTUSDT bsc pump 6479  155 dk
+253 SPACEUSDT bsc dump 98134  156 dk
+254 AIOUSDT bsc kontrol_pump 16739  156 dk
+255 GUAUSDT bsc kontrol_pump 36464  157 dk
+256 EVAAUSDT bsc pump 90048  158 dk
+257 TAUSDT bsc kontrol_pump 87414  159 dk
+258 BSBUSDT bsc pump 157121 cok_yogun 160 dk
+259 USELESSUSDT bsc pump 6569  160 dk
+260 IRYSUSDT bsc pump 158268 cok_yogun 162 dk
+261 IRYSUSDT bsc dump 165414 cok_yogun 164 dk
+262 EDENUSDT bsc pump 1251  164 dk
+263 BELUSDT bsc kontrol_dump 240  164 dk
+264 INUSDT bsc kontrol_dump 30464  164 dk
+265 XNYUSDT bsc kontrol_pump 19308  165 dk
+266 XANUSDT bsc pump 42047  165 dk
+267 VELVETUSDT bsc kontrol_dump 20636  165 dk
+268 AKEUSDT bsc kontrol_dump 19526  166 dk
+269 TRIAUSDT bsc kontrol_dump 166532 cok_yogun 167 dk
+270 CLOUSDT bsc pump 87878  168 dk
+271 LABUSDT bsc pump 52005  168 dk
+272 TAUSDT bsc pump 35408  169 dk
+273 ALLOUSDT bsc dump 150896 cok_yogun 173 dk
+274 UBUSDT bsc dump 151340 cok_yogun 174 dk
+275 BUSDT bsc kontrol_dump 71709  175 dk
+276 MYXUSDT bsc dump 162670 cok_yogun 177 dk
+277 BASUSDT bsc kontrol_dump 156910 cok_yogun 179 dk
+278 RAVEUSDT bsc kontrol_pump 150096 cok_yogun 180 dk
+279 SAHARAUSDT bsc dump 162454 cok_yogun 181 dk
+280 RAVEUSDT bsc kontrol_dump 152077 cok_yogun 183 dk
+281 COLLECTUSDT bsc pump 101364  184 dk
+282 IDOLUSDT bsc kontrol_pump 57886  185 dk
+283 TAGUSDT bsc kontrol_pump 45511  185 dk
+284 TRADOORUSDT bsc pump 87451  186 dk
+285 TAUSDT bsc kontrol_pump 73320  187 dk
+286 ONUSDT bsc kontrol_pump 41553  188 dk
+287 PIEVERSEUSDT bsc kontrol_pump 153126 cok_yogun 190 dk
+288 ACEUSDT bsc kontrol_dump 228  190 dk
+289 NAORISUSDT bsc kontrol_dump 2971  190 dk
+290 DEXEUSDT bsc pump 46089  190 dk
+291 BELUSDT bsc dump 6959  190 dk
+292 ONEUSDT bsc kontrol_dump 28494  191 dk
+293 BASUSDT bsc dump 155044 cok_yogun 193 dk
+294 LAUSDT bsc kontrol_dump 58 az_veri 193 dk
+295 PROMUSDT bsc kontrol_pump 491  193 dk
+296 APRUSDT bsc kontrol_pump 78096  194 dk
+297 LABUSDT bsc pump 155317 cok_yogun 195 dk
+298 AKEUSDT bsc kontrol_dump 113213  196 dk
+299 EVAAUSDT bsc pump 151028 cok_yogun 198 dk
+300 SQDUSDT bsc kontrol_dump 16041  198 dk
+301 AIOUSDT bsc kontrol_dump 10241  198 dk
+302 PARTIUSDT bsc dump 3355  198 dk
+303 AIOTUSDT bsc dump 48642  199 dk
+304 BANKUSDT bsc pump 170579 cok_yogun 202 dk
+305 ACEUSDT bsc pump 394  202 dk
+306 ACEUSDT bsc dump 2139  202 dk
+307 FHEUSDT bsc kontrol_dump 4889  202 dk
+308 ONUSDT bsc dump 151686 cok_yogun 204 dk
+309 APRUSDT bsc kontrol_pump 68009  205 dk
+310 LIGHTUSDT bsc kontrol_dump 65408  205 dk
+311 UAIUSDT bsc pump 45911  206 dk
+312 GIGGLEUSDT bsc pump 1136  206 dk
+313 MMTUSDT bsc dump 0 transfer_yok 206 dk
+314 BILLUSDT bsc kontrol_dump 84505  207 dk
+315 ONEUSDT bsc kontrol_pump 65713  208 dk
+316 BULLAUSDT bsc kontrol_pump 80736  209 dk
+317 HEIUSDT bsc dump 720  209 dk
+318 SIRENUSDT bsc kontrol_dump 36931  209 dk
+319 4USDT bsc kontrol_pump 29180  210 dk
+320 GUAUSDT bsc pump 160518 cok_yogun 211 dk
+321 PROMUSDT bsc dump 158  211 dk
+322 SKYAIUSDT bsc dump 152427 cok_yogun 212 dk
+323 PIEVERSEUSDT bsc kontrol_pump 116600  214 dk
+324 GUSDT bsc kontrol_pump 1158  214 dk
+325 4USDT bsc kontrol_dump 55237  215 dk
+326 STARUSDT bsc pump 106365  216 dk
+327 ZAMAUSDT bsc kontrol_pump 39365  216 dk
+328 NEIROUSDT bsc pump 951  216 dk
+329 PARTIUSDT bsc dump 1732  217 dk
+330 BMTUSDT bsc dump 14887  217 dk
+331 COOKIEUSDT bsc dump 7354  217 dk
+332 EVAAUSDT bsc kontrol_pump 29941  217 dk
+333 ONUSDT bsc kontrol_pump 116232  219 dk
+334 CAPUSDT bsc kontrol_dump 106320  221 dk
+335 QUSDT bsc kontrol_dump 59658  222 dk
+336 BTRUSDT bsc dump 159311 cok_yogun 226 dk
+337 USELESSUSDT bsc pump 3452  226 dk
+338 UAIUSDT bsc pump 125836  228 dk
+339 BRUSDT bsc pump 3111  228 dk
+340 SIRENUSDT bsc kontrol_pump 21690  228 dk
+341 XANUSDT bsc dump 141630  230 dk
+342 SOONUSDT bsc kontrol_pump 19840  230 dk
+343 JCTUSDT bsc dump 43011  231 dk
+344 CLOUSDT bsc kontrol_dump 55467  232 dk
+345 QUSDT bsc kontrol_dump 57681  233 dk
+346 SYNUSDT bsc pump 95  233 dk
+347 MYXUSDT bsc pump 16528  233 dk
+348 SIRENUSDT bsc kontrol_dump 14998  233 dk
+349 BRUSDT bsc pump 10270  234 dk
+350 AINUSDT bsc dump 170850 cok_yogun 236 dk
+351 AGTUSDT bsc pump 61120  237 dk
+352 AGTUSDT bsc dump 154227 cok_yogun 241 dk
+353 BTWUSDT bsc dump 156623 cok_yogun 243 dk
+354 BULLAUSDT bsc pump 11042  243 dk
+355 BULLAUSDT bsc dump 39184  243 dk
