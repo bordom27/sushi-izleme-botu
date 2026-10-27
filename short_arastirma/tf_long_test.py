@@ -98,7 +98,7 @@ def sinyal(g: pd.DataFrame, yon: int, A: dict, mpg: int) -> list[dict]:
 
 
 def islemler(s: str, g: pd.DataFrame, ad: str, cfg: dict) -> list[dict]:
-    mpg = 6 if cfg["tf"] == "4h" else 24
+    mpg = {"1h": 24, "2h": 12, "4h": 6, "8h": 3, "12h": 2}[cfg["tf"]]
     yon, A = cfg["yon"], cfg["A"]
     sig = sinyal(g, yon, A, mpg)
     if not sig:
