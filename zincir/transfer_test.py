@@ -11,7 +11,8 @@ sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 import numpy as np, pandas as pd
 from zincir import rpc, akilli
 
-OUTD = "arastirma_cikti/zincir/transfer"
+OUTD = os.environ.get("CIKTI", "arastirma_cikti/zincir/transfer")
+PENCERE = os.environ.get("PENCERE", "zincir/transfer_pencereler.csv")
 SURE = float(os.environ.get("MAKS_DAKIKA", "320")) * 60
 akilli.MAKS_TX = 150_000
 
@@ -88,7 +89,10 @@ def ozellik(T, t):
 
 
 def main():
+    global OUTD, PENCERE
     z, parca, toplam = sys.argv[1], int(sys.argv[2]), int(sys.argv[3])
+    if len(sys.argv) > 4 and sys.argv[4] == "k69":
+        OUTD, PENCERE = "arastirma_cikti/zincir/k69", "zincir/k69_pencereler.csv"
     if z == "bsc":
         k = os.environ.get("NODEREAL_KEY", "").strip().strip('"').strip("'")
         if not k:
@@ -96,7 +100,7 @@ def main():
         rpc._sira["bsc"] = [k if k.startswith("http") else f"https://bsc-mainnet.nodereal.io/v1/{k.split('/')[-1]}"]
     os.makedirs(OUTD, exist_ok=True)
     fo = f"{OUTD}/ozellik_{z}_{parca}.csv"
-    W = pd.read_csv("zincir/transfer_pencereler.csv", parse_dates=["t"]); W["pid"] = W.index
+    W = pd.read_csv(PENCERE, parse_dates=["t"]); W["pid"] = W.index
     W = W[(W.zincir == z) & (W.pid % toplam == parca)]
     bitti = set(pd.read_csv(fo).pid) if os.path.exists(fo) else set()
     bas = time.time(); n = 0
@@ -123,7 +127,7 @@ def main():
                "dagitim_n_s", "dagitim_n_b", "dagitim_m_s", "dagitim_m_b"]
         pd.DataFrame([sat]).reindex(columns=kol).to_csv(fo, mode="a", header=not os.path.exists(fo), index=False, float_format="%.5g")
         n += 1
-        print(n, w.symbol, z, w.tip, sat.get("n"), sat["not"], round((time.time() - bas) / 60), "dk", flush=True)
+        print(n, w.symbol, z, w.get("tip", ""), sat.get("n"), sat["not"], round((time.time() - bas) / 60), "dk", flush=True)
 
 
 if __name__ == "__main__":
