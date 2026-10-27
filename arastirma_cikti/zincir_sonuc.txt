@@ -35,3 +35,10 @@ BUYUK HAREKET (yon yok) modeli, 2026 testi: en ust %10 risk diliminde olay payi 
   Gercek taban (24s'te -%30 veya +%50): ~%1 / 4s mum -> alarm aninda ~%8; alarmlarin ~%90'i yine bos.
 UYARI: kontroller sakin donemlerden secildi (ara hareketler disarida) -> gercek ayirt etme gucu bundan dusuk olur.
 Sonuc: zincir ustu transfer hareketliligi 'yakinda buyuk hareket' riskini olcuyor (ozellikle dump), yonu zayif. En mantikli kullanim: risk filtresi.
+
+K69 SHORT + ZINCIR RISK FILTRESI (27 Eki 2026) - kod: zincir/k69_zincir_analiz.py
+2024-06+ zincir verili 406 islem (canli filtreli 307; isabet %81.8 / %85.0). Giris oncesi 48s transfer ozellikleri.
+Kaybeden islemi ayirt etme: tum ozellikler AUC 0.48-0.60 (en iyi yatiran sayisi orani 0.60), risk modelleri 0.52-0.53.
+Riskli coinleri elemek (ust %5-50): elenen islemlerin isabeti kalanlarla ayni ya da daha yuksek; isabet degismiyor, toplam R dusuyor.
+2026 zaman testi: filtre isabeti dusurdu (canli %85.7 -> %83-85), R 18.7 -> 10-15.
+Sonuc: zincir risk filtresi K69 SHORT'a fayda saglamiyor. Canli kural degismedi.
