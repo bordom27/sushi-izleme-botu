@@ -625,7 +625,7 @@
   ],
   "eski_pozisyonlar": {},
   "son_ozet_gunu": "2026-10-28",
-  "son_calisma": "2026-10-28T08:12:58+00:00",
+  "son_calisma": "2026-10-28T09:12:58+00:00",
   "ayar_parmak_izi": "bb60a74e14",
   "trend_portfoy": {
     "NEARUSDT": 0.0103,
@@ -1244,15 +1244,6 @@
       "yildiz": 0,
       "kalan": 3,
       "hacim_m": 4.8
-    },
-    {
-      "sym": "VELODROMEUSDT",
-      "seviye": 0.03353,
-      "uzaklik": 9.5,
-      "dokunus": 4,
-      "yildiz": 0,
-      "kalan": 2,
-      "hacim_m": 2.0
     }
   ],
   "duyuru_short_retest4": true,
