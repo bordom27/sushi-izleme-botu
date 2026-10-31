@@ -1,6 +1,6 @@
-Fri Oct 23 12:45:38 UTC 2026
+Sat Oct 31 21:20:57 UTC 2026
 fd4b9c86622aec9f475ad8ea10250bc819113ebc  pine/K69_Gunluk_Trend.pine
-0f01d8b9e11e4411b5fa0b2c251cb224397fee00  pine/K69_SHORT_Retest.pine
+d78ce968f7a230dc11836f6fd122941f5317f810  pine/K69_SHORT_Retest.pine
 355d6c022c00bf7fea159a0fe35707f312e7a391  pine/Kirilim69_PRO.pine
 74b58e54550d04e444b76af83e62e6bd3ad4fcff  pine/Kirilim69_PRO_Strateji.pine
 == pine/K69_Gunluk_Trend.pine 200
