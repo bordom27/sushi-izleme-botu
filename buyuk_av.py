@@ -496,10 +496,12 @@ def backtest(D: dict, trades: list):
     for t in ("AAPL", "NVDA", "THYAO.IS$", "ASELS.IS$", "BTC-USD", "ETH-USD", "GLD", "SPY", "XOM"):
         z = [x for x in ana if x["t"] == t]
         notu(f"  {t}: {len(z)}/{sum(x['R'] for x in z):.2f}")
+    pf = []
     for bas, bit in (("2005-01-01", None), ("2005-01-01", "2020-01-01"), ("2020-01-01", None)):
         r = portfoy(trades, bas, bit)
-        notu(f"portfoy {bas}..{bit or 'bugun'}: CAGR %{r['cagr'] * 100:.1f}  maxDD %{r['mdd'] * 100:.1f}  "
-              f"alinan {len(r['alinan'])}  carpan x{r['eq']:.2f}")
+        pf.append(f"portfoy {bas}..{bit or 'bugun'}: CAGR %{r['cagr'] * 100:.1f}  maxDD %{r['mdd'] * 100:.1f}  "
+                  f"alinan {len(r['alinan'])}  carpan x{r['eq']:.2f}")
+    notu(" | ".join(pf))
     notu("arastirma referansi: islem 4939, toplam R 3849.3, 2005+ CAGR %19.0 / DD %24.8 / alinan 640")
 
 
