@@ -242,6 +242,7 @@ def tara(d: dict):
     ph, pl = pivotlar(d["h"], d["l"], n)
     ph_list, pl_list = [], []
     aktif, olaylar, bozuk = None, [], set()
+    d.setdefault("_ist", {"kurulan": 0, "kirilim": 0, "apex": 0, "omur": []})
     for b in range(n + 15, N):
         p = b - n
         yeni_pivot = False
@@ -256,10 +257,13 @@ def tara(d: dict):
                     f["bayrak"] = aktif["bayrak"]
                 else:
                     f["bayrak"] = set()
+                    f["dogum"] = b
+                    d["_ist"]["kurulan"] += 1
                 aktif = f
         if not aktif:
             continue
         if b >= aktif["apex"]:
+            d["_ist"]["apex"] += 1; d["_ist"]["omur"].append(b - aktif.get("dogum", b))
             bozuk.add(aktif["key"]); aktif = None
             continue
         up, lw, c = deger(aktif, b, "u"), deger(aktif, b, "l"), d["c"][b]
@@ -269,6 +273,7 @@ def tara(d: dict):
             olaylar.append(dict(tur="kirilim", yon=yon, b=b, f=aktif, seviye=seviye,
                                 hedef=seviye + aktif["w0"] if yon == "yukari" else seviye - aktif["w0"],
                                 gecersiz=lw if yon == "yukari" else up))
+            d["_ist"]["kirilim"] += 1; d["_ist"]["omur"].append(b - aktif.get("dogum", b))
             bozuk.add(aktif["key"]); aktif = None
             continue
         for taraf, mesafe in (("ust", up - c), ("alt", c - lw)):
@@ -560,6 +565,14 @@ def onizle(sonuc: list):
     for r in aktifler:
         k = r["piyasa"] + "-" + r["aralik"]
         akt[k] = akt.get(k, 0) + 1
+    kur = sum(r["d"]["_ist"]["kurulan"] for r in sonuc)
+    om = [x for r in sonuc for x in r["d"]["_ist"]["omur"]]
+    kir = sum(r["d"]["_ist"]["kirilim"] for r in sonuc); apx = sum(r["d"]["_ist"]["apex"] for r in sonuc)
+    satir0 = (f"kripto listesi {len(kripto_listesi())} | kurulan formasyon {kur}, kirilimla biten {kir}, apex {apx}, "
+              f"omur ort {np.mean(om) if om else 0:.1f} medyan {np.median(om) if om else 0:.0f} mum")
+    print(satir0)
+    if os.environ.get("GITHUB_ACTIONS") == "true":
+        print("::notice::" + satir0)
     satir = (f"veri {sayim} | aktif {akt} | "
              f"aktif ucgen: {len(aktifler)} / {len(sonuc)} grafik, tipler {tipler} | "
              f"tarihsel kirilim: yukari {istat['yukari'][0]} (hedef {istat['yukari'][1]}, gecersiz {istat['yukari'][2]}), "
