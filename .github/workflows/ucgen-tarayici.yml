@@ -15,6 +15,10 @@ on:
         description: "true: Telegram yok, grafikleri ucgen-onizleme dalina kaydet"
         type: boolean
         default: false
+      istatistik:
+        description: "true: Telegram yok, gecmis kirilimlarin isabetini hesapla"
+        type: boolean
+        default: false
 
 permissions:
   contents: write
@@ -41,6 +45,10 @@ jobs:
       - name: Kutuphaneleri kur
         run: pip install -r requirements.txt matplotlib
 
+      - name: Istatistik
+        if: ${{ github.event.inputs.istatistik == 'true' }}
+        run: python ucgen_istatistik.py
+
       - name: Onizleme
         if: ${{ github.event.inputs.onizleme == 'true' }}
         run: |
@@ -54,7 +62,7 @@ jobs:
           git add *.png && git commit -qm "onizleme [skip ci]" && git push -qf origin ucgen-onizleme
 
       - name: Tara + Telegram
-        if: ${{ github.event.inputs.onizleme != 'true' }}
+        if: ${{ github.event.inputs.onizleme != 'true' && github.event.inputs.istatistik != 'true' }}
         env:
           TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
           TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
