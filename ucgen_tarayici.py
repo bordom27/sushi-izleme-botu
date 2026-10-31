@@ -81,7 +81,8 @@ def kripto_listesi() -> list[str]:
     if not veri:
         from coin_listesi import COINLER  # yedek: botun listesi
         return list(dict.fromkeys(COINLER))
-    sabit = ("USDC", "FDUSD", "TUSD", "USDP", "DAI", "EUR", "BUSD", "USD1", "AEUR", "PAXG", "XAUT", "USDE", "BFUSD")
+    sabit = ("USDC", "FDUSD", "TUSD", "USDP", "DAI", "EUR", "BUSD", "USD1", "AEUR", "PAXG", "XAUT", "USDE", "BFUSD",
+             "RLUSD", "PYUSD", "EURI", "XUSD", "USDS", "GBP", "TRY", "BRL")
     secilen = []
     for x in veri:
         s = x["symbol"]
@@ -99,6 +100,9 @@ def binance(sym: str, aralik: str, adet: int = 400) -> dict | None:
     simdi = time.time() * 1000
     v = [k for k in v if k[6] < simdi]   # sadece kapanmis mumlar
     if len(v) < 120:
+        return None
+    kap = np.array([float(k[4]) for k in v[-120:]])
+    if kap.std() / kap.mean() < 0.01:      # stabil coin / sabit fiyat
         return None
     a = np.array([[k[0] / 1000, float(k[1]), float(k[2]), float(k[3]), float(k[4]), float(k[7])] for k in v])
     return dict(t=a[:, 0], o=a[:, 1], h=a[:, 2], l=a[:, 3], c=a[:, 4], v=a[:, 5])
@@ -185,8 +189,10 @@ def cizgi(piv: list, c: np.ndarray, b: int, tol: float, ust: bool):
 
 def formasyon_kur(d, b, ph_list, pl_list, A):
     n, M = AYAR["PIVOT"], AYAR["MAX_BAR"]
-    hs = [(i, d["h"][i]) for i in ph_list if b - M <= i <= b - n]
-    ls = [(i, d["l"][i]) for i in pl_list if b - M <= i <= b - n]
+    o, c = d["o"], d["c"]
+    # pivot fiyati: fitil gövdeden 1 ATR'den uzunsa gövde + 1 ATR'ye kirpilir (tek iğne cizgiyi bozmasin)
+    hs = [(i, min(d["h"][i], max(o[i], c[i]) + A[i])) for i in ph_list if b - M <= i <= b - n]
+    ls = [(i, max(d["l"][i], min(o[i], c[i]) - A[i])) for i in pl_list if b - M <= i <= b - n]
     if len(hs) < 2 or len(ls) < 2 or not (A[b] > 0):
         return None
     tol = AYAR["TOL_ATR"] * A[b]
@@ -198,6 +204,8 @@ def formasyon_kur(d, b, ph_list, pl_list, A):
     if not (u["i0"] < li1 and lo["i0"] < ui1):        # taraflar ic ice gecmeli
         return None
     x0 = min(u["i0"], lo["i0"])
+    if max(u["i0"], lo["i0"]) - x0 > 0.5 * (b - x0):   # iki cizgi de formasyonun ilk yarisinda baslamali
+        return None
     U = lambda x: u["p0"] + u["s"] * (x - u["i0"])     # noqa: E731
     L = lambda x: lo["p0"] + lo["s"] * (x - lo["i0"])  # noqa: E731
     w0, wb = U(x0) - L(x0), U(b) - L(b)
@@ -544,7 +552,16 @@ def onizle(sonuc: list):
                 ad = gorunen(r["piyasa"], r["sym"])
                 open(f"onizleme/kirilim_{r['piyasa']}_{r['aralik']}_{ad}_{ornek}.png", "wb").write(
                     grafik(ad, r["aralik"], d, o["f"], o))
-    satir = (f"aktif ucgen: {len(aktifler)} / {len(sonuc)} grafik, tipler {tipler} | "
+    sayim = {}
+    for r in sonuc:
+        k = r["piyasa"] + "-" + r["aralik"]
+        sayim[k] = sayim.get(k, 0) + 1
+    akt = {}
+    for r in aktifler:
+        k = r["piyasa"] + "-" + r["aralik"]
+        akt[k] = akt.get(k, 0) + 1
+    satir = (f"veri {sayim} | aktif {akt} | "
+             f"aktif ucgen: {len(aktifler)} / {len(sonuc)} grafik, tipler {tipler} | "
              f"tarihsel kirilim: yukari {istat['yukari'][0]} (hedef {istat['yukari'][1]}, gecersiz {istat['yukari'][2]}), "
              f"asagi {istat['asagi'][0]} (hedef {istat['asagi'][1]}, gecersiz {istat['asagi'][2]})")
     print(satir)
