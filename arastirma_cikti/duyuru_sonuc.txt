@@ -1,0 +1,16 @@
+Binance duyuru olay testi (31 Eki 2026) - kod: duyuru/cek.py, sinifla.py, olay.py, strateji.py, hizli_giris.py, hedefli.py
+Duyurular: binance.com CMS (7191 duyuru, 2017-2026). Test: 1 saatlik vadeli veri 2024-01..2026-10, vadelisi olan coinler.
+Giris: duyurudan sonraki ilk tam saatin acilisi. Maliyet %0.2 + funding. Taban: ayni coinin 20-60 gun onceki rastgele saatleri (~0 getiri).
+
+Duyuru sonrasi medyan getiri (24s / 3g / 7g):  spot delist (62) -9 / -15 / -24% ; izleme etiketi (72) -3 / -4 / -11% ;
+  vadeli delist (19) -7 / -10 / -23% ; HODLer airdrop (28) -9 / -14 / -20% ; spot listeleme (36) -3 / -9 / -13% ; yeni vadeli (202) -5 / -6 / -10%.
+  Spot delistte ilk saatte zaten medyan -%13 dusus kaciyor (dakikalik giris isabeti artirmiyor: ilk dakikalar cok oynak).
+
+Isabet odakli kural (short, sabit hedef, 7 gun tutma, ayni mumda hedef+stop -> stop):
+  SPOT DELIST, hedef %8 / stop %35: 62 islem, isabet %88.7, islem basi +%4.1 (+0.12R); 2024 %82, 2025 %95, 2026 %88.
+     4 saat gec giriste de: 2024 %91, 2025 %89, 2026 %91 -> giris gecikmesine dayanikli.
+  SPOT DELIST, hedef %8 / stop %25: isabet %85.5, +%3.5 (+0.14R).
+  IZLEME ETIKETI, hedef %5 / stop %15: 72 islem, %82, +0.13R; ama 4s gec giriste 2026 %73 ve ~0 -> zayif/kirilgan.
+  HODLer / vadeli delist / listeleme: orneklem kucuk ya da isabet < %75.
+Sinir: 2024 oncesi delist edilen coinlerin cogunun vadelisi yok -> bagimsiz eski donem testi yapilamadi. Ayni duyuruda
+  birden cok coin -> islemler birbirine bagli (tek kotu duyuru birkac stop). Ayda ~2 duyuru.
