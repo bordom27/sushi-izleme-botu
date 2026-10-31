@@ -493,9 +493,11 @@ def backtest(D: dict, trades: list):
     ana = [x for x in trades if not x["open"]] + [x for x in trades if x["open"]]
     sumR = sum(x["R"] for x in ana)
     notu(f"varlik: {sum(1 for t in GRUP if (t + '$' if GRUP[t] == 'BIST' else t) in D)}  islem: {len(ana)}  toplam R: {sumR:.1f}")
+    refs = []
     for t in ("AAPL", "NVDA", "THYAO.IS$", "ASELS.IS$", "BTC-USD", "ETH-USD", "GLD", "SPY", "XOM"):
         z = [x for x in ana if x["t"] == t]
-        notu(f"  {t}: {len(z)}/{sum(x['R'] for x in z):.2f}")
+        refs.append(f"{t} {len(z)}/{sum(x['R'] for x in z):.2f}")
+    notu("  ".join(refs))
     pf = []
     for bas, bit in (("2005-01-01", None), ("2005-01-01", "2020-01-01"), ("2020-01-01", None)):
         r = portfoy(trades, bas, bit)
