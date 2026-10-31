@@ -9,6 +9,7 @@ Kurallar (F1):
           + hacim >= 1.5 x onceki 50 gun ortalamasi
           + piyasa rejimi: ilgili endeks 200 gunluk ortalamanin ustunde
           + likidite: gunluk islem hacmi >= 1 milyon $ (ETF haric)
+          + buyuk trend: EMA(60) > EMA(130) (haftalik MACD > 0), v1.1 - 31 Eki 2026
           -> ertesi gun acilista giris
   STOP  : giris - 2 x ATR(20)
   KAR   : +%50'de pozisyonun 1/3'u satilir, stop girise cekilir
@@ -37,7 +38,8 @@ import requests
 
 # ───────────────────────── Ayarlar ─────────────────────────
 P = dict(N=100, VOL=1.5, STOP_K=2.0, TRAIL=0.25, PART_AT=0.5, PART_FR=1 / 3,
-         TS_BARS=40, TS_MIN=0.05, LIKIDITE=1e6)
+         TS_BARS=40, TS_MIN=0.05, LIKIDITE=1e6,
+         TREND_EMA=(60, 130))   # haftalik MACD > 0 karsiligi (Murphy: buyuk trend yonunde islem)
 PORTFOY = dict(K=10, RISK=0.01, CAP=0.20, KRIPTO_MAX=2)
 KAGIT_BASLANGIC = "2026-11-02"   # kagit portfoy bu tarihten itibaren bos baslar
 COST = {"US": 0.001, "ETF": 0.001, "BIST": 0.002, "CR": 0.0015}
@@ -137,6 +139,16 @@ def sma(a: np.ndarray, n: int) -> np.ndarray:
     return out
 
 
+def ema(a: np.ndarray, n: int) -> np.ndarray:
+    out = np.empty(len(a))
+    k = 2 / (n + 1)
+    v = a[0]
+    for i, x in enumerate(a):
+        v = x if i == 0 else v + k * (x - v)
+        out[i] = v
+    return out
+
+
 def atr_wilder(H, L, C, n=20) -> np.ndarray:
     out = np.full(len(C), np.nan)
     v = math.nan
@@ -196,6 +208,7 @@ def sim(t: str, g: str, D: dict, B: dict) -> tuple[list, dict | None, dict | Non
     A = atr_wilder(H, L, C, 20)
     volMA = sma(V, 50)
     hiN = hi_prev(C, P["N"])
+    trend = ema(C, P["TREND_EMA"][0]) - ema(C, P["TREND_EMA"][1]) if P.get("TREND_EMA") else None
     bad = np.zeros(n, dtype=bool)
     bad[1:] = (C[1:] / C[:-1] > 2.5) | (C[1:] / C[:-1] < 0.4)
     b = B.get(BENCH[g])
@@ -260,6 +273,8 @@ def sim(t: str, g: str, D: dict, B: dict) -> tuple[list, dict | None, dict | Non
         if not (C[i] > hiN[i] and C[i - 1] <= hiN[i - 1]):
             continue
         if not (V[i] > P["VOL"] * volMA[i - 1]):
+            continue
+        if trend is not None and not (trend[i] > 0):
             continue
         if b is None:
             continue
@@ -494,7 +509,7 @@ def backtest(D: dict, trades: list):
     sumR = sum(x["R"] for x in ana)
     notu(f"varlik: {sum(1 for t in GRUP if (t + '$' if GRUP[t] == 'BIST' else t) in D)}  islem: {len(ana)}  toplam R: {sumR:.1f}")
     refs = []
-    for t in ("AAPL", "NVDA", "THYAO.IS$", "ASELS.IS$", "BTC-USD", "ETH-USD", "GLD", "SPY", "XOM"):
+    for t in ("AAPL", "THYAO.IS$", "BTC-USD"):
         z = [x for x in ana if x["t"] == t]
         refs.append(f"{t} {len(z)}/{sum(x['R'] for x in z):.2f}")
     notu("  ".join(refs))
@@ -504,7 +519,7 @@ def backtest(D: dict, trades: list):
         pf.append(f"portfoy {bas}..{bit or 'bugun'}: CAGR %{r['cagr'] * 100:.1f}  maxDD %{r['mdd'] * 100:.1f}  "
                   f"alinan {len(r['alinan'])}  carpan x{r['eq']:.2f}")
     notu(" | ".join(pf))
-    notu("arastirma referansi: islem 4939, toplam R 3849.3, 2005+ CAGR %19.0 / DD %24.8 / alinan 640")
+    notu("arastirma referansi (v1.1): islem 4444, toplam R 3487.3, 2005+ CAGR %19.5 / DD %23.8 / alinan 587")
 
 
 def main():
