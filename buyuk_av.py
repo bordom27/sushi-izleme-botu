@@ -10,6 +10,7 @@ Kurallar (F1):
           + piyasa rejimi: ilgili endeks 200 gunluk ortalamanin ustunde
           + likidite: gunluk islem hacmi >= 1 milyon $ (ETF haric)
           + buyuk trend: EMA(60) > EMA(130) (haftalik MACD > 0), v1.1 - 31 Eki 2026
+          + ABD hisselerinde sektor ETF'i 50 gunluk ortalamanin ustunde, v1.2 - 31 Eki 2026
           -> ertesi gun acilista giris
   STOP  : giris - 2 x ATR(20)
   KAR   : +%50'de pozisyonun 1/3'u satilir, stop girise cekilir
@@ -39,7 +40,8 @@ import requests
 # ───────────────────────── Ayarlar ─────────────────────────
 P = dict(N=100, VOL=1.5, STOP_K=2.0, TRAIL=0.25, PART_AT=0.5, PART_FR=1 / 3,
          TS_BARS=40, TS_MIN=0.05, LIKIDITE=1e6,
-         TREND_EMA=(60, 130))   # haftalik MACD > 0 karsiligi (Murphy: buyuk trend yonunde islem)
+         TREND_EMA=(60, 130),   # haftalik MACD > 0 karsiligi (Murphy: buyuk trend yonunde islem)
+         SEKTOR_MA=50)          # ABD hissesinin sektor ETF'i 50G ortalamanin ustunde (Livermore: grup liderligi)
 PORTFOY = dict(K=10, RISK=0.01, CAP=0.20, KRIPTO_MAX=2)
 KAGIT_BASLANGIC = "2026-11-02"   # kagit portfoy bu tarihten itibaren bos baslar
 COST = {"US": 0.001, "ETF": 0.001, "BIST": 0.002, "CR": 0.0015}
@@ -61,6 +63,16 @@ BIST = [s + ".IS" for s in ("THYAO ASELS GARAN AKBNK YKBNK ISCTR KCHOL SISE SAHO
                              "DOHOL GUBRF ULKER AEFES CCOLA OTKAR TTRAK SOKM VAKBN HALKB AKSEN TKFEN ZOREN ECILC "
                              "NTHOL ALBRK SKBNK CIMSA BRSAN AKSA DEVA LOGO NETAS IHLAS KARSN GSDHO OYAKC "
                              "BAGFS").split()]
+_SEK = {"XLK": "MSFT AAPL NVDA AMD ADBE CRM ORCL INTC CSCO IBM QCOM TXN AVGO MU AMAT LRCX KLAC NOW PANW SNOW FTNT "
+               "ANET CRWD PLTR ENPH FSLR ZM SHOP",
+        "XLF": "JPM BAC WFC C GS MS V MA PYPL AXP",
+        "XLV": "JNJ PFE MRK ABBV LLY UNH AMGN GILD BMY CVS ISRG REGN VRTX DXCM ALGN",
+        "XLP": "WMT COST KO PEP PG CL PM MO MNST DG DLTR",
+        "XLY": "AMZN TSLA NKE SBUX MCD LOW HD TGT BKNG LULU CMG DECK ETSY EBAY ULTA TSCO BBY KSS M CCL F GM UBER",
+        "XLE": "XOM CVX SLB COP OXY HAL",
+        "XLI": "CAT DE BA GE MMM HON FDX UPS LMT RTX AAL DAL UAL ODFL CPRT AXON",
+        "XLU": "DUK NEE", "XLB": "FCX NEM"}
+SEKTOR = {s: e for e, liste in _SEK.items() for s in liste.split()}
 GRUP = {**{t: "US" for t in US}, **{t: "ETF" for t in ETF}, **{t: "CR" for t in CR}, **{t: "BIST" for t in BIST}}
 EK = ["^GSPC", "XU100.IS", "USDTRY=X"]
 
@@ -184,10 +196,11 @@ def hi_prev(a: np.ndarray, n: int) -> np.ndarray:
 
 def bench_hazirla(D: dict) -> dict:
     B = {}
-    for t in set(BENCH.values()):
+    for t in set(BENCH.values()) | set(_SEK):
         if t in D:
             d = D[t]
-            B[t] = dict(C=d["C"], ma=sma(d["C"], 200), idx={int(x): i for i, x in enumerate(d["T"])})
+            B[t] = dict(C=d["C"], ma=sma(d["C"], 200), ma_s=sma(d["C"], P.get("SEKTOR_MA") or 50),
+                        idx={int(x): i for i, x in enumerate(d["T"])})
     return B
 
 
@@ -276,6 +289,11 @@ def sim(t: str, g: str, D: dict, B: dict) -> tuple[list, dict | None, dict | Non
             continue
         if trend is not None and not (trend[i] > 0):
             continue
+        if P.get("SEKTOR_MA") and g == "US" and SEKTOR.get(t) in B:
+            sb = B[SEKTOR[t]]
+            js = bench_at(sb, int(T[i]))
+            if js >= 210 and not (sb["C"][js] > sb["ma_s"][js]):
+                continue
         if b is None:
             continue
         j = bench_at(b, int(T[i]))
@@ -509,7 +527,7 @@ def backtest(D: dict, trades: list):
     sumR = sum(x["R"] for x in ana)
     notu(f"varlik: {sum(1 for t in GRUP if (t + '$' if GRUP[t] == 'BIST' else t) in D)}  islem: {len(ana)}  toplam R: {sumR:.1f}")
     refs = []
-    for t in ("AAPL", "THYAO.IS$", "BTC-USD"):
+    for t in ("AAPL", "JPM", "XOM"):
         z = [x for x in ana if x["t"] == t]
         refs.append(f"{t} {len(z)}/{sum(x['R'] for x in z):.2f}")
     notu("  ".join(refs))
@@ -519,7 +537,7 @@ def backtest(D: dict, trades: list):
         pf.append(f"portfoy {bas}..{bit or 'bugun'}: CAGR %{r['cagr'] * 100:.1f}  maxDD %{r['mdd'] * 100:.1f}  "
                   f"alinan {len(r['alinan'])}  carpan x{r['eq']:.2f}")
     notu(" | ".join(pf))
-    notu("arastirma referansi (v1.1): islem 4444, toplam R 3487.3, 2005+ CAGR %19.5 / DD %23.8 / alinan 587")
+    notu("arastirma referansi (v1.2): islem 4295, toplam R 3321.3, 2005+ CAGR %20.3 / DD %23.2 / alinan 552")
 
 
 def main():
