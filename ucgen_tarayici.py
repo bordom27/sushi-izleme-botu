@@ -581,14 +581,14 @@ def onizle(sonuc: list):
               f"omur ort {np.mean(om) if om else 0:.1f} medyan {np.median(om) if om else 0:.0f} mum")
     print(satir0)
     if os.environ.get("GITHUB_ACTIONS") == "true":
-        print("::notice::" + satir0)
+        print("::notice::" + satir0.replace("%", "%25"))
     satir = (f"veri {sayim} | aktif {akt} | "
              f"aktif ucgen: {len(aktifler)} / {len(sonuc)} grafik, tipler {tipler} | "
              f"tarihsel kirilim: yukari {istat['yukari'][0]} (hedef {istat['yukari'][1]}, gecersiz {istat['yukari'][2]}), "
              f"asagi {istat['asagi'][0]} (hedef {istat['asagi'][1]}, gecersiz {istat['asagi'][2]})")
     print(satir)
     if os.environ.get("GITHUB_ACTIONS") == "true":
-        print("::notice::" + satir)
+        print("::notice::" + satir.replace("%", "%25"))
 
 
 def main():

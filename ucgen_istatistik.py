@@ -156,7 +156,7 @@ def main():
     for s in satirlar:
         print(s)
     if os.environ.get("GITHUB_ACTIONS") == "true":
-        print("::notice::" + " %0A ".join(satirlar))
+        print("::notice::" + " %0A ".join(x.replace("%", "%25") for x in satirlar))
 
 
 if __name__ == "__main__":
