@@ -1,0 +1,866 @@
+zaman,tur,ticker,symbol,baslik
+2020-04-16 06:09:44.000,spot_listeleme,IDRT,,Binance Will List Rupiah Token (IDRT) 
+2020-04-27 03:57:00.000,spot_listeleme,HIVE,HIVEUSDT,Binance Will List Hive (HIVE) 
+2020-06-18 07:00:24.000,spot_listeleme,IQ,,Binance Will List Everipedia (IQ) 
+2020-06-24 05:37:06.000,spot_delist,USDS,,Binance Will Delist StableUSD (USDS)
+2020-07-13 13:00:07.834,spot_delist,ARN,,"Binance Will Delist ARN, FUEL and LUN on 2020/07/20"
+2020-07-13 13:00:07.834,spot_delist,FUEL,,"Binance Will Delist ARN, FUEL and LUN on 2020/07/20"
+2020-08-14 02:31:40.411,spot_listeleme,CRV,CRVUSDT,"Binance Will List Curve (CRV), Deposits Now Open"
+2020-08-18 13:31:20.976,spot_listeleme,DOT,DOTUSDT,Binance Will List Polkadot (DOT) & Support 1:100 Redenomination Plan
+2020-09-04 11:17:11.709,spot_delist,INS,,Binance Will Delist Insolar (INS) on 2020/09/11
+2020-09-18 14:34:38.024,spot_listeleme,NBS,,Binance Completes Distribution and Will List New BitShares (NBS)
+2020-10-15 11:13:50.803,spot_listeleme,FIL,FILUSDT,"Binance Will List Filecoin (FIL) - Deposit FIL to Share a $100,000 Prize Pool"
+2020-10-23 06:08:16.372,spot_listeleme,EASY,,Binance Will List EasyFi (EASY) in the Innovation Zone
+2020-10-27 12:58:35.201,spot_delist,MCO,,Binance Will Delist MCO (MCO) on 2020/11/02
+2020-10-29 04:39:23.498,spot_listeleme,BOT,,Binance Will List Bounce (BOT) in the Innovation Zone
+2020-11-02 03:33:24.982,spot_listeleme,AKRO,,Binance Will List Akropolis (AKRO) in the Innovation Zone
+2020-11-03 09:12:49.711,spot_listeleme,KP3R,,Binance Will List Keep3rV1 (KP3R) in the Innovation Zone
+2020-11-05 13:27:51.655,spot_delist,POE,,Binance Will Delist POE & TNT on 2020/11/12
+2020-11-10 06:00:01.778,spot_listeleme,SLP,SLPUSDT,Binance Will List Axie Infinity's Small Love Potion (SLP) in the Innovation Zone
+2020-11-16 03:07:20.772,spot_listeleme,CVP,,Binance Will List PowerPool (CVP) in the Innovation Zone
+2020-11-17 09:22:56.714,spot_listeleme,FOR,,Binance Will List The Force Protocol (FOR) in the Innovation Zone
+2020-11-18 05:00:26.815,spot_listeleme,FRONT,,Binance Will List Frontier (FRONT) in the Innovation Zone
+2020-11-25 06:30:00.867,spot_listeleme,HEGIC,,Binance Will List Hegic (HEGIC) in the Innovation Zone
+2020-11-26 04:00:02.153,spot_listeleme,PROM,PROMUSDT,Binance Will List Prometeus (PROM) in the Innovation Zone
+2020-11-30 09:00:01.106,spot_listeleme,SKL,SKLUSDT,Binance Will List SKALE Network (SKL)
+2020-12-04 08:00:01.034,spot_listeleme,SUSD,,Binance Will List sUSD (SUSD) in the Innovation Zone
+2020-12-05 02:00:01.049,spot_listeleme,COVER,,Binance Will List COVER Protocol (COVER) in the Innovation Zone
+2020-12-08 02:40:29.877,spot_listeleme,GHST,GHSTUSDT,Binance Will List Aavegotchi (GHST) in the Innovation Zone
+2020-12-11 06:56:09.789,spot_listeleme,DF,DFUSDT,Binance Will List dForce (DF) in the Innovation Zone
+2020-12-17 17:48:27.573,spot_listeleme,GRT,GRTUSDT,"Binance Will List The Graph (GRT), Deposits Are Now Open"
+2020-12-24 06:09:11.737,spot_delist,AE,,Binance Will Delist AE & HC on 2020/12/30
+2020-12-25 03:17:38.778,spot_listeleme,1INCH,1INCHUSDT,"Binance Will List 1inch (1INCH) in the Innovation Zone, Deposits Are Now Open"
+2021-01-05 03:36:25.204,spot_listeleme,CELO,CELOUSDT,Binance Will List Celo (CELO)
+2021-01-07 05:00:06.106,spot_listeleme,RIF,RIFUSDT,Binance Will List RSK Infrastructure Framework (RIF)
+2021-01-19 04:00:28.709,spot_listeleme,TRU,TRUUSDT,Binance Will List TrueFi (TRU) in the Innovation Zone
+2021-01-21 06:00:12.034,spot_listeleme,DEXE,DEXEUSDT,Binance Will List DeXe (DEXE) in the Innovation Zone
+2021-01-26 07:00:08.452,spot_listeleme,CKB,CKBUSDT,Binance Will List Nervos Network (CKB)
+2021-01-27 05:00:06.390,spot_listeleme,TWT,TWTUSDT,Binance Will List Trust Wallet Token (TWT) in the Innovation Zone
+2021-02-03 05:00:05.006,spot_listeleme,PROS,,Binance Will List Prosper (PROS) in the Innovation Zone
+2021-02-03 12:02:07.495,spot_delist,BCPT,,"Binance Will Delist BCPT, CMT, TNB & VIBE on 2021-02-10"
+2021-02-03 12:02:07.495,spot_delist,CMT,,"Binance Will Delist BCPT, CMT, TNB & VIBE on 2021-02-10"
+2021-02-03 12:02:07.495,spot_delist,TNB,,"Binance Will Delist BCPT, CMT, TNB & VIBE on 2021-02-10"
+2021-02-03 12:02:07.495,spot_delist,VIBE,,"Binance Will Delist BCPT, CMT, TNB & VIBE on 2021-02-10"
+2021-02-04 03:48:37.494,spot_listeleme,VAI,,Binance Will List Vai (VAI) in the Innovation Zone
+2021-02-18 05:50:04.541,spot_listeleme,FXS,FXSUSDT,Binance Will List Frax Share (FXS) in the Innovation Zone
+2021-02-23 05:30:09.014,spot_listeleme,UFT,,Binance Will List UniLend (UFT) in the Innovation Zone
+2021-02-24 04:01:08.504,spot_listeleme,ACM,,Binance Will List AC Milan Fan Token (ACM). Purchase ACM Tokens with BNB at a 25% Discount Prior to Trading Using the Launchpad Subscription Format!
+2021-02-25 05:30:14.413,spot_listeleme,PHA,PHAUSDT,Binance Will List Phala Network (PHA) in the Innovation Zone
+2021-02-26 05:26:48.119,spot_listeleme,TVK,,Binance Will List Terra Virtua (TVK) in the Innovation Zone
+2021-03-02 05:00:06.073,spot_listeleme,BADGER,BADGERUSDT,Binance Will List Badger DAO (BADGER) in the Innovation Zone
+2021-03-03 05:00:05.650,spot_listeleme,FIS,FISUSDT,Binance Will List Stafi (FIS) in the Innovation Zone
+2021-03-08 06:00:07.818,spot_listeleme,OM,OMUSDT,Binance Will List MANTRA DAO (OM) in the Innovation Zone
+2021-03-09 05:00:09.176,spot_listeleme,POND,,Binance Will List Marlin (POND) in the Innovation Zone
+2021-03-10 04:00:07.223,spot_listeleme,DEGO,DEGOUSDT,Binance Will List Dego Finance (DEGO) in the Innovation Zone. Purchase DEGO Tokens with BNB at a 40% Discount Prior to Trading Using the Launchpad Subscription Format!
+2021-03-16 05:30:04.155,spot_listeleme,BIFI,,Binance Will List Beefy.Finance (BIFI) in the Innovation Zone
+2021-03-18 04:00:09.455,spot_listeleme,LINA,LINAUSDT,Binance Will List Linear (LINA) in the Innovation Zone. Purchase LINA Tokens with BNB at a 30% Discount Prior to Trading Using the Launchpad Subscription Format!
+2021-03-19 04:53:50.062,spot_listeleme,PERP,PERPUSDT,Binance Will List Perpetual Protocol (PERP) in the Innovation Zone
+2021-03-22 05:56:12.034,spot_listeleme,RAMP,,Binance Will List RAMP (RAMP) in the Innovation Zone
+2021-03-25 07:23:50.236,spot_listeleme,SUPER,SUPERUSDT,Binance Will List SuperFarm (SUPER) in the Innovation Zone
+2021-03-29 06:54:02.522,spot_listeleme,CFX,CFXUSDT,Binance Will List Conflux Network (CFX)
+2021-04-02 05:00:16.037,spot_listeleme,EPS,,Binance Will List Ellipsis (EPS) and Auto (AUTO) in the Innovation Zone
+2021-04-02 05:00:16.037,spot_listeleme,AUTO,,Binance Will List Ellipsis (EPS) and Auto (AUTO) in the Innovation Zone
+2021-04-19 08:41:59.989,spot_listeleme,MIR,,Binance Will List Mirror Protocol (MIR) in the Innovation Zone
+2021-04-21 04:00:13.203,spot_listeleme,BAR,,Binance Will List FC Barcelona Fan Token (BAR) in the Innovation Zone. Purchase BAR Tokens with BNB at a 30% Discount Prior to Trading Using the Launchpad Subscription Format!
+2021-04-23 06:04:44.672,spot_listeleme,FORTH,FORTHUSDT,Binance Will List Ampleforth Governance Token (FORTH)
+2021-05-10 07:44:39.878,spot_listeleme,SHIB,1000SHIBUSDT,Binance Will List SHIBA INU (SHIB) in the Innovation Zone
+2021-05-10 13:52:54.074,spot_listeleme,ICP,ICPUSDT,Binance Will List Internet Computer (ICP)
+2021-05-14 04:36:52.596,spot_listeleme,AR,ARUSDT,Binance Will List Arweave (AR)
+2021-05-19 03:58:05.822,spot_listeleme,POLS,,Binance Will List Polkastarter (POLS) in the Innovation Zone
+2021-05-24 05:54:54.835,spot_listeleme,MDX,,Binance Will List Mdex (MDX) in the Innovation Zone
+2021-05-25 03:10:03.792,spot_listeleme,MASK,MASKUSDT,Binance Will List Mask Network (MASK)
+2021-05-28 02:12:58.377,spot_listeleme,LPT,LPTUSDT,Binance Will List Livepeer (LPT)
+2021-06-04 02:27:05.650,spot_listeleme,NU,,Binance Will List NuCypher (NU)
+2021-06-10 06:35:40.686,spot_listeleme,GTC,GTCUSDT,Binance Will List Gitcoin (GTC)
+2021-06-11 02:32:03.635,spot_listeleme,TORN,,Binance Will List Tornado Cash (TORN)
+2021-06-17 02:34:50.178,spot_listeleme,KEEP,,Binance Will List Keep Network (KEEP)
+2021-06-22 02:38:12.432,spot_listeleme,ERN,,Binance Will List Ethernity Chain (ERN) in the Innovation Zone
+2021-06-24 03:42:15.747,spot_listeleme,KLAY,KLAYUSDT,Binance Will List Klaytn (KLAY)
+2021-07-05 02:05:14.845,spot_listeleme,BOND,BONDUSDT,Binance Will List BarnBridge (BOND) and Enzyme  (MLN)
+2021-07-05 02:05:14.845,spot_listeleme,MLN,MLNUSDT,Binance Will List BarnBridge (BOND) and Enzyme  (MLN)
+2021-07-09 13:30:52.494,spot_delist,OST,,"Binance Will Delist OST, RCN & WPR on 2021-07-16"
+2021-07-09 13:30:52.494,spot_delist,RCN,,"Binance Will Delist OST, RCN & WPR on 2021-07-16"
+2021-07-09 13:30:52.494,spot_delist,WPR,,"Binance Will Delist OST, RCN & WPR on 2021-07-16"
+2021-07-23 04:00:36.770,spot_listeleme,QUICK,QUICKUSDT,Binance Will List QuickSwap (QUICK) in the Innovation Zone
+2021-07-29 02:01:44.589,spot_listeleme,CLV,,Binance Will List Clover Finance (CLV) and Quant (QNT)
+2021-07-29 02:01:44.589,spot_listeleme,QNT,QNTUSDT,Binance Will List Clover Finance (CLV) and Quant (QNT)
+2021-07-30 07:00:15.523,spot_listeleme,FLOW,FLOWUSDT,Binance Will List Flow (FLOW)
+2021-08-10 01:55:38.741,spot_listeleme,MINA,MINAUSDT,Binance Will List Mina (MINA) and Raydium (RAY) in the Innovation Zone
+2021-08-10 01:55:38.741,spot_listeleme,RAY,RAYUSDT,Binance Will List Mina (MINA) and Raydium (RAY) in the Innovation Zone
+2021-08-11 03:30:47.130,spot_listeleme,ALPACA,ALPACAUSDT,Binance Will List Alpaca Finance (ALPACA) and Harvest Finance (FARM) in the Innovation Zone
+2021-08-11 03:30:47.130,spot_listeleme,FARM,,Binance Will List Alpaca Finance (ALPACA) and Harvest Finance (FARM) in the Innovation Zone
+2021-08-19 02:59:18.170,spot_listeleme,MBOX,MBOXUSDT,Binance Will List MOBOX (MBOX)
+2021-08-19 09:05:14.801,spot_delist,SNGLS,,Binance Will Delist SNGLS & VIA on 2021-08-26
+2021-08-19 09:05:14.801,spot_delist,VIA,,Binance Will Delist SNGLS & VIA on 2021-08-26
+2021-08-23 02:30:28.439,spot_listeleme,WAXP,WAXPUSDT,Binance Will List WAX (WAXP)
+2021-08-24 01:59:02.734,spot_listeleme,TRIBE,,Binance Will List Tribe (TRIBE)
+2021-08-30 02:01:32.172,spot_listeleme,GNO,,Binance Will List Gnosis (GNO)
+2021-09-08 14:59:46.919,spot_listeleme,DYDX,DYDXUSDT,Binance Will List dYdX (DYDX) in the Innovation Zone
+2021-09-13 02:00:40.769,spot_listeleme,GALA,GALAUSDT,Binance Will List Gala (GALA)
+2021-09-17 08:50:37.191,spot_delist,COVER,,Binance Will Delist COVER on 2021-09-24
+2021-09-22 03:26:38.989,spot_listeleme,ILV,ILVUSDT,Binance Will List Illuvium (ILV)
+2021-09-23 09:04:30.539,spot_delist,PPT,,Binance Will Delist PPT & SWRV on 2021-09-30
+2021-09-23 09:04:30.539,spot_delist,SWRV,,Binance Will Delist PPT & SWRV on 2021-09-30
+2021-09-24 01:58:50.277,spot_listeleme,YGG,YGGUSDT,Binance Will List Yield Guild Games (YGG)
+2021-09-30 02:29:21.908,spot_listeleme,FIDA,FIDAUSDT,Binance Will List Bonfida (FIDA)
+2021-10-05 02:38:02.769,spot_listeleme,AGLD,AGLDUSDT,Binance Will List Adventure Gold (AGLD) in the Innovation Zone
+2021-10-07 03:24:22.094,spot_listeleme,RAD,RADUSDT,Binance Will List Radicle (RAD)
+2021-10-11 02:03:58.716,spot_listeleme,RARE,RAREUSDT,Binance Will List SuperRare (RARE)
+2021-10-22 02:36:39.802,spot_listeleme,CHESS,CHESSUSDT,Binance Will List Tranchess (CHESS) in the Innovation Zone
+2021-10-29 08:56:41.995,spot_delist,DLT,,"Binance Will Delist DLT, GVT, SKY & POA on 2021-11-05"
+2021-10-29 08:56:41.995,spot_delist,GVT,,"Binance Will Delist DLT, GVT, SKY & POA on 2021-11-05"
+2021-10-29 08:56:41.995,spot_delist,SKY,SKYUSDT,"Binance Will Delist DLT, GVT, SKY & POA on 2021-11-05"
+2021-10-29 08:56:41.995,spot_delist,POA,,"Binance Will Delist DLT, GVT, SKY & POA on 2021-11-05"
+2021-11-04 06:55:45.632,spot_listeleme,BNX,BNXUSDT,Binance Will List BinaryX (BNX) in the Innovation Zone
+2021-11-05 02:09:02.923,spot_listeleme,RGT,,Binance Will List Rari Governance Token (RGT)
+2021-11-08 01:59:13.642,spot_listeleme,MOVR,MOVRUSDT,Binance Will List Moonriver (MOVR)
+2021-11-10 02:03:02.964,spot_listeleme,CITY,,Binance Will List Manchester City Fan Token (CITY)
+2021-11-10 03:12:09.547,spot_listeleme,ENS,ENSUSDT,Binance Will List Ethereum Name Service (ENS)
+2021-11-15 01:58:25.934,spot_listeleme,QI,,Binance Will List BENQI (QI)
+2021-11-22 07:59:42.715,spot_listeleme,JASMY,JASMYUSDT,Binance Will List JasmyCoin (JASMY)
+2021-11-23 01:59:19.255,spot_listeleme,AMP,,Binance Will List Amp (AMP) and PlayDapp (PLA)
+2021-11-23 01:59:19.255,spot_listeleme,PLA,,Binance Will List Amp (AMP) and PlayDapp (PLA)
+2021-11-26 03:45:01.794,spot_listeleme,PYR,,Binance Will List Vulcan Forged PYR (PYR)
+2021-11-27 05:57:44.388,spot_listeleme,RNDR,,Binance Will List Render (RNDR)
+2021-11-30 01:59:06.799,spot_listeleme,ALCX,,Binance Will List Alchemix (ALCX)
+2021-12-02 04:02:48.146,spot_listeleme,MC,,Binance Will List Merit Circle (MC)
+2021-12-04 02:01:36.089,spot_listeleme,ANY,,Binance Will List Anyswap (ANY)
+2021-12-09 01:56:14.947,spot_listeleme,BICO,BICOUSDT,Binance Will List Biconomy (BICO)
+2021-12-10 01:58:59.909,spot_listeleme,FLUX,FLUXUSDT,Binance Will List Flux (FLUX)
+2021-12-17 01:56:49.800,spot_listeleme,HIGH,HIGHUSDT,Binance Will List Highstreet (HIGH)
+2021-12-20 10:03:27.938,spot_delist,APPC,,"Binance Will Delist APPC, EVX & RDN on 2021-12-27"
+2021-12-20 10:03:27.938,spot_delist,EVX,,"Binance Will Delist APPC, EVX & RDN on 2021-12-27"
+2021-12-20 10:03:27.938,spot_delist,RDN,,"Binance Will Delist APPC, EVX & RDN on 2021-12-27"
+2021-12-23 02:03:15.780,spot_listeleme,CVX,CVXUSDT,Binance Will List Convex Finance (CVX) and ConstitutionDAO (PEOPLE) in the Innovation Zone
+2021-12-23 02:03:15.780,spot_listeleme,PEOPLE,PEOPLEUSDT,Binance Will List Convex Finance (CVX) and ConstitutionDAO (PEOPLE) in the Innovation Zone
+2021-12-24 01:58:22.391,spot_listeleme,SPELL,SPELLUSDT,Binance Will List Spell Token (SPELL) and TerraUSD (UST)
+2021-12-24 01:58:22.391,spot_listeleme,UST,,Binance Will List Spell Token (SPELL) and TerraUSD (UST)
+2021-12-28 04:56:50.829,spot_listeleme,JOE,JOEUSDT,Binance Will List JOE (JOE)
+2022-01-10 05:56:16.091,spot_listeleme,ACH,ACHUSDT,Binance Will List Alchemy Pay (ACH) and Immutable X (IMX)
+2022-01-10 05:56:16.091,spot_listeleme,IMX,IMXUSDT,Binance Will List Alchemy Pay (ACH) and Immutable X (IMX)
+2022-01-11 06:15:20.254,spot_listeleme,GLMR,GLMRUSDT,Binance Will List Glimmer (GLMR)
+2022-01-21 06:28:04.252,spot_listeleme,API3,API3USDT,Binance Will List API3 (API3)
+2022-01-25 02:02:51.074,spot_listeleme,ACA,,Binance Will List Acala (ACA)
+2022-01-25 04:52:16.145,spot_listeleme,ANC,,Binance Will List Anchor Protocol (ANC)
+2022-02-08 02:20:33.903,spot_listeleme,WOO,WOOUSDT,Binance Will List WOO Network (WOO)
+2022-02-28 07:24:03.037,spot_listeleme,ASTR,ASTRUSDT,Binance Will List Astar (ASTR) in the Innovation Zone
+2022-03-01 03:59:30.632,spot_delist,BCD,,"Binance Will Delist BCD, CND, MTH, NCASH and YOYO on 2022-03-08"
+2022-03-01 03:59:30.632,spot_delist,CND,,"Binance Will Delist BCD, CND, MTH, NCASH and YOYO on 2022-03-08"
+2022-03-01 03:59:30.632,spot_delist,MTH,,"Binance Will Delist BCD, CND, MTH, NCASH and YOYO on 2022-03-08"
+2022-03-01 03:59:30.632,spot_delist,NCASH,,"Binance Will Delist BCD, CND, MTH, NCASH and YOYO on 2022-03-08"
+2022-03-01 03:59:30.632,spot_delist,YOYO,,"Binance Will Delist BCD, CND, MTH, NCASH and YOYO on 2022-03-08"
+2022-03-11 05:17:07.515,spot_listeleme,KDA,KDAUSDT,Binance Will List Kadena (KDA)
+2022-03-17 07:02:50.924,spot_listeleme,APE,APEUSDT,Binance Will List ApeCoin (APE)
+2022-03-21 09:36:04.219,spot_listeleme,BSW,BSWUSDT,Binance Will List Biswap (BSW) in the Innovation Zone
+2022-04-04 09:58:00.853,spot_delist,HEGIC,,"Binance Will Delist HEGIC, RENBTC and SUSD on 2022-04-11"
+2022-04-04 09:58:00.853,spot_delist,RENBTC,,"Binance Will Delist HEGIC, RENBTC and SUSD on 2022-04-11"
+2022-04-04 09:58:00.853,spot_delist,SUSD,,"Binance Will Delist HEGIC, RENBTC and SUSD on 2022-04-11"
+2022-04-29 05:58:35.653,spot_listeleme,MOB,,Binance Will List MobileCoin (MOB) and Nexo (NEXO)
+2022-04-29 05:58:35.653,spot_listeleme,NEXO,,Binance Will List MobileCoin (MOB) and Nexo (NEXO)
+2022-05-09 06:57:17.647,spot_listeleme,LDO,LDOUSDT,Binance Will List Lido DAO (LDO)
+2022-05-28 15:17:09.671,spot_listeleme,LUNA,,Binance Will List Terra 2.0 (LUNA) in the Innovation Zone *LUNA (old) Renamed as LUNC
+2022-05-28 15:17:09.671,spot_listeleme,OLD,,Binance Will List Terra 2.0 (LUNA) in the Innovation Zone *LUNA (old) Renamed as LUNC
+2022-06-01 01:00:14.413,spot_listeleme,OP,OPUSDT,Binance Will List Optimism (OP)
+2022-07-01 06:49:41.710,spot_delist,GRS,,"Binance Will Delist GRS, NAS and GO on 2022-07-08"
+2022-07-01 06:49:41.710,spot_delist,NAS,,"Binance Will Delist GRS, NAS and GO on 2022-07-08"
+2022-07-01 06:49:41.710,spot_delist,GO,,"Binance Will Delist GRS, NAS and GO on 2022-07-08"
+2022-08-04 05:33:17.638,spot_delist,EZ,,"Binance Will Delist EZ, QSP, BRD, NXS, NAV, MDA and SPARTA on 2022-08-11"
+2022-08-04 05:33:17.638,spot_delist,QSP,,"Binance Will Delist EZ, QSP, BRD, NXS, NAV, MDA and SPARTA on 2022-08-11"
+2022-08-04 05:33:17.638,spot_delist,BRD,,"Binance Will Delist EZ, QSP, BRD, NXS, NAV, MDA and SPARTA on 2022-08-11"
+2022-08-04 05:33:17.638,spot_delist,NXS,,"Binance Will Delist EZ, QSP, BRD, NXS, NAV, MDA and SPARTA on 2022-08-11"
+2022-08-04 05:33:17.638,spot_delist,NAV,,"Binance Will Delist EZ, QSP, BRD, NXS, NAV, MDA and SPARTA on 2022-08-11"
+2022-08-04 05:33:17.638,spot_delist,MDA,,"Binance Will Delist EZ, QSP, BRD, NXS, NAV, MDA and SPARTA on 2022-08-11"
+2022-08-04 05:33:17.638,spot_delist,SPARTA,,"Binance Will Delist EZ, QSP, BRD, NXS, NAV, MDA and SPARTA on 2022-08-11"
+2022-08-19 06:11:41.192,spot_listeleme,STG,STGUSDT,Binance Will List Stargate (STG) in the Innovation Zone
+2022-10-05 06:00:29.449,spot_listeleme,GMX,GMXUSDT,Binance Will List GMX (GMX) in the Innovation Zone
+2022-10-13 04:00:28.184,spot_delist,DNT,,"Binance Will Delist DNT, NBS, BTG and TCT on 2022-10-24"
+2022-10-13 04:00:28.184,spot_delist,NBS,,"Binance Will Delist DNT, NBS, BTG and TCT on 2022-10-24"
+2022-10-13 04:00:28.184,spot_delist,BTG,,"Binance Will Delist DNT, NBS, BTG and TCT on 2022-10-24"
+2022-10-13 04:00:28.184,spot_delist,TCT,,"Binance Will Delist DNT, NBS, BTG and TCT on 2022-10-24"
+2022-10-18 01:04:00.591,spot_listeleme,APT,APTUSDT,Binance Will List Aptos (APT)
+2022-10-28 04:00:52.539,spot_listeleme,OSMO,,Binance Will List Osmosis (OSMO) in the Innovation Zone
+2022-11-14 07:00:04.880,vadeli_delist,RAY,RAYUSDT,Binance Futures Will Delist RAYUSDT and SRMUSDT Perpetual Futures Contracts
+2022-11-14 07:00:04.880,vadeli_delist,SRM,,Binance Futures Will Delist RAYUSDT and SRMUSDT Perpetual Futures Contracts
+2022-12-12 04:10:44.836,spot_listeleme,MAGIC,MAGICUSDT,Binance Will List Magic (MAGIC) in the Innovation Zone
+2022-12-15 04:00:04.887,spot_delist,MITH,,"Binance Will Delist MITH, TRIBE, REP and BTCST on 2022-12-22"
+2022-12-15 04:00:04.887,spot_delist,TRIBE,,"Binance Will Delist MITH, TRIBE, REP and BTCST on 2022-12-22"
+2022-12-15 04:00:04.887,spot_delist,REP,,"Binance Will Delist MITH, TRIBE, REP and BTCST on 2022-12-22"
+2022-12-15 04:00:04.887,spot_delist,BTCST,,"Binance Will Delist MITH, TRIBE, REP and BTCST on 2022-12-22"
+2023-01-18 04:00:06.526,spot_listeleme,RPL,RPLUSDT,Binance Will List Rocket Pool (RPL) in the Innovation Zone
+2023-01-19 04:00:06.617,spot_delist,BEAM,,Binance Will Delist BEAM on 2023-01-26
+2023-02-17 07:34:20.939,spot_listeleme,GNS,,Binance Will List Gains Network (GNS) in the Innovation Zone
+2023-02-20 04:03:05.355,spot_delist,AION,,"Binance Will Delist AION, MIR, ANC on 2023-02-27"
+2023-02-20 04:03:05.355,spot_delist,MIR,,"Binance Will Delist AION, MIR, ANC on 2023-02-27"
+2023-02-20 04:03:05.355,spot_delist,ANC,,"Binance Will Delist AION, MIR, ANC on 2023-02-27"
+2023-02-22 06:30:19.653,spot_listeleme,SYN,SYNUSDT,Binance Will List Synapse (SYN) in the Innovation Zone
+2023-02-28 07:15:18.334,spot_listeleme,LQTY,LQTYUSDT,Binance Will List Liquity (LQTY) in the Innovation Zone
+2023-03-17 07:01:15.726,spot_delist,HNT,,Binance Will Delist HNT and WABI on 2023-03-24
+2023-03-17 07:01:15.726,spot_delist,WABI,,Binance Will Delist HNT and WABI on 2023-03-24
+2023-03-20 10:02:41.345,spot_listeleme,ARB,ARBUSDT,Binance Will List Arbitrum (ARB)
+2023-03-30 03:20:54.557,spot_listeleme,RDNT,RDNTUSDT,Binance Will List Radiant Capital (RDNT) in the Innovation Zone
+2023-04-11 07:00:22.114,spot_delist,QLC,,"Binance Will Delist QLC, NEBL and AUTO on 2023-04-18"
+2023-04-11 07:00:22.114,spot_delist,NEBL,,"Binance Will Delist QLC, NEBL and AUTO on 2023-04-18"
+2023-04-11 07:00:22.114,spot_delist,AUTO,,"Binance Will Delist QLC, NEBL and AUTO on 2023-04-18"
+2023-05-05 11:20:04.106,spot_listeleme,FLOKI,1000FLOKIUSDT,Binance Will List FLOKI (FLOKI) and Pepe (PEPE) in the Innovation Zone
+2023-05-05 11:20:04.106,spot_listeleme,PEPE,1000PEPEUSDT,Binance Will List FLOKI (FLOKI) and Pepe (PEPE) in the Innovation Zone
+2023-07-03 06:22:15.567,spot_listeleme,PENDLE,PENDLEUSDT,Binance Will List Pendle (PENDLE) in the Innovation Zone
+2023-07-24 07:02:11.620,spot_listeleme,WLD,WLDUSDT,Binance Will List Worldcoin (WLD)
+2023-07-26 04:00:03.220,spot_listeleme,FDUSD,,Binance Will List First Digital USD (FDUSD) and Introduce FDUSD Zero Trading Fee Promotions
+2023-08-15 07:01:08.922,spot_delist,SNM,,"Binance Will Delist SNM, SRM and YFII on 2023-08-22"
+2023-08-15 07:01:08.922,spot_delist,SRM,,"Binance Will Delist SNM, SRM and YFII on 2023-08-22"
+2023-08-15 07:01:08.922,spot_delist,YFII,,"Binance Will Delist SNM, SRM and YFII on 2023-08-22"
+2023-10-04 06:00:16.946,izleme,BETA,,"Binance Will Extend the Monitoring Tag to Include BETA, BOND, WTC and XEM on 2023-10-04"
+2023-10-04 06:00:16.946,izleme,BOND,BONDUSDT,"Binance Will Extend the Monitoring Tag to Include BETA, BOND, WTC and XEM on 2023-10-04"
+2023-10-04 06:00:16.946,izleme,WTC,,"Binance Will Extend the Monitoring Tag to Include BETA, BOND, WTC and XEM on 2023-10-04"
+2023-10-04 06:00:16.946,izleme,XEM,XEMUSDT,"Binance Will Extend the Monitoring Tag to Include BETA, BOND, WTC and XEM on 2023-10-04"
+2023-10-10 07:45:17.379,spot_listeleme,NTRN,NTRNUSDT,Binance Will List Neutron (NTRN) with Seed Tag Applied
+2023-10-30 13:18:52.206,spot_listeleme,TIA,TIAUSDT,Binance Will List Celestia (TIA) with Seed Tag Applied
+2023-11-07 06:44:13.500,spot_listeleme,ORDI,ORDIUSDT,Binance Will List ORDI (ORDI) with Seed Tag Applied
+2023-11-24 06:09:47.186,spot_listeleme,BLUR,BLURUSDT,Binance Will List Blur (BLUR) with Seed Tag Applied
+2023-11-27 06:00:26.207,spot_delist,BTS,,"Binance Will Delist BTS, PERL, TORN, WTC on 2023-12-07"
+2023-11-27 06:00:26.207,spot_delist,PERL,,"Binance Will Delist BTS, PERL, TORN, WTC on 2023-12-07"
+2023-11-27 06:00:26.207,spot_delist,TORN,,"Binance Will Delist BTS, PERL, TORN, WTC on 2023-12-07"
+2023-11-27 06:00:26.207,spot_delist,WTC,,"Binance Will Delist BTS, PERL, TORN, WTC on 2023-12-07"
+2023-12-04 04:14:11.934,spot_listeleme,AEUR,,Binance Will List Anchored Coins EUR (AEUR) and Introduce AEUR Zero Trading Fee Promotions
+2023-12-07 11:55:38.787,spot_listeleme,JTO,JTOUSDT,Binance Will List Jito (JTO) with Seed Tag Applied
+2023-12-12 06:09:30.579,spot_listeleme,1000SATS,1000SATSUSDT,Binance Will List BRC-20 Sats (1000SATS) with Seed Tag Applied
+2023-12-15 03:58:33.180,spot_listeleme,BONK,1000BONKUSDT,Binance Will List Bonk (BONK) with Seed Tag Applied
+2024-01-04 07:00:09.013,izleme,ANT,,"Binance Will Extend the Monitoring Tag to Include ANT, FIRO, KP3R, MDX, MOB, REEF, VAI, XMR, ZEC & ZEN, and Remove the Seed Tag for GMX & SUSHI on 2024-01-04"
+2024-01-04 07:00:09.013,izleme,FIRO,,"Binance Will Extend the Monitoring Tag to Include ANT, FIRO, KP3R, MDX, MOB, REEF, VAI, XMR, ZEC & ZEN, and Remove the Seed Tag for GMX & SUSHI on 2024-01-04"
+2024-01-04 07:00:09.013,izleme,KP3R,,"Binance Will Extend the Monitoring Tag to Include ANT, FIRO, KP3R, MDX, MOB, REEF, VAI, XMR, ZEC & ZEN, and Remove the Seed Tag for GMX & SUSHI on 2024-01-04"
+2024-01-04 07:00:09.013,izleme,MDX,,"Binance Will Extend the Monitoring Tag to Include ANT, FIRO, KP3R, MDX, MOB, REEF, VAI, XMR, ZEC & ZEN, and Remove the Seed Tag for GMX & SUSHI on 2024-01-04"
+2024-01-04 07:00:09.013,izleme,MOB,,"Binance Will Extend the Monitoring Tag to Include ANT, FIRO, KP3R, MDX, MOB, REEF, VAI, XMR, ZEC & ZEN, and Remove the Seed Tag for GMX & SUSHI on 2024-01-04"
+2024-01-04 07:00:09.013,izleme,REEF,REEFUSDT,"Binance Will Extend the Monitoring Tag to Include ANT, FIRO, KP3R, MDX, MOB, REEF, VAI, XMR, ZEC & ZEN, and Remove the Seed Tag for GMX & SUSHI on 2024-01-04"
+2024-01-04 07:00:09.013,izleme,VAI,,"Binance Will Extend the Monitoring Tag to Include ANT, FIRO, KP3R, MDX, MOB, REEF, VAI, XMR, ZEC & ZEN, and Remove the Seed Tag for GMX & SUSHI on 2024-01-04"
+2024-01-04 07:00:09.013,izleme,XMR,XMRUSDT,"Binance Will Extend the Monitoring Tag to Include ANT, FIRO, KP3R, MDX, MOB, REEF, VAI, XMR, ZEC & ZEN, and Remove the Seed Tag for GMX & SUSHI on 2024-01-04"
+2024-01-04 07:00:09.013,izleme,ZEC,ZECUSDT,"Binance Will Extend the Monitoring Tag to Include ANT, FIRO, KP3R, MDX, MOB, REEF, VAI, XMR, ZEC & ZEN, and Remove the Seed Tag for GMX & SUSHI on 2024-01-04"
+2024-01-04 07:00:09.013,izleme,ZEN,ZENUSDT,"Binance Will Extend the Monitoring Tag to Include ANT, FIRO, KP3R, MDX, MOB, REEF, VAI, XMR, ZEC & ZEN, and Remove the Seed Tag for GMX & SUSHI on 2024-01-04"
+2024-01-31 07:06:53.622,spot_listeleme,JUP,JUPUSDT,Binance Will List Jupiter (JUP) with Seed Tag Applied
+2024-02-02 07:50:07.072,spot_listeleme,PYTH,PYTHUSDT,Binance Will List Pyth Network (PYTH) with Seed Tag Applied
+2024-02-05 09:11:36.210,spot_listeleme,RONIN,RONINUSDT,Binance Will List Ronin (RONIN) with Seed Tag Applied
+2024-02-06 07:00:12.575,spot_delist,ANT,,"Binance Will Delist ANT, MULTI, VAI, XMR on 2024-02-20"
+2024-02-06 07:00:12.575,spot_delist,MULTI,,"Binance Will Delist ANT, MULTI, VAI, XMR on 2024-02-20"
+2024-02-06 07:00:12.575,spot_delist,VAI,,"Binance Will Delist ANT, MULTI, VAI, XMR on 2024-02-20"
+2024-02-06 07:00:12.575,spot_delist,XMR,XMRUSDT,"Binance Will Delist ANT, MULTI, VAI, XMR on 2024-02-20"
+2024-02-06 09:26:57.933,spot_listeleme,DYM,DYMUSDT,Binance Will List Dymension (DYM) with Seed Tag Applied
+2024-02-20 02:25:22.135,spot_listeleme,STRK,STRKUSDT,Binance Will List Starknet (STRK) with Seed Tag Applied
+2024-03-01 07:18:57.028,spot_listeleme,AXL,AXLUSDT,Binance Will List Axelar (AXL) with Seed Tag Applied
+2024-03-05 05:35:23.762,vadeli_acilis,MYRO,MYROUSDT,Binance Futures Will Launch MYROUSDT and 1000PEPEUSDC Perpetual Contracts With Up to 50x Leverage
+2024-03-05 10:01:37.364,spot_listeleme,WIF,WIFUSDT,Binance Will List Dogwifhat (WIF) with Seed Tag Applied
+2024-03-11 07:59:30.976,spot_listeleme,METIS,METISUSDT,Binance Will List Metis (METIS) with Seed Tag Applied
+2024-03-12 04:30:05.954,vadeli_acilis,METIS,METISUSDT,Binance Futures Will Launch METISUSDT and WLDUSDC Perpetual Contracts With Up to 75x Leverage
+2024-03-16 09:30:06.588,spot_listeleme,BOME,BOMEUSDT,Binance Will List BOOK OF MEME (BOME) with Seed Tag Applied
+2024-03-20 06:00:07.471,spot_delist,DREP,,"Binance Will Delist DREP, MOB, PNT on 2024-04-03"
+2024-03-20 06:00:07.471,spot_delist,MOB,,"Binance Will Delist DREP, MOB, PNT on 2024-04-03"
+2024-03-20 06:00:07.471,spot_delist,PNT,,"Binance Will Delist DREP, MOB, PNT on 2024-04-03"
+2024-04-03 06:00:16.944,izleme,EPX,,"Binance Will Extend the Monitoring Tag to Include EPX, FOR, UNFI, WAVES & WNXM on 2024-04-03"
+2024-04-03 06:00:16.944,izleme,FOR,,"Binance Will Extend the Monitoring Tag to Include EPX, FOR, UNFI, WAVES & WNXM on 2024-04-03"
+2024-04-03 06:00:16.944,izleme,UNFI,UNFIUSDT,"Binance Will Extend the Monitoring Tag to Include EPX, FOR, UNFI, WAVES & WNXM on 2024-04-03"
+2024-04-03 06:00:16.944,izleme,WAVES,WAVESUSDT,"Binance Will Extend the Monitoring Tag to Include EPX, FOR, UNFI, WAVES & WNXM on 2024-04-03"
+2024-04-03 06:00:16.944,izleme,WNXM,,"Binance Will Extend the Monitoring Tag to Include EPX, FOR, UNFI, WAVES & WNXM on 2024-04-03"
+2024-04-08 11:44:17.942,spot_listeleme,TNSR,TNSRUSDT,Binance Will List Tensor (TNSR) with Seed Tag Applied
+2024-04-11 06:43:58.489,spot_listeleme,TAO,TAOUSDT,Binance Will List Bittensor (TAO) with Seed Tag Applied
+2024-06-03 03:00:20.294,spot_delist,OMG,OMGUSDT,"Binance Will Delist OMG, WAVES, WNXM, XEM on 2024-06-17"
+2024-06-03 03:00:20.294,spot_delist,WAVES,WAVESUSDT,"Binance Will Delist OMG, WAVES, WNXM, XEM on 2024-06-17"
+2024-06-03 03:00:20.294,spot_delist,WNXM,,"Binance Will Delist OMG, WAVES, WNXM, XEM on 2024-06-17"
+2024-06-03 03:00:20.294,spot_delist,XEM,XEMUSDT,"Binance Will Delist OMG, WAVES, WNXM, XEM on 2024-06-17"
+2024-06-17 02:00:10.865,spot_listeleme,ZK,ZKUSDT,Binance Will List ZKsync (ZK) with ZK Token Distribution Program
+2024-06-20 06:19:30.953,spot_listeleme,ZRO,ZROUSDT,Binance Will List LayerZero (ZRO) with Seed Tag Applied
+2024-07-01 07:00:03.584,izleme,MLN,MLNUSDT,"Binance Will Extend the Monitoring Tag to Include BAL, CTXC, CVP, CVX, DOCK, HARD, IRIS, MBL, POLS, SNT & SUN and Remove the Monitoring Tag for MLN & ZEN on 2024-07-01"
+2024-07-01 07:00:03.584,izleme,ZEN,ZENUSDT,"Binance Will Extend the Monitoring Tag to Include BAL, CTXC, CVP, CVX, DOCK, HARD, IRIS, MBL, POLS, SNT & SUN and Remove the Monitoring Tag for MLN & ZEN on 2024-07-01"
+2024-07-08 07:01:09.631,spot_delist,BOND,BONDUSDT,"Binance Will Delist BOND, DOCK, MDX, POLS on 2024-07-22"
+2024-07-08 07:01:09.631,spot_delist,DOCK,,"Binance Will Delist BOND, DOCK, MDX, POLS on 2024-07-22"
+2024-07-08 07:01:09.631,spot_delist,MDX,,"Binance Will Delist BOND, DOCK, MDX, POLS on 2024-07-22"
+2024-07-08 07:01:09.631,spot_delist,POLS,,"Binance Will Delist BOND, DOCK, MDX, POLS on 2024-07-22"
+2024-07-18 16:46:00.825,hodler,BANANA,BANANAUSDT,Introducing Banana Gun (BANANA) on Binance HODLer Airdrops! Subscribe your BNB to Simple Earn
+2024-08-08 05:39:28.744,spot_listeleme,TON,TONUSDT,Binance Will List Toncoin (TON) with Seed Tag Applied
+2024-08-12 07:00:11.329,spot_delist,CVP,,"Binance Will Delist CVP, EPX, FOR, LOOM, REEF, VGX on 2024-08-26"
+2024-08-12 07:00:11.329,spot_delist,EPX,,"Binance Will Delist CVP, EPX, FOR, LOOM, REEF, VGX on 2024-08-26"
+2024-08-12 07:00:11.329,spot_delist,FOR,,"Binance Will Delist CVP, EPX, FOR, LOOM, REEF, VGX on 2024-08-26"
+2024-08-12 07:00:11.329,spot_delist,LOOM,LOOMUSDT,"Binance Will Delist CVP, EPX, FOR, LOOM, REEF, VGX on 2024-08-26"
+2024-08-12 07:00:11.329,spot_delist,REEF,REEFUSDT,"Binance Will Delist CVP, EPX, FOR, LOOM, REEF, VGX on 2024-08-26"
+2024-08-12 07:00:11.329,spot_delist,VGX,,"Binance Will Delist CVP, EPX, FOR, LOOM, REEF, VGX on 2024-08-26"
+2024-08-26 07:00:03.568,spot_listeleme,EURI,,Binance Will List Eurite (EURI) and Introduce EURI Zero Trading Fee Promotions
+2024-09-16 05:45:02.167,spot_listeleme,NEIRO,NEIROUSDT,"Binance Will List First Neiro on Ethereum (NEIRO), Turbo (TURBO), and Baby Doge Coin (1MBABYDOGE) with Seed Tag Applied"
+2024-09-16 05:45:02.167,spot_listeleme,TURBO,TURBOUSDT,"Binance Will List First Neiro on Ethereum (NEIRO), Turbo (TURBO), and Baby Doge Coin (1MBABYDOGE) with Seed Tag Applied"
+2024-09-16 05:45:02.167,spot_listeleme,1MBABYDOGE,1MBABYDOGEUSDT,"Binance Will List First Neiro on Ethereum (NEIRO), Turbo (TURBO), and Baby Doge Coin (1MBABYDOGE) with Seed Tag Applied"
+2024-09-16 08:30:35.843,vadeli_acilis,NEIRO,NEIROUSDT,Binance Futures Will Launch USDⓈ-Margined NEIROUSDT and 1MBABYDOGEUSDT Perpetual Contracts With up to 75x Leverage
+2024-09-16 08:30:35.843,vadeli_acilis,1MBABYDOGE,1MBABYDOGEUSDT,Binance Futures Will Launch USDⓈ-Margined NEIROUSDT and 1MBABYDOGEUSDT Perpetual Contracts With up to 75x Leverage
+2024-09-16 10:30:02.376,vadeli_acilis,CATI,CATIUSDT,Binance Futures Will Launch USDⓈ-Margined CATIUSDT and HMSTRUSDT Perpetual Contracts With up to 75x Leverage
+2024-09-16 10:30:02.376,vadeli_acilis,HMSTR,HMSTRUSDT,Binance Futures Will Launch USDⓈ-Margined CATIUSDT and HMSTRUSDT Perpetual Contracts With up to 75x Leverage
+2024-09-18 11:30:01.250,vadeli_acilis,KDA,KDAUSDT,Binance Futures Will Launch USDⓈ-Margined KDAUSDT Perpetual Contract With up to 75x Leverage
+2024-09-19 10:30:22.746,vadeli_acilis,FIDA,FIDAUSDT,Binance Futures Will Launch USDⓈ-Margined FIDAUSDT Perpetual Contract With up to 75x Leverage
+2024-09-20 09:30:12.129,vadeli_acilis,FIO,FIOUSDT,Binance Futures Will Launch USDⓈ-Margined FIOUSDT Perpetual Contract With up to 75x Leverage
+2024-09-23 11:00:06.478,vadeli_acilis,GHST,GHSTUSDT,Binance Futures Will Launch USDⓈ-Margined GHSTUSDT Perpetual Contract With up to 75x Leverage
+2024-09-24 09:30:11.745,vadeli_acilis,LOKA,LOKAUSDT,Binance Futures Will Launch USDⓈ-Margined LOKAUSDT Perpetual Contract With up to 75x Leverage
+2024-09-27 09:00:03.823,vadeli_acilis,REI,REIUSDT,Binance Futures Will Launch USDⓈ-Margined REIUSDT Perpetual Contract With up to 75x Leverage
+2024-09-30 08:19:57.115,spot_listeleme,EIGEN,EIGENUSDT,Binance Will List EigenLayer (EIGEN) with Seed Tag Applied
+2024-09-30 10:40:57.877,vadeli_acilis,COS,COSUSDT,Binance Futures Will Launch USDⓈ-Margined COSUSDT Perpetual Contract With up to 75x Leverage
+2024-10-02 10:32:24.788,vadeli_acilis,DIA,DIAUSDT,Binance Futures Will Launch USDⓈ-Margined DIAUSDT Perpetual Contract With up to 75x Leverage
+2024-10-03 07:00:05.269,izleme,BLZ,BLZUSDT,"Binance Will Extend the Monitoring Tag to Include BLZ, CLV, KEY, PROS & VITE and Remove the Seed Tag for PENDLE & SEI on 2024-10-03"
+2024-10-03 07:00:05.269,izleme,CLV,,"Binance Will Extend the Monitoring Tag to Include BLZ, CLV, KEY, PROS & VITE and Remove the Seed Tag for PENDLE & SEI on 2024-10-03"
+2024-10-03 07:00:05.269,izleme,KEY,KEYUSDT,"Binance Will Extend the Monitoring Tag to Include BLZ, CLV, KEY, PROS & VITE and Remove the Seed Tag for PENDLE & SEI on 2024-10-03"
+2024-10-03 07:00:05.269,izleme,PROS,,"Binance Will Extend the Monitoring Tag to Include BLZ, CLV, KEY, PROS & VITE and Remove the Seed Tag for PENDLE & SEI on 2024-10-03"
+2024-10-03 07:00:05.269,izleme,VITE,,"Binance Will Extend the Monitoring Tag to Include BLZ, CLV, KEY, PROS & VITE and Remove the Seed Tag for PENDLE & SEI on 2024-10-03"
+2024-10-09 07:00:13.876,spot_listeleme,BNSOL,,Binance Will List Binance Staked SOL (BNSOL) and Introduce BNSOL Boosted APR Promotion
+2024-10-21 10:30:38.455,vadeli_acilis,1000CAT,1000CATUSDT,Binance Futures Will Launch USDⓈ-Margined 1000CATUSDT Perpetual Contract With up to 75x Leverage
+2024-10-23 07:00:37.062,spot_delist,IDRT,,"Binance Will Delist IDRT, KP3R, OOKI, UNFI on 2024-11-06"
+2024-10-23 07:00:37.062,spot_delist,KP3R,,"Binance Will Delist IDRT, KP3R, OOKI, UNFI on 2024-11-06"
+2024-10-23 07:00:37.062,spot_delist,OOKI,,"Binance Will Delist IDRT, KP3R, OOKI, UNFI on 2024-11-06"
+2024-10-23 07:00:37.062,spot_delist,UNFI,UNFIUSDT,"Binance Will Delist IDRT, KP3R, OOKI, UNFI on 2024-11-06"
+2024-10-24 11:34:32.095,vadeli_acilis,GOAT,GOATUSDT,Binance Futures Will Launch USDⓈ-Margined GOATUSDT Perpetual Contract With up to 75x Leverage
+2024-10-25 08:00:31.189,vadeli_acilis,MOODENG,MOODENGUSDT,Binance Futures Will Launch USDⓈ-Margined MOODENGUSDT Perpetual Contract With up to 75x Leverage
+2024-10-25 10:30:00.674,vadeli_acilis,SAFE,SAFEUSDT,Binance Futures Will Launch USDⓈ-Margined SAFEUSDT Perpetual Contract With up to 75x Leverage
+2024-10-28 12:00:00.976,vadeli_acilis,SANTOS,SANTOSUSDT,Binance Futures Will Launch USDⓈ-Margined SANTOSUSDT Perpetual Contract With up to 75x Leverage
+2024-10-31 11:00:03.363,vadeli_acilis,TROY,TROYUSDT,Binance Futures Will Launch USDⓈ-Margined TROYUSDT Perpetual Contract With up to 75x Leverage
+2024-11-04 10:30:23.083,vadeli_acilis,PONKE,PONKEUSDT,Binance Futures Will Launch USDⓈ-Margined PONKEUSDT Perpetual Contract With up to 75x Leverage
+2024-11-06 05:10:07.602,spot_listeleme,COW,COWUSDT,Binance Will List Cow Protocol (COW) and Cetus Protocol (CETUS) with Seed Tag Applied
+2024-11-06 05:10:07.602,spot_listeleme,CETUS,CETUSUSDT,Binance Will List Cow Protocol (COW) and Cetus Protocol (CETUS) with Seed Tag Applied
+2024-11-07 10:28:53.236,vadeli_acilis,1000000MOG,1000000MOGUSDT,Binance Futures Will Launch USDⓈ-Margined 1000000MOGUSDT Perpetual Contract With up to 75x Leverage
+2024-11-08 14:03:02.460,vadeli_acilis,GRASS,GRASSUSDT,"Binance Futures Will Launch USDⓈ-Margined GRASSUSDT, DRIFTUSDT, and SWELLUSDT Perpetual Contracts With up to 75x Leverage"
+2024-11-08 14:03:02.460,vadeli_acilis,DRIFT,DRIFTUSDT,"Binance Futures Will Launch USDⓈ-Margined GRASSUSDT, DRIFTUSDT, and SWELLUSDT Perpetual Contracts With up to 75x Leverage"
+2024-11-08 14:03:02.460,vadeli_acilis,SWELL,SWELLUSDT,"Binance Futures Will Launch USDⓈ-Margined GRASSUSDT, DRIFTUSDT, and SWELLUSDT Perpetual Contracts With up to 75x Leverage"
+2024-11-11 05:39:29.462,spot_listeleme,ACT,ACTUSDT,Binance Will List Act I : The AI Prophecy (ACT) and Peanut the Squirrel (PNUT) with Seed Tag Applied
+2024-11-11 05:39:29.462,spot_listeleme,PNUT,PNUTUSDT,Binance Will List Act I : The AI Prophecy (ACT) and Peanut the Squirrel (PNUT) with Seed Tag Applied
+2024-11-13 10:30:00.839,vadeli_acilis,HIPPO,HIPPOUSDT,Binance Futures Will Launch USDⓈ-Margined HIPPOUSDT and 1000XUSDT Perpetual Contract With up to 75x Leverage
+2024-11-13 10:30:00.839,vadeli_acilis,1000X,1000XUSDT,Binance Futures Will Launch USDⓈ-Margined HIPPOUSDT and 1000XUSDT Perpetual Contract With up to 75x Leverage
+2024-11-15 09:30:13.144,vadeli_acilis,DEGEN,DEGENUSDT,Binance Futures Will Launch USDⓈ-Margined DEGENUSDT Perpetual Contract With up to 75x Leverage
+2024-11-18 09:30:12.272,vadeli_acilis,BAN,BANUSDT,Binance Futures Will Launch USDⓈ-Margined BANUSDT and AKTUSDT Perpetual Contracts With up to 75x Leverage
+2024-11-18 09:30:12.272,vadeli_acilis,AKT,AKTUSDT,Binance Futures Will Launch USDⓈ-Margined BANUSDT and AKTUSDT Perpetual Contracts With up to 75x Leverage
+2024-11-21 09:30:02.071,vadeli_acilis,SLERF,SLERFUSDT,Binance Futures Will Launch USDⓈ-Margined SLERFUSDT and SCRTUSDT Perpetual Contracts With up to 75x Leverage
+2024-11-21 09:30:02.071,vadeli_acilis,SCRT,SCRTUSDT,Binance Futures Will Launch USDⓈ-Margined SLERFUSDT and SCRTUSDT Perpetual Contracts With up to 75x Leverage
+2024-11-25 09:35:02.268,vadeli_acilis,1000WHY,1000WHYUSDT,Binance Futures Will Launch USDⓈ-Margined 1000WHYUSDT and 1000CHEEMSUSDT Perpetual Contracts With up to 75x Leverage
+2024-11-25 09:35:02.268,vadeli_acilis,1000CHEEMS,1000CHEEMSUSDT,Binance Futures Will Launch USDⓈ-Margined 1000WHYUSDT and 1000CHEEMSUSDT Perpetual Contracts With up to 75x Leverage
+2024-11-26 07:57:32.153,hodler,THE,THEUSDT,Introducing Thena (THE) on Binance HODLer Airdrops! Subscribe your BNB to Simple Earn
+2024-11-26 08:30:14.278,spot_delist,GFT,,"Binance Will Delist GFT, IRIS, KEY, OAX, REN on 2024-12-10"
+2024-11-26 08:30:14.278,spot_delist,IRIS,,"Binance Will Delist GFT, IRIS, KEY, OAX, REN on 2024-12-10"
+2024-11-26 08:30:14.278,spot_delist,KEY,KEYUSDT,"Binance Will Delist GFT, IRIS, KEY, OAX, REN on 2024-12-10"
+2024-11-26 08:30:14.278,spot_delist,OAX,,"Binance Will Delist GFT, IRIS, KEY, OAX, REN on 2024-12-10"
+2024-11-26 08:30:14.278,spot_delist,REN,RENUSDT,"Binance Will Delist GFT, IRIS, KEY, OAX, REN on 2024-12-10"
+2024-11-27 12:31:41.624,vadeli_acilis,MORPHO,MORPHOUSDT,Binance Futures Will Launch USDⓈ-Margined MORPHOUSDT and CHILLGUYUSDT Perpetual Contracts With up to 75x Leverage
+2024-11-27 12:31:41.624,vadeli_acilis,CHILLGUY,CHILLGUYUSDT,Binance Futures Will Launch USDⓈ-Margined MORPHOUSDT and CHILLGUYUSDT Perpetual Contracts With up to 75x Leverage
+2024-11-29 04:00:01.809,vadeli_delist,XEM,XEMUSDT,"Binance Futures Will Delist USDⓈ-M XEMUSDT, ORBSUSDT and LOOMUSDT Perpetual Contracts (2024-12-09)"
+2024-11-29 04:00:01.809,vadeli_delist,ORBS,ORBSUSDT,"Binance Futures Will Delist USDⓈ-M XEMUSDT, ORBSUSDT and LOOMUSDT Perpetual Contracts (2024-12-09)"
+2024-11-29 04:00:01.809,vadeli_delist,LOOM,LOOMUSDT,"Binance Futures Will Delist USDⓈ-M XEMUSDT, ORBSUSDT and LOOMUSDT Perpetual Contracts (2024-12-09)"
+2024-12-04 12:03:43.583,vadeli_acilis,KAIA,KAIAUSDT,Binance Futures Will Launch USDⓈ-Margined KAIAUSDT and AEROUSDT Perpetual Contracts With up to 75x Leverage
+2024-12-04 12:03:43.583,vadeli_acilis,AERO,AEROUSDT,Binance Futures Will Launch USDⓈ-Margined KAIAUSDT and AEROUSDT Perpetual Contracts With up to 75x Leverage
+2024-12-06 03:00:04.185,vadeli_delist,MAVIA,MAVIAUSDT,"Binance Futures Will Delist USDⓈ-M MAVIAUSDT, OMGUSDT, and BONDUSDT Perpetual Contracts (2024-12-16)"
+2024-12-06 03:00:04.185,vadeli_delist,OMG,OMGUSDT,"Binance Futures Will Delist USDⓈ-M MAVIAUSDT, OMGUSDT, and BONDUSDT Perpetual Contracts (2024-12-16)"
+2024-12-06 03:00:04.185,vadeli_delist,BOND,BONDUSDT,"Binance Futures Will Delist USDⓈ-M MAVIAUSDT, OMGUSDT, and BONDUSDT Perpetual Contracts (2024-12-16)"
+2024-12-06 08:34:18.953,spot_listeleme,ACX,ACXUSDT,Binance Will List Across Protocol (ACX) and Orca (ORCA) with Seed Tag Applied
+2024-12-06 08:34:18.953,spot_listeleme,ORCA,ORCAUSDT,Binance Will List Across Protocol (ACX) and Orca (ORCA) with Seed Tag Applied
+2024-12-09 08:29:16.897,hodler,MOVE,MOVEUSDT,Introducing Movement (MOVE) on Binance HODLer Airdrops! Subscribe your BNB to Simple Earn
+2024-12-10 07:22:20.546,spot_listeleme,ME,MEUSDT,Binance Will List Magic Eden (ME) with Seed Tag Applied
+2024-12-10 09:19:40.056,vadeli_acilis,RAYSOL,RAYSOLUSDT,"Binance Futures Will Launch USDⓈ-Margined RAYSOLUSDT, KOMAUSDT, VIRTUALUSDT, and SPXUSDT Perpetual Contracts With up to 75x Leverage"
+2024-12-10 09:19:40.056,vadeli_acilis,KOMA,KOMAUSDT,"Binance Futures Will Launch USDⓈ-Margined RAYSOLUSDT, KOMAUSDT, VIRTUALUSDT, and SPXUSDT Perpetual Contracts With up to 75x Leverage"
+2024-12-10 09:19:40.056,vadeli_acilis,VIRTUAL,VIRTUALUSDT,"Binance Futures Will Launch USDⓈ-Margined RAYSOLUSDT, KOMAUSDT, VIRTUALUSDT, and SPXUSDT Perpetual Contracts With up to 75x Leverage"
+2024-12-10 09:19:40.056,vadeli_acilis,SPX,SPXUSDT,"Binance Futures Will Launch USDⓈ-Margined RAYSOLUSDT, KOMAUSDT, VIRTUALUSDT, and SPXUSDT Perpetual Contracts With up to 75x Leverage"
+2024-12-13 08:07:57.826,spot_listeleme,VELODROME,VELODROMEUSDT,Binance Will List Velodrome Finance (VELODROME) with Seed Tag Applied
+2024-12-13 10:39:40.907,vadeli_acilis,AVA,AVAUSDT,Binance Futures Will Launch USDⓈ-Margined AVAUSDT and DEGOUSDT Perpetual Contracts With up to 75x Leverage
+2024-12-13 10:39:40.907,vadeli_acilis,DEGO,DEGOUSDT,Binance Futures Will Launch USDⓈ-Margined AVAUSDT and DEGOUSDT Perpetual Contracts With up to 75x Leverage
+2024-12-16 09:19:43.453,vadeli_acilis,MOCA,MOCAUSDT,Binance Futures Will Launch USDⓈ-Margined MOCAUSDT Perpetual Contract With up to 75x Leverage
+2024-12-16 12:36:45.627,hodler,1000CAT,1000CATUSDT,Introducing Simon's Cat (1000CAT) and Pudgy Penguins (PENGU) on Binance HODLer Airdrops!
+2024-12-18 08:01:12.939,spot_delist,AKRO,,"Binance Will Delist AKRO, BLZ, WRX on 2024-12-25"
+2024-12-18 08:01:12.939,spot_delist,BLZ,BLZUSDT,"Binance Will Delist AKRO, BLZ, WRX on 2024-12-25"
+2024-12-18 08:01:12.939,spot_delist,WRX,,"Binance Will Delist AKRO, BLZ, WRX on 2024-12-25"
+2024-12-18 09:29:09.028,vadeli_acilis,LUMIA,LUMIAUSDT,Binance Futures Will Launch USDⓈ-Margined LUMIAUSDT Perpetual Contract With up to 75x Leverage
+2024-12-20 16:04:10.493,vadeli_acilis,AIXBT,AIXBTUSDT,"Binance Futures Will Launch USDⓈ-Margined AIXBTUSDT, FARTCOINUSDT, KMNOUSDT and CGPTUSDT Perpetual Contracts With up to 75x Leverage"
+2024-12-20 16:04:10.493,vadeli_acilis,FARTCOIN,FARTCOINUSDT,"Binance Futures Will Launch USDⓈ-Margined AIXBTUSDT, FARTCOINUSDT, KMNOUSDT and CGPTUSDT Perpetual Contracts With up to 75x Leverage"
+2024-12-20 16:04:10.493,vadeli_acilis,KMNO,KMNOUSDT,"Binance Futures Will Launch USDⓈ-Margined AIXBTUSDT, FARTCOINUSDT, KMNOUSDT and CGPTUSDT Perpetual Contracts With up to 75x Leverage"
+2024-12-20 16:04:10.493,vadeli_acilis,CGPT,CGPTUSDT,"Binance Futures Will Launch USDⓈ-Margined AIXBTUSDT, FARTCOINUSDT, KMNOUSDT and CGPTUSDT Perpetual Contracts With up to 75x Leverage"
+2024-12-23 09:15:18.480,vadeli_acilis,HIVE,HIVEUSDT,Binance Futures Will Launch USDⓈ-Margined HIVEUSDT Perpetual Contract With up to 75x Leverage
+2024-12-24 09:15:05.604,vadeli_acilis,DEXE,DEXEUSDT,Binance Futures Will Launch USDⓈ-Margined DEXEUSDT Perpetual Contract With up to 75x Leverage
+2024-12-30 09:15:06.345,vadeli_acilis,PHA,PHAUSDT,Binance Futures Will Launch USDⓈ-Margined PHAUSDT and DFUSDT Perpetual Contracts With up to 75x Leverage
+2024-12-30 09:15:06.345,vadeli_acilis,DF,DFUSDT,Binance Futures Will Launch USDⓈ-Margined PHAUSDT and DFUSDT Perpetual Contracts With up to 75x Leverage
+2025-01-02 09:00:19.305,izleme,CVX,CVXUSDT,"Binance Will Extend the Monitoring Tag to Include STMX & TROY, Remove the Monitoring Tag for CVX & SUN, and Remove the Seed Tag for ARKM, BLUR, JTO & TIA on 2025-01-02"
+2025-01-02 09:00:19.305,izleme,SUN,SUNUSDT,"Binance Will Extend the Monitoring Tag to Include STMX & TROY, Remove the Monitoring Tag for CVX & SUN, and Remove the Seed Tag for ARKM, BLUR, JTO & TIA on 2025-01-02"
+2025-01-02 10:50:37.626,vadeli_acilis,GRIFFAIN,GRIFFAINUSDT,"Binance Futures Will Launch USDⓈ-Margined GRIFFAINUSDT, AI16ZUSDT and ZEREBROUSDT Perpetual Contracts With up to 75x Leverage"
+2025-01-02 10:50:37.626,vadeli_acilis,AI16Z,AI16ZUSDT,"Binance Futures Will Launch USDⓈ-Margined GRIFFAINUSDT, AI16ZUSDT and ZEREBROUSDT Perpetual Contracts With up to 75x Leverage"
+2025-01-02 10:50:37.626,vadeli_acilis,ZEREBRO,ZEREBROUSDT,"Binance Futures Will Launch USDⓈ-Margined GRIFFAINUSDT, AI16ZUSDT and ZEREBROUSDT Perpetual Contracts With up to 75x Leverage"
+2025-01-07 08:58:00.965,vadeli_acilis,COOKIE,COOKIEUSDT,"Binance Futures Will Launch USDⓈ-Margined COOKIEUSDT, ALCHUSDT, and SWARMSUSDT Perpetual Contracts With up to 75x Leverage"
+2025-01-07 08:58:00.965,vadeli_acilis,ALCH,ALCHUSDT,"Binance Futures Will Launch USDⓈ-Margined COOKIEUSDT, ALCHUSDT, and SWARMSUSDT Perpetual Contracts With up to 75x Leverage"
+2025-01-07 08:58:00.965,vadeli_acilis,SWARMS,SWARMSUSDT,"Binance Futures Will Launch USDⓈ-Margined COOKIEUSDT, ALCHUSDT, and SWARMSUSDT Perpetual Contracts With up to 75x Leverage"
+2025-01-08 04:54:28.898,vadeli_acilis,SONIC,SONICUSDT,Binance Futures Will Launch USDⓈ-Margined SONICUSDT Perpetual Contract With up to 75x Leverage
+2025-01-10 08:55:27.639,spot_listeleme,AIXBT,AIXBTUSDT,"Binance Will List aixbt by Virtuals (AIXBT), ChainGPT(CGPT), Cookie DAO(COOKIE) with Seed Tag Applied"
+2025-01-10 08:55:27.639,spot_listeleme,CGPT,CGPTUSDT,"Binance Will List aixbt by Virtuals (AIXBT), ChainGPT(CGPT), Cookie DAO(COOKIE) with Seed Tag Applied"
+2025-01-10 08:55:27.639,spot_listeleme,COOKIE,COOKIEUSDT,"Binance Will List aixbt by Virtuals (AIXBT), ChainGPT(CGPT), Cookie DAO(COOKIE) with Seed Tag Applied"
+2025-01-15 10:30:09.822,vadeli_acilis,PROM,PROMUSDT,Binance Futures Will Launch USDⓈ-Margined PROMUSDT Perpetual Contract With up to 75x Leverage
+2025-01-17 10:07:03.396,vadeli_acilis,ARC,ARCUSDT,Binance Futures Will Launch USDⓈ-Margined ARCUSDT and AVAAIUSDT Perpetual Contracts With up to 25x Leverage
+2025-01-17 10:07:03.396,vadeli_acilis,AVAAI,AVAAIUSDT,Binance Futures Will Launch USDⓈ-Margined ARCUSDT and AVAAIUSDT Perpetual Contracts With up to 25x Leverage
+2025-01-18 10:43:11.591,vadeli_acilis,TRUMP,TRUMPUSDT,Binance Futures Will Launch USDⓈ-Margined TRUMPUSDT Perpetual Contract With up to 25x Leverage
+2025-01-19 04:05:42.151,spot_listeleme,TRUMP,TRUMPUSDT,Binance Will List OFFICIAL TRUMP (TRUMP) with Seed Tag Applied
+2025-01-20 06:55:13.731,vadeli_acilis,MELANIA,MELANIAUSDT,Binance Futures Will Launch USDⓈ-Margined MELANIAUSDT Perpetual Contract With up to 25x Leverage
+2025-01-22 07:30:16.033,vadeli_acilis,VTHO,VTHOUSDT,Binance Futures Will Launch USDⓈ-Margined VTHOUSDT Perpetual Contract With up to 75x Leverage
+2025-01-22 10:02:43.943,hodler,ANIME,ANIMEUSDT,Introducing Animecoin (ANIME) on Binance HODLer Airdrops! Earn ANIME With Retroactive BNB Simple Earn Subscriptions
+2025-01-24 07:10:06.449,vadeli_acilis,VINE,VINEUSDT,Binance Futures Will Launch USDⓈ-Margined VINEUSDT and PIPPINUSDT Perpetual Contracts With up to 25x Leverage
+2025-01-24 07:10:06.449,vadeli_acilis,PIPPIN,PIPPINUSDT,Binance Futures Will Launch USDⓈ-Margined VINEUSDT and PIPPINUSDT Perpetual Contracts With up to 25x Leverage
+2025-01-29 05:52:20.129,vadeli_acilis,VVV,VVVUSDT,Binance Futures Will Launch USDⓈ-Margined VVVUSDT Perpetual Contract With up to 25x Leverage
+2025-02-05 12:19:06.573,hodler,BERA,BERAUSDT,Introducing Berachain (BERA) on Binance HODLer Airdrops! Earn BERA With Retroactive BNB Simple Earn Subscriptions
+2025-02-09 07:10:31.264,spot_listeleme,1000CHEEMS,1000CHEEMSUSDT,Binance Will List Cheems (1000CHEEMS) and Test (TST) with Seed Tag Applied
+2025-02-09 07:10:31.264,spot_listeleme,TST,TSTUSDT,Binance Will List Cheems (1000CHEEMS) and Test (TST) with Seed Tag Applied
+2025-02-11 06:43:29.498,hodler,LAYER,LAYERUSDT,Introducing Solayer (LAYER) on Binance HODLer Airdrops! Subscribe your BNB to Simple Earn
+2025-02-13 09:45:10.452,vadeli_acilis,B3,B3USDT,Binance Futures Will Launch USDⓈ-Margined B3USDT Perpetual Contract With up to 25x Leverage
+2025-02-13 15:04:51.469,vadeli_acilis,IP,IPUSDT,Binance Futures Will Launch USDⓈ-Margined IPUSDT Perpetual Contract With up to 25x Leverage
+2025-02-17 07:00:24.287,spot_delist,AMB,AMBUSDT,"Binance Will Delist AMB, CLV, STMX, VITE on 2025-02-24"
+2025-02-17 07:00:24.287,spot_delist,CLV,,"Binance Will Delist AMB, CLV, STMX, VITE on 2025-02-24"
+2025-02-17 07:00:24.287,spot_delist,STMX,STMXUSDT,"Binance Will Delist AMB, CLV, STMX, VITE on 2025-02-24"
+2025-02-17 07:00:24.287,spot_delist,VITE,,"Binance Will Delist AMB, CLV, STMX, VITE on 2025-02-24"
+2025-02-17 15:08:56.220,vadeli_acilis,GPS,GPSUSDT,Binance Futures Will Launch USDⓈ-Margined GPSUSDT and SHELLUSDT Perpetual Contracts With up to 25x Leverage
+2025-02-17 15:08:56.220,vadeli_acilis,SHELL,SHELLUSDT,Binance Futures Will Launch USDⓈ-Margined GPSUSDT and SHELLUSDT Perpetual Contracts With up to 25x Leverage
+2025-02-19 10:31:06.825,hodler,KAITO,KAITOUSDT,Introducing KAITO (KAITO) on Binance HODLer Airdrops! Earn KAITO With Retroactive BNB Simple Earn Subscriptions
+2025-02-27 05:15:20.602,hodler,SHELL,SHELLUSDT,Introducing MyShell (SHELL) on Binance HODLer Airdrops! Earn SHELL With Retroactive BNB Simple Earn Subscriptions
+2025-03-04 05:18:51.742,hodler,GPS,GPSUSDT,Introducing GoPlus Security (GPS) on Binance HODLer Airdrops! Earn GPS With Retroactive BNB Simple Earn Subscriptions
+2025-03-04 08:01:22.062,izleme,AERGO,,"Binance Will Change the Monitoring Tag Inclusion Frequency to Monthly and Extend the Monitoring Tag to Include AERGO, ALPACA, AST, BADGER, BURGER, COMBO, NULS, STPT, UFT & VIDT on 2025-03-04"
+2025-03-04 08:01:22.062,izleme,ALPACA,ALPACAUSDT,"Binance Will Change the Monitoring Tag Inclusion Frequency to Monthly and Extend the Monitoring Tag to Include AERGO, ALPACA, AST, BADGER, BURGER, COMBO, NULS, STPT, UFT & VIDT on 2025-03-04"
+2025-03-04 08:01:22.062,izleme,AST,,"Binance Will Change the Monitoring Tag Inclusion Frequency to Monthly and Extend the Monitoring Tag to Include AERGO, ALPACA, AST, BADGER, BURGER, COMBO, NULS, STPT, UFT & VIDT on 2025-03-04"
+2025-03-04 08:01:22.062,izleme,BADGER,BADGERUSDT,"Binance Will Change the Monitoring Tag Inclusion Frequency to Monthly and Extend the Monitoring Tag to Include AERGO, ALPACA, AST, BADGER, BURGER, COMBO, NULS, STPT, UFT & VIDT on 2025-03-04"
+2025-03-04 08:01:22.062,izleme,BURGER,,"Binance Will Change the Monitoring Tag Inclusion Frequency to Monthly and Extend the Monitoring Tag to Include AERGO, ALPACA, AST, BADGER, BURGER, COMBO, NULS, STPT, UFT & VIDT on 2025-03-04"
+2025-03-04 08:01:22.062,izleme,COMBO,COMBOUSDT,"Binance Will Change the Monitoring Tag Inclusion Frequency to Monthly and Extend the Monitoring Tag to Include AERGO, ALPACA, AST, BADGER, BURGER, COMBO, NULS, STPT, UFT & VIDT on 2025-03-04"
+2025-03-04 08:01:22.062,izleme,NULS,NULSUSDT,"Binance Will Change the Monitoring Tag Inclusion Frequency to Monthly and Extend the Monitoring Tag to Include AERGO, ALPACA, AST, BADGER, BURGER, COMBO, NULS, STPT, UFT & VIDT on 2025-03-04"
+2025-03-04 08:01:22.062,izleme,STPT,STPTUSDT,"Binance Will Change the Monitoring Tag Inclusion Frequency to Monthly and Extend the Monitoring Tag to Include AERGO, ALPACA, AST, BADGER, BURGER, COMBO, NULS, STPT, UFT & VIDT on 2025-03-04"
+2025-03-04 08:01:22.062,izleme,UFT,,"Binance Will Change the Monitoring Tag Inclusion Frequency to Monthly and Extend the Monitoring Tag to Include AERGO, ALPACA, AST, BADGER, BURGER, COMBO, NULS, STPT, UFT & VIDT on 2025-03-04"
+2025-03-04 08:01:22.062,izleme,VIDT,VIDTUSDT,"Binance Will Change the Monitoring Tag Inclusion Frequency to Monthly and Extend the Monitoring Tag to Include AERGO, ALPACA, AST, BADGER, BURGER, COMBO, NULS, STPT, UFT & VIDT on 2025-03-04"
+2025-03-12 14:59:27.497,vadeli_acilis,VIC,VICUSDT,Binance Futures Will Launch USDⓈ-Margined VICUSDT Perpetual Contract With Up To 75x Leverage
+2025-03-17 07:00:03.529,spot_listeleme,XUSD,,Binance Will List StraitsX USD (XUSD) and Introduce XUSD Zero Trading Fee Promotion
+2025-03-17 11:31:00.548,vadeli_acilis,BMT,BMTUSDT,Binance Futures Will Launch USDⓈ-Margined BMTUSDT and MUBARAKUSDT Perpetual Contracts With up to 25x Leverage
+2025-03-17 11:31:00.548,vadeli_acilis,MUBARAK,MUBARAKUSDT,Binance Futures Will Launch USDⓈ-Margined BMTUSDT and MUBARAKUSDT Perpetual Contracts With up to 25x Leverage
+2025-03-18 09:52:05.581,hodler,BMT,BMTUSDT,Introducing Bubblemaps (BMT) on Binance HODLer Airdrops! Earn BMT With Retroactive BNB Simple Earn Subscriptions
+2025-03-21 05:50:20.352,spot_delist,AERGO,,"Binance Will Delist AERGO, AST, BURGER, COMBO, LINA on 2025-03-28"
+2025-03-21 05:50:20.352,spot_delist,AST,,"Binance Will Delist AERGO, AST, BURGER, COMBO, LINA on 2025-03-28"
+2025-03-21 05:50:20.352,spot_delist,BURGER,,"Binance Will Delist AERGO, AST, BURGER, COMBO, LINA on 2025-03-28"
+2025-03-21 05:50:20.352,spot_delist,COMBO,COMBOUSDT,"Binance Will Delist AERGO, AST, BURGER, COMBO, LINA on 2025-03-28"
+2025-03-21 05:50:20.352,spot_delist,LINA,LINAUSDT,"Binance Will Delist AERGO, AST, BURGER, COMBO, LINA on 2025-03-28"
+2025-03-21 10:46:15.638,vadeli_acilis,BR,BRUSDT,Binance Futures Will Launch USDⓈ-Margined BRUSDT and PLUMEUSDT Perpetual Contracts With up to 25x Leverage
+2025-03-21 10:46:15.638,vadeli_acilis,PLUME,PLUMEUSDT,Binance Futures Will Launch USDⓈ-Margined BRUSDT and PLUMEUSDT Perpetual Contracts With up to 25x Leverage
+2025-03-24 15:56:48.230,hodler,PARTI,PARTIUSDT,Introducing  Particle Network (PARTI) on Binance HODLer Airdrops! Earn PARTI With Retroactive BNB Simple Earn Subscriptions
+2025-03-26 15:16:10.581,vadeli_acilis,JELLYJELLY,JELLYJELLYUSDT,Binance Futures Will Launch USDⓈ-Margined JELLYJELLYUSDT and MAVIAUSDT Perpetual Contracts
+2025-03-26 15:16:10.581,vadeli_acilis,MAVIA,MAVIAUSDT,Binance Futures Will Launch USDⓈ-Margined JELLYJELLYUSDT and MAVIAUSDT Perpetual Contracts
+2025-03-27 07:07:25.182,vadeli_acilis,PAXG,PAXGUSDT,Binance Futures Will Launch USDⓈ-Margined PAXGUSDT Perpetual Contract
+2025-03-27 13:59:43.691,vadeli_acilis,WAL,WALUSDT,Binance Futures Will Launch USDⓈ-Margined WALUSDT Perpetual Contract
+2025-03-27 17:27:12.114,spot_listeleme,MUBARAK,MUBARAKUSDT,"Binance Announced the First Batch of Vote to List Results and Will List Mubarak (MUBARAK), CZ'S Dog (BROCCOLI714), Tutorial (TUT), and Banana For Scale (BANANAS31) With Seed Tags Applied"
+2025-03-27 17:27:12.114,spot_listeleme,BROCCOLI714,BROCCOLI714USDT,"Binance Announced the First Batch of Vote to List Results and Will List Mubarak (MUBARAK), CZ'S Dog (BROCCOLI714), Tutorial (TUT), and Banana For Scale (BANANAS31) With Seed Tags Applied"
+2025-03-27 17:27:12.114,spot_listeleme,TUT,TUTUSDT,"Binance Announced the First Batch of Vote to List Results and Will List Mubarak (MUBARAK), CZ'S Dog (BROCCOLI714), Tutorial (TUT), and Banana For Scale (BANANAS31) With Seed Tags Applied"
+2025-03-27 17:27:12.114,spot_listeleme,BANANAS31,BANANAS31USDT,"Binance Announced the First Batch of Vote to List Results and Will List Mubarak (MUBARAK), CZ'S Dog (BROCCOLI714), Tutorial (TUT), and Banana For Scale (BANANAS31) With Seed Tags Applied"
+2025-03-31 07:02:06.565,vadeli_acilis,FUN,FUNUSDT,Binance Futures Will Launch USDⓈ-Margined FUNUSDT and MLNUSDT Perpetual Contracts
+2025-03-31 07:02:06.565,vadeli_acilis,MLN,MLNUSDT,Binance Futures Will Launch USDⓈ-Margined FUNUSDT and MLNUSDT Perpetual Contracts
+2025-04-02 13:38:07.323,vadeli_acilis,ATH,ATHUSDT,Binance Futures Will Launch USDⓈ-Margined ATHUSDT Perpetual Contract
+2025-04-03 07:00:36.245,izleme,ARDR,,"Binance Will Extend the Monitoring Tag to Include ARDR, BSW, FLM, LTO, NKN, PDA, PERP, VIB, VOXEL & WING, and Remove the Seed Tag for JUP, STRK & TON on 2025-04-03"
+2025-04-03 07:00:36.245,izleme,BSW,BSWUSDT,"Binance Will Extend the Monitoring Tag to Include ARDR, BSW, FLM, LTO, NKN, PDA, PERP, VIB, VOXEL & WING, and Remove the Seed Tag for JUP, STRK & TON on 2025-04-03"
+2025-04-03 07:00:36.245,izleme,FLM,FLMUSDT,"Binance Will Extend the Monitoring Tag to Include ARDR, BSW, FLM, LTO, NKN, PDA, PERP, VIB, VOXEL & WING, and Remove the Seed Tag for JUP, STRK & TON on 2025-04-03"
+2025-04-03 07:00:36.245,izleme,LTO,,"Binance Will Extend the Monitoring Tag to Include ARDR, BSW, FLM, LTO, NKN, PDA, PERP, VIB, VOXEL & WING, and Remove the Seed Tag for JUP, STRK & TON on 2025-04-03"
+2025-04-03 07:00:36.245,izleme,NKN,NKNUSDT,"Binance Will Extend the Monitoring Tag to Include ARDR, BSW, FLM, LTO, NKN, PDA, PERP, VIB, VOXEL & WING, and Remove the Seed Tag for JUP, STRK & TON on 2025-04-03"
+2025-04-03 07:00:36.245,izleme,PDA,,"Binance Will Extend the Monitoring Tag to Include ARDR, BSW, FLM, LTO, NKN, PDA, PERP, VIB, VOXEL & WING, and Remove the Seed Tag for JUP, STRK & TON on 2025-04-03"
+2025-04-03 07:00:36.245,izleme,PERP,PERPUSDT,"Binance Will Extend the Monitoring Tag to Include ARDR, BSW, FLM, LTO, NKN, PDA, PERP, VIB, VOXEL & WING, and Remove the Seed Tag for JUP, STRK & TON on 2025-04-03"
+2025-04-03 07:00:36.245,izleme,VIB,,"Binance Will Extend the Monitoring Tag to Include ARDR, BSW, FLM, LTO, NKN, PDA, PERP, VIB, VOXEL & WING, and Remove the Seed Tag for JUP, STRK & TON on 2025-04-03"
+2025-04-03 07:00:36.245,izleme,VOXEL,VOXELUSDT,"Binance Will Extend the Monitoring Tag to Include ARDR, BSW, FLM, LTO, NKN, PDA, PERP, VIB, VOXEL & WING, and Remove the Seed Tag for JUP, STRK & TON on 2025-04-03"
+2025-04-03 07:00:36.245,izleme,WING,,"Binance Will Extend the Monitoring Tag to Include ARDR, BSW, FLM, LTO, NKN, PDA, PERP, VIB, VOXEL & WING, and Remove the Seed Tag for JUP, STRK & TON on 2025-04-03"
+2025-04-08 06:00:07.355,spot_delist,BADGER,BADGERUSDT,"Binance Announced the First Batch of Vote to Delist Results and Will Delist BADGER, BAL, BETA, CREAM, CTXC, ELF, FIRO, HARD, NULS, PROS, SNT, TROY, UFT, VIDT on 2025-04-16"
+2025-04-08 06:00:07.355,spot_delist,BAL,BALUSDT,"Binance Announced the First Batch of Vote to Delist Results and Will Delist BADGER, BAL, BETA, CREAM, CTXC, ELF, FIRO, HARD, NULS, PROS, SNT, TROY, UFT, VIDT on 2025-04-16"
+2025-04-08 06:00:07.355,spot_delist,BETA,,"Binance Announced the First Batch of Vote to Delist Results and Will Delist BADGER, BAL, BETA, CREAM, CTXC, ELF, FIRO, HARD, NULS, PROS, SNT, TROY, UFT, VIDT on 2025-04-16"
+2025-04-08 06:00:07.355,spot_delist,CREAM,,"Binance Announced the First Batch of Vote to Delist Results and Will Delist BADGER, BAL, BETA, CREAM, CTXC, ELF, FIRO, HARD, NULS, PROS, SNT, TROY, UFT, VIDT on 2025-04-16"
+2025-04-08 06:00:07.355,spot_delist,CTXC,,"Binance Announced the First Batch of Vote to Delist Results and Will Delist BADGER, BAL, BETA, CREAM, CTXC, ELF, FIRO, HARD, NULS, PROS, SNT, TROY, UFT, VIDT on 2025-04-16"
+2025-04-08 06:00:07.355,spot_delist,ELF,,"Binance Announced the First Batch of Vote to Delist Results and Will Delist BADGER, BAL, BETA, CREAM, CTXC, ELF, FIRO, HARD, NULS, PROS, SNT, TROY, UFT, VIDT on 2025-04-16"
+2025-04-08 06:00:07.355,spot_delist,FIRO,,"Binance Announced the First Batch of Vote to Delist Results and Will Delist BADGER, BAL, BETA, CREAM, CTXC, ELF, FIRO, HARD, NULS, PROS, SNT, TROY, UFT, VIDT on 2025-04-16"
+2025-04-08 06:00:07.355,spot_delist,HARD,,"Binance Announced the First Batch of Vote to Delist Results and Will Delist BADGER, BAL, BETA, CREAM, CTXC, ELF, FIRO, HARD, NULS, PROS, SNT, TROY, UFT, VIDT on 2025-04-16"
+2025-04-08 06:00:07.355,spot_delist,NULS,NULSUSDT,"Binance Announced the First Batch of Vote to Delist Results and Will Delist BADGER, BAL, BETA, CREAM, CTXC, ELF, FIRO, HARD, NULS, PROS, SNT, TROY, UFT, VIDT on 2025-04-16"
+2025-04-08 06:00:07.355,spot_delist,PROS,,"Binance Announced the First Batch of Vote to Delist Results and Will Delist BADGER, BAL, BETA, CREAM, CTXC, ELF, FIRO, HARD, NULS, PROS, SNT, TROY, UFT, VIDT on 2025-04-16"
+2025-04-08 06:00:07.355,spot_delist,SNT,SNTUSDT,"Binance Announced the First Batch of Vote to Delist Results and Will Delist BADGER, BAL, BETA, CREAM, CTXC, ELF, FIRO, HARD, NULS, PROS, SNT, TROY, UFT, VIDT on 2025-04-16"
+2025-04-08 06:00:07.355,spot_delist,TROY,TROYUSDT,"Binance Announced the First Batch of Vote to Delist Results and Will Delist BADGER, BAL, BETA, CREAM, CTXC, ELF, FIRO, HARD, NULS, PROS, SNT, TROY, UFT, VIDT on 2025-04-16"
+2025-04-08 06:00:07.355,spot_delist,UFT,,"Binance Announced the First Batch of Vote to Delist Results and Will Delist BADGER, BAL, BETA, CREAM, CTXC, ELF, FIRO, HARD, NULS, PROS, SNT, TROY, UFT, VIDT on 2025-04-16"
+2025-04-08 06:00:07.355,spot_delist,VIDT,VIDTUSDT,"Binance Announced the First Batch of Vote to Delist Results and Will Delist BADGER, BAL, BETA, CREAM, CTXC, ELF, FIRO, HARD, NULS, PROS, SNT, TROY, UFT, VIDT on 2025-04-16"
+2025-04-08 06:21:08.604,vadeli_acilis,FORTH,FORTHUSDT,Binance Futures Will Launch USDⓈ-Margined FORTHUSDT Perpetual Contract
+2025-04-09 08:42:17.154,hodler,BABY,BABYUSDT,Introducing Babylon (BABY) on Binance HODLer Airdrops! Earn BABY With Retroactive BNB Simple Earn Subscriptions
+2025-04-11 04:35:16.906,vadeli_acilis,PROMPT,PROMPTUSDT,Binance Futures Will Launch USDⓈ-Margined PROMPTUSDT Perpetual Contract
+2025-04-11 10:08:34.456,spot_listeleme,ONDO,ONDOUSDT,"Binance Announced the Second Batch of Vote to List Results and Will List Ondo (ONDO), Big Time (BIGTIME), and Virtuals Protocol (VIRTUAL) With Seed Tags Applied"
+2025-04-11 10:08:34.456,spot_listeleme,BIGTIME,BIGTIMEUSDT,"Binance Announced the Second Batch of Vote to List Results and Will List Ondo (ONDO), Big Time (BIGTIME), and Virtuals Protocol (VIRTUAL) With Seed Tags Applied"
+2025-04-11 10:08:34.456,spot_listeleme,VIRTUAL,VIRTUALUSDT,"Binance Announced the Second Batch of Vote to List Results and Will List Ondo (ONDO), Big Time (BIGTIME), and Virtuals Protocol (VIRTUAL) With Seed Tags Applied"
+2025-04-11 13:15:13.517,vadeli_acilis,XCN,XCNUSDT,Binance Futures Will Launch USDⓈ-Margined XCNUSDT Perpetual Contract
+2025-04-12 12:55:08.737,vadeli_acilis,PUMP,PUMPUSDT,"Binance Futures Will Launch USDⓈ-Margined PUMPUSDT, STOUSDT and FHEUSDT Perpetual Contracts"
+2025-04-12 12:55:08.737,vadeli_acilis,STO,STOUSDT,"Binance Futures Will Launch USDⓈ-Margined PUMPUSDT, STOUSDT and FHEUSDT Perpetual Contracts"
+2025-04-12 12:55:08.737,vadeli_acilis,FHE,FHEUSDT,"Binance Futures Will Launch USDⓈ-Margined PUMPUSDT, STOUSDT and FHEUSDT Perpetual Contracts"
+2025-04-16 07:47:38.622,vadeli_acilis,AERGO,,Binance Futures Will Launch USDⓈ-Margined AERGOUSDT Perpetual Contract
+2025-04-18 17:03:43.178,vadeli_acilis,BANK,BANKUSDT,Binance Futures Will Launch USDⓈ-Margined BANKUSDT Perpetual Contract
+2025-04-21 15:11:51.577,hodler,HYPER,HYPERUSDT,Introducing Hyperlane (HYPER) on Binance HODLer Airdrops! Earn HYPER With Retroactive BNB Simple Earn Subscriptions
+2025-04-22 06:51:29.224,vadeli_acilis,DEEP,DEEPUSDT,Binance Futures Will Launch USDⓈ-Margined DEEPUSDT Perpetual Contract
+2025-04-24 04:00:05.257,spot_delist,ALPACA,ALPACAUSDT,"Binance Will Delist ALPACA, PDA, VIB, WING on 2025-05-02"
+2025-04-24 04:00:05.257,spot_delist,PDA,,"Binance Will Delist ALPACA, PDA, VIB, WING on 2025-05-02"
+2025-04-24 04:00:05.257,spot_delist,VIB,,"Binance Will Delist ALPACA, PDA, VIB, WING on 2025-05-02"
+2025-04-24 04:00:05.257,spot_delist,WING,,"Binance Will Delist ALPACA, PDA, VIB, WING on 2025-05-02"
+2025-04-25 05:02:55.191,vadeli_acilis,MEMEFI,MEMEFIUSDT,Binance Futures Will Launch USDⓈ-Margined MEMEFIUSDT and FISUSDT Perpetual Contracts
+2025-04-25 05:02:55.191,vadeli_acilis,FIS,FISUSDT,Binance Futures Will Launch USDⓈ-Margined MEMEFIUSDT and FISUSDT Perpetual Contracts
+2025-04-25 09:35:15.532,hodler,SIGN,SIGNUSDT,Introducing Sign (SIGN) on Binance HODLer Airdrops! Earn SIGN With Retroactive BNB Simple Earn Subscriptions
+2025-04-28 07:29:47.253,vadeli_acilis,JST,JSTUSDT,Binance Futures Will Launch USDⓈ-Margined JSTUSDT Perpetual Contract
+2025-04-30 08:30:31.246,vadeli_acilis,PUNDIX,PUNDIXUSDT,Binance Futures Will Launch USDⓈ-Margined PUNDIXUSDT and CTKUSDT Perpetual Contracts
+2025-04-30 08:30:31.246,vadeli_acilis,CTK,CTKUSDT,Binance Futures Will Launch USDⓈ-Margined PUNDIXUSDT and CTKUSDT Perpetual Contracts
+2025-04-30 10:47:59.248,vadeli_acilis,AIOT,AIOTUSDT,"Binance Futures Will Launch USDⓈ-Margined AIOTUSDT, DOLOUSDT and HAEDALUSDT Perpetual Contracts"
+2025-04-30 10:47:59.248,vadeli_acilis,DOLO,DOLOUSDT,"Binance Futures Will Launch USDⓈ-Margined AIOTUSDT, DOLOUSDT and HAEDALUSDT Perpetual Contracts"
+2025-04-30 10:47:59.248,vadeli_acilis,HAEDAL,HAEDALUSDT,"Binance Futures Will Launch USDⓈ-Margined AIOTUSDT, DOLOUSDT and HAEDALUSDT Perpetual Contracts"
+2025-05-02 10:21:22.511,hodler,STO,STOUSDT,Introducing StakeStone (STO) on Binance HODLer Airdrops! Earn STO With Retroactive BNB Simple Earn Subscriptions
+2025-05-06 07:38:20.916,vadeli_acilis,ASR,ASRUSDT,Binance Futures Will Launch USDⓈ-Margined ASRUSDT and ALPINEUSDT Perpetual Contracts
+2025-05-06 07:38:20.916,vadeli_acilis,ALPINE,ALPINEUSDT,Binance Futures Will Launch USDⓈ-Margined ASRUSDT and ALPINEUSDT Perpetual Contracts
+2025-05-06 09:29:04.451,vadeli_acilis,B2,B2USDT,Binance Futures Will Launch USDⓈ-Margined B2USDT and MILKUSDT Perpetual Contracts
+2025-05-06 09:29:04.451,vadeli_acilis,MILK,MILKUSDT,Binance Futures Will Launch USDⓈ-Margined B2USDT and MILKUSDT Perpetual Contracts
+2025-05-06 11:25:20.814,spot_listeleme,SYRUP,SYRUPUSDT,Binance Will List Maple Finance (SYRUP) and Kamino Finance (KMNO) with Seed Tag Applied
+2025-05-06 11:25:20.814,spot_listeleme,KMNO,KMNOUSDT,Binance Will List Maple Finance (SYRUP) and Kamino Finance (KMNO) with Seed Tag Applied
+2025-05-07 08:00:33.736,izleme,ALPHA,ALPHAUSDT,"Binance Will Extend the Monitoring Tag to Include ALPHA, HIFI, LEVER, MOVE, PORTAL & REI on 2025-05-07"
+2025-05-07 08:00:33.736,izleme,HIFI,HIFIUSDT,"Binance Will Extend the Monitoring Tag to Include ALPHA, HIFI, LEVER, MOVE, PORTAL & REI on 2025-05-07"
+2025-05-07 08:00:33.736,izleme,LEVER,LEVERUSDT,"Binance Will Extend the Monitoring Tag to Include ALPHA, HIFI, LEVER, MOVE, PORTAL & REI on 2025-05-07"
+2025-05-07 08:00:33.736,izleme,MOVE,MOVEUSDT,"Binance Will Extend the Monitoring Tag to Include ALPHA, HIFI, LEVER, MOVE, PORTAL & REI on 2025-05-07"
+2025-05-07 08:00:33.736,izleme,PORTAL,PORTALUSDT,"Binance Will Extend the Monitoring Tag to Include ALPHA, HIFI, LEVER, MOVE, PORTAL & REI on 2025-05-07"
+2025-05-07 08:00:33.736,izleme,REI,REIUSDT,"Binance Will Extend the Monitoring Tag to Include ALPHA, HIFI, LEVER, MOVE, PORTAL & REI on 2025-05-07"
+2025-05-12 07:03:07.427,vadeli_acilis,OG,OGUSDT,Binance Futures Will Launch USDⓈ-Margined OGUSDT Perpetual Contract
+2025-05-13 07:34:20.623,vadeli_acilis,ZKJ,ZKJUSDT,Binance Futures Will Launch USDⓈ-Margined ZKJUSDT and SKYAIUSDT Perpetual Contracts
+2025-05-13 07:34:20.623,vadeli_acilis,SKYAI,SKYAIUSDT,Binance Futures Will Launch USDⓈ-Margined ZKJUSDT and SKYAIUSDT Perpetual Contracts
+2025-05-15 04:36:30.122,hodler,NXPC,NXPCUSDT,Introducing Nexpace (NXPC) on Binance HODLer Airdrops! Earn NXPC With Retroactive BNB Simple Earn Subscriptions
+2025-05-16 06:36:15.939,vadeli_acilis,CVC,CVCUSDT,Binance Futures Will Launch USDⓈ-Margined CVCUSDT Perpetual Contract
+2025-05-20 08:14:22.110,vadeli_acilis,AGT,AGTUSDT,Binance Futures Will Launch USDⓈ-Margined AGTUSDT Perpetual Contract
+2025-05-21 10:04:15.575,hodler,HAEDAL,HAEDALUSDT,Introducing Haedal Protocol (HAEDAL) on Binance HODLer Airdrops! Earn HAEDAL With Retroactive BNB Simple Earn Subscriptions
+2025-05-22 03:30:01.965,spot_listeleme,USD1,,Binance Will List World Liberty Financial USD (USD1)
+2025-05-23 05:49:46.806,vadeli_acilis,SOON,SOONUSDT,Binance Futures Will Launch USDⓈ-Margined SOONUSDT Perpetual Contract
+2025-05-28 07:16:56.367,hodler,SOPH,SOPHUSDT,Introducing Sophon (SOPH) on Binance HODLer Airdrops! Earn SOPH With Retroactive BNB Simple Earn Subscriptions
+2025-05-28 10:33:50.236,vadeli_acilis,MERL,MERLUSDT,Binance Futures Will Launch USDⓈ-Margined MERLUSDT Perpetual Contract
+2025-05-30 08:36:40.290,vadeli_acilis,HYPE,HYPEUSDT,Binance Futures Will Launch USDⓈ-Margined HYPEUSDT Perpetual Contract
+2025-06-03 09:14:36.886,vadeli_acilis,PUFFER,PUFFERUSDT,Binance Futures Will Launch USDⓈ-Margined PUFFERUSDT and PORT3USDT Perpetual Contracts
+2025-06-03 09:14:36.886,vadeli_acilis,PORT3,PORT3USDT,Binance Futures Will Launch USDⓈ-Margined PUFFERUSDT and PORT3USDT Perpetual Contracts
+2025-06-04 10:47:44.967,vadeli_acilis,1000000BOB,1000000BOBUSDT,Binance Futures Will Launch USDⓈ-Margined 1000000BOBUSDT Perpetual Contract (2025-06-05)
+2025-06-05 05:00:18.433,izleme,BIFI,,"Binance Will Extend the Monitoring Tag to Include BIFI, FIS, KMD & MDT on 2025-06-05"
+2025-06-05 05:00:18.433,izleme,FIS,FISUSDT,"Binance Will Extend the Monitoring Tag to Include BIFI, FIS, KMD & MDT on 2025-06-05"
+2025-06-05 05:00:18.433,izleme,KMD,,"Binance Will Extend the Monitoring Tag to Include BIFI, FIS, KMD & MDT on 2025-06-05"
+2025-06-05 05:00:18.433,izleme,MDT,,"Binance Will Extend the Monitoring Tag to Include BIFI, FIS, KMD & MDT on 2025-06-05"
+2025-06-05 06:06:29.514,vadeli_acilis,LA,LAUSDT,Binance Futures Will Launch USDⓈ-Margined LAUSDT Perpetual Contract (2025-06-05)
+2025-06-11 10:15:20.919,vadeli_acilis,TAIKO,TAIKOUSDT,Binance Futures Will Launch USDⓈ-Margined TAIKOUSDT and SQDUSDT Perpetual Contracts (2025-06-11)
+2025-06-11 10:15:20.919,vadeli_acilis,SQD,SQDUSDT,Binance Futures Will Launch USDⓈ-Margined TAIKOUSDT and SQDUSDT Perpetual Contracts (2025-06-11)
+2025-06-11 10:24:40.844,hodler,RESOLV,RESOLVUSDT,Introducing Resolv (RESOLV) on Binance HODLer Airdrops! Earn RESOLV With Retroactive BNB Simple Earn Subscriptions
+2025-06-12 11:04:44.075,hodler,HOME,HOMEUSDT,Introducing Defi App (HOME) on Binance HODLer Airdrops! Earn HOME With Retroactive BNB Simple Earn Subscriptions
+2025-06-16 11:33:20.186,hodler,SPK,SPKUSDT,Introducing Spark (SPK) on Binance HODLer Airdrops! Earn SPK With Retroactive BNB Simple Earn Subscriptions
+2025-06-18 09:51:01.749,vadeli_acilis,MYX,MYXUSDT,Binance Futures Will Launch USDⓈ-Margined MYXUSDT and FUSDT Perpetual Contracts (2025-06-18)
+2025-06-23 14:08:19.878,hodler,NEWT,NEWTUSDT,Introducing Newton Protocol (NEWT) on Binance HODLer Airdrops! Earn NEWT With Retroactive BNB Simple Earn Subscriptions
+2025-06-24 14:29:12.649,hodler,SAHARA,SAHARAUSDT,Introducing Sahara AI (SAHARA) on Binance HODLer Airdrops! Earn SAHARA With Retroactive BNB Simple Earn Subscriptions
+2025-06-25 09:30:41.537,vadeli_acilis,OL,OLUSDT,Binance Futures Will Launch USDⓈ-Margined OLUSDT Perpetual Contract (2025-06-25)
+2025-07-04 07:11:27.864,vadeli_acilis,BULLA,BULLAUSDT,Binance Futures Will Launch USDⓈ-Margined BULLAUSDT and IDOLUSDT Perpetual Contracts (2025-07-04)
+2025-07-04 07:11:27.864,vadeli_acilis,IDOL,IDOLUSDT,Binance Futures Will Launch USDⓈ-Margined BULLAUSDT and IDOLUSDT Perpetual Contracts (2025-07-04)
+2025-07-07 03:29:57.414,izleme,BAKE,BAKEUSDT,"Binance Will Extend the Monitoring Tag to Include BAKE, IDEX & SLF on 2025-07-07"
+2025-07-07 03:29:57.414,izleme,IDEX,IDEXUSDT,"Binance Will Extend the Monitoring Tag to Include BAKE, IDEX & SLF on 2025-07-07"
+2025-07-07 03:29:57.414,izleme,SLF,,"Binance Will Extend the Monitoring Tag to Include BAKE, IDEX & SLF on 2025-07-07"
+2025-07-09 09:58:15.037,hodler,LA,LAUSDT,Introducing Lagrange (LA) on Binance HODLer Airdrops! Earn LA With Retroactive BNB Simple Earn Subscriptions
+2025-07-10 07:18:06.205,vadeli_acilis,CROSS,CROSSUSDT,Binance Futures Will Launch USDⓈ-Margined CROSSUSDT and AINUSDT Perpetual Contracts (2025-07-10)
+2025-07-10 07:18:06.205,vadeli_acilis,AIN,AINUSDT,Binance Futures Will Launch USDⓈ-Margined CROSSUSDT and AINUSDT Perpetual Contracts (2025-07-10)
+2025-07-15 06:42:17.837,vadeli_acilis,VELVET,VELVETUSDT,Binance Futures Will Launch USDⓈ-Margined CUSDT and VELVETUSDT Perpetual Contracts (2025-07-15)
+2025-07-16 08:58:10.021,hodler,ERA,ERAUSDT,Introducing Caldera (ERA) on Binance HODLer Airdrops! Earn ERA With Retroactive BNB Simple Earn Subscriptions
+2025-07-21 02:29:56.612,tohum_kaldir,BONK,1000BONKUSDT,"Binance Will Remove the Seed Tag for BONK, EIGEN, ETHFI, PENGU & PEPE on 2025-07-21"
+2025-07-21 02:29:56.612,tohum_kaldir,EIGEN,EIGENUSDT,"Binance Will Remove the Seed Tag for BONK, EIGEN, ETHFI, PENGU & PEPE on 2025-07-21"
+2025-07-21 02:29:56.612,tohum_kaldir,ETHFI,ETHFIUSDT,"Binance Will Remove the Seed Tag for BONK, EIGEN, ETHFI, PENGU & PEPE on 2025-07-21"
+2025-07-21 02:29:56.612,tohum_kaldir,PENGU,PENGUUSDT,"Binance Will Remove the Seed Tag for BONK, EIGEN, ETHFI, PENGU & PEPE on 2025-07-21"
+2025-07-21 02:29:56.612,tohum_kaldir,PEPE,1000PEPEUSDT,"Binance Will Remove the Seed Tag for BONK, EIGEN, ETHFI, PENGU & PEPE on 2025-07-21"
+2025-07-23 06:00:02.225,vadeli_acilis,CVX,CVXUSDT,"Binance Futures Will Launch USDⓈ-Margined PENGUUSDC, CVXUSDT and SLPUSDT Perpetual Contracts (2025-07-23)"
+2025-07-23 06:00:02.225,vadeli_acilis,SLP,SLPUSDT,"Binance Futures Will Launch USDⓈ-Margined PENGUUSDC, CVXUSDT and SLPUSDT Perpetual Contracts (2025-07-23)"
+2025-07-25 09:45:38.982,vadeli_acilis,ZORA,ZORAUSDT,Binance Futures Will Launch USDⓈ-Margined ZORAUSDT and TAGUSDT Perpetual Contracts (2025-07-25)
+2025-07-25 09:45:38.982,vadeli_acilis,TAG,TAGUSDT,Binance Futures Will Launch USDⓈ-Margined ZORAUSDT and TAGUSDT Perpetual Contracts (2025-07-25)
+2025-07-28 13:30:11.683,hodler,TREE,TREEUSDT,Introducing Treehouse (TREE) on Binance HODLer Airdrops! Earn TREE With Retroactive BNB Simple Earn Subscriptions
+2025-07-29 07:46:40.881,vadeli_acilis,ZRC,ZRCUSDT,Binance Futures Will Launch USDⓈ-Margined ZRCUSDT and ESPORTSUSDT Perpetual Contracts (2025-07-29)
+2025-07-29 07:46:40.881,vadeli_acilis,ESPORTS,ESPORTSUSDT,Binance Futures Will Launch USDⓈ-Margined ZRCUSDT and ESPORTSUSDT Perpetual Contracts (2025-07-29)
+2025-08-04 09:12:55.552,hodler,TOWNS,TOWNSUSDT,Introducing Towns (TOWNS) on Binance HODLer Airdrops! Earn TOWNS With Retroactive BNB Simple Earn Subscriptions
+2025-08-05 01:59:17.964,hodler,PROVE,PROVEUSDT,Introducing Succinct (PROVE) on Binance HODLer Airdrops! Earn PROVE With Retroactive BNB Simple Earn Subscriptions
+2025-08-06 07:30:06.291,vadeli_delist,DEFI,DEFIUSDT,Binance Futures Will Delist USDⓈ-M DEFIUSDT and MEMEFI Perpetual Contracts (2025-08-11)
+2025-08-07 14:57:10.733,vadeli_acilis,YALA,YALAUSDT,Binance Futures Will Launch USDⓈ-Margined YALAUSDT and CARVUSDT Perpetual Contracts (2025-08-07)
+2025-08-07 14:57:10.733,vadeli_acilis,CARV,CARVUSDT,Binance Futures Will Launch USDⓈ-Margined YALAUSDT and CARVUSDT Perpetual Contracts (2025-08-07)
+2025-08-13 09:40:48.874,vadeli_acilis,AIO,AIOUSDT,Binance Futures Will Launch USDⓈ-Margined AIOUSDT and XNYUSDT Perpetual Contracts (2025-08-13)
+2025-08-13 09:40:48.874,vadeli_acilis,XNY,XNYUSDT,Binance Futures Will Launch USDⓈ-Margined AIOUSDT and XNYUSDT Perpetual Contracts (2025-08-13)
+2025-08-15 10:46:53.989,vadeli_acilis,USELESS,USELESSUSDT,Binance Futures Will Launch USDⓈ-Margined USELESSUSDT Perpetual Contract (2025-08-15)
+2025-08-18 09:36:06.933,hodler,PLUME,PLUMEUSDT,Introducing Plume (PLUME) on Binance HODLer Airdrops! Earn PLUME With Retroactive BNB Simple Earn Subscriptions
+2025-08-20 09:48:17.734,vadeli_acilis,CUDIS,CUDISUSDT,Binance Futures Will Launch USDⓈ-Margined CUDISUSDT Perpetual Contract (2025-08-20)
+2025-08-26 12:12:49.262,vadeli_acilis,BAS,BASUSDT,Binance Futures Will Launch USDⓈ-Margined BASUSDT Perpetual Contract (2025-08-26)
+2025-08-27 10:43:22.012,hodler,DOLO,DOLOUSDT,Introducing Dolomite (DOLO) on Binance HODLer Airdrops! Earn DOLO With Retroactive BNB Simple Earn Subscriptions
+2025-08-29 09:15:57.261,hodler,MITO,MITOUSDT,Introducing Mitosis (MITO) on Binance HODLer Airdrops! Earn MITO With Retroactive BNB Simple Earn Subscriptions
+2025-08-29 11:00:12.480,vadeli_delist,LEVER,LEVERUSDT,Binance Futures Will Delist USDⓈ-M LEVERUSDT Perpetual Contract (2025-09-03)
+2025-09-01 01:49:05.082,spot_listeleme,WLFI,WLFIUSDT,Binance Will List  World Liberty Financial (WLFI) with Seed Tag Applied
+2025-09-01 08:59:32.790,hodler,SOMI,SOMIUSDT,Introducing Somnia (SOMI) on Binance HODLer Airdrops! Earn SOMI With Retroactive BNB Simple Earn Subscriptions
+2025-09-03 02:59:54.550,spot_delist,BAKE,BAKEUSDT,"Binance Will Delist BAKE, HIFI, SLF on 2025-09-17"
+2025-09-03 02:59:54.550,spot_delist,HIFI,HIFIUSDT,"Binance Will Delist BAKE, HIFI, SLF on 2025-09-17"
+2025-09-03 02:59:54.550,spot_delist,SLF,,"Binance Will Delist BAKE, HIFI, SLF on 2025-09-17"
+2025-09-03 09:49:50.539,vadeli_acilis,ARIA,ARIAUSDT,Binance Futures Will Launch USDⓈ-Margined ARIAUSDT and TAKEUSDT Perpetual Contracts (2025-09-03)
+2025-09-03 09:49:50.539,vadeli_acilis,TAKE,TAKEUSDT,Binance Futures Will Launch USDⓈ-Margined ARIAUSDT and TAKEUSDT Perpetual Contracts (2025-09-03)
+2025-09-05 07:18:31.526,hodler,OPEN,OPENUSDT,Introducing OpenLedger (OPEN) on Binance HODLer Airdrops! Earn OPEN With Retroactive BNB Simple Earn Subscriptions
+2025-09-08 14:26:09.314,hodler,LINEA,LINEAUSDT,Introducing Linea (LINEA) on Binance HODLer Airdrops! Earn LINEA With Retroactive BNB Simple Earn Subscriptions
+2025-09-09 05:28:37.523,vadeli_acilis,FLOCK,FLOCKUSDT,Binance Futures Will Launch USDⓈ-Margined FLOCKUSDT and SKYUSDT Perpetual Contracts (2025-09-09)
+2025-09-09 05:28:37.523,vadeli_acilis,SKY,SKYUSDT,Binance Futures Will Launch USDⓈ-Margined FLOCKUSDT and SKYUSDT Perpetual Contracts (2025-09-09)
+2025-09-09 07:00:01.439,spot_listeleme,USDE,,Binance Will List Ethena USDe (USDE)
+2025-09-10 05:11:59.424,hodler,HOLO,HOLOUSDT,Introducing Holoworld AI (HOLO) on Binance HODLer Airdrops! Earn HOLO With Retroactive BNB Simple Earn Subscriptions
+2025-09-10 10:14:43.992,vadeli_delist,BSW,BSWUSDT,Binance Futures Will Delist USDⓈ-M BSWUSDT Perpetual Contract (2025-09-15)
+2025-09-11 11:37:53.797,spot_listeleme,PUMP,PUMPUSDT,Binance Will List Pump.fun (PUMP) with Seed Tag Applied
+2025-09-12 06:50:54.421,vadeli_acilis,XPIN,XPINUSDT,Binance Futures Will Launch USDⓈ-Margined XPINUSDT Perpetual Contract (2025-09-12)
+2025-09-12 09:57:33.626,hodler,ZKC,ZKCUSDT,Introducing Boundless (ZKC) on Binance HODLer Airdrops! Earn ZKC With Retroactive BNB Simple Earn Subscriptions
+2025-09-15 03:47:01.934,spot_listeleme,AVNT,AVNTUSDT,Binance Will List Avantis (AVNT) with Seed Tag Applied
+2025-09-17 03:44:48.953,vadeli_acilis,TOSHI,TOSHIUSDT,Binance Futures Will Launch USDⓈ-Margined TOSHIUSDT and STBLUSDT Perpetual Contracts (2025-09-17)
+2025-09-17 03:44:48.953,vadeli_acilis,STBL,STBLUSDT,Binance Futures Will Launch USDⓈ-Margined TOSHIUSDT and STBLUSDT Perpetual Contracts (2025-09-17)
+2025-09-17 08:45:27.976,vadeli_delist,ALPHA,ALPHAUSDT,Binance Futures Will Delist USDⓈ-M ALPHAUSDT Perpetual Contract (2025-09-23)
+2025-09-17 09:57:50.745,hodler,BARD,BARDUSDT,Introducing Lombard (BARD) on Binance HODLer Airdrops! Earn BARD With Retroactive BNB Simple Earn Subscriptions
+2025-09-19 10:57:55.276,vadeli_acilis,ASTER,ASTERUSDT,Binance Futures Will Launch USDⓈ-Margined ASTERUSDT and TRADOORUSDT Perpetual Contracts (2025-09-19)
+2025-09-19 10:57:55.276,vadeli_acilis,TRADOOR,TRADOORUSDT,Binance Futures Will Launch USDⓈ-Margined ASTERUSDT and TRADOORUSDT Perpetual Contracts (2025-09-19)
+2025-09-21 08:58:17.740,hodler,0G,0GUSDT,Introducing 0G (0G) on Binance HODLer Airdrops! Earn 0G With Retroactive BNB Simple Earn Subscriptions
+2025-09-22 07:30:02.610,vadeli_delist,NEIROETH,NEIROETHUSDT,Binance Futures Will Delist USDⓈ-M NEIROETHUSDT Perpetual Contract (2025-09-26)
+2025-09-23 05:09:17.058,hodler,HEMI,HEMIUSDT,Introducing Hemi (HEMI) on Binance HODLer Airdrops! Earn HEMI With Retroactive BNB Simple Earn Subscriptions
+2025-09-24 08:00:04.069,hodler,XPL,XPLUSDT,Introducing Plasma (XPL) on Binance HODLer Airdrops! Earn XPL With Retroactive BNB Simple Earn Subscriptions
+2025-09-24 09:25:25.637,vadeli_acilis,FLUID,FLUIDUSDT,Binance Futures Will Launch USDⓈ-Margined FLUIDUSDT Perpetual Contract (2025-09-24)
+2025-09-24 12:00:05.980,vadeli_delist,UXLINK,UXLINKUSDT,Binance Futures Will Delist USDⓈ-M UXLINKUSDT Perpetual Contract (2025-09-26)
+2025-09-25 10:00:03.425,hodler,MIRA,MIRAUSDT,Introducing Mira (MIRA) on Binance HODLer Airdrops! Earn MIRA With Retroactive BNB Simple Earn Subscriptions
+2025-09-26 07:52:42.488,hodler,FF,FFUSDT,Introducing Falcon Finance (FF) on Binance HODLer Airdrops! Earn FF With Retroactive BNB Simple Earn Subscriptions
+2025-09-26 09:46:35.519,vadeli_acilis,AKE,AKEUSDT,Binance Futures Will Launch USDⓈ-Margined AKEUSDT and ORDERUSDT Perpetual Contracts (2025-09-26)
+2025-09-26 09:46:35.519,vadeli_acilis,ORDER,ORDERUSDT,Binance Futures Will Launch USDⓈ-Margined AKEUSDT and ORDERUSDT Perpetual Contracts (2025-09-26)
+2025-09-29 08:30:37.707,hodler,EDEN,EDENUSDT,Introducing OpenEden (EDEN) on Binance HODLer Airdrops! Earn EDEN With Retroactive BNB Simple Earn Subscriptions
+2025-09-29 11:45:19.511,vadeli_delist,HIFI,HIFIUSDT,Binance Futures Will Delist USDⓈ-M HIFIUSDT and BAKEUSDT Perpetual Contracts (2025-10-03)
+2025-09-29 11:45:19.511,vadeli_delist,BAKE,BAKEUSDT,Binance Futures Will Delist USDⓈ-M HIFIUSDT and BAKEUSDT Perpetual Contracts (2025-10-03)
+2025-10-02 03:18:25.856,hodler,2Z,2ZUSDT,Introducing DoubleZero (2Z) on Binance HODLer Airdrops! Earn 2Z With Retroactive BNB Simple Earn Subscriptions
+2025-10-03 09:51:47.646,hodler,MORPHO,MORPHOUSDT,Introducing Morpho (MORPHO) on Binance HODLer Airdrops! Earn MORPHO With Retroactive BNB Simple Earn Subscriptions
+2025-10-06 07:48:49.954,spot_listeleme,ASTER,ASTERUSDT,Binance Will List Aster (ASTER) with Seed Tag Applied
+2025-10-09 02:29:52.334,izleme,GPS,GPSUSDT,"Binance Will Extend the Monitoring Tag to Include WAN, Remove the Monitoring Tag for GPS & MBL, and Remove the Seed Tag for BERA, BIO, ZK & ZRO on 2025-10-09"
+2025-10-09 02:29:52.334,izleme,MBL,,"Binance Will Extend the Monitoring Tag to Include WAN, Remove the Monitoring Tag for GPS & MBL, and Remove the Seed Tag for BERA, BIO, ZK & ZRO on 2025-10-09"
+2025-10-09 08:23:03.522,vadeli_acilis,GIGGLE,GIGGLEUSDT,Binance Futures Will Launch USDⓈ-Margined GIGGLEUSDT Perpetual Contract (2025-10-09)
+2025-10-10 02:21:21.098,hodler,WAL,WALUSDT,Introducing Walrus (WAL) on Binance HODLer Airdrops! Earn WAL With Retroactive BNB Simple Earn Subscriptions
+2025-10-13 09:22:48.185,hodler,EUL,EULUSDT,Introducing Euler (EUL) on Binance HODLer Airdrops! Earn EUL With Retroactive BNB Simple Earn Subscriptions
+2025-10-14 02:58:32.966,hodler,ENSO,ENSOUSDT,Introducing Enso (ENSO) on Binance HODLer Airdrops! Earn ENSO With Retroactive BNB Simple Earn Subscriptions
+2025-10-14 09:46:27.057,hodler,YB,YBUSDT,Introducing Yield Basis (YB) on Binance HODLer Airdrops! Earn YB With Retroactive BNB Simple Earn Subscriptions
+2025-10-17 09:53:33.652,hodler,ZBT,ZBTUSDT,Introducing ZEROBASE (ZBT) on Binance HODLer Airdrops! Earn ZBT With Retroactive BNB Simple Earn Subscriptions
+2025-10-17 12:58:48.360,vadeli_acilis,LAB,LABUSDT,Binance Futures Will Launch USDⓈ-Margined LABUSDT and RIVERUSDT Perpetual Contracts (2025-10-17)
+2025-10-17 12:58:48.360,vadeli_acilis,RIVER,RIVERUSDT,Binance Futures Will Launch USDⓈ-Margined LABUSDT and RIVERUSDT Perpetual Contracts (2025-10-17)
+2025-10-18 03:58:50.952,vadeli_delist,SLERF,SLERFUSDT,Binance Futures Will Delist USDⓈ-M SLERFUSDT and COIN-M CHZUSD Perpetual Contracts (2025-10-20 & 2025-10-21)
+2025-10-21 07:56:49.816,hodler,TURTLE,TURTLEUSDT,Introducing Turtle (TURTLE) on Binance HODLer Airdrops! Earn TURTLE With Retroactive BNB Simple Earn Subscriptions
+2025-10-29 03:00:04.123,spot_delist,FLM,FLMUSDT,"Binance Will Delist FLM, KDA, PERP on 2025-11-12"
+2025-10-29 03:00:04.123,spot_delist,KDA,KDAUSDT,"Binance Will Delist FLM, KDA, PERP on 2025-11-12"
+2025-10-29 03:00:04.123,spot_delist,PERP,PERPUSDT,"Binance Will Delist FLM, KDA, PERP on 2025-11-12"
+2025-10-29 09:36:15.831,vadeli_acilis,AT,ATUSDT,Binance Futures Will Launch USDⓈ-Margined ATUSDT Perpetual Contract (2025-10-29)
+2025-11-03 08:14:11.430,hodler,MMT,MMTUSDT,Introducing Momentum (MMT) on Binance HODLer Airdrops! Earn MMT With Retroactive BNB Simple Earn Subscriptions
+2025-11-06 04:45:41.669,hodler,SAPIEN,SAPIENUSDT,Introducing Sapien (SAPIEN) on Binance HODLer Airdrops! Earn SAPIEN With Retroactive BNB Simple Earn Subscriptions
+2025-11-10 13:45:00.002,vadeli_delist,MYRO,MYROUSDT,Binance Futures Will Delist USDⓈ-M MYROUSDT and 1000XUSDT Perpetual Contracts (2025-11-14)
+2025-11-10 13:45:00.002,vadeli_delist,1000X,1000XUSDT,Binance Futures Will Delist USDⓈ-M MYROUSDT and 1000XUSDT Perpetual Contracts (2025-11-14)
+2025-11-11 04:58:30.748,hodler,ALLO,ALLOUSDT,Introducing Allora (ALLO) on Binance HODLer Airdrops! Earn ALLO With Retroactive BNB Simple Earn Subscriptions
+2025-11-12 10:15:39.520,vadeli_acilis,CLANKER,CLANKERUSDT,Binance Futures Will Launch USDⓈ-Margined CLANKERUSDT and BEATUSDT Perpetual Contracts (2025-11-12)
+2025-11-12 10:15:39.520,vadeli_acilis,BEAT,BEATUSDT,Binance Futures Will Launch USDⓈ-Margined CLANKERUSDT and BEATUSDT Perpetual Contracts (2025-11-12)
+2025-11-13 10:00:26.501,spot_listeleme,BANK,BANKUSDT,Binance Will List Lorenzo Protocol (BANK) and Meteora (MET) with Seed Tag Applied
+2025-11-13 10:00:26.501,spot_listeleme,MET,METUSDT,Binance Will List Lorenzo Protocol (BANK) and Meteora (MET) with Seed Tag Applied
+2025-11-21 09:28:51.171,vadeli_acilis,BOB,1000000BOBUSDT,Binance Futures Will Launch USDⓈ-Margined BOBUSDT Perpetual Contract (2025-11-21)
+2025-11-23 05:57:34.108,vadeli_delist,PORT3,PORT3USDT,Binance Futures Will Delist USDⓈ-M PORT3USDT Perpetual Contract (2025-11-23)
+2025-11-26 14:43:56.086,vadeli_acilis,IRYS,IRYSUSDT,Binance Futures Will Launch USDⓈ-Margined IRYSUSDT Perpetual Contract (2025-11-26)
+2025-11-27 08:38:18.399,hodler,AT,ATUSDT,Introducing APRO (AT) on Binance HODLer Airdrops! Earn AT With Retroactive BNB Simple Earn Subscriptions
+2025-12-01 04:30:24.832,izleme,CHESS,CHESSUSDT,"Binance Will Extend the Monitoring Tag to Include CHESS, DENT, DF, GHST & SXP on 2025-12-01"
+2025-12-01 04:30:24.832,izleme,DENT,DENTUSDT,"Binance Will Extend the Monitoring Tag to Include CHESS, DENT, DF, GHST & SXP on 2025-12-01"
+2025-12-01 04:30:24.832,izleme,DF,DFUSDT,"Binance Will Extend the Monitoring Tag to Include CHESS, DENT, DF, GHST & SXP on 2025-12-01"
+2025-12-01 04:30:24.832,izleme,GHST,GHSTUSDT,"Binance Will Extend the Monitoring Tag to Include CHESS, DENT, DF, GHST & SXP on 2025-12-01"
+2025-12-01 04:30:24.832,izleme,SXP,,"Binance Will Extend the Monitoring Tag to Include CHESS, DENT, DF, GHST & SXP on 2025-12-01"
+2025-12-02 08:43:20.303,vadeli_acilis,RLS,RLSUSDT,Binance Futures Will Launch USDⓈ-Margined RLSUSDT Perpetual Contract (2025-12-02)
+2025-12-03 06:29:56.380,spot_delist,FIS,FISUSDT,"Binance Will Delist FIS, REI, VOXEL on 2025-12-17"
+2025-12-03 06:29:56.380,spot_delist,REI,REIUSDT,"Binance Will Delist FIS, REI, VOXEL on 2025-12-17"
+2025-12-03 06:29:56.380,spot_delist,VOXEL,VOXELUSDT,"Binance Will Delist FIS, REI, VOXEL on 2025-12-17"
+2025-12-06 07:40:14.266,vadeli_acilis,POWER,POWERUSDT,Binance Futures Will Launch USDⓈ-Margined POWERUSDT Perpetual Contract (2025-12-06)
+2025-12-10 05:45:14.302,vadeli_acilis,WET,WETUSDT,Binance Futures Will Launch USDⓈ-Margined WETUSDT Perpetual Contract (2025-12-10)
+2025-12-10 09:44:29.769,vadeli_acilis,NIGHT,NIGHTUSDT,Binance Futures Will Launch USDⓈ-Margined NIGHTUSDT Perpetual Contract (2025-12-10)
+2025-12-11 11:43:46.582,vadeli_delist,AIA,AIAUSDT,Binance Futures Will Delist AIAUSDT USDⓈ-M Perpetual Contract (2025-12-11)
+2025-12-12 09:17:28.292,vadeli_acilis,US,USUSDT,Binance Futures Will Launch USDⓈ-Margined USUSDT and CYSUSDT Perpetual Contracts (2025-12-12)
+2025-12-12 09:17:28.292,vadeli_acilis,CYS,CYSUSDT,Binance Futures Will Launch USDⓈ-Margined USUSDT and CYSUSDT Perpetual Contracts (2025-12-12)
+2025-12-14 14:18:09.439,vadeli_acilis,RAVE,RAVEUSDT,Binance Futures Will Launch USDⓈ-Margined RAVEUSDT Perpetual Contract (2025-12-14)
+2025-12-21 08:33:27.340,vadeli_acilis,ZKP,ZKPUSDT,"Binance Futures Will Launch USDⓈ-Margined ZKPUSDT, GUAUSDT and IRUSDT Perpetual Contract (2025-12-21)"
+2025-12-21 08:33:27.340,vadeli_acilis,GUA,GUAUSDT,"Binance Futures Will Launch USDⓈ-Margined ZKPUSDT, GUAUSDT and IRUSDT Perpetual Contract (2025-12-21)"
+2025-12-21 08:33:27.340,vadeli_acilis,IR,IRUSDT,"Binance Futures Will Launch USDⓈ-Margined ZKPUSDT, GUAUSDT and IRUSDT Perpetual Contract (2025-12-21)"
+2025-12-31 11:45:10.384,vadeli_acilis,COLLECT,COLLECTUSDT,Binance Futures Will Launch USDⓈ-Margined COLLECTUSDT and MAGMAUSDT Perpetual Contracts (2025-12-31)
+2025-12-31 11:45:10.384,vadeli_acilis,MAGMA,MAGMAUSDT,Binance Futures Will Launch USDⓈ-Margined COLLECTUSDT and MAGMAUSDT Perpetual Contracts (2025-12-31)
+2026-01-02 10:59:57.739,izleme,ACA,,"Binance Will Extend the Monitoring Tag to Include ACA, D, DATA & FLOW on 2026-01-02"
+2026-01-02 10:59:57.739,izleme,DATA,,"Binance Will Extend the Monitoring Tag to Include ACA, D, DATA & FLOW on 2026-01-02"
+2026-01-02 10:59:57.739,izleme,FLOW,FLOWUSDT,"Binance Will Extend the Monitoring Tag to Include ACA, D, DATA & FLOW on 2026-01-02"
+2026-01-05 10:04:14.724,hodler,BREV,BREVUSDT,Introducing Brevis (BREV) on Binance HODLer Airdrops! Earn BREV With Retroactive BNB Simple Earn Subscriptions
+2026-01-07 07:00:49.961,vadeli_acilis,XAG,,Binance Futures Will Launch USDⓈ-Margined XAGUSDT Perpetual Contract (2026-01-07)
+2026-01-07 10:39:06.580,spot_listeleme,ZKP,ZKPUSDT,Binance Will List 币安人生 (币安人生) and zkPass (ZKP) with Seed Tag Applied
+2026-01-12 12:50:53.294,spot_listeleme,FOGO,FOGOUSDT,Binance Will List Fogo (FOGO) with Seed Tag Applied
+2026-01-16 12:17:58.954,vadeli_acilis,SPORTFUN,SPORTFUNUSDT,Binance Futures Will Launch USDⓈ-Margined SPORTFUNUSDT and AIAUSDT Perpetual Contracts (2026-01-16)
+2026-01-16 12:17:58.954,vadeli_acilis,AIA,AIAUSDT,Binance Futures Will Launch USDⓈ-Margined SPORTFUNUSDT and AIAUSDT Perpetual Contracts (2026-01-16)
+2026-01-20 10:26:30.062,vadeli_acilis,AIA,AIAUSDT,Binance Futures Will Launch USDⓈ-Margined AIAUSDT Perpetual Contract (2026-01-20)
+2026-01-21 08:30:01.712,spot_listeleme,RLUSD,,Binance Will List Ripple USD (RLUSD) and Introduce RLUSD Zero Trading Fee Promotion
+2026-01-21 11:17:15.066,vadeli_acilis,ACU,ACUUSDT,Binance Futures Will Launch USDⓈ-Margined ACUUSDT and 我踏马来了USDT Perpetual Contracts (2026-01-21)
+2026-01-22 05:25:54.238,spot_listeleme,SENT,SENTUSDT,Binance Will List Sentient (SENT) with Seed Tag Applied
+2026-01-22 06:47:09.007,vadeli_acilis,ELSA,ELSAUSDT,Binance Futures Will Launch USDⓈ-Margined ELSAUSDT Perpetual Contract (2026-01-22)
+2026-01-22 09:14:34.832,vadeli_acilis,SKR,SKRUSDT,Binance Futures Will Launch USDⓈ-Margined SKRUSDT Perpetual Contract (2026-01-22)
+2026-01-23 10:16:02.322,vadeli_acilis,SPACE,SPACEUSDT,Binance Futures Will Launch USDⓈ-Margined SPACEUSDT and FIGHTUSDT Perpetual Contracts (2026-01-23)
+2026-01-23 10:16:02.322,vadeli_acilis,FIGHT,FIGHTUSDT,Binance Futures Will Launch USDⓈ-Margined SPACEUSDT and FIGHTUSDT Perpetual Contracts (2026-01-23)
+2026-01-26 11:29:35.659,vadeli_acilis,TSLA,,Binance Futures Will Launch USDⓈ-Margined TSLAUSDT Equity Perpetual Contract (2026-01-28)
+2026-01-29 03:29:48.656,vadeli_acilis,BIRB,BIRBUSDT,Binance Futures Will Launch USDⓈ-Margined BIRBUSDT and GWEIUSDT Perpetual Contracts (2026-01-29)
+2026-01-29 03:29:48.656,vadeli_acilis,GWEI,GWEIUSDT,Binance Futures Will Launch USDⓈ-Margined BIRBUSDT and GWEIUSDT Perpetual Contracts (2026-01-29)
+2026-01-30 05:16:09.670,vadeli_acilis,XPT,,Binance Futures Will Launch USDⓈ-Margined XPTUSDT and XPDUSDT Perpetual Contracts (2026-01-30)
+2026-01-30 05:16:09.670,vadeli_acilis,XPD,,Binance Futures Will Launch USDⓈ-Margined XPTUSDT and XPDUSDT Perpetual Contracts (2026-01-30)
+2026-01-30 08:47:05.258,vadeli_acilis,INTC,,Binance Futures Will Launch USDⓈ-Margined INTCUSDT and HOODUSDT Equity Perpetual Contracts (2026-02-02)
+2026-01-30 08:47:05.258,vadeli_acilis,HOOD,,Binance Futures Will Launch USDⓈ-Margined INTCUSDT and HOODUSDT Equity Perpetual Contracts (2026-02-02)
+2026-01-30 17:33:17.965,vadeli_acilis,INX,INXUSDT,Binance Futures Will Launch USDⓈ-Margined INXUSDT Perpetual Contract (2026-01-30)
+2026-02-02 04:28:43.224,spot_listeleme,ZAMA,ZAMAUSDT,Binance Will List Zama (ZAMA) with Seed Tag Applied
+2026-02-02 08:59:52.762,spot_delist,ACA,,"Binance Will Delist ACA, CHESS, DATA, DF, GHST, NKN on 2026-02-13"
+2026-02-02 08:59:52.762,spot_delist,CHESS,CHESSUSDT,"Binance Will Delist ACA, CHESS, DATA, DF, GHST, NKN on 2026-02-13"
+2026-02-02 08:59:52.762,spot_delist,DATA,,"Binance Will Delist ACA, CHESS, DATA, DF, GHST, NKN on 2026-02-13"
+2026-02-02 08:59:52.762,spot_delist,DF,DFUSDT,"Binance Will Delist ACA, CHESS, DATA, DF, GHST, NKN on 2026-02-13"
+2026-02-02 08:59:52.762,spot_delist,GHST,GHSTUSDT,"Binance Will Delist ACA, CHESS, DATA, DF, GHST, NKN on 2026-02-13"
+2026-02-02 08:59:52.762,spot_delist,NKN,NKNUSDT,"Binance Will Delist ACA, CHESS, DATA, DF, GHST, NKN on 2026-02-13"
+2026-02-05 07:14:19.503,vadeli_delist,RVV,RVVUSDT,Binance Futures Will Delist USDⓈ-M RVVUSDT and YALAUSDT Perpetual Contracts (2026-02-10)
+2026-02-05 07:14:19.503,vadeli_delist,YALA,YALAUSDT,Binance Futures Will Delist USDⓈ-M RVVUSDT and YALAUSDT Perpetual Contracts (2026-02-10)
+2026-02-06 10:17:30.892,vadeli_acilis,TRIA,TRIAUSDT,Binance Futures Will Launch USDⓈ-Margined TRIAUSDT Perpetual Contract (2026-02-06)
+2026-02-12 07:28:23.176,spot_listeleme,ESP,ESPUSDT,Binance Will List Espresso (ESP) with Seed Tag Applied
+2026-02-27 08:00:22.463,vadeli_acilis,ROBO,ROBOUSDT,Binance Futures Will Launch USDⓈ-Margined ROBOUSDT Perpetual Contract (2026-02-27)
+2026-03-04 12:30:04.241,vadeli_acilis,COPPER,,Binance Futures Will Launch USDⓈ-Margined COPPERUSDT Perpetual Contract (2026-03-06)
+2026-03-04 13:13:14.452,spot_listeleme,ROBO,ROBOUSDT,Binance Will List Fabric Protocol (ROBO) with Seed Tag Applied
+2026-03-06 08:29:56.086,izleme,FLOW,FLOWUSDT,"Binance Will Extend the Monitoring Tag to Include COS, DEGO, FORTH, FUN, HOOK, LRC, MBOX, OXT & WIF, Remove the Monitoring Tag for FLOW, and Remove the Seed Tag for ONDO & VIRTUAL on 2026-03-06"
+2026-03-11 11:31:21.283,hodler,NIGHT,NIGHTUSDT,Introducing Midnight (NIGHT) on Binance HODLer Airdrops! Earn NIGHT With Retroactive BNB Simple Earn Subscriptions
+2026-03-12 14:30:03.959,vadeli_acilis,EWY,,Binance Futures Will Launch EWYUSDT USDⓈ-Margined Index Perpetual Contract (2026-03-16)
+2026-03-13 01:45:36.337,spot_listeleme,KAT,KATUSDT,Binance Will List Katana (KAT) with Seed Tag Applied
+2026-03-13 02:00:04.369,spot_delist,TUSD,,Binance VIP Loan Will Delist TUSD and ALCX from Eligible Collateral Asset List - 2026-03-30
+2026-03-13 02:00:04.369,spot_delist,ALCX,,Binance VIP Loan Will Delist TUSD and ALCX from Eligible Collateral Asset List - 2026-03-30
+2026-03-13 09:00:23.060,izleme,ATA,ATAUSDT,"Binance Will Extend the Monitoring Tag to Include ATA, A2Z, FIO, GTC, NTRN, PHB, QI & RDNT on 2026-03-13"
+2026-03-13 09:00:23.060,izleme,A2Z,A2ZUSDT,"Binance Will Extend the Monitoring Tag to Include ATA, A2Z, FIO, GTC, NTRN, PHB, QI & RDNT on 2026-03-13"
+2026-03-13 09:00:23.060,izleme,FIO,FIOUSDT,"Binance Will Extend the Monitoring Tag to Include ATA, A2Z, FIO, GTC, NTRN, PHB, QI & RDNT on 2026-03-13"
+2026-03-13 09:00:23.060,izleme,GTC,GTCUSDT,"Binance Will Extend the Monitoring Tag to Include ATA, A2Z, FIO, GTC, NTRN, PHB, QI & RDNT on 2026-03-13"
+2026-03-13 09:00:23.060,izleme,NTRN,NTRNUSDT,"Binance Will Extend the Monitoring Tag to Include ATA, A2Z, FIO, GTC, NTRN, PHB, QI & RDNT on 2026-03-13"
+2026-03-13 09:00:23.060,izleme,PHB,PHBUSDT,"Binance Will Extend the Monitoring Tag to Include ATA, A2Z, FIO, GTC, NTRN, PHB, QI & RDNT on 2026-03-13"
+2026-03-13 09:00:23.060,izleme,QI,,"Binance Will Extend the Monitoring Tag to Include ATA, A2Z, FIO, GTC, NTRN, PHB, QI & RDNT on 2026-03-13"
+2026-03-13 09:00:23.060,izleme,RDNT,RDNTUSDT,"Binance Will Extend the Monitoring Tag to Include ATA, A2Z, FIO, GTC, NTRN, PHB, QI & RDNT on 2026-03-13"
+2026-03-16 10:22:39.260,spot_listeleme,CFG,CFGUSDT,Binance Will List Centrifuge (CFG) with Seed Tag Applied
+2026-03-16 10:30:01.277,vadeli_acilis,EWJ,,Binance Futures Will Launch EWJUSDT USDⓈ-Margined Index Perpetual Contract (2026-03-19)
+2026-03-18 03:30:14.268,hodler,ROBO,ROBOUSDT,Introducing Fabric Protocol (ROBO) on Binance HODLer Airdrops! Earn ROBO With Retroactive BNB Simple Earn Subscriptions
+2026-03-18 09:00:08.667,spot_delist,A2Z,A2ZUSDT,"Binance Will Delist A2Z, FORTH, HOOK, IDEX, LRC, NTRN, RDNT, SXP on 2026-04-01"
+2026-03-18 09:00:08.667,spot_delist,FORTH,FORTHUSDT,"Binance Will Delist A2Z, FORTH, HOOK, IDEX, LRC, NTRN, RDNT, SXP on 2026-04-01"
+2026-03-18 09:00:08.667,spot_delist,HOOK,HOOKUSDT,"Binance Will Delist A2Z, FORTH, HOOK, IDEX, LRC, NTRN, RDNT, SXP on 2026-04-01"
+2026-03-18 09:00:08.667,spot_delist,IDEX,IDEXUSDT,"Binance Will Delist A2Z, FORTH, HOOK, IDEX, LRC, NTRN, RDNT, SXP on 2026-04-01"
+2026-03-18 09:00:08.667,spot_delist,LRC,LRCUSDT,"Binance Will Delist A2Z, FORTH, HOOK, IDEX, LRC, NTRN, RDNT, SXP on 2026-04-01"
+2026-03-18 09:00:08.667,spot_delist,NTRN,NTRNUSDT,"Binance Will Delist A2Z, FORTH, HOOK, IDEX, LRC, NTRN, RDNT, SXP on 2026-04-01"
+2026-03-18 09:00:08.667,spot_delist,RDNT,RDNTUSDT,"Binance Will Delist A2Z, FORTH, HOOK, IDEX, LRC, NTRN, RDNT, SXP on 2026-04-01"
+2026-03-18 09:00:08.667,spot_delist,SXP,,"Binance Will Delist A2Z, FORTH, HOOK, IDEX, LRC, NTRN, RDNT, SXP on 2026-04-01"
+2026-03-20 13:58:29.010,vadeli_acilis,PAYP,,Binance Futures Will Launch PAYPUSDT USDⓈ-Margined Equity Perpetual Contract (2026-03-23)
+2026-03-25 10:14:18.121,vadeli_acilis,BSB,BSBUSDT,Binance Futures Will Launch USDⓈ-Margined BSBUSDT Perpetual Contract (2026-03-25)
+2026-03-26 10:45:28.143,spot_listeleme,XAUT,XAUTUSDT,Binance Will List Tether Gold (XAUt) with Seed Tag Applied
+2026-03-30 09:40:42.485,vadeli_acilis,BASED,BASEDUSDT,Binance Futures Will Launch USDⓈ-Margined BASEDUSDT Perpetual Contract (2026-03-30)
+2026-03-30 13:00:35.673,vadeli_acilis,CL,,"Binance Futures Will Launch USDⓈ-Margined CLUSDT, BZUSDT and NATGASUSDT Perpetual Contracts (2026-04-01)"
+2026-03-30 13:00:35.673,vadeli_acilis,BZ,,"Binance Futures Will Launch USDⓈ-Margined CLUSDT, BZUSDT and NATGASUSDT Perpetual Contracts (2026-04-01)"
+2026-03-30 13:00:35.673,vadeli_acilis,NATGAS,,"Binance Futures Will Launch USDⓈ-Margined CLUSDT, BZUSDT and NATGASUSDT Perpetual Contracts (2026-04-01)"
+2026-04-01 09:51:00.284,vadeli_acilis,PRL,PRLUSDT,Binance Futures Will Launch USDⓈ-Margined PRLUSDT Perpetual Contract (2026-04-01)
+2026-04-02 09:15:03.208,vadeli_acilis,QQQ,,"Binance Futures Will Launch QQQUSDT, SPYUSDT, AAPLUSDT and TSMUSDT USDⓈ-Margined Perpetual Contracts (2026-04-06)"
+2026-04-02 09:15:03.208,vadeli_acilis,SPY,,"Binance Futures Will Launch QQQUSDT, SPYUSDT, AAPLUSDT and TSMUSDT USDⓈ-Margined Perpetual Contracts (2026-04-06)"
+2026-04-02 09:15:03.208,vadeli_acilis,AAPL,,"Binance Futures Will Launch QQQUSDT, SPYUSDT, AAPLUSDT and TSMUSDT USDⓈ-Margined Perpetual Contracts (2026-04-06)"
+2026-04-02 09:15:03.208,vadeli_acilis,TSM,,"Binance Futures Will Launch QQQUSDT, SPYUSDT, AAPLUSDT and TSMUSDT USDⓈ-Margined Perpetual Contracts (2026-04-06)"
+2026-04-03 13:30:07.828,vadeli_acilis,MU,,Binance Futures Will Launch MUUSDT and SNDKUSDT USDⓈ-Margined Equity Perpetual Contracts (2026-04-07)
+2026-04-03 13:30:07.828,vadeli_acilis,SNDK,,Binance Futures Will Launch MUUSDT and SNDKUSDT USDⓈ-Margined Equity Perpetual Contracts (2026-04-07)
+2026-04-09 06:00:05.744,spot_delist,BIFI,,"Binance Will Delist BIFI, FIO, FUN, MDT, OXT, WAN on 2026-04-23"
+2026-04-09 06:00:05.744,spot_delist,FIO,FIOUSDT,"Binance Will Delist BIFI, FIO, FUN, MDT, OXT, WAN on 2026-04-23"
+2026-04-09 06:00:05.744,spot_delist,FUN,FUNUSDT,"Binance Will Delist BIFI, FIO, FUN, MDT, OXT, WAN on 2026-04-23"
+2026-04-09 06:00:05.744,spot_delist,MDT,,"Binance Will Delist BIFI, FIO, FUN, MDT, OXT, WAN on 2026-04-23"
+2026-04-09 06:00:05.744,spot_delist,OXT,OXTUSDT,"Binance Will Delist BIFI, FIO, FUN, MDT, OXT, WAN on 2026-04-23"
+2026-04-09 06:00:05.744,spot_delist,WAN,,"Binance Will Delist BIFI, FIO, FUN, MDT, OXT, WAN on 2026-04-23"
+2026-04-14 02:30:06.111,izleme,FARM,,"Binance Will Extend the Monitoring Tag to Include FARM, HIGH, MLN, RESOLV, SYS, TRU & VELODROME, Remove the Seed Tag for XAUT on 2026-04-14"
+2026-04-14 02:30:06.111,izleme,HIGH,HIGHUSDT,"Binance Will Extend the Monitoring Tag to Include FARM, HIGH, MLN, RESOLV, SYS, TRU & VELODROME, Remove the Seed Tag for XAUT on 2026-04-14"
+2026-04-14 02:30:06.111,izleme,MLN,MLNUSDT,"Binance Will Extend the Monitoring Tag to Include FARM, HIGH, MLN, RESOLV, SYS, TRU & VELODROME, Remove the Seed Tag for XAUT on 2026-04-14"
+2026-04-14 02:30:06.111,izleme,RESOLV,RESOLVUSDT,"Binance Will Extend the Monitoring Tag to Include FARM, HIGH, MLN, RESOLV, SYS, TRU & VELODROME, Remove the Seed Tag for XAUT on 2026-04-14"
+2026-04-14 02:30:06.111,izleme,SYS,SYSUSDT,"Binance Will Extend the Monitoring Tag to Include FARM, HIGH, MLN, RESOLV, SYS, TRU & VELODROME, Remove the Seed Tag for XAUT on 2026-04-14"
+2026-04-14 02:30:06.111,izleme,TRU,TRUUSDT,"Binance Will Extend the Monitoring Tag to Include FARM, HIGH, MLN, RESOLV, SYS, TRU & VELODROME, Remove the Seed Tag for XAUT on 2026-04-14"
+2026-04-14 02:30:06.111,izleme,VELODROME,VELODROMEUSDT,"Binance Will Extend the Monitoring Tag to Include FARM, HIGH, MLN, RESOLV, SYS, TRU & VELODROME, Remove the Seed Tag for XAUT on 2026-04-14"
+2026-04-16 02:03:08.861,vadeli_acilis,GENIUS,GENIUSUSDT,Binance Futures Will Launch USDⓈ-Margined GENIUSUSDT Perpetual Contract (2026-04-16)
+2026-04-16 09:44:56.813,vadeli_acilis,MSFT,,"Binance Futures Will Launch MSFTUSDT, AVGOUSDT and BABAUSDT USDⓈ-Margined Perpetual Contracts (2026-04-20)"
+2026-04-16 09:44:56.813,vadeli_acilis,AVGO,,"Binance Futures Will Launch MSFTUSDT, AVGOUSDT and BABAUSDT USDⓈ-Margined Perpetual Contracts (2026-04-20)"
+2026-04-16 09:44:56.813,vadeli_acilis,BABA,,"Binance Futures Will Launch MSFTUSDT, AVGOUSDT and BABAUSDT USDⓈ-Margined Perpetual Contracts (2026-04-20)"
+2026-04-17 09:00:06.263,spot_delist,DEGO,DEGOUSDT,"Binance Will Delist DEGO, DENT, TRU on 2026-04-28"
+2026-04-17 09:00:06.263,spot_delist,DENT,DENTUSDT,"Binance Will Delist DEGO, DENT, TRU on 2026-04-28"
+2026-04-17 09:00:06.263,spot_delist,TRU,TRUUSDT,"Binance Will Delist DEGO, DENT, TRU on 2026-04-28"
+2026-04-21 12:00:32.132,spot_listeleme,CHIP,CHIPUSDT,Binance Will List Chip (CHIP) with Seed Tag Applied
+2026-04-22 14:51:55.953,vadeli_acilis,OPG,OPGUSDT,Binance Futures Will Launch USDⓈ-Margined OPGUSDT Perpetual Contract (2026-04-22)
+2026-04-28 08:00:03.344,hodler,CHIP,CHIPUSDT,Introducing USD.AI (CHIP) on Binance HODLer Airdrops! Earn CHIP With Retroactive BNB Simple Earn Subscriptions
+2026-04-29 13:27:04.104,vadeli_acilis,AIGENSYN,AIGENSYNUSDT,Binance Futures Will Launch USDⓈ-Margined AIGENSYNUSDT Perpetual Contract (2026-04-29)
+2026-04-30 07:00:05.981,izleme,NFP,NFPUSDT,"Binance Will Extend the Monitoring Tag to Include NFP, NOM, POND, QUICK & VIC on 2026-04-30"
+2026-04-30 07:00:05.981,izleme,NOM,NOMUSDT,"Binance Will Extend the Monitoring Tag to Include NFP, NOM, POND, QUICK & VIC on 2026-04-30"
+2026-04-30 07:00:05.981,izleme,POND,,"Binance Will Extend the Monitoring Tag to Include NFP, NOM, POND, QUICK & VIC on 2026-04-30"
+2026-04-30 07:00:05.981,izleme,QUICK,QUICKUSDT,"Binance Will Extend the Monitoring Tag to Include NFP, NOM, POND, QUICK & VIC on 2026-04-30"
+2026-04-30 07:00:05.981,izleme,VIC,VICUSDT,"Binance Will Extend the Monitoring Tag to Include NFP, NOM, POND, QUICK & VIC on 2026-04-30"
+2026-04-30 09:07:29.704,spot_listeleme,MEGA,MEGAUSDT,Binance Will List MegaETH (MEGA) with Seed Tag Applied
+2026-05-04 06:29:57.125,vadeli_acilis,AMD,,"Binance Futures Will Launch AMDUSDT, QCOMUSDT and USARUSDT USDⓈ-Margined Perpetual Contracts (2026-05-06)"
+2026-05-04 06:29:57.125,vadeli_acilis,QCOM,,"Binance Futures Will Launch AMDUSDT, QCOMUSDT and USARUSDT USDⓈ-Margined Perpetual Contracts (2026-05-06)"
+2026-05-04 06:29:57.125,vadeli_acilis,USAR,,"Binance Futures Will Launch AMDUSDT, QCOMUSDT and USARUSDT USDⓈ-Margined Perpetual Contracts (2026-05-06)"
+2026-05-07 06:59:29.304,vadeli_acilis,BILL,BILLUSDT,Binance Futures Will Launch USDⓈ-Margined BILLUSDT Perpetual Contract (2026-05-07)
+2026-05-13 08:00:04.681,spot_delist,ATA,ATAUSDT,"Binance Will Delist ATA, FARM, MLN, PHB, SYS on 2026-05-27"
+2026-05-13 08:00:04.681,spot_delist,FARM,,"Binance Will Delist ATA, FARM, MLN, PHB, SYS on 2026-05-27"
+2026-05-13 08:00:04.681,spot_delist,MLN,MLNUSDT,"Binance Will Delist ATA, FARM, MLN, PHB, SYS on 2026-05-27"
+2026-05-13 08:00:04.681,spot_delist,PHB,PHBUSDT,"Binance Will Delist ATA, FARM, MLN, PHB, SYS on 2026-05-27"
+2026-05-13 08:00:04.681,spot_delist,SYS,SYSUSDT,"Binance Will Delist ATA, FARM, MLN, PHB, SYS on 2026-05-27"
+2026-05-14 04:14:04.113,vadeli_acilis,PHAROS,PHAROSUSDT,Binance Futures Will Launch USDⓈ-Margined PHAROSUSDT and STARUSDT Perpetual Contracts (2026-05-14)
+2026-05-14 04:14:04.113,vadeli_acilis,STAR,STARUSDT,Binance Futures Will Launch USDⓈ-Margined PHAROSUSDT and STARUSDT Perpetual Contracts (2026-05-14)
+2026-05-14 10:00:03.676,spot_listeleme,AIGENSYN,AIGENSYNUSDT,Binance Will List Gensyn (AIGENSYN) with Seed Tag Applied
+2026-05-21 11:00:02.869,hodler,AIGENSYN,AIGENSYNUSDT,Introducing Gensyn (AIGENSYN) on Binance HODLer Airdrops! Earn AIGENSYN With Retroactive BNB Simple Earn Subscriptions
+2026-05-22 07:18:35.961,spot_listeleme,GENIUS,GENIUSUSDT,Binance Will List Genius Terminal (GENIUS) and OpenGradient (OPG) with Seed Tag Applied
+2026-05-22 07:18:35.961,spot_listeleme,OPG,OPGUSDT,Binance Will List Genius Terminal (GENIUS) and OpenGradient (OPG) with Seed Tag Applied
+2026-05-22 08:00:04.004,izleme,ALCX,,"Binance Will Extend the Monitoring Tag to Include ALCX, COOKIE, DODO, EPIC, HEI, HFT, STORJ, SYN & TLM on 2026-05-22"
+2026-05-22 08:00:04.004,izleme,COOKIE,COOKIEUSDT,"Binance Will Extend the Monitoring Tag to Include ALCX, COOKIE, DODO, EPIC, HEI, HFT, STORJ, SYN & TLM on 2026-05-22"
+2026-05-22 08:00:04.004,izleme,DODO,,"Binance Will Extend the Monitoring Tag to Include ALCX, COOKIE, DODO, EPIC, HEI, HFT, STORJ, SYN & TLM on 2026-05-22"
+2026-05-22 08:00:04.004,izleme,EPIC,EPICUSDT,"Binance Will Extend the Monitoring Tag to Include ALCX, COOKIE, DODO, EPIC, HEI, HFT, STORJ, SYN & TLM on 2026-05-22"
+2026-05-22 08:00:04.004,izleme,HEI,HEIUSDT,"Binance Will Extend the Monitoring Tag to Include ALCX, COOKIE, DODO, EPIC, HEI, HFT, STORJ, SYN & TLM on 2026-05-22"
+2026-05-22 08:00:04.004,izleme,HFT,HFTUSDT,"Binance Will Extend the Monitoring Tag to Include ALCX, COOKIE, DODO, EPIC, HEI, HFT, STORJ, SYN & TLM on 2026-05-22"
+2026-05-22 08:00:04.004,izleme,STORJ,STORJUSDT,"Binance Will Extend the Monitoring Tag to Include ALCX, COOKIE, DODO, EPIC, HEI, HFT, STORJ, SYN & TLM on 2026-05-22"
+2026-05-22 08:00:04.004,izleme,SYN,SYNUSDT,"Binance Will Extend the Monitoring Tag to Include ALCX, COOKIE, DODO, EPIC, HEI, HFT, STORJ, SYN & TLM on 2026-05-22"
+2026-05-22 08:00:04.004,izleme,TLM,TLMUSDT,"Binance Will Extend the Monitoring Tag to Include ALCX, COOKIE, DODO, EPIC, HEI, HFT, STORJ, SYN & TLM on 2026-05-22"
+2026-05-28 08:16:29.339,vadeli_acilis,CTR,CTRUSDT,Binance Futures Will Launch USDⓈ-Margined CTRUSDT Perpetual Contract (2026-05-28)
+2026-05-29 08:00:03.554,hodler,GENIUS,GENIUSUSDT,Introducing Genius Terminal (GENIUS) on Binance HODLer Airdrops! Earn GENIUS With Retroactive BNB Simple Earn Subscriptions
+2026-06-01 06:15:08.711,vadeli_acilis,SLX,SLXUSDT,Binance Futures Will Launch USDⓈ-Margined SLXUSDT Perpetual Contract (2026-06-01)
+2026-06-04 12:44:22.460,vadeli_acilis,ZEST,ZESTUSDT,Binance Futures Will Launch USDⓈ-Margined ZESTUSDT and BTWUSDT Perpetual Contracts (2026-06-04)
+2026-06-04 12:44:22.460,vadeli_acilis,BTW,BTWUSDT,Binance Futures Will Launch USDⓈ-Margined ZESTUSDT and BTWUSDT Perpetual Contracts (2026-06-04)
+2026-06-05 07:00:07.472,spot_delist,COS,COSUSDT,"Binance Will Delist COS, D, HIGH, MBOX on 2026-06-19"
+2026-06-05 07:00:07.472,spot_delist,HIGH,HIGHUSDT,"Binance Will Delist COS, D, HIGH, MBOX on 2026-06-19"
+2026-06-05 07:00:07.472,spot_delist,MBOX,MBOXUSDT,"Binance Will Delist COS, D, HIGH, MBOX on 2026-06-19"
+2026-06-18 07:00:18.693,izleme,ACT,ACTUSDT,"Binance Will Extend the Monitoring Tag to Include ACT, BLUR, PIVX & QKC on 2026-06-18"
+2026-06-18 07:00:18.693,izleme,BLUR,BLURUSDT,"Binance Will Extend the Monitoring Tag to Include ACT, BLUR, PIVX & QKC on 2026-06-18"
+2026-06-18 07:00:18.693,izleme,PIVX,,"Binance Will Extend the Monitoring Tag to Include ACT, BLUR, PIVX & QKC on 2026-06-18"
+2026-06-18 07:00:18.693,izleme,QKC,,"Binance Will Extend the Monitoring Tag to Include ACT, BLUR, PIVX & QKC on 2026-06-18"
+2026-06-18 09:47:21.424,spot_listeleme,RE,REUSDT,Binance Will List Re (RE) with Seed Tag Applied
+2026-06-23 03:30:38.167,vadeli_acilis,ARX,ARXUSDT,Binance Futures Will Launch USDⓈ-Margined ARXUSDT Perpetual Contract (2026-06-23)
+2026-06-26 09:00:15.053,spot_delist,ALCX,,"Binance Will Delist ALCX, ARDR, NFP, POND on 2026-07-10"
+2026-06-26 09:00:15.053,spot_delist,ARDR,,"Binance Will Delist ALCX, ARDR, NFP, POND on 2026-07-10"
+2026-06-26 09:00:15.053,spot_delist,NFP,NFPUSDT,"Binance Will Delist ALCX, ARDR, NFP, POND on 2026-07-10"
+2026-06-26 09:00:15.053,spot_delist,POND,,"Binance Will Delist ALCX, ARDR, NFP, POND on 2026-07-10"
+2026-06-27 10:50:43.165,vadeli_acilis,CAP,CAPUSDT,Binance Futures Will Launch USDⓈ-Margined CAPUSDT Perpetual Contract (2026-06-27)
+2026-06-30 05:00:03.128,hodler,OPG,OPGUSDT,Introducing OpenGradient (OPG) on Binance HODLer Airdrops! Earn OPG With Retroactive BNB Simple Earn Subscriptions
+2026-07-03 05:30:27.549,vadeli_acilis,DATAIP,DATAIPUSDT,Binance Futures Will Launch USDⓈ-Margined DATAIPUSDT and DATAIPUSDC Perpetual Contracts (2026-07-03)
+2026-07-03 06:00:11.367,izleme,AEUR,,"Binance Will Extend the Monitoring Tag to Include AEUR, PYR, SCRT & VANRY on 2026-07-03"
+2026-07-03 06:00:11.367,izleme,PYR,,"Binance Will Extend the Monitoring Tag to Include AEUR, PYR, SCRT & VANRY on 2026-07-03"
+2026-07-03 06:00:11.367,izleme,SCRT,SCRTUSDT,"Binance Will Extend the Monitoring Tag to Include AEUR, PYR, SCRT & VANRY on 2026-07-03"
+2026-07-03 06:00:11.367,izleme,VANRY,VANRYUSDT,"Binance Will Extend the Monitoring Tag to Include AEUR, PYR, SCRT & VANRY on 2026-07-03"
+2026-07-10 15:37:03.303,vadeli_acilis,SKHY,,Binance Futures Will Launch USDⓈ-Margined SKHYUSDT Perpetual Contract (2026-07-10)
+2026-07-17 07:30:01.964,spot_listeleme,AERO,AEROUSDT,Binance Will List Aerodrome (AERO) with Seed Tag Applied
+2026-07-21 14:15:14.244,vadeli_delist,AERGO,,Binance Futures Will Delist USDⓈ-M AERGOUSDT Perpetual Contract (2026-07-24)
+2026-07-23 01:30:03.723,vadeli_acilis,POPMART,,Binance Futures Will Launch POPMARTUSDT USDⓈ-Margined Perpetual Contract (2026-07-23)
+2026-07-24 03:00:06.343,izleme,ACX,ACXUSDT,"Binance Will Extend the Monitoring Tag to Include ACX, LSK & STX on 2026-07-24"
+2026-07-24 03:00:06.343,izleme,LSK,LSKUSDT,"Binance Will Extend the Monitoring Tag to Include ACX, LSK & STX on 2026-07-24"
+2026-07-24 03:00:06.343,izleme,STX,STXUSDT,"Binance Will Extend the Monitoring Tag to Include ACX, LSK & STX on 2026-07-24"
+2026-07-31 11:30:11.662,vadeli_acilis,GRVT,GRVTUSDT,Binance Futures Will Launch USDⓈ-Margined GRVTUSDT Perpetual Contract (2026-07-31)
+2026-08-03 02:30:09.135,vadeli_acilis,GIGADEV,,Binance Futures Will Launch GIGADEVUSDT USDⓈ-Margined Perpetual Contract (2026-08-03)
+2026-08-03 03:30:10.683,spot_delist,ACX,ACXUSDT,"Binance Will Delist ACX, HFT, PIVX, PYR, VANRY, VIC on 2026-08-17"
+2026-08-03 03:30:10.683,spot_delist,HFT,HFTUSDT,"Binance Will Delist ACX, HFT, PIVX, PYR, VANRY, VIC on 2026-08-17"
+2026-08-03 03:30:10.683,spot_delist,PIVX,,"Binance Will Delist ACX, HFT, PIVX, PYR, VANRY, VIC on 2026-08-17"
+2026-08-03 03:30:10.683,spot_delist,PYR,,"Binance Will Delist ACX, HFT, PIVX, PYR, VANRY, VIC on 2026-08-17"
+2026-08-03 03:30:10.683,spot_delist,VANRY,VANRYUSDT,"Binance Will Delist ACX, HFT, PIVX, PYR, VANRY, VIC on 2026-08-17"
+2026-08-03 03:30:10.683,spot_delist,VIC,VICUSDT,"Binance Will Delist ACX, HFT, PIVX, PYR, VANRY, VIC on 2026-08-17"
+2026-08-11 09:00:12.289,izleme,GLMR,GLMRUSDT,"Binance Will Extend the Monitoring Tag to Include GLMR, ICX, MOVR, RARE & SOPH on 2026-08-11"
+2026-08-11 09:00:12.289,izleme,ICX,ICXUSDT,"Binance Will Extend the Monitoring Tag to Include GLMR, ICX, MOVR, RARE & SOPH on 2026-08-11"
+2026-08-11 09:00:12.289,izleme,MOVR,MOVRUSDT,"Binance Will Extend the Monitoring Tag to Include GLMR, ICX, MOVR, RARE & SOPH on 2026-08-11"
+2026-08-11 09:00:12.289,izleme,RARE,RAREUSDT,"Binance Will Extend the Monitoring Tag to Include GLMR, ICX, MOVR, RARE & SOPH on 2026-08-11"
+2026-08-11 09:00:12.289,izleme,SOPH,SOPHUSDT,"Binance Will Extend the Monitoring Tag to Include GLMR, ICX, MOVR, RARE & SOPH on 2026-08-11"
+2026-08-11 14:00:02.967,vadeli_acilis,DOS,DOSUSDT,Binance Futures Will Launch USDⓈ-Margined DOSUSDT Perpetual Contract (2026-08-11)
+2026-08-19 02:30:09.387,vadeli_acilis,UNITREE,,Binance Futures Will Launch UNITREEUSDT USDⓈ-Margined Perpetual Contract (2026-08-19)
+2026-08-20 06:00:06.608,spot_delist,ICX,ICXUSDT,"Binance Will Delist ICX, SCRT, STORJ on 2026-09-03"
+2026-08-20 06:00:06.608,spot_delist,SCRT,SCRTUSDT,"Binance Will Delist ICX, SCRT, STORJ on 2026-09-03"
+2026-08-20 06:00:06.608,spot_delist,STORJ,STORJUSDT,"Binance Will Delist ICX, SCRT, STORJ on 2026-09-03"
+2026-09-01 02:15:01.077,vadeli_acilis,HK0625,,Binance Futures Will Launch HK0625USDT USDⓈ-Margined Quanto Perpetual Contract (2026-09-01)
+2026-09-01 08:45:05.663,vadeli_acilis,MARSCOIN,MARSCOINUSDT,Binance Futures Will Launch USDⓈ-Margined MARSCOINUSDT Perpetual Contract (2026-09-01)
+2026-09-03 12:30:25.942,vadeli_acilis,GPRO,,Binance Futures Will Launch USDⓈ-Margined GPROUSDT Perpetual Contract (2026-09-03)
+2026-09-04 08:00:06.500,izleme,AVA,AVAUSDT,"Binance Will Extend the Monitoring Tag to Include AVA, GNS, SCR & TOWNS on 2026-09-04"
+2026-09-04 08:00:06.500,izleme,GNS,,"Binance Will Extend the Monitoring Tag to Include AVA, GNS, SCR & TOWNS on 2026-09-04"
+2026-09-04 08:00:06.500,izleme,SCR,SCRUSDT,"Binance Will Extend the Monitoring Tag to Include AVA, GNS, SCR & TOWNS on 2026-09-04"
+2026-09-04 08:00:06.500,izleme,TOWNS,TOWNSUSDT,"Binance Will Extend the Monitoring Tag to Include AVA, GNS, SCR & TOWNS on 2026-09-04"
+2026-09-04 10:15:01.870,spot_listeleme,MARSCOIN,MARSCOINUSDT,Binance Will List MarsCoin (MARSCOIN) with Seed Tag Applied
+2026-09-06 05:55:11.414,vadeli_acilis,PONS,PONSUSDT,Binance Futures Will Launch USDⓈ-Margined PONSUSDT and 哈基米USDT Perpetual Contracts (2026-09-06)
+2026-09-10 06:00:12.727,spot_delist,USDP,,Binance Will Delist USDP on 2026-09-24
+2026-09-24 07:30:38.608,spot_listeleme,HYPE,HYPEUSDT,Binance Will List Hyperliquid (HYPE) with Seed Tag Applied
+2026-10-01 06:30:01.040,vadeli_acilis,CT,CTUSDT,Binance Futures Will Launch USDⓈ-Margined CTUSDT Perpetual Contract (2026-10-01)
+2026-10-09 07:00:14.078,izleme,BICO,BICOUSDT,Binance Will Extend the Monitoring Tag to Include BICO & CVC on 2026-10-09
+2026-10-09 07:00:14.078,izleme,CVC,CVCUSDT,Binance Will Extend the Monitoring Tag to Include BICO & CVC on 2026-10-09
+2026-10-14 06:00:08.049,spot_delist,EPIC,EPICUSDT,"Binance Will Delist EPIC, QUICK on 2026-10-28"
+2026-10-14 06:00:08.049,spot_delist,QUICK,QUICKUSDT,"Binance Will Delist EPIC, QUICK on 2026-10-28"
+2026-10-21 09:30:01.882,vadeli_delist,PTB,PTBUSDT,Binance Futures Will Delist PTBUSDT and MITOUSDT USDⓈ-M Perpetual Contracts (2026-10-23)
+2026-10-21 09:30:01.882,vadeli_delist,MITO,MITOUSDT,Binance Futures Will Delist PTBUSDT and MITOUSDT USDⓈ-M Perpetual Contracts (2026-10-23)
+2026-10-29 11:48:52.329,spot_listeleme,PREDICT,,Binance Will List Predict (PREDICT) with Seed Tag Applied
