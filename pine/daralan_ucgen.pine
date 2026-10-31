@@ -1,0 +1,265 @@
+//@version=6
+// ══════════════════════════════════════════════════════════════════════
+//  DARALAN ÜÇGEN AVCISI
+//  Simetrik, yükselen ve alçalan daralan üçgenleri bulur, çizer;
+//  fiyat kırılım çizgisine yaklaşınca ve kırılım olunca sinyal/alarm verir.
+//  Telegram tarayıcısı (ucgen_tarayici.py) ile birebir aynı kurallar.
+// ──────────────────────────────────────────────────────────────────────
+//  Tepe/dip  : solunda ve sağında "pivot gücü" kadar mumdan yüksek/alçak mum
+//              (çok uzun iğneler gövde + 1 ATR'ye kırpılır)
+//  Üst çizgi : son tepelerden (en fazla 4) geçen, tepelerin ve kapanışların
+//              tolerans dışında üstüne çıkmadığı en uzun dizi. Alt çizgi aynı şekilde.
+//  Şartlar   : tepe-dip sırası iç içe, iki çizgi de formasyonun ilk yarısında başlar,
+//              çizgiler daralır (genişlik ≤ %85), yükseklik ≥ 3 ATR, süre 20–150 mum,
+//              tepe noktası (apex) geçilmemiş.
+//  Tipler    : üst alçalan + alt yükselen = SİMETRİK, üst yatay + alt yükselen = YÜKSELEN,
+//              üst alçalan + alt yatay = ALÇALAN
+//  KIRILIMA YAKIN : kapanış çizgiye 0,75 ATR'den yakın
+//  KIRILIM        : kapanış çizginin 0,3 ATR dışında. Hedef = kırılım ± başlangıç yüksekliği
+// ══════════════════════════════════════════════════════════════════════
+indicator("Daralan Üçgen Avcısı", overlay = true, max_lines_count = 120, max_labels_count = 120, max_bars_back = 500)
+
+grpA = "Formasyon"
+pvN    = input.int(5, "Pivot gücü (sol/sağ mum)", minval = 2, maxval = 20, group = grpA)
+maxBar = input.int(150, "En uzun formasyon (mum)", minval = 30, maxval = 400, group = grpA)
+minBar = input.int(20, "En kısa formasyon (mum)", minval = 5, group = grpA)
+maxPiv = input.int(4, "Bir çizgide en fazla tepe/dip", minval = 2, maxval = 6, group = grpA)
+tolAtr = input.float(0.3, "Tolerans (× ATR)", minval = 0, step = 0.05, group = grpA)
+yatay  = input.float(0.15, "Yatay sayılma eşiği (yüksekliğe oranla)", minval = 0, step = 0.05, group = grpA)
+minYuk = input.float(3.0, "En az başlangıç yüksekliği (× ATR)", minval = 0, step = 0.5, group = grpA)
+darMax = input.float(0.85, "Daralma şartı (bugünkü genişlik / başlangıç)", minval = 0.1, maxval = 1, step = 0.05, group = grpA)
+grpB = "Sinyal ve görünüm"
+yakAtr = input.float(0.75, "Kırılıma yakın mesafesi (× ATR)", minval = 0, step = 0.25, group = grpB)
+gecmis = input.bool(true, "Geçmiş üçgenleri ve kırılımları da çiz", group = grpB)
+showT  = input.bool(true, "Bilgi panelini göster", group = grpB)
+cUst   = input.color(color.orange, "Üst çizgi rengi", group = grpB)
+cAlt   = input.color(color.blue, "Alt çizgi rengi", group = grpB)
+
+atr14 = ta.atr(14)
+phv = ta.pivothigh(high, pvN, pvN)
+plv = ta.pivotlow(low, pvN, pvN)
+
+var array<int>    phB = array.new<int>()
+var array<float>  phP = array.new<float>()
+var array<int>    plB = array.new<int>()
+var array<float>  plP = array.new<float>()
+var array<string> bozuk = array.new<string>()
+
+// ───────── çizgi bulma (Python: cizgi) ─────────
+cizgiBul(array<int> bs, array<float> ps, int b, float tol, bool ust) =>
+    int n = array.size(bs)
+    int nIn = 0
+    if n > 0
+        for j = n - 1 to 0
+            if array.get(bs, j) >= b - maxBar
+                nIn += 1
+            else
+                break
+    bool found = false
+    int ri0 = na
+    float rp0 = na
+    float rs = na
+    int rdok = 0
+    int kmax = math.min(nIn, maxPiv)
+    if kmax >= 2
+        for k = kmax to 2
+            if not found
+                int i0 = array.get(bs, n - k)
+                float p0 = array.get(ps, n - k)
+                int i1 = array.get(bs, n - 1)
+                float p1 = array.get(ps, n - 1)
+                float s = (p1 - p0) / (i1 - i0)
+                bool ok = true
+                int dok = 0
+                for j = n - k to n - 1
+                    float d = array.get(ps, j) - (p0 + s * (array.get(bs, j) - i0))
+                    if (ust and d > tol) or (not ust and d < -tol)
+                        ok := false
+                    if math.abs(d) <= tol
+                        dok += 1
+                if ok and b - 1 >= i0
+                    for x = i0 to b - 1
+                        float lv = p0 + s * (x - i0)
+                        float cx = close[b - x]
+                        if (ust and cx > lv + tol) or (not ust and cx < lv - tol)
+                            ok := false
+                            break
+                if ok
+                    found := true
+                    ri0 := i0
+                    rp0 := p0
+                    rs := s
+                    rdok := dok
+    [found, ri0, rp0, rs, rdok, nIn]
+
+// ───────── aktif formasyon durumu ─────────
+var bool   aktif = false
+var int    uI0 = na
+var float  uP0 = na
+var float  uS = na
+var int    lI0 = na
+var float  lP0 = na
+var float  lS = na
+var int    fx0 = na
+var float  fw0 = na
+var float  fApex = na
+var string fTip = ""
+var int    fDok = 0
+var string fKey = ""
+var bool   yakU = false
+var bool   yakL = false
+
+// pivotları kaydet (fiyat: iğne gövde + 1 ATR'ye kırpılır)
+bool yeniPiv = false
+if not na(phv)
+    array.push(phB, bar_index - pvN)
+    array.push(phP, math.min(high[pvN], math.max(open[pvN], close[pvN]) + atr14[pvN]))
+    yeniPiv := true
+if not na(plv)
+    array.push(plB, bar_index - pvN)
+    array.push(plP, math.max(low[pvN], math.min(open[pvN], close[pvN]) - atr14[pvN]))
+    yeniPiv := true
+if array.size(phB) > 12
+    array.shift(phB)
+    array.shift(phP)
+if array.size(plB) > 12
+    array.shift(plB)
+    array.shift(plP)
+
+// yeni pivotta formasyonu yeniden kur (Python: formasyon_kur)
+if yeniPiv and atr14 > 0
+    float tol = tolAtr * atr14
+    [okU, ai0, ap0, aSl, adok, nH] = cizgiBul(phB, phP, bar_index, tol, true)
+    [okL, bi0, bp0, bSl, bdok, nL] = cizgiBul(plB, plP, bar_index, tol, false)
+    if okU and okL and nH >= 2 and nL >= 2
+        int ui1 = array.get(phB, array.size(phB) - 1)
+        int li1 = array.get(plB, array.size(plB) - 1)
+        int x0 = math.min(ai0, bi0)
+        bool ok = ai0 < li1 and bi0 < ui1 and (math.max(ai0, bi0) - x0) <= 0.5 * (bar_index - x0)
+        float w0 = (ap0 + aSl * (x0 - ai0)) - (bp0 + bSl * (x0 - bi0))
+        float wb = (ap0 + aSl * (bar_index - ai0)) - (bp0 + bSl * (bar_index - bi0))
+        int sure = bar_index - x0
+        ok := ok and w0 > 0 and wb > 0 and wb / w0 <= darMax and w0 >= minYuk * atr14 and sure >= minBar and sure <= maxBar
+        string tip = ""
+        if ok
+            float du = ((ap0 + aSl * (bar_index - ai0)) - (ap0 + aSl * (x0 - ai0))) / w0
+            float dl = ((bp0 + bSl * (bar_index - bi0)) - (bp0 + bSl * (x0 - bi0))) / w0
+            tip := du < -yatay and dl > yatay ? "Simetrik" : math.abs(du) <= yatay and dl > yatay ? "Yükselen" : du < -yatay and math.abs(dl) <= yatay ? "Alçalan" : ""
+        string key = str.tostring(ai0) + "_" + str.tostring(bi0)
+        if ok and tip != "" and not array.includes(bozuk, key)
+            if not (aktif and fKey == key)
+                yakU := false
+                yakL := false
+            aktif := true
+            uI0 := ai0
+            uP0 := ap0
+            uS := aSl
+            lI0 := bi0
+            lP0 := bp0
+            lS := bSl
+            fx0 := x0
+            fw0 := w0
+            fApex := x0 + w0 / (w0 - wb) * sure
+            fTip := tip
+            fDok := adok + bdok
+            fKey := key
+
+ustDeger(int x) => uP0 + uS * (x - uI0)
+altDeger(int x) => lP0 + lS * (x - lI0)
+
+// ───────── olaylar ─────────
+bool evYakU = false
+bool evYakL = false
+bool evKirU = false
+bool evKirL = false
+float kirSev = na
+float kirHedef = na
+float up = na
+float lw = na
+if aktif
+    up := ustDeger(bar_index)
+    lw := altDeger(bar_index)
+    float tol2 = tolAtr * atr14
+    if bar_index >= fApex
+        array.push(bozuk, fKey)
+        aktif := false
+    else if close > up + tol2 or close < lw - tol2
+        evKirU := close > up
+        evKirL := not evKirU
+        kirSev := evKirU ? up : lw
+        kirHedef := evKirU ? up + fw0 : lw - fw0
+        array.push(bozuk, fKey)
+        aktif := false
+        if gecmis
+            line.new(uI0, ustDeger(uI0), bar_index, up, color = color.new(cUst, 30), width = 1)
+            line.new(lI0, altDeger(lI0), bar_index, lw, color = color.new(cAlt, 30), width = 1)
+            label.new(bar_index, evKirU ? high : low, (evKirU ? "▲ YUKARI KIRILIM\n" : "▼ AŞAĞI KIRILIM\n") + fTip + " üçgen\nSeviye: " + str.tostring(kirSev, format.mintick) + "\nHedef: " + str.tostring(kirHedef, format.mintick), style = evKirU ? label.style_label_down : label.style_label_up, color = evKirU ? color.new(color.green, 10) : color.new(color.red, 10), textcolor = color.white, size = size.small)
+    else
+        if up - close <= yakAtr * atr14 and not yakU
+            yakU := true
+            evYakU := true
+        if close - lw <= yakAtr * atr14 and not yakL
+            yakL := true
+            evYakL := true
+    if array.size(bozuk) > 50
+        array.shift(bozuk)
+
+plotshape(evYakU, "Üst kırılıma yakın", shape.triangleup, location.abovebar, color.new(color.orange, 0), size = size.tiny, text = "YAKIN", textcolor = color.orange)
+plotshape(evYakL, "Alt kırılıma yakın", shape.triangledown, location.belowbar, color.new(color.blue, 0), size = size.tiny, text = "YAKIN", textcolor = color.blue)
+
+// ───────── alarmlar ─────────
+alertcondition(evYakU, "Üçgen: üst kırılıma yakın", "{{ticker}} daralan üçgende üst çizgiye yaklaştı ({{interval}})")
+alertcondition(evYakL, "Üçgen: alt kırılıma yakın", "{{ticker}} daralan üçgende alt çizgiye yaklaştı ({{interval}})")
+alertcondition(evKirU, "Üçgen: YUKARI KIRILIM", "{{ticker}} daralan üçgeni YUKARI kırdı ({{interval}})")
+alertcondition(evKirL, "Üçgen: AŞAĞI KIRILIM", "{{ticker}} daralan üçgeni AŞAĞI kırdı ({{interval}})")
+if barstate.isconfirmed
+    if evYakU or evYakL
+        alert(syminfo.ticker + " " + fTip + " üçgen: " + (evYakU ? "ÜST" : "ALT") + " çizgiye yaklaştı. Üst " + str.tostring(up, format.mintick) + " / alt " + str.tostring(lw, format.mintick), alert.freq_once_per_bar_close)
+    if evKirU or evKirL
+        alert(syminfo.ticker + (evKirU ? " YUKARI" : " AŞAĞI") + " KIRILIM. Seviye " + str.tostring(kirSev, format.mintick) + ", hedef " + str.tostring(kirHedef, format.mintick), alert.freq_once_per_bar_close)
+
+// ───────── aktif üçgeni çiz (son mumda) ─────────
+var line lU = na
+var line lL = na
+var line lUx = na
+var line lLx = na
+var linefill lf = na
+var label lb = na
+if barstate.islast
+    line.delete(lU)
+    line.delete(lL)
+    line.delete(lUx)
+    line.delete(lLx)
+    linefill.delete(lf)
+    label.delete(lb)
+    if aktif
+        int uc = int(math.min(fApex, bar_index + math.min(200, (fApex - fx0) * 0.5)))
+        lU := line.new(uI0, ustDeger(uI0), bar_index, ustDeger(bar_index), color = cUst, width = 2)
+        lL := line.new(lI0, altDeger(lI0), bar_index, altDeger(bar_index), color = cAlt, width = 2)
+        lUx := line.new(bar_index, ustDeger(bar_index), uc, ustDeger(uc), color = cUst, width = 1, style = line.style_dashed)
+        lLx := line.new(bar_index, altDeger(bar_index), uc, altDeger(uc), color = cAlt, width = 1, style = line.style_dashed)
+        lf := linefill.new(lU, lL, color.new(color.gray, 88))
+        float olg = (bar_index - fx0) / (fApex - fx0) * 100
+        lb := label.new(bar_index, ustDeger(bar_index), fTip + " üçgen  |  olgunluk %" + str.tostring(olg, "#") + "  |  " + str.tostring(fDok) + " dokunuş", style = label.style_label_lower_left, color = color.new(color.gray, 70), textcolor = color.white, size = size.small)
+
+// ───────── panel ─────────
+var table tb = table.new(position.top_right, 2, 7, bgcolor = color.new(#131722, 10), border_width = 1, border_color = color.new(color.gray, 70))
+satir(int r, string k, string v, color c) =>
+    table.cell(tb, 0, r, k, text_color = color.silver, text_size = size.small, text_halign = text.align_left)
+    table.cell(tb, 1, r, v, text_color = c, text_size = size.small, text_halign = text.align_right)
+if showT and barstate.islast
+    table.cell(tb, 0, 0, "DARALAN ÜÇGEN", text_color = color.white, text_size = size.normal)
+    table.cell(tb, 1, 0, timeframe.period, text_color = color.gray, text_size = size.small)
+    if aktif
+        float dU = (up / close - 1) * 100
+        float dL = (lw / close - 1) * 100
+        bool yakinU = up - close <= yakAtr * atr14
+        bool yakinL = close - lw <= yakAtr * atr14
+        satir(1, "Durum", fTip + " üçgen içinde", color.lime)
+        satir(2, "Üst çizgi (direnç)", str.tostring(up, format.mintick) + "  (" + (dU >= 0 ? "+" : "") + str.tostring(dU, "#.##") + "%)" + (yakinU ? "  ⚠ YAKIN" : ""), yakinU ? color.orange : color.white)
+        satir(3, "Alt çizgi (destek)", str.tostring(lw, format.mintick) + "  (" + (dL >= 0 ? "+" : "") + str.tostring(dL, "#.##") + "%)" + (yakinL ? "  ⚠ YAKIN" : ""), yakinL ? color.aqua : color.white)
+        satir(4, "Olgunluk (apex'e)", "%" + str.tostring((bar_index - fx0) / (fApex - fx0) * 100, "#"), color.white)
+        satir(5, "Yukarı / aşağı hedef", str.tostring(up + fw0, format.mintick) + " / " + str.tostring(lw - fw0, format.mintick), color.gray)
+        satir(6, "Dokunuş", str.tostring(fDok), color.gray)
+    else
+        satir(1, "Durum", "Aktif üçgen yok", color.gray)
