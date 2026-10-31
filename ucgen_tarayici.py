@@ -106,6 +106,9 @@ def binance(sym: str, aralik: str, adet: int = 400) -> dict | None:
     v = [k for k in v if k[6] < simdi]   # sadece kapanmis mumlar
     if len(v) < 120:
         return None
+    aralik_ms = {"4h": 4 * 3600_000, "1d": 86400_000}.get(aralik, 86400_000)
+    if simdi - v[-1][6] > 2 * aralik_ms:   # islem gormeyen / adi degisen coin (son mum eski)
+        return None
     kap = np.array([float(k[4]) for k in v[-120:]])
     if kap.std() / kap.mean() < 0.01:      # stabil coin / sabit fiyat
         return None
@@ -126,7 +129,7 @@ def yahoo(sym: str) -> dict | None:
             sat = [(t, o, h, l, c, v or 0) for t, o, h, l, c, v in
                    zip(x["timestamp"], q["open"], q["high"], q["low"], q["close"], q["volume"])
                    if None not in (o, h, l, c) and t // 86400 < bugun]
-            if len(sat) < 120:
+            if len(sat) < 120 or time.time() - sat[-1][0] > 8 * 86400:   # eski veri / islem durmus
                 return None
             a = np.array(sat, dtype=float)
             return dict(t=a[:, 0], o=a[:, 1], h=a[:, 2], l=a[:, 3], c=a[:, 4], v=a[:, 5],
