@@ -55,11 +55,11 @@ jobs:
           python ucgen_tarayici.py --onizleme
           git config user.name "izleme-bot"
           git config user.email "izleme-bot@users.noreply.github.com"
-          mkdir -p /tmp/oniz && cp onizleme/*.png /tmp/oniz/ 2>/dev/null || true
+          mkdir -p /tmp/oniz && cp onizleme/* /tmp/oniz/ 2>/dev/null || true
           git checkout -q --orphan ucgen-onizleme
           git rm -rq --cached . && rm -rf ./*
-          cp /tmp/oniz/*.png . 2>/dev/null || true
-          git add *.png && git commit -qm "onizleme [skip ci]" && git push -qf origin ucgen-onizleme
+          cp /tmp/oniz/* . 2>/dev/null || true
+          git add *.png *.npz && git commit -qm "onizleme [skip ci]" && git push -qf origin ucgen-onizleme
 
       - name: Tara + Telegram
         if: ${{ github.event.inputs.onizleme != 'true' && github.event.inputs.istatistik != 'true' }}

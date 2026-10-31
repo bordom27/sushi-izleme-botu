@@ -529,6 +529,10 @@ def ozet_gonder(sonuc: list):
 def onizle(sonuc: list):
     """Gozle kontrol: grafikleri onizleme/ klasorune cizer ve tarihsel kirilim istatistigini yazar."""
     os.makedirs("onizleme", exist_ok=True)
+    # ham mum verisi (yerelde gelistirme / gozle kontrol icin)
+    np.savez_compressed("onizleme/veri.npz", **{
+        f"{r['piyasa']}__{r['sym']}__{r['aralik']}":
+            np.column_stack([r["d"][k] for k in ("t", "o", "h", "l", "c", "v")]) for r in sonuc})
     aktifler = [r for r in sonuc if r["aktif"]]
     tipler = {}
     for r in aktifler:
