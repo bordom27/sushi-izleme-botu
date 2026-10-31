@@ -429,6 +429,90 @@ def short_grafik(sym: str) -> str:
     return f"https://www.tradingview.com/chart/?symbol=BINANCE:{sym}.P&interval=240"
 
 
+SHORT_TF = {
+    # tf: (ayar, state acik, state son_bar, sistem adi, mum saat, etiket, grafik araligi, isabet etiketleri {yildiz: kume>=3}, yalniz ⭐⭐)
+    "4s": (SR.AYAR, "short_acik", "short_son_bar", "short_retest", 4, "", 240, {2: "~%92", 1: "~%91", 0: "~%83"}, "~%80"),
+    "8s": (SR.AYAR_8S, "short_acik_8s", "short_son_bar_8s", "short_retest_8s", 8, " (8s)", 480,
+           {2: "~%88", 1: "~%74", 0: "~%83"}, "~%69"),
+}
+
+
+def _short_tf(state: dict, cfg: dict, veri_: dict, tf: str, kapanis_m: list, giris_m: list, bayat) -> int:
+    """Bir zaman dilimi (4s/8s) icin acik short takibi + yeni sinyaller. Elenen sinyal sayisini dondurur."""
+    A, k_acik, k_son, sistem, saat, etiket, aralik, isabet_tab, isabet_tek = SHORT_TF[tf]
+    acik = state.setdefault(k_acik, {})
+    son_bar = state.setdefault(k_son, {})
+    diger = [state.get(k) or {} for k in ("short_acik", "short_acik_8s") if k != k_acik]
+    mum = pd.Timedelta(hours=saat)
+    for anahtar, poz in list(acik.items()):
+        sym = poz["sym"]
+        g = veri_.get(sym)
+        if g is None:
+            continue
+        r = SR.sonuc_takip(g, poz, A)
+        if r is None:
+            continue
+        neden, fiyat, t, R = r
+        simge = "✅" if R > 0 else "❌"
+        ad = {"HEDEF": f"HEDEF ({poz.get('hedef_r', 0.5)}R)", "STOP": "STOP",
+              "ZAMAN": f"ZAMAN STOPU ({A['zaman_stopu']} mum)"}[neden]
+        kapanis_m.append(f"{simge} SHORT RETEST{etiket} kapandı — {sym}: {ad} @ {fmt(fiyat)} ({tr_saat(t + mum)})\n"
+                         f"Giriş {fmt(poz['giris'])} | Sonuç {R:+.2f}R")
+        state.setdefault("trade_log", []).append({"zaman": str(t), "varlik": sym, "yon": "SHORT", "sonuc": neden,
+                                                  "sonuc_r": round(float(R), 3), "sistem": sistem})
+        del acik[anahtar]
+    # once tum coinlerin sinyalleri: ayni mumda kac coinde sinyal var (kume) -> filtre
+    tum_sig, kume = {}, {}
+    for sym, g in veri_.items():
+        try:
+            tum_sig[sym] = SR.sinyaller(g, A)
+        except Exception as exc:
+            print(f"short {tf} sinyal {sym}: {exc}", flush=True)
+            tum_sig[sym] = []
+        for x in tum_sig[sym]:
+            kume[x["zaman"]] = kume.get(x["zaman"], 0) + 1
+    elenen = 0
+    for sym, g in veri_.items():
+        onceki = son_bar.get(sym)
+        son_bar[sym] = str(g.index[-1])
+        if onceki is None:
+            continue                     # yeni gorulen sembol: gecmis sinyaller gonderilmez
+        for x in tum_sig[sym]:
+            if x["zaman"] <= pd.Timestamp(onceki):
+                continue
+            if any(p["sym"] == sym for d in [acik] + diger for p in d.values()):
+                continue
+            k = kume.get(x["zaman"], 1)
+            if not SR.alinir(x["yildiz"], k, A):
+                elenen += 1
+                print(f"short {tf} {sym} {x['zaman']}: filtre disi (ayni mumda {k} sinyal, yildiz {x['yildiz']})", flush=True)
+                continue
+            anahtar = f"{sym}|{x['zaman']}"
+            poz = {"sym": sym, "zaman": str(x["zaman"]), "giris": float(x["giris"]), "stop": float(x["stop"]),
+                   "hedef": float(x["hedef"]), "hedef_r": float(x["hedef_r"]), "yildiz": int(x["yildiz"]), "tf": tf}
+            acik[anahtar] = poz
+            if x["zaman"] + mum - pd.Timedelta(hours=4) < bayat:   # bot uzun sure calisamadiysa eski sinyal gonderilmez
+                continue
+            if tf == "4s" and state.get("islem_aktif"):     # otomatik islem botu simdilik sadece 4s sinyalleri alir
+                state.setdefault("islem_kuyruk", []).append(
+                    {"sym": sym, "zaman": str(x["zaman"]), "giris": float(x["giris"]), "stop": float(x["stop"]),
+                     "hedef": float(x["hedef"]), "yildiz": int(x["yildiz"])})
+            yild = {2: "⭐⭐ GÜÇLÜ", 1: "⭐", 0: "(yıldızsız — riski yarıya indir)"}[x["yildiz"]]
+            isabet = isabet_tab[x["yildiz"]] if k >= A["min_kume"] else isabet_tek
+            ad = sym.replace("USDT", "")
+            giris_m.append(
+                f"🔻 SHORT RETEST{etiket} {yild} — {ad} (vadeli {sym})\n"
+                f"Giriş ~{fmt(x['giris'])} ({tf} kapanış {tr_saat(x['zaman'] + mum)}) | "
+                f"Stop {fmt(x['stop'])} (%{x['risk_pct']:.1f}) | Hedef {fmt(x['hedef'])} ({x['hedef_r']}R, tamamını kapat)\n"
+                f"Kırılan destek {fmt(x['seviye'])}: kırılmadan önce {x['dokunus']} kez test edilmiş, "
+                f"{tr_saat(x['kirilim_zaman'] + mum)}'te kırıldı ({x['seviye_mum']} mumluk dip, {tf}). "
+                f"Geri yükseliş düşük hacimli (ortalamanın {x['hacim_orani']:.2f} katı), 2 yeşil mumdan sonra ret.\n"
+                f"Aynı {tf} mumda {k} coinde K69 SHORT{etiket} sinyali var.\n"
+                f"Zaman stopu: {A['zaman_stopu']} mum (5 gün). Testte isabet {isabet}. Coin günlük hacmi ~{x['gunluk_hacim'] / 1e6:.0f}M$.\n"
+                f"https://www.tradingview.com/chart/?symbol=BINANCE:{sym}.P&interval={aralik}")
+    return elenen
+
+
 def short_retest_sistemi(state: dict, cfg: dict) -> list[str]:
     """Yeni retest short sinyallerini ve acik short'larin kapanislarini mesaj olarak dondurur."""
     try:
@@ -436,9 +520,7 @@ def short_retest_sistemi(state: dict, cfg: dict) -> list[str]:
     except Exception as exc:
         print(f"short: vadeli listesi alinamadi: {exc}", flush=True)
         return []
-    son_bar = state.setdefault("short_son_bar", {})
-    acik = state.setdefault("short_acik", {})
-    ilk = not son_bar
+    ilk = not state.get("short_son_bar")
     simdi = pd.Timestamp.now(tz="UTC").tz_localize(None)
     bayat = simdi - pd.Timedelta(hours=cfg["BAYAT_SAAT"] + 4)
     veri_ = {}
@@ -456,23 +538,8 @@ def short_retest_sistemi(state: dict, cfg: dict) -> list[str]:
         if len(g) < 250:
             continue
         veri_[sym] = g
-    # 1) acik short'lari takip et
-    for anahtar, poz in list(acik.items()):
-        sym = poz["sym"]
-        g = veri_.get(sym)
-        if g is None:
-            continue
-        r = SR.sonuc_takip(g, poz)
-        if r is None:
-            continue
-        neden, fiyat, t, R = r
-        simge = "✅" if R > 0 else "❌"
-        ad = {"HEDEF": f"HEDEF ({poz.get('hedef_r', 0.5)}R)", "STOP": "STOP", "ZAMAN": "ZAMAN STOPU (30 mum)"}[neden]
-        kapanis_m.append(f"{simge} SHORT RETEST kapandı — {sym}: {ad} @ {fmt(fiyat)} ({tr_saat(t + pd.Timedelta(hours=4))})\n"
-                         f"Giriş {fmt(poz['giris'])} | Sonuç {R:+.2f}R")
-        state.setdefault("trade_log", []).append({"zaman": str(t), "varlik": sym, "yon": "SHORT", "sonuc": neden,
-                                                  "sonuc_r": round(float(R), 3), "sistem": "short_retest"})
-        del acik[anahtar]
+    # 1) 4 saatlik: acik short'lari takip et + yeni sinyaller
+    elenen = _short_tf(state, cfg, veri_, "4s", kapanis_m, giris_m, bayat)
     # 2) retest bekleyenler (akşam özeti icin)
     bek = []
     for sym, g in veri_.items():
@@ -485,63 +552,25 @@ def short_retest_sistemi(state: dict, cfg: dict) -> list[str]:
             print(f"short bekleyen {sym}: {exc}", flush=True)
     bek = [b for b in bek if b["kalan"] >= 1 and b["uzaklik"] <= 10]     # seviyeye %10'dan uzak olanlar pratikte retest etmez
     state["short_bekleyen"] = sorted(bek, key=lambda d: (-d["yildiz"], abs(d["uzaklik"])))
-    # 3) yeni sinyaller. Once tum coinlerin sinyalleri: ayni 4s mumda kac coinde sinyal var (kume) -> filtre
-    tum_sig = {}
-    kume = {}
-    for sym, g in veri_.items():
-        try:
-            tum_sig[sym] = SR.sinyaller(g)
-        except Exception as exc:
-            print(f"short sinyal {sym}: {exc}", flush=True)
-            tum_sig[sym] = []
-        for x in tum_sig[sym]:
-            kume[x["zaman"]] = kume.get(x["zaman"], 0) + 1
-    elenen = 0
-    for sym, g in veri_.items():
-        onceki = son_bar.get(sym)
-        son_bar[sym] = str(g.index[-1])
-        if onceki is None:
-            continue                     # yeni gorulen sembol: gecmis sinyaller gonderilmez
-        for x in tum_sig[sym]:
-            if x["zaman"] <= pd.Timestamp(onceki):
+    # 3) 8 saatlik (1 Kas 2026): ayni kural, 4s veriden 8s mum; ayni coinde acik pozisyon varken ikinci sistem acmaz
+    if cfg.get("SHORT_8S", True):
+        veri8 = {}
+        for sym, g in veri_.items():
+            try:
+                g8 = SR.sekiz_saatlik(g)
+            except Exception as exc:
+                print(f"short 8s {sym}: {exc}", flush=True)
                 continue
-            if any(p["sym"] == sym for p in acik.values()):
-                continue
-            k = kume.get(x["zaman"], 1)
-            if not SR.alinir(x["yildiz"], k):
-                elenen += 1
-                print(f"short {sym} {x['zaman']}: filtre disi (ayni mumda {k} sinyal, yildiz {x['yildiz']})", flush=True)
-                continue
-            anahtar = f"{sym}|{x['zaman']}"
-            poz = {"sym": sym, "zaman": str(x["zaman"]), "giris": float(x["giris"]), "stop": float(x["stop"]),
-                   "hedef": float(x["hedef"]), "hedef_r": float(x["hedef_r"]), "yildiz": int(x["yildiz"])}
-            acik[anahtar] = poz
-            if x["zaman"] < bayat:           # bot uzun sure calisamadiysa eski sinyal gonderilmez (takip edilir)
-                continue
-            if state.get("islem_aktif"):     # sadece k69_islem_kos.py (islem botu) kendi durumunda acar
-                state.setdefault("islem_kuyruk", []).append(
-                    {"sym": sym, "zaman": str(x["zaman"]), "giris": float(x["giris"]), "stop": float(x["stop"]),
-                     "hedef": float(x["hedef"]), "yildiz": int(x["yildiz"])})
-            yild = {2: "⭐⭐ GÜÇLÜ", 1: "⭐", 0: "(yıldızsız — riski yarıya indir)"}[x["yildiz"]]
-            isabet = ({2: "~%92", 1: "~%91", 0: "~%83"}[x["yildiz"]] if k >= SR.AYAR["min_kume"] else "~%80")
-            ad = sym.replace("USDT", "")
-            giris_m.append(
-                f"🔻 SHORT RETEST {yild} — {ad} (vadeli {sym})\n"
-                f"Giriş ~{fmt(x['giris'])} (4s kapanış {tr_saat(x['zaman'] + pd.Timedelta(hours=4))}) | "
-                f"Stop {fmt(x['stop'])} (%{x['risk_pct']:.1f}) | Hedef {fmt(x['hedef'])} ({x['hedef_r']}R, tamamını kapat)\n"
-                f"Kırılan destek {fmt(x['seviye'])}: kırılmadan önce {x['dokunus']} kez test edilmiş, "
-                f"{tr_saat(x['kirilim_zaman'] + pd.Timedelta(hours=4))}'te kırıldı ({x['seviye_mum']} mumluk dip). "
-                f"Geri yükseliş düşük hacimli (ortalamanın {x['hacim_orani']:.2f} katı), 2 yeşil mumdan sonra ret.\n"
-                f"Aynı 4s mumda {k} coinde K69 SHORT sinyali var.\n"
-                f"Zaman stopu: 30 mum (5 gün). Testte isabet {isabet}. Coin günlük hacmi ~{x['gunluk_hacim'] / 1e6:.0f}M$.\n"
-                f"{short_grafik(sym)}")
+            if len(g8) >= 150:
+                veri8[sym] = g8
+        elenen += _short_tf(state, cfg, veri8, "8s", kapanis_m, giris_m, bayat)
     if elenen:
         print(f"short: {elenen} sinyal filtre disi kaldi", flush=True)
     if hata > len(semboller) // 2:
         print(f"short: {hata} sembolde veri hatasi", flush=True)
     mesajlar = kapanis_m[:]
     if giris_m:
-        n_acik = len(acik)
+        n_acik = len(state.get("short_acik") or {}) + len(state.get("short_acik_8s") or {})
         not_ = (f"Açık retest short: {n_acik} (öneri: aynı anda en fazla {cfg['SHORT_MAKS_ACIK']}, işlem başı risk {cfg['SHORT_RISK']})")
         if n_acik > cfg["SHORT_MAKS_ACIK"]:
             not_ += " — limit aşıldı, ⭐⭐ olanları öncelikle."
@@ -552,7 +581,8 @@ def short_retest_sistemi(state: dict, cfg: dict) -> list[str]:
 
 
 def short_ozet(state) -> str:
-    acik = state.get("short_acik") or {}
+    acik = dict(state.get("short_acik") or {})
+    acik.update({k: dict(p, sym=p["sym"] + " (8s)") for k, p in (state.get("short_acik_8s") or {}).items()})
     satir = []
     if acik:
         satir.append(f"K69 SHORT açık retest short ({len(acik)}): " + ", ".join(
@@ -569,13 +599,14 @@ def short_ozet(state) -> str:
                          f"seviye fiyatın {yer} | destek testi {b['dokunus']} | hacim {b['hacim_m']:g}M$ | {b['kalan']} mum kaldı")
         if len(bek) > 15:
             satir.append(f"... ve {len(bek) - 15} coin daha")
-    log = [t for t in state.get("trade_log", []) if t.get("sistem") == "short_retest"]
     simdi = pd.Timestamp.now(tz="UTC").tz_localize(None)
-    son30 = [t for t in log if pd.Timestamp(t["zaman"]) >= simdi - pd.Timedelta(days=30)]
-    if son30:
-        rr = [t["sonuc_r"] for t in son30]
-        satir.append(f"K69 SHORT son 30 gün (canlı): {len(rr)} işlem | isabet %{100 * sum(x > 0 for x in rr) / len(rr):.0f} | "
-                     f"toplam {sum(rr):+.2f}R")
+    for sistem, ad in (("short_retest", "K69 SHORT"), ("short_retest_8s", "K69 SHORT (8s)")):
+        log = [t for t in state.get("trade_log", []) if t.get("sistem") == sistem]
+        son30 = [t for t in log if pd.Timestamp(t["zaman"]) >= simdi - pd.Timedelta(days=30)]
+        if son30:
+            rr = [t["sonuc_r"] for t in son30]
+            satir.append(f"{ad} son 30 gün (canlı): {len(rr)} işlem | isabet %{100 * sum(x > 0 for x in rr) / len(rr):.0f} | "
+                         f"toplam {sum(rr):+.2f}R")
     return "\n".join(satir)
 
 
@@ -913,6 +944,15 @@ def main():
                               "Mesajda aynı mumda kaç coinde sinyal olduğu yazıyor. Açık pozisyonlar etkilenmedi. "
                               "TradingView göstergesi tek grafiğe baktığı için bu filtreyi göremez: bot mesajını esas al.")
                 state["duyuru_short_retest5"] = True
+            if state.get("duyuru_short_retest5") and not state.get("duyuru_short_retest6") and state.get("short_son_bar_8s"):
+                send_telegram("🆕 K69 SHORT artık 8 saatlik grafikte de taranıyor — mesajlarda \"SHORT RETEST (8s)\" olarak gelir.\n"
+                              "Aynı kural, aynı süre: 40/80 mumluk dip (= 4s'teki 80/160), 15 mum bekleme ve zaman stopu (5 gün). "
+                              "Aynı filtre: aynı 8s mumda ≥3 coin ya da ⭐⭐. Aynı coinde açık pozisyon varken diğer sistem sinyal vermez.\n"
+                              "Test (2020–Eki 2026): 8s tek başına 333 işlem, isabet %80.5, son 12 ayda %81.1 (haftada ~1.7 sinyal). "
+                              "4s + 8s birlikte: isabet %84.4, son 12 ayda %81.2; son 12 ayın toplamı 23R → 39R.\n"
+                              "8s'te ⭐ (tek yıldız) zayıf (~%74): riski yarım tut. Otomatik işlem botu şimdilik sadece 4s sinyalleri açar.\n"
+                              "TradingView: K69 SHORT Retest göstergesi 8 saatlik grafikte kendiliğinden 8s ayarlarına geçer.")
+                state["duyuru_short_retest6"] = True
             if not state.get("duyuru_short_retest") and state.get("short_son_bar"):
                 send_telegram(
                     "🆕 Yeni sistem: K69 SHORT (düşük hacimli retest short)\n"

@@ -45,7 +45,23 @@ AYAR = {
     "min_hacim_usd": 1e6,
     "yildiz_hacim_usd": 5e6,          # yildiz icin coin en az bu kadar likit olmali
     "min_kume": 3,                    # ayni 4s mumda en az bu kadar coinde sinyal varsa al (⭐⭐ ise sart yok)
+    "mum_gun": 6,                     # gunde kac mum (gunluk hacim hesabi icin)
 }
+
+# 8 saatlik K69 SHORT (1 Kas 2026): ayni kural, ayni sure (40/80 mumluk dip = 80/160 x 4s, 15 mum bekleme ve zaman stopu = 5 gun).
+# Test (4s veriden 8s mum, 2020-Eki 2026, maliyet dahil): filtresiz 442 islem %79.2, son 12 ay %78.3 (haftada 2.8);
+# filtreli (ayni 8s mumda >=3 coin veya ⭐⭐) 333 islem %80.5, son 12 ay %81.1 (haftada 1.7).
+# 4s filtreli + 8s filtreli (ayni coinde acik pozisyon varken ikinci sistem acmaz): 966 islem %84.4, son 12 ay %81.2,
+# son 12 ay toplam 38.8R (sadece 4s: 23.1R). Mum sayisi 4s ile ayni birakilinca (80/160, 30) daha kotu: %77.2.
+AYAR_8S = dict(AYAR, seviyeler=(40, 80), maks_bekle=15, zaman_stopu=15, mum_gun=3)
+
+
+def sekiz_saatlik(g: pd.DataFrame) -> pd.DataFrame:
+    """Kapanmis 4s mumlardan Binance ile ayni hizali (00/08/16 UTC) kapanmis 8s mumlar; yarim kalan son 8s mum atilir."""
+    r = g.resample("8h", origin="epoch")
+    d = r.agg({"o": "first", "h": "max", "l": "min", "c": "last", "v": "sum"})
+    d = d[(r["c"].count() == 2) & (d["v"] > 0)]
+    return d.dropna()
 
 
 def alinir(yildiz: int, kume: int, A: dict | None = None) -> bool:
@@ -54,21 +70,21 @@ def alinir(yildiz: int, kume: int, A: dict | None = None) -> bool:
     return kume >= A["min_kume"] or yildiz == 2
 
 
-def gostergeler(g: pd.DataFrame) -> dict:
-    """g: open_time indeksli o,h,l,c,v (sadece kapanmis 4s mumlar)."""
+def gostergeler(g: pd.DataFrame, mum_gun: int = 6) -> dict:
+    """g: open_time indeksli o,h,l,c,v (sadece kapanmis mumlar). mum_gun: 4s icin 6, 8s icin 3."""
     o, h, l, c, v = (g[k].to_numpy(float) for k in "ohlcv")
     pc = np.r_[np.nan, c[:-1]]
     tr = np.nanmax(np.vstack([h - l, np.abs(h - pc), np.abs(l - pc)]), axis=0)
     atr = pd.Series(tr).ewm(alpha=1 / 14, adjust=False).mean().to_numpy()
     va = pd.Series(v).rolling(20).mean().shift(1).to_numpy()
-    qv = (pd.Series(c * v).rolling(180, min_periods=60).median() * 6).to_numpy()
+    qv = (pd.Series(c * v).rolling(30 * mum_gun, min_periods=10 * mum_gun).median() * mum_gun).to_numpy()
     return {"o": o, "h": h, "l": l, "c": c, "v": v, "atr": atr, "va": va, "qv": qv}
 
 
 def sinyaller(g: pd.DataFrame, A: dict | None = None) -> list[dict]:
     """Tum gecmisteki retest short sinyalleri (kurallari gecenler). Her eleman: zaman (sinyal mumu acilisi), giris, stop, hedef, ..."""
     A = dict(AYAR, **(A or {}))
-    x = gostergeler(g)
+    x = gostergeler(g, A["mum_gun"])
     o, h, l, c, v, atr, va, q = (x[k] for k in ("o", "h", "l", "c", "v", "atr", "va", "qv"))
     T = g.index
     n = len(c)
@@ -136,7 +152,7 @@ def bekleyenler(g: pd.DataFrame, A: dict | None = None) -> list[dict]:
     """Su an retest beklenen kirilimlar (sinyaller() ile ayni durum makinesi; son mumda hala aktif olan seviyeler).
     Kirilim mumu asiri buyukse (sinyal veremeyecegi icin) listelenmez."""
     A = dict(AYAR, **(A or {}))
-    x = gostergeler(g)
+    x = gostergeler(g, A["mum_gun"])
     o, h, l, c, v, atr, va, q = (x[k] for k in ("o", "h", "l", "c", "v", "atr", "va", "qv"))
     T = g.index
     n = len(c)
