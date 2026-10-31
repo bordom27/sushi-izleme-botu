@@ -35,7 +35,10 @@ def main():
     for kat, ad in KATALOG.items():
         no = 1
         while True:
-            a = sayfa(kat, no)
+            try:
+                a = sayfa(kat, no)
+            except RuntimeError as exc:
+                print("katalog sonu/hata:", exc, flush=True); break
             if not a:
                 break
             for x in a:
