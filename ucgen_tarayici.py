@@ -6,10 +6,14 @@ formasyonlarini bulur; fiyat kirilim seviyesine yaklasinca ve kirilim olunca Tel
 
 Ucgen tanimi (TradingView gostergesi "Daralan Ucgen Avcisi" ile birebir ayni):
   * Pivot tepe/dip: solunda ve saginda PIVOT kadar mumdan yuksek/alcak mum (PIVOT mum sonra kesinlesir).
-  * Ust cizgi: son pivot tepelerden (en fazla 4) gecen, tepelerin tolerans disinda ustune cikmadigi ve
-    kapanislarin uzerine cikmadigi en uzun dizi. Alt cizgi diplerle ayni sekilde.
-  * Iki taraf birbirinin icine gecmeli (tepe-dip-tepe-dip sirasi), cizgiler yaklasmali (genislik <= %85),
-    baslangic yuksekligi >= 3 ATR, sure 20-150 mum, tepe noktasi (apex) gecilmemis olmali.
+    Cizgi mumun gorunen ucuna dayanir; fitil govdeden 1 ATR'den uzunsa govdenin ucuna (igne cizgiyi bozmasin).
+  * Ust cizgi: bir tepeden baslayip sonraki tepelere en siki yaslanan cizgi (hicbir tepe ve kapanis disari
+    tasmaz). Alt cizgi diplerle ayni sekilde. Butun kombinasyonlar denenir, en iyisi secilir.
+  * Fiyat iki cizgi arasinda gidip gelmeli: genisligin %40'i kadar her buyuk salinim karsi cizgiye degmeli
+    (ortada donen buyuk salinim ucgeni bozar). Her cizgide en az 2 ayri dokunus, tek bacak <= surenin yarisi.
+  * Formasyonun basindan beri kapanislar cizgilerin icinde; sonra baslayan cizgi geriye uzatildiginda bos
+    alana tasmamali. Cizgiler yaklasmali (genislik <= %85), baslangic yuksekligi >= 3 ATR, sure 20-150 mum,
+    tepe noktasi (apex) gecilmemis olmali.
   * Tip: ust alcalan + alt yukselen = SIMETRIK, ust yatay + alt yukselen = YUKSELEN,
     ust alcalan + alt yatay = ALCALAN. (Kama ve yatay kanal sayilmaz.)
 Olaylar:
@@ -35,8 +39,18 @@ from datetime import datetime, timezone
 import numpy as np
 import requests
 
-AYAR = dict(PIVOT=5, MAX_BAR=150, MIN_BAR=20, MAX_PIVOT=4, TOL_ATR=0.3, YATAY=0.15,
-            MIN_YUKSEKLIK_ATR=3.0, DARALMA=0.85, YAKIN_ATR=0.75)
+AYAR = dict(PIVOT=5, MAX_BAR=150, MIN_BAR=20, MAX_PIVOT=12, TOL_ATR=0.3, YATAY=0.10,
+            MIN_YUKSEKLIK_ATR=3.0, DARALMA=0.85, YAKIN_ATR=0.75,
+            # cizgi kalitesi (v2)
+            FITIL_ATR=1.0,      # fitil govdeden bu kadar ATR'den uzunsa cizgi govdeye dayanir
+            SALINIM=0.40,       # ucgen genisliginin bu kadari geri donus = buyuk salinim
+            DOKUNUS_ATR=0.75, DOKUNUS_GEN=0.20,   # dokunus: cizgiye min(0.75 ATR, genisligin %20'si) yakinlik
+            KABUL_ATR=1.5, KABUL_GEN=0.30,        # bundan uzakta kalan buyuk salinim ucgeni bozar
+            MIN_DOKUNUS=2,      # her cizgide en az 2 ayri salinim dokunusu
+            DENGE=0.50,         # iki cizginin baslangici arasindaki fark <= surenin yarisi
+            TASMA=0.25,         # sonra baslayan cizgi geriye uzatildiginda gercek fiyatin disina tasma siniri
+            MAX_BACAK=0.50,     # tek bir bacak <= surenin yarisi
+            MAX_OMUR=450)       # baslangicindan bu kadar mum sonra hala kirilmadiysa bayat (TradingView gecmis siniri)
 DURUM_DOSYASI = "ucgen_state.json"
 LISTE_DOSYASI = "ucgen_izleme_listesi.txt"
 MIN_KRIPTO_HACIM = 1e6        # 24 saatlik islem hacmi (USDT); botun coin listesi de her zaman eklenir
@@ -169,72 +183,178 @@ def pivotlar(h, l, n):
     return ph, pl
 
 
-def cizgi(piv: list, c: np.ndarray, b: int, tol: float, ust: bool):
-    """Pivot listesinden (sondan) en uzun gecerli cizgiyi bulur."""
-    for k in range(min(len(piv), AYAR["MAX_PIVOT"]), 1, -1):
-        seq = piv[-k:]
-        (i0, p0), (i1, p1) = seq[0], seq[-1]
-        s = (p1 - p0) / (i1 - i0)
-        ok, dok = True, 0
-        for i, p in seq:
-            d = p - (p0 + s * (i - i0))
-            if (ust and d > tol) or (not ust and d < -tol):
-                ok = False
-                break
-            if abs(d) <= tol:
-                dok += 1
-        if not ok:
-            continue
-        xs = np.arange(i0, b)
-        hat = p0 + s * (xs - i0)
-        if ust and np.any(c[i0:b] > hat + tol):
-            continue
-        if not ust and np.any(c[i0:b] < hat - tol):
-            continue
-        return dict(i0=i0, p0=p0, s=s, dok=dok, k=k)
-    return None
+def uclar(d: dict, A: np.ndarray, idx):
+    """Cizgilerin dayanacagi mum uclari. Fitil govdeden FITIL_ATR*ATR'den kisaysa fitilin ucu, daha uzunsa
+    govdenin ucu kullanilir: cizgi gorunen tepeye/dibe deger, tek bir igne cizgiyi bozmaz, cizgi fitilin
+    ortasindan da gecmez."""
+    o, c, h, l, a = d["o"][idx], d["c"][idx], d["h"][idx], d["l"][idx], A[idx]
+    gu, ga = np.maximum(o, c), np.minimum(o, c)
+    k = AYAR["FITIL_ATR"]
+    return np.where(h - gu <= k * a, h, gu), np.where(ga - l <= k * a, l, ga)
 
 
-def formasyon_kur(d, b, ph_list, pl_list, A):
-    n, M = AYAR["PIVOT"], AYAR["MAX_BAR"]
-    o, c = d["o"], d["c"]
-    # pivot fiyati: fitil gövdeden 1 ATR'den uzunsa gövde + 1 ATR'ye kirpilir (tek iğne cizgiyi bozmasin)
-    hs = [(i, min(d["h"][i], max(o[i], c[i]) + A[i])) for i in ph_list if b - M <= i <= b - n]
-    ls = [(i, max(d["l"][i], min(o[i], c[i]) - A[i])) for i in pl_list if b - M <= i <= b - n]
-    if len(hs) < 2 or len(ls) < 2 or not (A[b] > 0):
-        return None
-    tol = AYAR["TOL_ATR"] * A[b]
-    u = cizgi(hs, d["c"], b, tol, True)
-    lo = cizgi(ls, d["c"], b, tol, False)
-    if not u or not lo:
-        return None
-    ui1, li1 = hs[-1][0], ls[-1][0]
-    if not (u["i0"] < li1 and lo["i0"] < ui1):        # taraflar ic ice gecmeli
-        return None
+def cizgiler(idx: np.ndarray, P: np.ndarray, c: np.ndarray, b: int, tol: float, ust: bool, xmin: int) -> list:
+    """Her baslangic pivotu icin o pivottan ve bir sonraki pivottan gecen, sonraki hicbir pivotun ve
+    kapanisin tolerans disina tasmadigi EN SIKI cizgi (fiyata en cok yaslanan). 'serbest': cizgi geriye
+    uzatildiginda kapanislarin ve pivotlarin icinde kaldigi en eski mum."""
+    out = []
+    sg = 1.0 if ust else -1.0
+    for a in range(len(idx) - 1):
+        i0, p0 = int(idx[a]), float(P[a])
+        dx = idx[a + 1:] - i0
+        egim = (P[a + 1:] - p0) / dx
+        sinir = ((P[a + 1:] - sg * tol) - p0) / dx           # sonraki pivotlarin izin verdigi egim
+        smin = sinir.max() if ust else sinir.min()
+        gecerli = egim >= smin - 1e-12 if ust else egim <= smin + 1e-12
+        xs = np.arange(i0, b + 1)
+        for e in (np.argsort(egim) if ust else np.argsort(-egim)):
+            if not gecerli[e]:
+                continue
+            s = float(egim[e])
+            if np.any(sg * (c[i0:b + 1] - (p0 + s * (xs - i0))) > tol):
+                continue
+            x = i0 - 1
+            while x >= xmin and sg * (c[x] - (p0 + s * (x - i0))) <= tol:
+                x -= 1
+            serbest = x + 1
+            onc = (idx >= serbest) & (idx < i0)
+            if np.any(onc):
+                kotu = idx[onc][sg * (P[onc] - (p0 + s * (idx[onc] - i0))) > tol]
+                if len(kotu):
+                    serbest = int(kotu.max()) + 1
+            out.append(dict(i0=i0, p0=p0, s=s, serbest=serbest))
+            break
+    return out
+
+
+def salinim(d: dict, A: np.ndarray, x0: int, b: int, u: dict, lo: dict, ust_bas: bool):
+    """Fiyat iki cizgi arasinda gidip geliyor mu? Ucgen genisligine gore olceklenmis zigzag:
+    genisligin SALINIM katı kadar geri donus 'buyuk salinim' sayilir. Her buyuk tepe ust cizgiye, her buyuk
+    dip alt cizgiye yakin olmali; ortada kalan buyuk salinim ihlaldir. Tek bir bacak formasyonun
+    MAX_BACAK'indan uzun olamaz.
+    Donus: (ihlal, ust_dokunus, alt_dokunus, yakin_gecen, dokunus_noktalari)."""
+    xs = np.arange(x0, b + 1)
+    Uv = u["p0"] + u["s"] * (xs - u["i0"])
+    Lv = lo["p0"] + lo["s"] * (xs - lo["i0"])
+    W = Uv - Lv
+    if np.any(W <= 0):
+        return 99, 0, 0, 0, []
+    a = A[x0:b + 1]
+    hu, lu = uclar(d, A, xs)
+    hp, lp = (hu - Lv) / W, (lu - Lv) / W                      # 0 = alt cizgi, 1 = ust cizgi
+    td = np.minimum(AYAR["DOKUNUS_ATR"] * a, AYAR["DOKUNUS_GEN"] * W) / W
+    tk = np.minimum(AYAR["KABUL_ATR"] * a, AYAR["KABUL_GEN"] * W) / W
+    T = AYAR["SALINIM"]
+    ihlal = ud = ad = yakin = 0
+    noktalar = [(x0, "u" if ust_bas else "l")]
+    donus = [0]
+    if ust_bas:
+        ud, arar_dip, aday, ax = 1, True, lp[0], 0
+    else:
+        ad, arar_dip, aday, ax = 1, False, hp[0], 0
+    for x in range(1, len(xs)):
+        if arar_dip:
+            if lp[x] < aday:
+                aday, ax = lp[x], x
+            elif hp[x] >= aday + T:                            # dip onaylandi
+                if aday <= td[ax]:
+                    ad += 1; noktalar.append((x0 + ax, "l"))
+                elif aday > tk[ax]:
+                    ihlal += 1
+                else:
+                    yakin += 1
+                donus.append(ax)
+                arar_dip, aday, ax = False, hp[x], x
+        else:
+            if hp[x] > aday:
+                aday, ax = hp[x], x
+            elif lp[x] <= aday - T:                            # tepe onaylandi
+                if 1 - aday <= td[ax]:
+                    ud += 1; noktalar.append((x0 + ax, "u"))
+                elif 1 - aday > tk[ax]:
+                    ihlal += 1
+                else:
+                    yakin += 1
+                donus.append(ax)
+                arar_dip, aday, ax = True, lp[x], x
+    if np.diff(donus + [len(xs) - 1]).max() > AYAR["MAX_BACAK"] * (len(xs) - 1):
+        ihlal += 1
+    return ihlal, ud, ad, yakin, noktalar
+
+
+def tip_bul(du: float, dl: float):
+    y = AYAR["YATAY"]
+    if du < -y and dl > y:
+        return "Simetrik"
+    if abs(du) <= y and dl > y:
+        return "Yükselen"
+    if du < -y and abs(dl) <= y:
+        return "Alçalan"
+    return None                                                # kama / kanal / genisleyen: ucgen degil
+
+
+def degerlendir(d: dict, A: np.ndarray, b: int, u: dict, lo: dict):
+    """Iki cizgi gecerli bir daralan ucgen olusturuyorsa (skor, formasyon) doner."""
+    M = AYAR["MAX_BAR"]
     x0 = min(u["i0"], lo["i0"])
-    if max(u["i0"], lo["i0"]) - x0 > 0.5 * (b - x0):   # iki cizgi de formasyonun ilk yarisinda baslamali
+    sure = b - x0
+    if not (AYAR["MIN_BAR"] <= sure <= M):
+        return None
+    if abs(u["i0"] - lo["i0"]) > AYAR["DENGE"] * sure or u["serbest"] > x0 or lo["serbest"] > x0:
         return None
     U = lambda x: u["p0"] + u["s"] * (x - u["i0"])     # noqa: E731
     L = lambda x: lo["p0"] + lo["s"] * (x - lo["i0"])  # noqa: E731
     w0, wb = U(x0) - L(x0), U(b) - L(b)
-    sure = b - x0
-    if w0 <= 0 or wb <= 0 or wb / w0 > AYAR["DARALMA"]:
+    if w0 <= 0 or wb <= 0 or wb / w0 > AYAR["DARALMA"] or w0 < AYAR["MIN_YUKSEKLIK_ATR"] * A[b]:
         return None
-    if w0 < AYAR["MIN_YUKSEKLIK_ATR"] * A[b] or not (AYAR["MIN_BAR"] <= sure <= AYAR["MAX_BAR"]):
+    tip = tip_bul((U(b) - U(x0)) / w0, (L(b) - L(x0)) / w0)
+    if not tip:
         return None
-    du, dl = (U(b) - U(x0)) / w0, (L(b) - L(x0)) / w0
-    y = AYAR["YATAY"]
-    if du < -y and dl > y:
-        tip = "Simetrik"
-    elif abs(du) <= y and dl > y:
-        tip = "Yükselen"
-    elif du < -y and abs(dl) <= y:
-        tip = "Alçalan"
-    else:
+    # baslangic genisligi gercek fiyatla desteklenmeli: sonra baslayan cizgi geriye uzatildiginda formasyonun
+    # en yuksek / en dusuk fiyatini TASMA*genislikten fazla asmamali (bos alana uzanan ucgen olmasin)
+    if U(x0) > d["h"][x0:b + 1].max() + AYAR["TASMA"] * w0 or L(x0) < d["l"][x0:b + 1].min() - AYAR["TASMA"] * w0:
+        return None
+    ihlal, ud, ad, yakin, noktalar = salinim(d, A, x0, b, u, lo, u["i0"] <= lo["i0"])
+    if ihlal or ud < AYAR["MIN_DOKUNUS"] or ad < AYAR["MIN_DOKUNUS"]:
         return None
     apex = x0 + w0 / (w0 - wb) * sure
-    return dict(u=u, l=lo, x0=x0, w0=w0, apex=apex, tip=tip, dok=u["dok"] + lo["dok"],
-                key=(int(d["t"][u["i0"]]), int(d["t"][lo["i0"]])))
+    f = dict(u=dict(i0=u["i0"], p0=u["p0"], s=u["s"], dok=ud), l=dict(i0=lo["i0"], p0=lo["p0"], s=lo["s"], dok=ad),
+             x0=x0, w0=w0, apex=apex, tip=tip, dok=ud + ad, noktalar=noktalar,
+             key=(int(d["t"][u["i0"]]), int(d["t"][lo["i0"]])))
+    # en cok dokunus; esitlikte yakin gecen salinimi az olan ve daha derli toplu (kisa) formasyon
+    return ud + ad - 0.5 * yakin - 0.25 * sure / M, f
+
+
+def formasyon_kur(d: dict, b: int, ph_list: list, pl_list: list, A: np.ndarray):
+    n, M = AYAR["PIVOT"], AYAR["MAX_BAR"]
+    K = AYAR["MAX_PIVOT"]                       # pencere icindeki en son K tepe / dip
+    hi = np.array([i for i in ph_list if b - M <= i <= b - n][-K:], dtype=int)
+    li = np.array([i for i in pl_list if b - M <= i <= b - n][-K:], dtype=int)
+    if len(hi) < 2 or len(li) < 2 or not (A[b] > 0):
+        return None
+    tol = AYAR["TOL_ATR"] * A[b]
+    ust = cizgiler(hi, uclar(d, A, hi)[0], d["c"], b, tol, True, b - M)
+    alt = cizgiler(li, uclar(d, A, li)[1], d["c"], b, tol, False, b - M)
+    en_iyi = None
+    for u in ust:
+        for lo in alt:
+            r = degerlendir(d, A, b, u, lo)
+            if r and (en_iyi is None or r[0] > en_iyi[0]):
+                en_iyi = r
+    return en_iyi[1] if en_iyi else None
+
+
+def hala_gecerli(d: dict, A: np.ndarray, b: int, f: dict) -> bool:
+    """Aktif formasyon yeni mumlarla hala temiz bir ucgen mi (kapanislar icerde, salinimlar cizgilere degiyor)."""
+    tol = AYAR["TOL_ATR"] * A[b]
+    x0 = f["x0"]
+    xs = np.arange(x0, b + 1)
+    c = d["c"][x0:b + 1]
+    if np.any(c - (f["u"]["p0"] + f["u"]["s"] * (xs - f["u"]["i0"])) > tol):
+        return False
+    if np.any((f["l"]["p0"] + f["l"]["s"] * (xs - f["l"]["i0"])) - c > tol):
+        return False
+    return salinim(d, A, x0, b, f["u"], f["l"], f["u"]["i0"] <= f["l"]["i0"])[0] == 0
 
 
 def deger(f, x, taraf):
@@ -250,7 +370,7 @@ def tara(d: dict):
     ph, pl = pivotlar(d["h"], d["l"], n)
     ph_list, pl_list = [], []
     aktif, olaylar, bozuk = None, [], set()
-    d.setdefault("_ist", {"kurulan": 0, "kirilim": 0, "apex": 0, "omur": []})
+    d.setdefault("_ist", {"kurulan": 0, "kirilim": 0, "apex": 0, "bozulan": 0, "omur": []})
     for b in range(n + 15, N):
         p = b - n
         yeni_pivot = False
@@ -262,15 +382,17 @@ def tara(d: dict):
             f = formasyon_kur(d, b, ph_list, pl_list, A)
             if f and f["key"] not in bozuk:
                 if aktif and aktif["key"] == f["key"]:
-                    f["bayrak"] = aktif["bayrak"]
+                    f["bayrak"], f["dogum"] = aktif["bayrak"], aktif["dogum"]
                 else:
-                    f["bayrak"] = set()
-                    f["dogum"] = b
+                    f["bayrak"], f["dogum"] = set(), b
                     d["_ist"]["kurulan"] += 1
                 aktif = f
+            elif aktif and not hala_gecerli(d, A, b, aktif):   # salinim cizgiden koptu: artik ucgen degil
+                d["_ist"]["bozulan"] += 1
+                bozuk.add(aktif["key"]); aktif = None
         if not aktif:
             continue
-        if b >= aktif["apex"]:
+        if b >= aktif["apex"] or b - aktif["x0"] > AYAR["MAX_OMUR"]:
             d["_ist"]["apex"] += 1; d["_ist"]["omur"].append(b - aktif.get("dogum", b))
             bozuk.add(aktif["key"]); aktif = None
             continue
@@ -318,6 +440,10 @@ def grafik(sym_ad: str, aralik_ad: str, d: dict, f: dict, olay: dict | None = No
         x0 = f[taraf]["i0"]
         ax.plot([x0, son], [deger(f, x0, taraf), deger(f, son, taraf)], color=renk, linewidth=1.8)
         ax.plot([son, uc], [deger(f, son, taraf), deger(f, uc, taraf)], color=renk, linewidth=1.2, linestyle="--")
+    for x, taraf in f.get("noktalar", []):                     # cizgiye dokunan salinimlar
+        if bas <= x <= son:
+            ax.plot(x, deger(f, x, taraf), "o", color="#ff9800" if taraf == "u" else "#2196f3", markersize=4.5,
+                    markeredgecolor="white", markeredgewidth=0.6, zorder=5)
     ax.set_xlim(bas - 1, max(bit, uc) + 2)
     if olay and olay["tur"] == "kirilim":
         ax.axhline(olay["hedef"], color="#4caf50" if olay["yon"] == "yukari" else "#f44336", linestyle=":", linewidth=1)
