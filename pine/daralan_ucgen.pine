@@ -1,43 +1,67 @@
 //@version=6
 // ══════════════════════════════════════════════════════════════════════
-//  DARALAN ÜÇGEN AVCISI
+//  DARALAN ÜÇGEN AVCISI  (v2: çizgi kalitesi)
 //  Simetrik, yükselen ve alçalan daralan üçgenleri bulur, çizer;
 //  fiyat kırılım çizgisine yaklaşınca ve kırılım olunca sinyal/alarm verir.
 //  Telegram tarayıcısı (ucgen_tarayici.py) ile birebir aynı kurallar.
 // ──────────────────────────────────────────────────────────────────────
-//  Tepe/dip  : solunda ve sağında "pivot gücü" kadar mumdan yüksek/alçak mum
-//              (çok uzun iğneler gövde + 1 ATR'ye kırpılır)
-//  Üst çizgi : son tepelerden (en fazla 4) geçen, tepelerin ve kapanışların
-//              tolerans dışında üstüne çıkmadığı en uzun dizi. Alt çizgi aynı şekilde.
-//  Şartlar   : tepe-dip sırası iç içe, iki çizgi de formasyonun ilk yarısında başlar,
-//              çizgiler daralır (genişlik ≤ %85), yükseklik ≥ 3 ATR, süre 20–150 mum,
-//              tepe noktası (apex) geçilmemiş.
-//  Tipler    : üst alçalan + alt yükselen = SİMETRİK, üst yatay + alt yükselen = YÜKSELEN,
-//              üst alçalan + alt yatay = ALÇALAN
+//  Çizgiler : mumun görünen ucuna dayanır (fitil gövdeden 1 ATR'den uzunsa gövdeye).
+//             Her tepe/dip başlangıcı denenir; sonraki tepelere/diplere en sıkı yaslanan,
+//             hiçbir kapanışın dışarı taşmadığı çizgi alınır. Bütün çiftler denenir.
+//  Salınım  : üçgen genişliğinin %40'ı kadarlık her büyük salınım karşı çizgiye değmeli
+//             (ortada dönen büyük salınım üçgeni bozar). Her çizgide en az 2 ayrı dokunuş,
+//             tek bir bacak süresinin yarısını geçemez.
+//  Şartlar  : formasyonun başından beri kapanışlar içeride, sonra başlayan çizgi geriye
+//             uzatılınca boş alana taşmaz, çizgiler daralır (genişlik ≤ %85),
+//             yükseklik ≥ 3 ATR, süre 20–150 mum, tepe noktası (apex) geçilmemiş.
+//  Tipler   : üst alçalan + alt yükselen = SİMETRİK, üst yatay + alt yükselen = YÜKSELEN,
+//             üst alçalan + alt yatay = ALÇALAN
 //  KIRILIMA YAKIN : kapanış çizgiye 0,75 ATR'den yakın
 //  KIRILIM        : kapanış çizginin 0,3 ATR dışında. Hedef = kırılım ± başlangıç yüksekliği
 // ══════════════════════════════════════════════════════════════════════
-indicator("Daralan Üçgen Avcısı", overlay = true, max_lines_count = 120, max_labels_count = 120, max_bars_back = 500)
+indicator("Daralan Üçgen Avcısı", overlay = true, max_lines_count = 150, max_labels_count = 200, max_bars_back = 500)
 
 grpA = "Formasyon"
 pvN    = input.int(5, "Pivot gücü (sol/sağ mum)", minval = 2, maxval = 20, group = grpA)
 maxBar = input.int(150, "En uzun formasyon (mum)", minval = 30, maxval = 400, group = grpA)
 minBar = input.int(20, "En kısa formasyon (mum)", minval = 5, group = grpA)
-maxPiv = input.int(4, "Bir çizgide en fazla tepe/dip", minval = 2, maxval = 6, group = grpA)
-tolAtr = input.float(0.3, "Tolerans (× ATR)", minval = 0, step = 0.05, group = grpA)
-yatay  = input.float(0.15, "Yatay sayılma eşiği (yüksekliğe oranla)", minval = 0, step = 0.05, group = grpA)
+tolAtr = input.float(0.3, "Kapanış toleransı (× ATR)", minval = 0, step = 0.05, group = grpA)
+yatay  = input.float(0.10, "Yatay sayılma eşiği (yüksekliğe oranla)", minval = 0, step = 0.05, group = grpA)
 minYuk = input.float(3.0, "En az başlangıç yüksekliği (× ATR)", minval = 0, step = 0.5, group = grpA)
 darMax = input.float(0.85, "Daralma şartı (bugünkü genişlik / başlangıç)", minval = 0.1, maxval = 1, step = 0.05, group = grpA)
+grpC = "Çizgi kalitesi"
+fitilAtr = input.float(1.0, "Fitil sınırı (× ATR, daha uzun fitilde gövde)", minval = 0, step = 0.25, group = grpC)
+salTeta  = input.float(0.40, "Büyük salınım (genişliğin oranı)", minval = 0.1, maxval = 0.9, step = 0.05, group = grpC)
+dokAtr   = input.float(0.75, "Dokunuş: en fazla (× ATR)", minval = 0, step = 0.05, group = grpC)
+dokGen   = input.float(0.20, "Dokunuş: en fazla (genişliğin oranı)", minval = 0, step = 0.05, group = grpC)
+kabAtr   = input.float(1.5, "Çizgiden kopma sınırı (× ATR)", minval = 0, step = 0.25, group = grpC)
+kabGen   = input.float(0.30, "Çizgiden kopma sınırı (genişliğin oranı)", minval = 0, step = 0.05, group = grpC)
+minDok   = input.int(2, "Her çizgide en az dokunuş", minval = 2, maxval = 5, group = grpC)
 grpB = "Sinyal ve görünüm"
-yakAtr = input.float(0.75, "Kırılıma yakın mesafesi (× ATR)", minval = 0, step = 0.25, group = grpB)
-gecmis = input.bool(true, "Geçmiş üçgenleri ve kırılımları da çiz", group = grpB)
-showT  = input.bool(true, "Bilgi panelini göster", group = grpB)
-cUst   = input.color(color.orange, "Üst çizgi rengi", group = grpB)
-cAlt   = input.color(color.blue, "Alt çizgi rengi", group = grpB)
+yakAtr  = input.float(0.75, "Kırılıma yakın mesafesi (× ATR)", minval = 0, step = 0.25, group = grpB)
+gecmis  = input.bool(true, "Geçmiş üçgenleri ve kırılımları da çiz", group = grpB)
+showDok = input.bool(true, "Dokunuş noktalarını işaretle", group = grpB)
+showT   = input.bool(true, "Bilgi panelini göster", group = grpB)
+cUst    = input.color(color.orange, "Üst çizgi rengi", group = grpB)
+cAlt    = input.color(color.blue, "Alt çizgi rengi", group = grpB)
+
+// tarayıcıyla aynı sabitler
+MAXP     = 12      // pencere içindeki en son 12 tepe / dip
+DENGE    = 0.50    // iki çizginin başlangıç farkı ≤ sürenin yarısı
+TASMA    = 0.25    // sonra başlayan çizgi geriye uzatılınca gerçek fiyatın dışına taşma sınırı
+MAXBACAK = 0.50    // tek bir bacak ≤ sürenin yarısı
+MAXOMUR  = 450     // formasyon başından bu kadar mum sonra hâlâ kırılmadıysa bayatlamış sayılır
 
 atr14 = ta.atr(14)
 phv = ta.pivothigh(high, pvN, pvN)
 plv = ta.pivotlow(low, pvN, pvN)
+
+// ───────── mumun çizgi için ucu (Python: uclar) ─────────
+// fitil gövdeden fitilAtr × ATR'den kısaysa fitilin ucu, daha uzunsa gövdenin ucu
+float govU = math.max(open, close)
+float govA = math.min(open, close)
+float ucT = high - govU <= fitilAtr * atr14 ? high : govU
+float ucD = govA - low <= fitilAtr * atr14 ? low : govA
 
 var array<int>    phB = array.new<int>()
 var array<float>  phP = array.new<float>()
@@ -45,52 +69,185 @@ var array<int>    plB = array.new<int>()
 var array<float>  plP = array.new<float>()
 var array<string> bozuk = array.new<string>()
 
-// ───────── çizgi bulma (Python: cizgi) ─────────
-cizgiBul(array<int> bs, array<float> ps, int b, float tol, bool ust) =>
+// aday çizgiler (her yeniden kurulumda doldurulur)
+var array<int>   cuI = array.new<int>()
+var array<float> cuP = array.new<float>()
+var array<float> cuS = array.new<float>()
+var array<int>   cuF = array.new<int>()
+var array<int>   clI = array.new<int>()
+var array<float> clP = array.new<float>()
+var array<float> clS = array.new<float>()
+var array<int>   clF = array.new<int>()
+var array<float> sufH = array.new<float>()
+var array<float> sufL = array.new<float>()
+// salınım denetimi için mum uçları ve ATR (indeks = kaç mum önce), her kurulumda doldurulur
+var array<float> aT = array.new<float>()
+var array<float> aD = array.new<float>()
+var array<float> aA = array.new<float>()
+// aktif formasyonun dokunuş noktaları
+var array<int>  dkX = array.new<int>()
+var array<bool> dkU = array.new<bool>()
+
+// ───────── aday çizgiler (Python: cizgiler) ─────────
+// Her başlangıç pivotu için: sonraki pivotlara en sıkı yaslanan, kapanışların dışarı taşmadığı çizgi.
+// 'serbest': çizgi geriye uzatıldığında kapanışların ve pivotların içinde kaldığı en eski mum.
+cizgiAdaylari(array<int> bs, array<float> ps, int b, float tol, bool ust, array<int> oI, array<float> oP, array<float> oS, array<int> oF) =>
+    array.clear(oI)
+    array.clear(oP)
+    array.clear(oS)
+    array.clear(oF)
     int n = array.size(bs)
-    int nIn = 0
+    int j0 = n
     if n > 0
         for j = n - 1 to 0
-            if array.get(bs, j) >= b - maxBar
-                nIn += 1
+            int bj = array.get(bs, j)
+            if bj >= b - maxBar
+                if bj <= b - pvN
+                    j0 := j
             else
                 break
-    bool found = false
-    int ri0 = na
-    float rp0 = na
-    float rs = na
-    int rdok = 0
-    int kmax = math.min(nIn, maxPiv)
-    if kmax >= 2
-        for k = kmax to 2
-            if not found
-                int i0 = array.get(bs, n - k)
-                float p0 = array.get(ps, n - k)
-                int i1 = array.get(bs, n - 1)
-                float p1 = array.get(ps, n - 1)
-                float s = (p1 - p0) / (i1 - i0)
+    j0 := math.max(j0, n - MAXP)
+    float sg = ust ? 1.0 : -1.0
+    if n - j0 >= 2
+        for a = j0 to n - 2
+            int i0 = array.get(bs, a)
+            float p0 = array.get(ps, a)
+            float smin = na
+            for e = a + 1 to n - 1
+                float sn = ((array.get(ps, e) - sg * tol) - p0) / (array.get(bs, e) - i0)
+                smin := na(smin) ? sn : ust ? math.max(smin, sn) : math.min(smin, sn)
+            float sonS = na
+            bool bulundu = false
+            int deneme = 0
+            while not bulundu and deneme < n - 1 - a
+                // geçerli eğimler arasından sıradaki en sıkı olanı
+                float enS = na
+                for e = a + 1 to n - 1
+                    float s = (array.get(ps, e) - p0) / (array.get(bs, e) - i0)
+                    bool gec = ust ? s >= smin - 1e-12 : s <= smin + 1e-12
+                    bool yeni = na(sonS) or (ust ? s > sonS : s < sonS)
+                    if gec and yeni and (na(enS) or (ust ? s < enS : s > enS))
+                        enS := s
+                if na(enS)
+                    break
+                sonS := enS
+                deneme += 1
                 bool ok = true
-                int dok = 0
-                for j = n - k to n - 1
-                    float d = array.get(ps, j) - (p0 + s * (array.get(bs, j) - i0))
-                    if (ust and d > tol) or (not ust and d < -tol)
+                for x = i0 to b
+                    if sg * (close[b - x] - (p0 + enS * (x - i0))) > tol
                         ok := false
-                    if math.abs(d) <= tol
-                        dok += 1
-                if ok and b - 1 >= i0
-                    for x = i0 to b - 1
-                        float lv = p0 + s * (x - i0)
-                        float cx = close[b - x]
-                        if (ust and cx > lv + tol) or (not ust and cx < lv - tol)
-                            ok := false
-                            break
+                        break
                 if ok
-                    found := true
-                    ri0 := i0
-                    rp0 := p0
-                    rs := s
-                    rdok := dok
-    [found, ri0, rp0, rs, rdok, nIn]
+                    int x = i0 - 1
+                    while x >= b - maxBar and sg * (close[b - x] - (p0 + enS * (x - i0))) <= tol
+                        x -= 1
+                    int ser = x + 1
+                    if a > j0
+                        for e = j0 to a - 1
+                            int be = array.get(bs, e)
+                            if be >= ser and be < i0 and sg * (array.get(ps, e) - (p0 + enS * (be - i0))) > tol
+                                ser := math.max(ser, be + 1)
+                    array.push(oI, i0)
+                    array.push(oP, p0)
+                    array.push(oS, enS)
+                    array.push(oF, ser)
+                    bulundu := true
+    j0
+
+// ───────── salınım denetimi (Python: salinim) ─────────
+// Döndürür: [ihlal, üst dokunuş, alt dokunuş, yakın geçen]
+salinim(int x0, int b, int ui0, float up0, float us, int li0, float lp0, float ls, bool ustBas, bool kaydet) =>
+    int nn = b - x0
+    int ihlal = 0
+    int ud = 0
+    int ad = 0
+    int yakin = 0
+    if kaydet
+        array.clear(dkX)
+        array.clear(dkU)
+        array.push(dkX, x0)
+        array.push(dkU, ustBas)
+    float U0 = up0 + us * (x0 - ui0)
+    float L0 = lp0 + ls * (x0 - li0)
+    float W0 = U0 - L0
+    if W0 <= 0
+        ihlal := 99
+    bool ararDip = ustBas
+    float aday = na
+    int ax = 0
+    int sonDonus = 0
+    int enBacak = 0
+    if ihlal == 0
+        if ustBas
+            ud := 1
+            aday := (array.get(aD, b - x0) - L0) / W0
+        else
+            ad := 1
+            aday := (array.get(aT, b - x0) - L0) / W0
+        for r = 1 to nn
+            int x = x0 + r
+            float Lx = lp0 + ls * (x - li0)
+            float Wx = up0 + us * (x - ui0) - Lx
+            if Wx <= 0
+                ihlal := 99
+                break
+            float hp = (array.get(aT, b - x) - Lx) / Wx
+            float lp = (array.get(aD, b - x) - Lx) / Wx
+            if ararDip
+                if lp < aday
+                    aday := lp
+                    ax := r
+                else if hp >= aday + salTeta
+                    // dip onaylandı: dokunuş / yakın / ihlal eşikleri dip mumundaki ATR ve genişlikle
+                    int xa = x0 + ax
+                    float Wa = up0 + us * (xa - ui0) - (lp0 + ls * (xa - li0))
+                    float aa = array.get(aA, b - xa)
+                    float td = math.min(dokAtr * aa, dokGen * Wa) / Wa
+                    float tk = math.min(kabAtr * aa, kabGen * Wa) / Wa
+                    if aday <= td
+                        ad += 1
+                        if kaydet
+                            array.push(dkX, xa)
+                            array.push(dkU, false)
+                    else if aday > tk
+                        ihlal += 1
+                    else
+                        yakin += 1
+                    enBacak := math.max(enBacak, ax - sonDonus)
+                    sonDonus := ax
+                    ararDip := false
+                    aday := hp
+                    ax := r
+            else
+                if hp > aday
+                    aday := hp
+                    ax := r
+                else if lp <= aday - salTeta
+                    // tepe onaylandı
+                    int xa = x0 + ax
+                    float Wa = up0 + us * (xa - ui0) - (lp0 + ls * (xa - li0))
+                    float aa = array.get(aA, b - xa)
+                    float td = math.min(dokAtr * aa, dokGen * Wa) / Wa
+                    float tk = math.min(kabAtr * aa, kabGen * Wa) / Wa
+                    if 1 - aday <= td
+                        ud += 1
+                        if kaydet
+                            array.push(dkX, xa)
+                            array.push(dkU, true)
+                    else if 1 - aday > tk
+                        ihlal += 1
+                    else
+                        yakin += 1
+                    enBacak := math.max(enBacak, ax - sonDonus)
+                    sonDonus := ax
+                    ararDip := true
+                    aday := lp
+                    ax := r
+        if ihlal < 99
+            enBacak := math.max(enBacak, nn - sonDonus)
+            if enBacak > MAXBACAK * nn
+                ihlal += 1
+    [ihlal, ud, ad, yakin]
 
 // ───────── aktif formasyon durumu ─────────
 var bool   aktif = false
@@ -109,63 +266,136 @@ var string fKey = ""
 var bool   yakU = false
 var bool   yakL = false
 
-// pivotları kaydet (fiyat: iğne gövde + 1 ATR'ye kırpılır)
+ustDeger(int x) => uP0 + uS * (x - uI0)
+altDeger(int x) => lP0 + lS * (x - lI0)
+
+// pivotları kaydet (fiyat: mumun çizgi ucu)
 bool yeniPiv = false
 if not na(phv)
     array.push(phB, bar_index - pvN)
-    array.push(phP, math.min(high[pvN], math.max(open[pvN], close[pvN]) + atr14[pvN]))
+    array.push(phP, ucT[pvN])
     yeniPiv := true
 if not na(plv)
     array.push(plB, bar_index - pvN)
-    array.push(plP, math.max(low[pvN], math.min(open[pvN], close[pvN]) - atr14[pvN]))
+    array.push(plP, ucD[pvN])
     yeniPiv := true
-if array.size(phB) > 12
+if array.size(phB) > 40
     array.shift(phB)
     array.shift(phP)
-if array.size(plB) > 12
+if array.size(plB) > 40
     array.shift(plB)
     array.shift(plP)
 
+// bayatlamış formasyon (salınım geçmişi MAXOMUR mumla sınırlı)
+if aktif and bar_index - fx0 > MAXOMUR
+    array.push(bozuk, fKey)
+    aktif := false
+
 // yeni pivotta formasyonu yeniden kur (Python: formasyon_kur)
 if yeniPiv and atr14 > 0
+    int b = bar_index
     float tol = tolAtr * atr14
-    [okU, ai0, ap0, aSl, adok, nH] = cizgiBul(phB, phP, bar_index, tol, true)
-    [okL, bi0, bp0, bSl, bdok, nL] = cizgiBul(plB, plP, bar_index, tol, false)
-    if okU and okL and nH >= 2 and nL >= 2
-        int ui1 = array.get(phB, array.size(phB) - 1)
-        int li1 = array.get(plB, array.size(plB) - 1)
-        int x0 = math.min(ai0, bi0)
-        bool ok = ai0 < li1 and bi0 < ui1 and (math.max(ai0, bi0) - x0) <= 0.5 * (bar_index - x0)
-        float w0 = (ap0 + aSl * (x0 - ai0)) - (bp0 + bSl * (x0 - bi0))
-        float wb = (ap0 + aSl * (bar_index - ai0)) - (bp0 + bSl * (bar_index - bi0))
-        int sure = bar_index - x0
-        ok := ok and w0 > 0 and wb > 0 and wb / w0 <= darMax and w0 >= minYuk * atr14 and sure >= minBar and sure <= maxBar
-        string tip = ""
-        if ok
-            float du = ((ap0 + aSl * (bar_index - ai0)) - (ap0 + aSl * (x0 - ai0))) / w0
-            float dl = ((bp0 + bSl * (bar_index - bi0)) - (bp0 + bSl * (x0 - bi0))) / w0
-            tip := du < -yatay and dl > yatay ? "Simetrik" : math.abs(du) <= yatay and dl > yatay ? "Yükselen" : du < -yatay and math.abs(dl) <= yatay ? "Alçalan" : ""
-        string key = str.tostring(ai0) + "_" + str.tostring(bi0)
-        if ok and tip != "" and not array.includes(bozuk, key)
-            if not (aktif and fKey == key)
-                yakU := false
-                yakL := false
-            aktif := true
-            uI0 := ai0
-            uP0 := ap0
-            uS := aSl
-            lI0 := bi0
-            lP0 := bp0
-            lS := bSl
-            fx0 := x0
-            fw0 := w0
-            fApex := x0 + w0 / (w0 - wb) * sure
-            fTip := tip
-            fDok := adok + bdok
-            fKey := key
-
-ustDeger(int x) => uP0 + uS * (x - uI0)
-altDeger(int x) => lP0 + lS * (x - lI0)
+    int jh = cizgiAdaylari(phB, phP, b, tol, true, cuI, cuP, cuS, cuF)
+    int jl = cizgiAdaylari(plB, plP, b, tol, false, clI, clP, clS, clF)
+    // salınım denetiminin okuyacağı geçmiş (aktif formasyon maxBar'dan eski olabilir)
+    int lim = math.min(math.max(maxBar, aktif ? b - fx0 : 0), MAXOMUR)
+    array.clear(aT)
+    array.clear(aD)
+    array.clear(aA)
+    for k = 0 to lim
+        array.push(aT, ucT[k])
+        array.push(aD, ucD[k])
+        array.push(aA, atr14[k])
+    // sondan geriye birikimli en yüksek / en düşük (TASMA denetimi için, her kurulumda bir kez)
+    array.clear(sufH)
+    array.clear(sufL)
+    float mh = high
+    float ml = low
+    for k = 0 to maxBar
+        mh := math.max(mh, nz(high[k], mh))
+        ml := math.min(ml, nz(low[k], ml))
+        array.push(sufH, mh)
+        array.push(sufL, ml)
+    bool bulundu = false
+    float enSkor = na
+    int bU = -1
+    int bL = -1
+    float bW0 = na
+    float bApex = na
+    string bTip = ""
+    int bDok = 0
+    if array.size(phB) - jh >= 2 and array.size(plB) - jl >= 2 and array.size(cuI) > 0 and array.size(clI) > 0
+        for iu = 0 to array.size(cuI) - 1
+            for il = 0 to array.size(clI) - 1
+                int ui0 = array.get(cuI, iu)
+                float up0 = array.get(cuP, iu)
+                float us = array.get(cuS, iu)
+                int li0 = array.get(clI, il)
+                float lp0 = array.get(clP, il)
+                float ls = array.get(clS, il)
+                int x0 = math.min(ui0, li0)
+                int sure = b - x0
+                bool ok = sure >= minBar and sure <= maxBar and math.abs(ui0 - li0) <= DENGE * sure and array.get(cuF, iu) <= x0 and array.get(clF, il) <= x0
+                float w0 = na
+                float wb = na
+                string tip = ""
+                if ok
+                    w0 := (up0 + us * (x0 - ui0)) - (lp0 + ls * (x0 - li0))
+                    wb := (up0 + us * (b - ui0)) - (lp0 + ls * (b - li0))
+                    ok := w0 > 0 and wb > 0 and wb / w0 <= darMax and w0 >= minYuk * atr14
+                if ok
+                    float du = us * (b - x0) / w0
+                    float dl = ls * (b - x0) / w0
+                    tip := du < -yatay and dl > yatay ? "Simetrik" : math.abs(du) <= yatay and dl > yatay ? "Yükselen" : du < -yatay and math.abs(dl) <= yatay ? "Alçalan" : ""
+                    ok := tip != ""
+                if ok
+                    ok := (up0 + us * (x0 - ui0)) <= array.get(sufH, sure) + TASMA * w0 and (lp0 + ls * (x0 - li0)) >= array.get(sufL, sure) - TASMA * w0
+                if ok
+                    [ih, ud, ad, yk] = salinim(x0, b, ui0, up0, us, li0, lp0, ls, ui0 <= li0, false)
+                    if ih == 0 and ud >= minDok and ad >= minDok
+                        float skor = ud + ad - 0.5 * yk - 0.25 * sure / maxBar
+                        if na(enSkor) or skor > enSkor
+                            enSkor := skor
+                            bU := iu
+                            bL := il
+                            bW0 := w0
+                            bApex := x0 + w0 / (w0 - wb) * sure
+                            bTip := tip
+                            bDok := ud + ad
+                            bulundu := true
+    string key = bulundu ? str.tostring(array.get(cuI, bU)) + "_" + str.tostring(array.get(clI, bL)) : ""
+    if bulundu and not array.includes(bozuk, key)
+        if not (aktif and fKey == key)
+            yakU := false
+            yakL := false
+        aktif := true
+        uI0 := array.get(cuI, bU)
+        uP0 := array.get(cuP, bU)
+        uS := array.get(cuS, bU)
+        lI0 := array.get(clI, bL)
+        lP0 := array.get(clP, bL)
+        lS := array.get(clS, bL)
+        fx0 := math.min(uI0, lI0)
+        fw0 := bW0
+        fApex := bApex
+        fTip := bTip
+        fDok := bDok
+        fKey := key
+        [k1, k2, k3, k4] = salinim(fx0, b, uI0, uP0, uS, lI0, lP0, lS, uI0 <= lI0, true)   // dokunuş noktalarını kaydet
+    else if aktif
+        // Python: hala_gecerli — kapanışlar içeride ve salınımlar hâlâ çizgilere değiyor mu
+        bool gecerli = true
+        for x = fx0 to b
+            float cx = close[b - x]
+            if cx - ustDeger(x) > tol or altDeger(x) - cx > tol
+                gecerli := false
+                break
+        if gecerli
+            [ih2, ud2, ad2, yk2] = salinim(fx0, b, uI0, uP0, uS, lI0, lP0, lS, uI0 <= lI0, false)
+            gecerli := ih2 == 0
+        if not gecerli
+            array.push(bozuk, fKey)
+            aktif := false
 
 // ───────── olaylar ─────────
 bool evYakU = false
@@ -180,7 +410,7 @@ if aktif
     up := ustDeger(bar_index)
     lw := altDeger(bar_index)
     float tol2 = tolAtr * atr14
-    if bar_index >= fApex
+    if bar_index >= fApex or bar_index - fx0 > MAXOMUR
         array.push(bozuk, fKey)
         aktif := false
     else if close > up + tol2 or close < lw - tol2
@@ -225,6 +455,7 @@ var line lUx = na
 var line lLx = na
 var linefill lf = na
 var label lb = na
+var array<label> dkL = array.new<label>()
 if barstate.islast
     line.delete(lU)
     line.delete(lL)
@@ -232,6 +463,8 @@ if barstate.islast
     line.delete(lLx)
     linefill.delete(lf)
     label.delete(lb)
+    while array.size(dkL) > 0
+        label.delete(array.pop(dkL))
     if aktif
         int uc = int(math.min(fApex, bar_index + math.min(200, (fApex - fx0) * 0.5)))
         lU := line.new(uI0, ustDeger(uI0), bar_index, ustDeger(bar_index), color = cUst, width = 2)
@@ -241,6 +474,11 @@ if barstate.islast
         lf := linefill.new(lU, lL, color.new(color.gray, 88))
         float olg = (bar_index - fx0) / (fApex - fx0) * 100
         lb := label.new(bar_index, ustDeger(bar_index), fTip + " üçgen  |  olgunluk %" + str.tostring(olg, "#") + "  |  " + str.tostring(fDok) + " dokunuş", style = label.style_label_lower_left, color = color.new(color.gray, 70), textcolor = color.white, size = size.small)
+        if showDok and array.size(dkX) > 0
+            for k = 0 to array.size(dkX) - 1
+                int xk = array.get(dkX, k)
+                bool uk = array.get(dkU, k)
+                array.push(dkL, label.new(xk, uk ? ustDeger(xk) : altDeger(xk), "", style = label.style_circle, color = uk ? cUst : cAlt, size = size.tiny))
 
 // ───────── panel ─────────
 var table tb = table.new(position.top_right, 2, 7, bgcolor = color.new(#131722, 10), border_width = 1, border_color = color.new(color.gray, 70))
