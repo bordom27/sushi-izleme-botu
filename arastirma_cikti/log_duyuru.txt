@@ -118,12 +118,30 @@ son_haberler sayfa 69 50 2021-03-19 09:35:43.842000
 son_haberler sayfa 70 50 2021-02-24 11:24:12.760000
 son_haberler sayfa 71 50 2021-01-28 11:57:19.483000
 son_haberler sayfa 72 50 2021-01-04 10:01:14.181000
-Traceback (most recent call last):
-  File "/home/runner/work/sushi-izleme-botu/sushi-izleme-botu/duyuru/cek.py", line 57, in <module>
-    main()
-  File "/home/runner/work/sushi-izleme-botu/sushi-izleme-botu/duyuru/cek.py", line 38, in main
-    a = sayfa(kat, no)
-        ^^^^^^^^^^^^^^
-  File "/home/runner/work/sushi-izleme-botu/sushi-izleme-botu/duyuru/cek.py", line 29, in sayfa
-    raise RuntimeError(f"sayfa alinamadi {kat} {no}")
-RuntimeError: sayfa alinamadi 49 73
+son_haberler sayfa 73 50 2020-12-09 11:08:58.489000
+son_haberler sayfa 74 50 2020-10-30 13:00:01.634000
+son_haberler sayfa 75 50 2020-10-09 06:47:39.912000
+son_haberler sayfa 76 50 2020-09-10 14:30:22.092000
+son_haberler sayfa 77 50 2020-08-06 12:33:09.972000
+son_haberler sayfa 78 50 2020-06-24 07:10:42
+son_haberler sayfa 79 50 2020-04-23 13:25:04
+etkinlik sayfa 1 50 2026-10-06 01:00:00
+etkinlik sayfa 2 50 2026-09-11 10:00:01.983000
+etkinlik sayfa 3 50 2026-08-26 08:00:06.437000
+katalog sonu/hata: sayfa alinamadi 93 4
+bakim sayfa 1 50 2026-07-20 03:00:17.051000
+bakim sayfa 2 50 2026-04-08 04:00:00
+bakim sayfa 3 50 2025-11-14 09:32:54.004000
+bakim sayfa 4 50 2025-08-20 02:30:20.141000
+bakim sayfa 5 50 2025-04-30 06:00:03.758000
+bakim sayfa 6 50 2024-12-27 06:00:01.327000
+bakim sayfa 7 50 2024-07-02 03:00:07.595000
+bakim sayfa 8 50 2024-01-03 04:25:29.146000
+bakim sayfa 9 50 2023-07-07 08:00:11.031000
+bakim sayfa 10 50 2023-02-20 02:10:47
+bakim sayfa 11 50 2022-09-13 04:00:05.340000
+bakim sayfa 12 50 2022-04-14 12:21:56.201000
+bakim sayfa 13 14 2022-02-15 10:55:28.718000
+api sayfa 1 50 2021-10-27 09:46:22.955000
+api sayfa 2 31 2017-07-19 01:03:00
+toplam 7191 {'api': 81, 'bakim': 614, 'delist': 446, 'etkinlik': 150, 'son_haberler': 3950, 'yeni_listeleme': 1950} 2017-07-19 01:03:00 2026-10-30 19:33:34.443000
