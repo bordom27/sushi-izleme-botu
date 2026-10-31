@@ -5,8 +5,16 @@ Olculenler (her kirilim icin, kirilimdan sonraki en fazla 100 mum):
   hedef      : gecersizlik seviyesine (karsi cizgi) dokunmadan olculen hedefe ulasti mi
   yarim      : ayni, hedefin yarisi icin
   sahte      : kirilimdan sonraki 3 mum icinde kapanis ucgenin icine geri dondu mu
+  R (tam/yarim): kirilim mumunun kapanisindan girip stop = gecersizlik, kar al = hedef (veya yarim hedef)
+               ile islem yapilsaydi riske edilen 1 birim basina ortalama sonuc. 100 mumda ikisi de
+               olmazsa son kapanistan cikilir; bosluklu acilista acilis fiyatindan cikilir.
+  RR         : giriste odul/risk orani (medyan, tam hedef icin)
 'Kirilima yakin' sinyali: ayni ucgen sonradan sinyal verilen yonde mi kirildi.
 Ayni bar icinde hem hedef hem gecersizlik gorulurse basarisiz sayilir (temkinli).
+
+Hisselerde 4 saatlik mumlar Yahoo'nun 1 saatlik verisinden (son ~2 yil) seans icinde 4'erli
+bloklar halinde kurulur (TradingView 4s ile ayni hiza: ABD 09:30/13:30, BIST 10:00/14:00).
+'-son-donem' gruplari gunluk veriyi 4 saatlik verinin kapsadigi doneme kirpar (adil karsilastirma).
 
 Kullanim: python ucgen_istatistik.py   (GitHub Actions'ta sonuclar not olarak yazilir)
 """
@@ -21,7 +29,9 @@ import numpy as np
 import ucgen_tarayici as u
 
 ARALIK_MS = {"4h": 4 * 3600_000, "1d": 86400_000}
-BAR = {"4h": 2000, "1d": 1000}           # 4s ~ 333 gun, 1g ~ 2,7 yil
+BAR = {"4h": 2000, "1d": 1000}           # kripto: 4s ~ 333 gun, 1g ~ 2,7 yil
+R_TAVAN = 5.0                            # ortalamada tek islemin katkisi en fazla +5R (tepe noktasina yakin
+                                         # kirilimlarda stop cok dar olur, ortalamayi sisirmesin)
 
 
 def binance_uzun(sym: str, aralik: str) -> dict | None:
@@ -68,6 +78,45 @@ def yahoo_uzun(sym: str) -> dict | None:
     return None
 
 
+def yahoo_4s(sym: str) -> dict | None:
+    """Yahoo 1 saatlik veriyi (son ~2 yil) her seans icinde 4'erli bloklara birlestirir."""
+    simdi = int(time.time())
+    for host in ("query1", "query2"):
+        j = u._get(f"https://{host}.finance.yahoo.com/v8/finance/chart/{sym}",
+                   dict(period1=simdi - 729 * 86400, period2=simdi, interval="1h"), deneme=2)
+        if not j:
+            continue
+        try:
+            x = j["chart"]["result"][0]
+            q = x["indicators"]["quote"][0]
+            ofs = int(x["meta"].get("gmtoffset") or 0)
+            bugun = (simdi + ofs) // 86400
+            blok: list = []          # [gun, blok_no, t, o, h, l, c, v]
+            gun0, sira = None, 0
+            for t, o, h, l, c, v in zip(x["timestamp"], q["open"], q["high"], q["low"], q["close"], q["volume"]):
+                if None in (o, h, l, c):
+                    continue
+                gun = (t + ofs) // 86400
+                if gun >= bugun:
+                    continue
+                if gun != gun0:
+                    gun0, sira = gun, 0
+                no = sira // 4
+                sira += 1
+                if blok and blok[-1][0] == gun and blok[-1][1] == no:
+                    B = blok[-1]
+                    B[4], B[5], B[6], B[7] = max(B[4], h), min(B[5], l), c, B[7] + (v or 0)
+                else:
+                    blok.append([gun, no, t, o, h, l, c, v or 0])
+            if len(blok) < 300 or simdi - blok[-1][2] > 8 * 86400:
+                return None
+            a = np.array([B[2:] for B in blok], dtype=float)
+            return dict(t=a[:, 0], o=a[:, 1], h=a[:, 2], l=a[:, 3], c=a[:, 4], v=a[:, 5])
+        except Exception:  # noqa: BLE001
+            continue
+    return None
+
+
 def kirilim_sonucu(d: dict, o: dict):
     N = len(d["c"])
     f, b, yukari = o["f"], o["b"], o["yon"] == "yukari"
@@ -89,7 +138,39 @@ def kirilim_sonucu(d: dict, o: dict):
         if hedef_ok is None and ((yukari and uc >= o["hedef"]) or (not yukari and uc <= o["hedef"])):
             hedef_ok = True
             break
-    return hedef_ok, yarim_ok, sahte
+    return hedef_ok, yarim_ok, sahte, islem_r(d, o, 1.0), islem_r(d, o, 0.5), rr_oran(d, o)
+
+
+def islem_r(d: dict, o: dict, kat: float):
+    """Kirilim kapanisindan giris; stop = gecersizlik, kar al = seviye +/- kat*yukseklik. Sonuc R cinsinden."""
+    N, b = len(d["c"]), o["b"]
+    s = 1 if o["yon"] == "yukari" else -1
+    giris = d["c"][b]
+    tp = o["seviye"] + s * kat * o["f"]["w0"]
+    risk, odul = s * (giris - o["gecersiz"]), s * (tp - giris)
+    if risk <= 0 or odul <= 0:        # kar al seviyesi giriste zaten gecilmis: islem yok
+        return None
+    son = min(N - 1, b + 100)
+    for i in range(b + 1, son + 1):
+        acilis = d["o"][i]
+        aleyhe = d["l"][i] if s == 1 else d["h"][i]
+        lehe = d["h"][i] if s == 1 else d["l"][i]
+        if s * (acilis - o["gecersiz"]) <= 0:      # stopun otesinde acildi
+            return s * (acilis - giris) / risk
+        if s * (aleyhe - o["gecersiz"]) <= 0:
+            return -1.0
+        if s * (acilis - tp) >= 0:                 # hedefin otesinde acildi
+            return s * (acilis - giris) / risk
+        if s * (lehe - tp) >= 0:
+            return odul / risk
+    return s * (d["c"][son] - giris) / risk
+
+
+def rr_oran(d: dict, o: dict):
+    s = 1 if o["yon"] == "yukari" else -1
+    giris = d["c"][o["b"]]
+    risk, odul = s * (giris - o["gecersiz"]), s * (o["hedef"] - giris)
+    return odul / risk if risk > 0 and odul > 0 else None
 
 
 def yuzde(a: list) -> str:
@@ -97,21 +178,44 @@ def yuzde(a: list) -> str:
     return f"%{100 * sum(a) / len(a):.0f}" if a else "-"
 
 
+def ort_r(a: list) -> str:
+    a = [min(x, R_TAVAN) for x in a if x is not None]
+    return f"{np.mean(a):+.2f}R" if a else "-"
+
+
+def medyan(a: list) -> str:
+    a = [x for x in a if x is not None]
+    return f"{np.median(a):.1f}" if a else "-"
+
+
+def ozet(k: list) -> str:
+    return (f"n={len(k)} hedef {yuzde([x[0] for x in k])} yarim {yuzde([x[1] for x in k])} "
+            f"sahte {yuzde([x[2] for x in k])} Rtam {ort_r([x[3] for x in k])} "
+            f"Ryarim {ort_r([x[4] for x in k])} RR {medyan([x[5] for x in k])}")
+
+
 def main():
     isler = []
     kripto = u.kripto_listesi()
-    isler += [("KRIPTO", s, "4h") for s in kripto] + [("KRIPTO", s, "1d") for s in kripto]
-    isler += [("BIST", s, "1d") for s in dict.fromkeys(u.BIST)] + [("ABD", s, "1d") for s in u.ABD]
+    bist, abd = list(dict.fromkeys(u.BIST)), list(u.ABD)
+    for a in ("4h", "1d"):
+        isler += [("KRIPTO", s, a) for s in kripto] + [("BIST", s, a) for s in bist] + [("ABD", s, a) for s in abd]
 
     def al(is_):
         p, s, a = is_
-        return binance_uzun(s, a) if p == "KRIPTO" else yahoo_uzun(s + ".IS" if p == "BIST" else s)
+        if p == "KRIPTO":
+            return binance_uzun(s, a)
+        ys = s + ".IS" if p == "BIST" else s
+        return yahoo_uzun(ys) if a == "1d" else yahoo_4s(ys)
 
     t0 = time.time()
     with ThreadPoolExecutor(max_workers=6) as ex:
         veriler = list(ex.map(al, isler))
-    # 4 saatlik verinin basladigi tarih: gunluk kriptoyu ayni doneme de kirpmak icin
-    bas4 = min((d["t"][0] for (p, s, a), d in zip(isler, veriler) if d is not None and a == "4h"), default=0)
+    # her piyasada 4 saatlik verinin basladigi tarih: gunlugu ayni doneme de kirpmak icin
+    bas4: dict = {}
+    for (p, s, a), d in zip(isler, veriler):
+        if d is not None and a == "4h":
+            bas4[p] = min(bas4.get(p, d["t"][0]), d["t"][0])
 
     gruplar: dict = {}
     for (p, s, a), d in zip(isler, veriler):
@@ -124,8 +228,8 @@ def main():
             if o["tur"] == "kirilim":
                 anahtarlar[o["f"]["key"]] = o["yon"]
         hedefler = [(f"{p}-{a}", None)]
-        if p == "KRIPTO" and a == "1d":
-            hedefler.append((f"{p}-{a}-son-donem", bas4))
+        if a == "1d" and p in bas4:
+            hedefler.append((f"{p}-{a}-son-donem", bas4[p]))
         for ad, bas in hedefler:
             g = gruplar.setdefault(ad, dict(grafik=0, kir={"yukari": [], "asagi": []}, yakin=[]))
             g["grafik"] += 1
@@ -142,13 +246,9 @@ def main():
     satirlar = [f"sure {time.time() - t0:.0f} sn"]
     for ad in sorted(gruplar):
         g = gruplar[ad]
-        tum = g["kir"]["yukari"] + g["kir"]["asagi"]
-        parca = [f"{ad} ({g['grafik']} grafik): KIRILIM n={len(tum)} hedef {yuzde([x[0] for x in tum])} "
-                 f"yarim {yuzde([x[1] for x in tum])} sahte {yuzde([x[2] for x in tum])}"]
+        parca = [f"{ad} ({g['grafik']} grafik): KIRILIM {ozet(g['kir']['yukari'] + g['kir']['asagi'])}"]
         for yon in ("yukari", "asagi"):
-            k = g["kir"][yon]
-            parca.append(f"{yon} n={len(k)} hedef {yuzde([x[0] for x in k])} yarim {yuzde([x[1] for x in k])} "
-                         f"sahte {yuzde([x[2] for x in k])}")
+            parca.append(f"{yon} {ozet(g['kir'][yon])}")
         y = g["yakin"]
         cozulen = [x for x in y if x is not None]
         parca.append(f"YAKIN n={len(y)} kirilan {len(cozulen)} dogru-yon {yuzde(cozulen)}")
