@@ -1,0 +1,73 @@
+name: Daralan Ucgen Tarayici
+
+# 4 saatlik mumlar 00/04/08/12/16/20 UTC'de kapanir; tarayici 7 dakika sonra calisir.
+# 00 UTC calistirmasi (TR 03:07) ayrica gunluk grafikleri (kripto, BIST, ABD) tarar ve ozet gonderir.
+on:
+  schedule:
+    - cron: "7 0,4,8,12,16,20 * * *"
+  workflow_dispatch:
+    inputs:
+      ozet:
+        description: "true: gunluk grafikleri de tara ve ozeti hemen gonder"
+        type: boolean
+        default: false
+      onizleme:
+        description: "true: Telegram yok, grafikleri ucgen-onizleme dalina kaydet"
+        type: boolean
+        default: false
+
+permissions:
+  contents: write
+
+concurrency:
+  group: ucgen-tarayici
+  cancel-in-progress: false
+
+jobs:
+  tara:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - name: Repoyu al
+        uses: actions/checkout@v4
+
+      - name: Python kur
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+          cache-dependency-path: requirements.txt
+
+      - name: Kutuphaneleri kur
+        run: pip install -r requirements.txt matplotlib
+
+      - name: Onizleme
+        if: ${{ github.event.inputs.onizleme == 'true' }}
+        run: |
+          python ucgen_tarayici.py --onizleme
+          git config user.name "izleme-bot"
+          git config user.email "izleme-bot@users.noreply.github.com"
+          mkdir -p /tmp/oniz && cp onizleme/*.png /tmp/oniz/ 2>/dev/null || true
+          git checkout -q --orphan ucgen-onizleme
+          git rm -rq --cached . && rm -rf ./*
+          cp /tmp/oniz/*.png . 2>/dev/null || true
+          git add *.png && git commit -qm "onizleme [skip ci]" && git push -qf origin ucgen-onizleme
+
+      - name: Tara + Telegram
+        if: ${{ github.event.inputs.onizleme != 'true' }}
+        env:
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+          OZET: ${{ github.event.inputs.ozet }}
+        run: |
+          if [ "$OZET" = "true" ]; then python ucgen_tarayici.py --ozet; else python ucgen_tarayici.py; fi
+          git config user.name "izleme-bot"
+          git config user.email "izleme-bot@users.noreply.github.com"
+          git add ucgen_state.json ucgen_izleme_listesi.txt 2>/dev/null || true
+          if ! git diff --quiet --cached; then
+            git commit -qm "ucgen durumu [skip ci]"
+            for i in 1 2 3; do
+              git pull -q --rebase -X theirs origin "${GITHUB_REF_NAME}" && git push -q && break
+              sleep 5
+            done
+          fi
