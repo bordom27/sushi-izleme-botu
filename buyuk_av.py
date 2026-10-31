@@ -482,18 +482,25 @@ def send_telegram(mesaj: str):
 
 
 # ───────────────────────── Ana ─────────────────────────
+def notu(satir: str):
+    """Ekrana yaz; GitHub Actions'ta ayrica ozet notu olarak goster."""
+    print(satir)
+    if os.environ.get("GITHUB_ACTIONS") == "true":
+        print("::notice::" + satir.replace("%", "%25").replace("\n", "%0A"))
+
+
 def backtest(D: dict, trades: list):
     ana = [x for x in trades if not x["open"]] + [x for x in trades if x["open"]]
     sumR = sum(x["R"] for x in ana)
-    print(f"varlik: {sum(1 for t in GRUP if (t + '$' if GRUP[t] == 'BIST' else t) in D)}  islem: {len(ana)}  toplam R: {sumR:.1f}")
+    notu(f"varlik: {sum(1 for t in GRUP if (t + '$' if GRUP[t] == 'BIST' else t) in D)}  islem: {len(ana)}  toplam R: {sumR:.1f}")
     for t in ("AAPL", "NVDA", "THYAO.IS$", "ASELS.IS$", "BTC-USD", "ETH-USD", "GLD", "SPY", "XOM"):
         z = [x for x in ana if x["t"] == t]
-        print(f"  {t}: {len(z)}/{sum(x['R'] for x in z):.2f}")
+        notu(f"  {t}: {len(z)}/{sum(x['R'] for x in z):.2f}")
     for bas, bit in (("2005-01-01", None), ("2005-01-01", "2020-01-01"), ("2020-01-01", None)):
         r = portfoy(trades, bas, bit)
-        print(f"portfoy {bas}..{bit or 'bugun'}: CAGR %{r['cagr'] * 100:.1f}  maxDD %{r['mdd'] * 100:.1f}  "
+        notu(f"portfoy {bas}..{bit or 'bugun'}: CAGR %{r['cagr'] * 100:.1f}  maxDD %{r['mdd'] * 100:.1f}  "
               f"alinan {len(r['alinan'])}  carpan x{r['eq']:.2f}")
-    print("arastirma referansi: islem 4939, toplam R 3849.3, 2005+ CAGR %19.0 / DD %24.8 / alinan 640")
+    notu("arastirma referansi: islem 4939, toplam R 3849.3, 2005+ CAGR %19.0 / DD %24.8 / alinan 640")
 
 
 def main():
@@ -504,7 +511,7 @@ def main():
     t0 = time.time()
     D = veri_cek(son_gun_haric=not a.backtest)
     eksik = [t for t in list(GRUP) + EK if (t + "$" if t.endswith(".IS") else t) not in D and t not in D]
-    print(f"veri: {len(D)} seri, eksik {len(eksik)}: {' '.join(eksik[:20])}  ({time.time() - t0:.0f} sn)")
+    notu(f"veri: {len(D)} seri, eksik {len(eksik)}: {' '.join(eksik[:20])}  ({time.time() - t0:.0f} sn)")
     trades, bekleyenler = hepsini_sim(D)
     if a.backtest:
         backtest(D, trades)
