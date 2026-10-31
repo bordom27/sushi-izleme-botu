@@ -14,7 +14,7 @@ Ucgen tanimi (TradingView gostergesi "Daralan Ucgen Avcisi" ile birebir ayni):
     ust alcalan + alt yatay = ALCALAN. (Kama ve yatay kanal sayilmaz.)
 Olaylar:
   * KIRILIMA YAKIN: kapanis, ust (ya da alt) cizgiye 0.75 ATR'den yakin.
-  * KIRILIM: kapanis cizginin disinda. Hedef = kirilim seviyesi +/- baslangic yuksekligi (olculen hareket).
+  * KIRILIM: kapanis cizginin 0.3 ATR disinda (tolerans: cizgiye yapisik kapanislar kirilim sayilmaz). Hedef = kirilim seviyesi +/- baslangic yuksekligi (olculen hareket).
 
 Kullanim:
   python ucgen_tarayici.py              # zamanlanmis calisma (4 saatte bir; 00 UTC'de gunlukler + ozet)
@@ -39,7 +39,7 @@ AYAR = dict(PIVOT=5, MAX_BAR=150, MIN_BAR=20, MAX_PIVOT=4, TOL_ATR=0.3, YATAY=0.
             MIN_YUKSEKLIK_ATR=3.0, DARALMA=0.85, YAKIN_ATR=0.75)
 DURUM_DOSYASI = "ucgen_state.json"
 LISTE_DOSYASI = "ucgen_izleme_listesi.txt"
-MIN_KRIPTO_HACIM = 3e6        # 24 saatlik islem hacmi (USDT)
+MIN_KRIPTO_HACIM = 1e6        # 24 saatlik islem hacmi (USDT); botun coin listesi de her zaman eklenir
 
 UA = {"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) "
                     "Chrome/126.0 Safari/537.36", "Accept": "application/json"}
@@ -90,7 +90,12 @@ def kripto_listesi() -> list[str]:
             continue
         if float(x.get("quoteVolume") or 0) >= MIN_KRIPTO_HACIM and int(x.get("count") or 0) > 0:
             secilen.append(s)
-    return secilen
+    try:
+        from coin_listesi import COINLER
+        secilen += COINLER
+    except Exception:  # noqa: BLE001
+        pass
+    return list(dict.fromkeys(secilen))
 
 
 def binance(sym: str, aralik: str, adet: int = 400) -> dict | None:
@@ -267,7 +272,8 @@ def tara(d: dict):
             bozuk.add(aktif["key"]); aktif = None
             continue
         up, lw, c = deger(aktif, b, "u"), deger(aktif, b, "l"), d["c"][b]
-        if c > up or c < lw:
+        tol = AYAR["TOL_ATR"] * A[b]
+        if c > up + tol or c < lw - tol:            # anlamli kirilim: cizginin 0.3 ATR disinda kapanis
             yon = "yukari" if c > up else "asagi"
             seviye = up if c > up else lw
             olaylar.append(dict(tur="kirilim", yon=yon, b=b, f=aktif, seviye=seviye,
