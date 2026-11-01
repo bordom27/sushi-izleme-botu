@@ -43,6 +43,7 @@ grpB = "Sinyal ve görünüm"
 yakAtr  = input.float(0.75, "Kırılıma / boyuna yakın mesafesi (× ATR)", minval = 0, step = 0.25, group = grpB)
 gecmis  = input.bool(true, "Geçmiş formasyonları ve kırılımları da çiz", group = grpB)
 showDok = input.bool(true, "Üçgen dokunuş noktalarını işaretle", group = grpB)
+showHes = input.bool(true, "Üçgen içinde hesapları göster (H, kırılım eşikleri, hedefler, risk/ödül)", group = grpB)
 showT   = input.bool(true, "Bilgi panelini göster", group = grpB)
 cUst    = input.color(color.orange, "Üçgen üst çizgi", group = grpB)
 cAlt    = input.color(color.blue, "Üçgen alt çizgi", group = grpB)
@@ -934,7 +935,7 @@ if aktif
         if gecmis
             line.new(uI0, ustDeger(uI0), b, up, color = color.new(cUst, 30), width = 1)
             line.new(lI0, altDeger(lI0), b, lw, color = color.new(cAlt, 30), width = 1)
-            label.new(b, evKirU ? high : low, (evKirU ? "▲ YUKARI KIRILIM\n" : "▼ AŞAĞI KIRILIM\n") + fTip + " üçgen\nSeviye: " + str.tostring(kirSev, format.mintick) + "\nHedef: " + str.tostring(kirHedef, format.mintick), style = evKirU ? label.style_label_down : label.style_label_up, color = evKirU ? color.new(color.green, 10) : color.new(color.red, 10), textcolor = color.white, size = size.small)
+            label.new(b, evKirU ? high : low, (evKirU ? "▲ YUKARI KIRILIM\n" : "▼ AŞAĞI KIRILIM\n") + fTip + " üçgen\nKırılan seviye: " + str.tostring(kirSev, format.mintick) + "\nH (taban yüksekliği): " + str.tostring(fw0, format.mintick) + "\nHedef = seviye " + (evKirU ? "+" : "−") + " H = " + str.tostring(kirHedef, format.mintick), style = evKirU ? label.style_label_down : label.style_label_up, color = evKirU ? color.new(color.green, 10) : color.new(color.red, 10), textcolor = color.white, size = size.small)
     else
         if up - close <= yakAtr * atr14 and not yakU
             yakU := true
@@ -971,6 +972,10 @@ if barstate.isconfirmed
         alert(syminfo.ticker + " " + desenAd(onayTur) + " ONAYLANDI. Boyun " + str.tostring(onaySev, format.mintick) + ", hedef " + str.tostring(onayHedef, format.mintick), alert.freq_once_per_bar_close)
 
 // ───────── aktif formasyonları çiz (son mumda) ─────────
+yuzdeS(float x, float c) =>
+    float p = (x / c - 1) * 100
+    (p >= 0 ? "+" : "") + str.tostring(p, "#.#") + "%"
+
 var array<line>  ciz = array.new<line>()
 var array<label> etk = array.new<label>()
 var linefill lf = na
@@ -991,7 +996,35 @@ if barstate.islast
         array.push(ciz, line.new(b, altDeger(b), uc, altDeger(uc), color = cAlt, width = 1, style = line.style_dashed))
         lf := linefill.new(lU, lL, color.new(color.gray, 88))
         float olg = (b - fx0) / (fApex - fx0) * 100
-        array.push(etk, label.new(b, ustDeger(b), fTip + " üçgen  |  olgunluk %" + str.tostring(olg, "#") + "  |  " + str.tostring(fDok) + " dokunuş", style = label.style_label_lower_left, color = color.new(color.gray, 70), textcolor = color.white, size = size.small))
+        if showHes
+            // H = üçgenin başlangıç yüksekliği (ölçülen hareket). Hedef = kırılan çizgi ± H.
+            float upN = ustDeger(b)
+            float lwN = altDeger(b)
+            float tolN = tolAtr * atr14
+            float hU = upN + fw0
+            float hA = lwN - fw0
+            float rr = math.max(0.0, (fw0 - tolN) / (upN - lwN + tolN))   // giriş kırılım eşiğinde, stop karşı çizgide
+            float yA0 = altDeger(fx0)
+            float yU0 = ustDeger(fx0)
+            array.push(ciz, line.new(fx0, yA0, fx0, yU0, color = color.new(color.silver, 20), width = 1, style = line.style_dotted))
+            array.push(etk, label.new(fx0, (yA0 + yU0) / 2, "H", style = label.style_label_right, color = color.new(color.black, 100), textcolor = color.silver, size = size.normal))
+            array.push(ciz, line.new(b, hU, uc, hU, color = color.green, width = 1, style = line.style_dotted))
+            array.push(etk, label.new(uc, hU, "hedef ↑ " + str.tostring(hU, format.mintick) + " (" + yuzdeS(hU, close) + ")", style = label.style_label_left, color = color.new(color.black, 100), textcolor = color.green, size = size.small))
+            if hA > 0
+                array.push(ciz, line.new(b, hA, uc, hA, color = color.red, width = 1, style = line.style_dotted))
+                array.push(etk, label.new(uc, hA, "hedef ↓ " + str.tostring(hA, format.mintick) + " (" + yuzdeS(hA, close) + ")", style = label.style_label_left, color = color.new(color.black, 100), textcolor = color.red, size = size.small))
+            string hes = fTip + " üçgen · " + str.tostring(fDok) + " dokunuş · olgunluk %" + str.tostring(olg, "#")
+            hes += "\nH (taban yüksekliği) = " + str.tostring(fw0, format.mintick)
+            hes += "\nÜst " + str.tostring(upN, format.mintick) + " (" + yuzdeS(upN, close) + ") · kırılım: kapanış > " + str.tostring(upN + tolN, format.mintick)
+            hes += "\nAlt " + str.tostring(lwN, format.mintick) + " (" + yuzdeS(lwN, close) + ") · kırılım: kapanış < " + str.tostring(lwN - tolN, format.mintick)
+            hes += "\nHedef ↑ = " + str.tostring(upN, format.mintick) + " + H = " + str.tostring(hU, format.mintick) + " (" + yuzdeS(hU, close) + ")"
+            hes += "\nHedef ↓ = " + str.tostring(lwN, format.mintick) + " − H = " + (hA > 0 ? str.tostring(hA, format.mintick) + " (" + yuzdeS(hA, close) + ")" : "sıfırın altında (geçersiz)")
+            hes += "\nRisk/ödül 1 : " + str.tostring(rr, "#.#") + " (stop: karşı çizgi) · apex'e " + str.tostring(fApex - b, "#") + " mum"
+            // kutu üçgenin içinde, geniş tarafta: tabandaki H çizgisinin hemen sağında
+            int xk = fx0 + math.max(1, int((b - fx0) * 0.04))
+            array.push(etk, label.new(xk, (ustDeger(xk) + altDeger(xk)) / 2, hes, style = label.style_label_left, color = color.new(#131722, 25), textcolor = #e0e3eb, size = size.small, textalign = text.align_left))
+        else
+            array.push(etk, label.new(b, ustDeger(b), fTip + " üçgen  |  olgunluk %" + str.tostring(olg, "#") + "  |  " + str.tostring(fDok) + " dokunuş", style = label.style_label_lower_left, color = color.new(color.gray, 70), textcolor = color.white, size = size.small))
         if showDok and array.size(dkX) > 0
             for k = 0 to array.size(dkX) - 1
                 int xk = array.get(dkX, k)

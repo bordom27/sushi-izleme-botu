@@ -741,7 +741,7 @@ def _mumlar(ax, d: dict, bas: int, bit: int, plt):
         ax.add_patch(plt.Rectangle((i - 0.32, min(o, c)), 0.64, max(abs(c - o), (h - l) * 0.01), color=renk))
 
 
-def _bitir_grafik(fig, ax, plt) -> bytes:
+def _bitir_grafik(fig, ax, plt, son_adim=None) -> bytes:
     ax.tick_params(colors="#b2b5be", labelsize=8)
     ax.set_xticks([])
     for s in ax.spines.values():
@@ -749,9 +749,131 @@ def _bitir_grafik(fig, ax, plt) -> bytes:
     ax.grid(color="#2a2e39", linewidth=0.5)
     buf = io.BytesIO()
     fig.tight_layout()
+    if son_adim:                                                # olculer kesinlesince (yerlesimden sonra) calisir
+        son_adim()
     fig.savefig(buf, format="png", facecolor=fig.get_facecolor())
     plt.close(fig)
     return buf.getvalue()
+
+
+def _ucgen_hesap(d: dict, f: dict, son: int) -> dict:
+    """Ucgenin o mumdaki hesaplari: cizgi degerleri, kirilim esigi, olculen hareket hedefleri, olgunluk."""
+    A = atr(d["h"], d["l"], d["c"])
+    up, lw, w0 = deger(f, son, "u"), deger(f, son, "l"), f["w0"]
+    return dict(tol=AYAR["TOL_ATR"] * A[son], up=up, lw=lw, gen=up - lw, w0=w0, c=d["c"][son],
+                h_u=up + w0, h_a=lw - w0, olg=(son - f["x0"]) / (f["apex"] - f["x0"]) * 100,
+                kalan=max(0.0, f["apex"] - son))
+
+
+def _hedef_yazi(x: float, c: float) -> str:
+    return f"{fiyat(x)} ({_yuzde(x, c)})" if x > 0 else "sıfırın altında (geçersiz)"
+
+
+def _hesap_metni(f: dict, h: dict, olay: dict | None) -> str:
+    """Ucgenin icine yazilan hesaplar. H = ucgenin baslangic yuksekligi (olculen hareket)."""
+    c = h["c"]
+    if olay and olay["tur"] == "kirilim":
+        yuk = olay["yon"] == "yukari"
+        esik = olay["seviye"] + (h["tol"] if yuk else -h["tol"])
+        risk, odul = abs(c - olay["gecersiz"]), (olay["hedef"] - c) * (1 if yuk else -1)
+        rr = f"1 : {odul / risk:.1f}" if risk > 0 and odul > 0 else "—"
+        return "\n".join([
+            f"{f['tip']} üçgen · {f['dok']} dokunuş",
+            f"H (taban yüksekliği) = {fiyat(h['w0'])}",
+            f"Kırılan {'üst' if yuk else 'alt'} çizgi {fiyat(olay['seviye'])} · eşik {fiyat(esik)}",
+            f"Kırılım kapanışı {fiyat(c)}",
+            f"Hedef = {fiyat(olay['seviye'])} {'+' if yuk else '−'} H = {_hedef_yazi(olay['hedef'], c)}",
+            f"Geçersizlik ({'alt' if yuk else 'üst'} çizgi) {fiyat(olay['gecersiz'])} ({_yuzde(olay['gecersiz'], c)})",
+            f"Risk/ödül {rr} (giriş kapanış, stop geçersizlik)"])
+    rr = max(0.0, (h["w0"] - h["tol"]) / (h["gen"] + h["tol"]))
+    return "\n".join([
+        f"{f['tip']} üçgen · {f['dok']} dokunuş · olgunluk %{h['olg']:.0f}",
+        f"H (taban yüksekliği) = {fiyat(h['w0'])}",
+        f"Üst {fiyat(h['up'])} ({_yuzde(h['up'], c)}) · kırılım: kapanış > {fiyat(h['up'] + h['tol'])}",
+        f"Alt {fiyat(h['lw'])} ({_yuzde(h['lw'], c)}) · kırılım: kapanış < {fiyat(h['lw'] - h['tol'])}",
+        f"Hedef ↑ = {fiyat(h['up'])} + H = {_hedef_yazi(h['h_u'], c)}",
+        f"Hedef ↓ = {fiyat(h['lw'])} − H = {_hedef_yazi(h['h_a'], c)}",
+        f"Risk/ödül 1 : {rr:.1f} (stop: karşı çizgi) · apex'e {h['kalan']:.0f} mum"])
+
+
+def _kutu_yerlestir(fig, ax, metin: str, d: dict, f: dict, bas: int, bit: int, son: int, uc: float):
+    """Hesap kutusunu ucgenin icine, mumlari en az ortecegi yere koyar (son mumlar ve diger yazilar ozellikle
+    korunur). Ucgen kutuya dar gelirse ucgenin hemen disindaki en bos yere koyar."""
+    r = fig.canvas.get_renderer()
+    fs, pad_k = 6.6, 0.5
+    t = ax.text(0, 0, metin, ha="left", va="bottom", fontsize=fs, color="#e0e3eb", zorder=8, linespacing=1.4,
+                bbox=dict(boxstyle=f"round,pad={pad_k}", facecolor="#131722", edgecolor="#787b86", alpha=0.72))
+    t.set_in_layout(False)
+    ab = ax.get_window_extent(renderer=r)
+    (xa, xb), (ya, yb) = ax.get_xlim(), ax.get_ylim()
+    sx, sy = ab.width / (xb - xa), ab.height / (yb - ya)            # piksel / mum, piksel / fiyat
+    tb = t.get_window_extent(renderer=r)
+    pad = pad_k * fs * fig.dpi / 72
+    bw, bh = (tb.width + 2 * pad) / sx, (tb.height + 2 * pad) / sy  # kutu: mum ve fiyat cinsinden
+    mx, my = 6 / sx, 6 / sy                                         # cizgilerden birakilan pay
+    ters = ax.transData.inverted()
+    engel = []                                                      # ortulmemesi gerekenler: yazilar, cizgiler
+    for a in ax.texts:
+        if a is not t:
+            e = a.get_window_extent(renderer=r)
+            (x1, y1), (x2, y2) = ters.transform([[e.x0, e.y0], [e.x1, e.y1]])
+            engel.append((x1, x2, y1, y2))
+    for ln in ax.lines:
+        if ln.get_gid() != "ucgen":
+            xs, ys = np.asarray(ln.get_xdata(), float), np.asarray(ln.get_ydata(), float)
+            engel.append((xs.min() - mx, xs.max() + mx, ys.min() - my, ys.max() + my))
+    idx = np.arange(bas, bit + 1)
+    H, L = d["h"][bas:bit + 1], d["l"][bas:bit + 1]
+    agirlik = np.where(idx > son - 3, 10.0, np.where(idx > son - 10, 3.0, 1.0))   # son mumlar (fiyatin bugunku
+    #                                                               yeri, kirilim bolgesi) ozellikle ortulmesin
+
+    def maliyet(x1, y1):
+        x2, y2 = x1 + bw, y1 + bh
+        yatay = np.clip(np.minimum(idx + 0.4, x2) - np.maximum(idx - 0.4, x1), 0, None) / 0.8
+        dikey = np.clip(np.minimum(H, y2) - np.maximum(L, y1), 0, None) / bh
+        m = float((yatay * dikey * agirlik).sum()) / max(bw, 1.0)
+        for ex1, ex2, ey1, ey2 in engel:
+            if ex1 < x2 and x1 < ex2 and ey1 < y2 and y1 < ey2:
+                m += 2.0
+        return m
+
+    x0 = f["x0"]
+    en_iyi = None
+    x1 = x0 + max(0.8, 1.5 * mx)                                    # tabandaki H cizgisinin hemen sagi
+    while x1 + bw <= min(uc, xb - 0.3):                             # 1) ucgenin icinde
+        x2 = x1 + bw
+        alt = max(deger(f, x1, "l"), deger(f, x2, "l")) + my
+        ust = min(deger(f, x1, "u"), deger(f, x2, "u")) - my
+        if ust - alt >= bh:
+            for y1 in np.linspace(alt, ust - bh, 12):
+                m = maliyet(x1, y1) + 0.03 * (x1 - x0) / max(1.0, son - x0)
+                if en_iyi is None or m < en_iyi[0]:
+                    en_iyi = (m, x1, y1)
+        x1 += max(0.5, bw / 12)
+    if en_iyi is None or en_iyi[0] > 0.2:                           # 2) sigmadiysa / cok mum ortuyorsa: hemen disi
+        for x1 in np.arange(xa + 0.3, xb - bw - 0.3, max(0.5, bw / 8)):
+            x2 = x1 + bw
+            ka, kb = max(x1, x0), min(x2, uc)
+            for y1 in np.linspace(ya + my, yb - my - bh, 18):
+                y2 = y1 + bh
+                if ka < kb:                                         # ucgenle ayni dikey seritte: ustunde ya da altinda
+                    ust_c = max(deger(f, ka, "u"), deger(f, kb, "u"))
+                    alt_c = min(deger(f, ka, "l"), deger(f, kb, "l"))
+                    if y1 >= ust_c + my:
+                        bosluk = (y1 - ust_c) / (yb - ya)
+                    elif y2 <= alt_c - my:
+                        bosluk = (alt_c - y2) / (yb - ya)
+                    else:
+                        continue
+                else:
+                    bosluk = (ka - kb) / (xb - xa)
+                m = 0.45 + maliyet(x1, y1) + 0.5 * bosluk
+                if en_iyi is None or m < en_iyi[0]:
+                    en_iyi = (m, x1, y1)
+    if en_iyi is None:
+        en_iyi = (0, xa + 0.5, yb - bh - my)
+    _, x1, y1 = en_iyi
+    t.set_position((x1 + pad / sx, y1 + pad / sy))
 
 
 def grafik(sym_ad: str, aralik_ad: str, d: dict, f: dict, olay: dict | None = None) -> bytes:
@@ -761,24 +883,36 @@ def grafik(sym_ad: str, aralik_ad: str, d: dict, f: dict, olay: dict | None = No
     N = len(d["c"])
     son = olay["b"] if olay else N - 1
     kirildi = bool(olay and olay["tur"] == "kirilim")
+    ucgen = f.get("desen", "ucgen") == "ucgen"
     bit = min(N - 1, son + (8 if kirildi else 0))
-    fig, ax = plt.subplots(figsize=(9, 4.6), dpi=110)
+    fig, ax = plt.subplots(figsize=(9, 4.6), dpi=140)
     fig.patch.set_facecolor("#131722"); ax.set_facecolor("#131722")
     t = datetime.fromtimestamp(d["t"][son], tz=timezone.utc).strftime("%d.%m.%Y %H:%M")
-    if f.get("desen", "ucgen") == "ucgen":
+    son_adim = None
+    if ucgen:
         bas = max(0, f["x0"] - 25)
         _mumlar(ax, d, bas, bit, plt)
         # kesik uzanti tepe noktasina (apex) kadar gitmez: iki cizgi tek noktada bulusmasin
         uc = son + min(0.6 * (f["apex"] - son), 0.35 * (f["apex"] - f["x0"]))
         for taraf, renk in (("u", "#ff9800"), ("l", "#2196f3")):
             x0 = f[taraf]["i0"]
-            ax.plot([x0, son], [deger(f, x0, taraf), deger(f, son, taraf)], color=renk, linewidth=1.8)
-            ax.plot([son, uc], [deger(f, son, taraf), deger(f, uc, taraf)], color=renk, linewidth=1.2, linestyle="--")
+            ax.plot([x0, son], [deger(f, x0, taraf), deger(f, son, taraf)], color=renk, linewidth=1.8, gid="ucgen")
+            ax.plot([son, uc], [deger(f, son, taraf), deger(f, uc, taraf)], color=renk, linewidth=1.2, linestyle="--",
+                    gid="ucgen")
         for x, taraf in f.get("noktalar", []):                 # cizgiye dokunan salinimlar
             if bas <= x <= son:
                 ax.plot(x, deger(f, x, taraf), "o", color="#ff9800" if taraf == "u" else "#2196f3", markersize=4.5,
-                        markeredgecolor="white", markeredgewidth=0.6, zorder=5)
+                        markeredgecolor="white", markeredgewidth=0.6, zorder=5, gid="ucgen")
+        # H: ucgenin baslangic yuksekligi (olculen hareket) - tabanda noktali dikey cizgi
+        x0 = f["x0"]
+        y_a, y_u = deger(f, x0, "l"), deger(f, x0, "u")
+        ax.plot([x0, x0], [y_a, y_u], color="#d1d4dc", linewidth=1.0, linestyle=":", zorder=4)
+        ax.annotate("H", (x0, (y_a + y_u) / 2), xytext=(-4, 0), textcoords="offset points", ha="right", va="center",
+                    color="#d1d4dc", fontsize=8, fontweight="bold")
+        h = _ucgen_hesap(d, f, son)
         sag = max(bit, uc)
+        metin = _hesap_metni(f, h, olay if kirildi else None)
+        son_adim = lambda: _kutu_yerlestir(fig, ax, metin, d, f, bas, bit, son, uc)  # noqa: E731
         baslik = f"{f['tip']} daralan üçgen"
         yukari = olay["yon"] == "yukari" if kirildi else True
     else:
@@ -815,19 +949,43 @@ def grafik(sym_ad: str, aralik_ad: str, d: dict, f: dict, olay: dict | None = No
     if kirildi:
         renk_h = "#4caf50" if olay["yon"] == "yukari" else "#f44336"
         ax.plot([olay["b"], sag], [olay["hedef"], olay["hedef"]], color=renk_h, linestyle=":", linewidth=1.2)
-        ax.annotate("hedef", (sag, olay["hedef"]), xytext=(-28, 3), textcoords="offset points", color=renk_h, fontsize=8)
+        ax.annotate(f"hedef {fiyat(olay['hedef'])}", (sag, olay["hedef"]), xytext=(-4, 3), textcoords="offset points",
+                    ha="right", color=renk_h, fontsize=8)
+        if ucgen:                                               # olculen hareket: kirilim mumundan H kadar
+            ax.plot([olay["b"], olay["b"]], [olay["seviye"], olay["hedef"]], color=renk_h, linestyle=":", linewidth=1.0)
+            ax.annotate("H", (olay["b"], (olay["seviye"] + olay["hedef"]) / 2), xytext=(-4, 0), textcoords="offset points",
+                        ha="right", va="center", color=renk_h, fontsize=8, fontweight="bold")
         ax.annotate("KIRILIM", (olay["b"], d["c"][olay["b"]]), color="white", fontsize=9,
                     xytext=(5, 12 if yukari else -16), textcoords="offset points")
     ax.set_xlim(bas - 1, sag + 2)
     # dikey eksen formasyona odaklansin: soldaki bosluktaki asiri mumlar formasyonu ezmesin
-    x_f = f["x0"] if f.get("desen", "ucgen") == "ucgen" else f["noktalar"][0][0]
+    x_f = f["x0"] if ucgen else f["noktalar"][0][0]
     alt_y, ust_y = d["l"][x_f:bit + 1].min(), d["h"][x_f:bit + 1].max()
+    if ucgen:                                                   # taban (H) tamamen gorunsun
+        alt_y, ust_y = min(alt_y, deger(f, f["x0"], "l")), max(ust_y, deger(f, f["x0"], "u"))
     if kirildi:
         alt_y, ust_y = min(alt_y, olay["hedef"]), max(ust_y, olay["hedef"])
+    disari = []
+    if ucgen and not kirildi:                                   # iki yonun hedefi: olcege sigiyorsa cizgi, sigmiyorsa kenarda
+        R, a0, u0 = ust_y - alt_y, alt_y, ust_y
+        for seviye, renk, yuk in ((h["h_u"], "#4caf50", True), (h["h_a"], "#f44336", False)):
+            if seviye > 0 and a0 - 0.25 * R <= seviye <= u0 + 0.25 * R:
+                ax.plot([son, sag], [seviye, seviye], color=renk, linestyle=":", linewidth=1.1)
+                ax.annotate(f"hedef {'↑' if yuk else '↓'} {fiyat(seviye)} ({_yuzde(seviye, h['c'])})", (sag, seviye),
+                            xytext=(-4, 3 if yuk else -10), textcoords="offset points", ha="right", color=renk,
+                            fontsize=7.5)
+                alt_y, ust_y = min(alt_y, seviye), max(ust_y, seviye)
+            elif seviye > 0:
+                disari.append((seviye, renk, yuk))
     pay = 0.06 * (ust_y - alt_y)
     ax.set_ylim(alt_y - pay, ust_y + pay)
+    for seviye, renk, yuk in disari:
+        ax.annotate(f"{'▲' if yuk else '▼'} hedef {fiyat(seviye)} ({_yuzde(seviye, h['c'])}) grafiğin "
+                    f"{'üstünde' if yuk else 'altında'}", (1, 1 if yuk else 0), xycoords="axes fraction",
+                    xytext=(-6, -5 if yuk else 5), textcoords="offset points", ha="right", va="top" if yuk else "bottom",
+                    color=renk, fontsize=7.5)
     ax.set_title(f"{sym_ad}  {aralik_ad}  —  {baslik}  ({t} UTC)", color="white", fontsize=10)
-    return _bitir_grafik(fig, ax, plt)
+    return _bitir_grafik(fig, ax, plt, son_adim)
 
 
 # ───────────────────────── Telegram ─────────────────────────
