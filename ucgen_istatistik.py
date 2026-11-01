@@ -16,9 +16,11 @@ Hisselerde 4 saatlik mumlar Yahoo'nun 1 saatlik verisinden (son ~2 yil) seans ic
 bloklar halinde kurulur (TradingView 4s ile ayni hiza: ABD 09:30/13:30, BIST 10:00/14:00).
 '-son-donem' gruplari gunluk veriyi 4 saatlik verinin kapsadigi doneme kirpar (adil karsilastirma).
 
-Kullanim: ARALIKLAR=4h,1d,3d,1w python ucgen_istatistik.py   (GitHub Actions'ta sonuclar not olarak yazilir)
+Kullanim: ARALIKLAR=4h,8h,1dL,3d,1w python ucgen_istatistik.py   (GitHub Actions'ta sonuclar not olarak yazilir)
 3 gunluk (3d) ve haftalik (1w): kripto Binance'in kendi mumlari; hisselerde haftalik Yahoo, 3 gunluk ise
 gunluk verinin 3'er islem gunluk bloklari (son 20 yil).
+8 saatlik (8h) yalniz kripto: hisse seansi 8 saatten kisa oldugu icin hissede 8 saatlik mum gunluk mumla aynidir.
+Kriptoda 4 ve 8 saatlik ayni donemi (son ~1000 gun) kapsar.
 """
 from __future__ import annotations
 
@@ -30,9 +32,11 @@ import numpy as np
 
 import ucgen_tarayici as u
 
-ARALIK_MS = {"4h": 4 * 3600_000, "1d": 86400_000, "3d": 3 * 86400_000, "1w": 7 * 86400_000, "1dL": 86400_000}
-BAR = {"4h": 2000, "1d": 1000, "3d": 1300, "1w": 700, "1dL": 4000}   # kripto: 4s ~ 333 gun, 1g ~ 2,7 yil
-MIN_VERI = {"4h": 300, "1d": 300, "3d": 120, "1w": 120, "1dL": 300}  # bundan kisa gecmisli grafik alinmaz
+ARALIK_MS = {"4h": 4 * 3600_000, "8h": 8 * 3600_000, "1d": 86400_000, "3d": 3 * 86400_000, "1w": 7 * 86400_000,
+             "1dL": 86400_000}
+BAR = {"4h": 6000, "8h": 3000, "1d": 1000, "3d": 1300, "1w": 700, "1dL": 4000}   # kripto: 4s/8s ~ 1000 gun
+MIN_VERI = {"4h": 300, "8h": 300, "1d": 300, "3d": 120, "1w": 120, "1dL": 300}  # bundan kisa gecmis alinmaz
+SIRA = ["ucgen", "ikili_dip", "ikili_tepe", "ters_obo", "obo"]
 BINANCE_AD = {"1dL": "1d"}               # 1dL: uzun gecmisli gunluk (hisse 20 yil, kripto tum gecmis)
 YAHOO_YIL = 20                           # hisselerde 3 gunluk / haftalik icin gecmis (yil)
 R_TAVAN = 5.0                            # ortalamada tek islemin katkisi en fazla +5R (tepe noktasina yakin
@@ -230,7 +234,9 @@ def main():
     bist, abd = list(dict.fromkeys(u.BIST)), list(u.ABD)
     araliklar = [a.strip() for a in (os.environ.get("ARALIKLAR") or "4h,1d").split(",") if a.strip() in ARALIK_MS]
     for a in araliklar:
-        isler += [("KRIPTO", s, a) for s in kripto] + [("BIST", s, a) for s in bist] + [("ABD", s, a) for s in abd]
+        isler += [("KRIPTO", s, a) for s in kripto]
+        if a != "8h":                                # hissede 8 saatlik mum = gunluk mum (seans <= 8 saat)
+            isler += [("BIST", s, a) for s in bist] + [("ABD", s, a) for s in abd]
 
     def al(is_):
         p, s, a = is_
@@ -261,12 +267,9 @@ def main():
         for o in olaylar:
             if o["tur"] == "bitti" or o["b"] > N - 30:
                 continue
-            if o["desen"] == "ucgen":
-                hedefler = [(f"{p}-{a}", None)]
-                if a == "1d" and p in bas4:
-                    hedefler.append((f"{p}-{a}-son-donem", bas4[p]))
-            else:
-                hedefler = [(f"{o['desen']}-{a}", None)]
+            hedefler = [((o["desen"], a, "HEPSI"), None), ((o["desen"], a, p), None)]
+            if o["desen"] == "ucgen" and a == "1d" and p in bas4:
+                hedefler.append((("ucgen", "1d-son-donem", p), bas4[p]))
             for ad, bas in hedefler:
                 if bas is not None and d["t"][o["b"]] < bas:
                     continue
@@ -282,22 +285,30 @@ def main():
                     else:                         # boyun yakini sonrasi formasyon onaylandi mi (bozulana karsi)
                         g["yakin"].append(None if sonuc is None else sonuc != "bitti")
 
-    satirlar = [f"sure {time.time() - t0:.0f} sn"]
-    for ad in sorted(gruplar):
+    def satir(ad) -> str:
         g = gruplar[ad]
-        parca = [f"{ad} ({len(g['grafik'])} grafik): KIRILIM {ozet(g['kir']['yukari'] + g['kir']['asagi'])}"]
-        for yon in ("yukari", "asagi"):
-            if g["kir"][yon]:
-                parca.append(f"{yon} {ozet(g['kir'][yon])}")
+        desen, a, p = ad
+        parca = [f"{desen} {a} {p} ({len(g['grafik'])} grafik): KIRILIM {ozet(g['kir']['yukari'] + g['kir']['asagi'])}"]
+        if desen == "ucgen":                         # donus formasyonlarinda yon zaten belli
+            for yon in ("yukari", "asagi"):
+                if g["kir"][yon]:
+                    parca.append(f"{yon} {ozet(g['kir'][yon])}")
         y = g["yakin"]
         cozulen = [x for x in y if x is not None]
-        parca.append(f"YAKIN n={len(y)} sonuclanan {len(cozulen)} {'dogru-yon' if '-' in ad and ad.split('-')[0] in ('KRIPTO', 'BIST', 'ABD') else 'onaylanan'} {yuzde(cozulen)}")
-        satirlar.append(" | ".join(parca))
+        parca.append(f"YAKIN n={len(y)} sonuclanan {len(cozulen)} "
+                     f"{'dogru-yon' if desen == 'ucgen' else 'onaylanan'} {yuzde(cozulen)}")
+        return " | ".join(parca)
+
+    sira = {d: i for i, d in enumerate(SIRA)}
+    anahtar = sorted(gruplar, key=lambda k: (sira.get(k[0], 99), araliklar.index(k[1]) if k[1] in araliklar else 99,
+                                             k[2] != "HEPSI", k[2]))
+    satirlar = [f"sure {time.time() - t0:.0f} sn | araliklar {','.join(araliklar)}"] + [satir(k) for k in anahtar]
     for s in satirlar:
         print(s)
-    if os.environ.get("GITHUB_ACTIONS") == "true":          # not basina sinir var: 4'erli parcalar
-        for i in range(0, len(satirlar), 4):
-            print("::notice::" + " %0A ".join(x.replace("%", "%25") for x in satirlar[i:i + 4]))
+    if os.environ.get("GITHUB_ACTIONS") == "true":          # not sayisi sinirli: yalniz tum piyasalar, 3'erli
+        ozetler = [satirlar[0]] + [satir(k) for k in anahtar if k[2] == "HEPSI"]
+        for i in range(0, len(ozetler), 3):
+            print("::notice::" + " %0A ".join(x.replace("%", "%25") for x in ozetler[i:i + 3]))
 
 
 if __name__ == "__main__":

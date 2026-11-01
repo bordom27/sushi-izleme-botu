@@ -20,7 +20,7 @@ on:
         type: boolean
         default: false
       araliklar:
-        description: "istatistik icin zaman dilimleri (4h,1d,3d,1w)"
+        description: "istatistik icin zaman dilimleri (4h,8h,1d,1dL,3d,1w)"
         type: string
         default: "4h,1d"
 
@@ -53,7 +53,15 @@ jobs:
         if: ${{ github.event.inputs.istatistik == 'true' }}
         env:
           ARALIKLAR: ${{ github.event.inputs.araliklar }}
-        run: python ucgen_istatistik.py
+        run: |
+          python ucgen_istatistik.py | tee /tmp/ham.txt
+          grep -v '^::notice::' /tmp/ham.txt > /tmp/sonuc.txt || true
+          git config user.name "izleme-bot"
+          git config user.email "izleme-bot@users.noreply.github.com"
+          git checkout -q --orphan ucgen-istatistik
+          git rm -rq --cached . && rm -rf ./*
+          cp /tmp/sonuc.txt sonuc.txt
+          git add sonuc.txt && git commit -qm "istatistik [skip ci]" && git push -qf origin ucgen-istatistik
 
       - name: Onizleme
         if: ${{ github.event.inputs.onizleme == 'true' }}
