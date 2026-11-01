@@ -50,7 +50,32 @@ AYAR = dict(PIVOT=5, MAX_BAR=150, MIN_BAR=20, MAX_PIVOT=12, TOL_ATR=0.3, YATAY=0
             DENGE=0.50,         # iki cizginin baslangici arasindaki fark <= surenin yarisi
             TASMA=0.25,         # sonra baslayan cizgi geriye uzatildiginda gercek fiyatin disina tasma siniri
             MAX_BACAK=0.50,     # tek bir bacak <= surenin yarisi
-            MAX_OMUR=450)       # baslangicindan bu kadar mum sonra hala kirilmadiysa bayat (TradingView gecmis siniri)
+            MAX_OMUR=450,       # baslangicindan bu kadar mum sonra hala kirilmadiysa bayat (TradingView gecmis siniri)
+            TEK_MUM=0.5, TEK_MUM_ORT=2.0)  # bir bacagi tek mum yapamaz: govde > max(bacagin yarisi, 2 x ortalama mum) ise ret
+DONUS = dict(                  # ikili tepe/dip ve omuz-bas-omuz (normal / ters)
+    MIN_YUK_ATR=3.0,           # formasyon yuksekligi >= 3 ATR
+    ESIT=0.15, ESIT_ATR=1.0,   # ikili: iki tepe farki <= min(yuksekligin %15'i, 1 ATR)
+    MIN_ARA=10, MAX_ARA=100,   # ikili: iki tepe arasi mum
+    DENGE=0.25,                # ikili: kisa bacak / uzun bacak (sure) >= 0.25
+    ONCEKI=1.0,                # ikili: formasyona giriste hareket >= 1 x yukseklik, oncesinde daha yuksek tepe yok
+    ONCEKI_OBO=0.6,            # OBO: sol omza giriste hareket >= 0.6 x bas yuksekligi
+    TEMIZ=0.40,                # bacaklarda yukseklige gore %40'lik ters salinim olmamali (temiz M / W / OBO)
+    DOLULUK=0.20,              # iki tepe arasindaki (OBO'da bas bolgesindeki) kapanislarin en az %20'si formasyonun
+                               # ic yarisinda olmali: boyun / bas tek bir igneyle olusmasin
+    FITIL_ATR=1.0,             # gercek fitil formasyon seviyesini en fazla 1 ATR asabilir
+    BAS_FARK=0.20,             # OBO: bas, yuksek omuzdan >= yuksekligin %20'si fazla
+    OMUZ_MIN=0.40,             # OBO: her omuz boyun cizgisinden >= %40 yukseklikte
+    OMUZ_SEVIYE=0.30,          # OBO: iki omuz arasi fiyat farki <= %30 yukseklik
+    BOYUN_EGIM=0.25,           # OBO: iki boyun dibi farki <= %25 yukseklik
+    ZAMAN_ORAN=0.40,           # OBO: kisa yan / uzun yan (sure) >= 0.4
+    MIN_GEN=15, MAX_GEN=150,   # OBO: sol omuzdan sag omuza mum
+    ONAY=0.20, ONAY_ATR=1.0,   # son noktadan sonra fiyat max(1 ATR, %20 yukseklik) uzaklasinca formasyon gosterilir
+    OMUR=0.75,                 # son noktadan sonra genisligin %75'i (en az 15 mum) icinde kirilmazsa biter
+    YAKIN=2,                   # iki nokta 'ayni yer': ayni tip ve <= 2 mum
+)
+DESEN_AD = {"ucgen": "Daralan üçgen", "ikili_tepe": "İkili tepe", "ikili_dip": "İkili dip",
+            "obo": "Omuz-baş-omuz", "ters_obo": "Ters omuz-baş-omuz"}
+ONCELIK = {"obo": 3, "ters_obo": 3, "ucgen": 2, "ikili_tepe": 1, "ikili_dip": 1}
 DURUM_DOSYASI = "ucgen_state.json"
 LISTE_DOSYASI = "ucgen_izleme_listesi.txt"
 MIN_KRIPTO_HACIM = 1e6        # 24 saatlik islem hacmi (USDT); botun coin listesi de her zaman eklenir
@@ -193,6 +218,16 @@ def uclar(d: dict, A: np.ndarray, idx):
     return np.where(h - gu <= k * a, h, gu), np.where(ga - l <= k * a, l, ga)
 
 
+def tek_mum(d: dict, A: np.ndarray, xa: int, xb: int, genlik: float) -> bool:
+    """xa'dan xb'ye giden bacagi tek bir mum mu yapmis (igne / haber mumu)? Govdesi hem bacagin yarisindan
+    hem bacaktaki ortalama mumun 2 katindan buyuk mum varsa True: boyle bir 'formasyon' uydurmadir."""
+    if xb <= xa:
+        return False
+    govde = np.abs(d["c"][xa + 1:xb + 1] - d["o"][xa + 1:xb + 1])
+    aralik = (d["h"][xa + 1:xb + 1] - d["l"][xa + 1:xb + 1]).mean()   # bacaktaki ortalama mum boyu
+    return bool(govde.max() > max(AYAR["TEK_MUM"] * abs(genlik), AYAR["TEK_MUM_ORT"] * aralik))
+
+
 def cizgiler(idx: np.ndarray, P: np.ndarray, c: np.ndarray, b: int, tol: float, ust: bool, xmin: int) -> list:
     """Her baslangic pivotu icin o pivottan ve bir sonraki pivottan gecen, sonraki hicbir pivotun ve
     kapanisin tolerans disina tasmadigi EN SIKI cizgi (fiyata en cok yaslanan). 'serbest': cizgi geriye
@@ -248,6 +283,7 @@ def salinim(d: dict, A: np.ndarray, x0: int, b: int, u: dict, lo: dict, ust_bas:
     ihlal = ud = ad = yakin = 0
     noktalar = [(x0, "u" if ust_bas else "l")]
     donus = [0]
+    p_onc = hu[0] if ust_bas else lu[0]                       # bir onceki salinim noktasinin fiyati
     if ust_bas:
         ud, arar_dip, aday, ax = 1, True, lp[0], 0
     else:
@@ -263,7 +299,9 @@ def salinim(d: dict, A: np.ndarray, x0: int, b: int, u: dict, lo: dict, ust_bas:
                     ihlal += 1
                 else:
                     yakin += 1
-                donus.append(ax)
+                if tek_mum(d, A, x0 + donus[-1], x0 + ax, lu[ax] - p_onc):
+                    ihlal += 1
+                donus.append(ax); p_onc = lu[ax]
                 arar_dip, aday, ax = False, hp[x], x
         else:
             if hp[x] > aday:
@@ -275,7 +313,9 @@ def salinim(d: dict, A: np.ndarray, x0: int, b: int, u: dict, lo: dict, ust_bas:
                     ihlal += 1
                 else:
                     yakin += 1
-                donus.append(ax)
+                if tek_mum(d, A, x0 + donus[-1], x0 + ax, hu[ax] - p_onc):
+                    ihlal += 1
+                donus.append(ax); p_onc = hu[ax]
                 arar_dip, aday, ax = True, lp[x], x
     if np.diff(donus + [len(xs) - 1]).max() > AYAR["MAX_BACAK"] * (len(xs) - 1):
         ihlal += 1
@@ -301,6 +341,10 @@ def degerlendir(d: dict, A: np.ndarray, b: int, u: dict, lo: dict):
     if not (AYAR["MIN_BAR"] <= sure <= M):
         return None
     if abs(u["i0"] - lo["i0"]) > AYAR["DENGE"] * sure or u["serbest"] > x0 or lo["serbest"] > x0:
+        return None
+    if abs(u["i0"] - lo["i0"]) < AYAR["PIVOT"]:      # iki cizgi ayni yerden (ayni mumdan) cikmasin
+        return None
+    if abs(u["i0"] - lo["i0"]) < 3:                     # iki cizgi ayni yerden cikmasin
         return None
     U = lambda x: u["p0"] + u["s"] * (x - u["i0"])     # noqa: E731
     L = lambda x: lo["p0"] + lo["s"] * (x - lo["i0"])  # noqa: E731
@@ -362,95 +406,340 @@ def deger(f, x, taraf):
     return s["p0"] + s["s"] * (x - s["i0"])
 
 
+# ───────────────────────── Donus formasyonlari ─────────────────────────
+# Tum hesaplar 'tepe' yonunde yapilir; dip formasyonlarinda fiyatlar ters cevrilir (−fiyat).
+def _bacak_temiz(ust: np.ndarray, alt: np.ndarray, xa: int, xb: int, asagi: bool, teta: float) -> bool:
+    """xa'dan xb'ye giden bacakta teta kadar ters salinim yoksa True (uclar haric mumlar)."""
+    if asagi:                       # tepeden dibe: o ana kadarki en dusuk dipten teta kadar yukselis olmamali
+        m = np.inf
+        for x in range(xa + 1, xb):
+            if ust[x] > m + teta:
+                return False
+            m = min(m, alt[x])
+    else:                           # dipten tepeye: o ana kadarki en yuksek tepeden teta kadar dusus olmamali
+        m = -np.inf
+        for x in range(xa + 1, xb):
+            if alt[x] < m - teta:
+                return False
+            m = max(m, ust[x])
+    return True
+
+
+def _hazirla(d: dict, uT: np.ndarray, uD: np.ndarray, ters: bool):
+    """Tepe yonunde calismak icin: ust = tepe uclari, alt = dip uclari, gercek = gercek fitil ucu, kap = kapanis."""
+    if ters:
+        return -uD, -uT, -d["l"], -d["c"]
+    return uT, uD, d["h"], d["c"]
+
+
+def _once_ok(ust, alt, x1: int, v1: float, yuk: float, K: int, Ab: float, oran: float) -> bool:
+    """Formasyona guclu bir hareketle gelinmis mi: son K mumda daha yuksek tepe yok, yukselis >= oran x yukseklik."""
+    a = max(0, x1 - K)
+    if x1 - a < 5 or ust[a:x1].max() > v1 + 0.25 * Ab:
+        return False
+    return v1 - alt[a:x1 + 1].min() >= oran * yuk
+
+
+def ikili(d: dict, A: np.ndarray, b: int, pivots: list, uT, uD, ters: bool):
+    """Son pivot ikinci tepe (ikili tepe) / ikinci dip (ikili dip) mi. pivots: ayni tipteki pivot mumlari."""
+    if len(pivots) < 2:
+        return None
+    k = DONUS
+    ust, alt, gercek, kap = _hazirla(d, uT, uD, ters)
+    Ab = A[b]
+    x2 = pivots[-1]
+    v2 = ust[x2]
+    for x1 in reversed(pivots[:-1]):
+        ara = x2 - x1
+        if ara < k["MIN_ARA"]:
+            continue
+        if ara > k["MAX_ARA"]:
+            break
+        v1 = ust[x1]
+        xt = x1 + int(np.argmin(alt[x1:x2 + 1]))
+        vt = alt[xt]
+        yuk = max(v1, v2) - vt
+        if yuk < k["MIN_YUK_ATR"] * Ab or abs(v1 - v2) > min(k["ESIT"] * yuk, k["ESIT_ATR"] * Ab):
+            continue
+        tepe = max(v1, v2)
+        if ust[x1 + 1:x2].max(initial=-np.inf) > tepe + 0.25 * Ab:          # arada daha yuksek tepe
+            continue
+        if gercek[x1:x2 + 1].max() > tepe + k["FITIL_ATR"] * Ab:              # uzun igne seviyeyi delmis
+            continue
+        if min(xt - x1, x2 - xt) < k["DENGE"] * max(xt - x1, x2 - xt):       # igne + yavas sonme degil
+            continue
+        if np.mean(kap[x1 + 1:x2] <= tepe - 0.5 * yuk) < k["DOLULUK"]:       # cukur tek igneyle olusmamis
+            continue
+        teta = k["TEMIZ"] * yuk
+        if not (_bacak_temiz(ust, alt, x1, xt, True, teta) and _bacak_temiz(ust, alt, xt, x2, False, teta)):
+            continue
+        if tek_mum(d, A, x1, xt, v1 - vt) or tek_mum(d, A, xt, x2, v2 - vt):   # bacak tek mumla olusmamis
+            continue
+        if not _once_ok(ust, alt, x1, v1, yuk, max(ara, 20), Ab, k["ONCEKI"]):
+            continue
+        sg = -1.0 if ters else 1.0
+        tT, tD = ("D", "T") if ters else ("T", "D")
+        return dict(tur="ikili_dip" if ters else "ikili_tepe", ters=ters, yuk=yuk, genislik=ara, son_x=x2,
+                    noktalar=[(x1, sg * v1, "1"), (xt, sg * vt, "boyun"), (x2, sg * v2, "2")],
+                    capa=[(x1, tT), (xt, tD), (x2, tT)], boyun=dict(i0=xt, p0=sg * vt, s=0.0),
+                    gecersiz=sg * tepe, yon="yukari" if ters else "asagi",
+                    key=("ikili", ters, int(d["t"][x1]), int(d["t"][x2])))
+    return None
+
+
+def obo(d: dict, A: np.ndarray, b: int, pivots: list, uT, uD, ters: bool):
+    """Son pivot sag omuz mu (omuz-bas-omuz; ters ise ters OBO)."""
+    if len(pivots) < 3:
+        return None
+    k = DONUS
+    ust, alt, gercek, kap = _hazirla(d, uT, uD, ters)
+    Ab = A[b]
+    xr = pivots[-1]
+    vr = ust[xr]
+    for ih in range(len(pivots) - 2, 0, -1):
+        xh = pivots[ih]
+        if xr - xh > k["MAX_GEN"]:
+            break
+        vh = ust[xh]
+        if vh <= vr:
+            continue
+        for il in range(ih - 1, -1, -1):
+            xl = pivots[il]
+            gen = xr - xl
+            if gen > k["MAX_GEN"]:
+                break
+            if gen < k["MIN_GEN"]:
+                continue
+            vl = ust[xl]
+            if vl >= vh:
+                break                                    # bastan yuksek tepe: daha geriye bakma
+            x1 = xl + int(np.argmin(alt[xl:xh + 1])); v1 = alt[x1]
+            x2 = xh + int(np.argmin(alt[xh:xr + 1])); v2 = alt[x2]
+            if not (xl < x1 < xh < x2 < xr):
+                continue
+            s = (v2 - v1) / (x2 - x1)
+            NL = lambda x: v1 + s * (x - x1)             # noqa: E731
+            yuk = vh - NL(xh)
+            if yuk < k["MIN_YUK_ATR"] * Ab:
+                continue
+            hL, hR = vl - NL(xl), vr - NL(xr)
+            if vh - max(vl, vr) < max(k["BAS_FARK"] * yuk, 0.5 * Ab):
+                continue
+            if min(hL, hR) < k["OMUZ_MIN"] * yuk or abs(vl - vr) > k["OMUZ_SEVIYE"] * yuk:
+                continue
+            if abs(v2 - v1) > k["BOYUN_EGIM"] * yuk:
+                continue
+            dl, dr = xh - xl, xr - xh
+            if min(dl, dr) / max(dl, dr) < k["ZAMAN_ORAN"]:
+                continue
+            xs = np.arange(x1 + 1, x2)
+            if np.mean(kap[x1 + 1:x2] - NL(xs) >= 0.5 * yuk) < k["DOLULUK"]:   # bas tek igne degil
+                continue
+            if ust[xl + 1:xr].max(initial=-np.inf) > vh + 0.25 * Ab or gercek[xl:xr + 1].max() > vh + k["FITIL_ATR"] * Ab:
+                continue
+            to, tb = k["TEMIZ"] * min(hL, hR), k["TEMIZ"] * yuk      # omuz bacaklari / bas bacaklari
+            if not (_bacak_temiz(ust, alt, xl, x1, True, to) and _bacak_temiz(ust, alt, x1, xh, False, tb)
+                    and _bacak_temiz(ust, alt, xh, x2, True, tb) and _bacak_temiz(ust, alt, x2, xr, False, to)):
+                continue
+            if not _once_ok(ust, alt, xl, vl, yuk, max(gen // 2, 20), Ab, k["ONCEKI_OBO"]):
+                continue
+            if (tek_mum(d, A, xl, x1, vl - v1) or tek_mum(d, A, x1, xh, vh - v1) or tek_mum(d, A, xh, x2, vh - v2)
+                    or tek_mum(d, A, x2, xr, vr - v2)):                    # hicbir bacak tek mumla olusmamis
+                continue
+            sg = -1.0 if ters else 1.0
+            tT, tD = ("D", "T") if ters else ("T", "D")
+            return dict(tur="ters_obo" if ters else "obo", ters=ters, yuk=yuk, genislik=gen, son_x=xr,
+                        noktalar=[(xl, sg * vl, "sol omuz"), (x1, sg * v1, "boyun"), (xh, sg * vh, "baş"),
+                                  (x2, sg * v2, "boyun"), (xr, sg * vr, "sağ omuz")],
+                        capa=[(xl, tT), (x1, tD), (xh, tT), (x2, tD), (xr, tT)],
+                        boyun=dict(i0=x1, p0=sg * v1, s=sg * s), gecersiz=sg * vr, yon="yukari" if ters else "asagi",
+                        key=("obo", ters, int(d["t"][xl]), int(d["t"][xr])))
+    return None
+
+
+def boyun(f: dict, x) -> float:
+    s = f["boyun"]
+    return s["p0"] + s["s"] * (x - s["i0"])
+
+
+def cakisir(c1: list, c2: list) -> bool:
+    """Iki formasyon ayni yerden cizgi cikariyor mu: ayni tip nokta (tepe/dip) ve <= YAKIN mum."""
+    for x1, t1 in c1:
+        for x2, t2 in c2:
+            if t1 == t2 and abs(x1 - x2) <= DONUS["YAKIN"]:
+                return True
+    return False
+
+
+def ucgen_capa(f: dict) -> list:
+    """Aktif ucgenin cizgilerinin gectigi tum noktalar (baslangic + dokunuslar)."""
+    return [(x, "T" if t == "u" else "D") for x, t in f["noktalar"]]
+
+
+def ucgen_bas(f: dict) -> list:
+    """Ucgen cizgilerinin ciktigi noktalar; ucgen bitince bir daha hicbir formasyon buradan baslayamaz."""
+    return [(f["u"]["i0"], "T"), (f["l"]["i0"], "D")]
+
+
+def desen_adi(f: dict) -> str:
+    return f"{f['tip']} daralan üçgen" if f.get("desen") == "ucgen" else DESEN_AD[f["tur"]]
+
+
 def tara(d: dict):
-    """Tum gecmisi mum mum isler: aktif formasyon (son mumda) + olay listesi."""
+    """Tum gecmisi mum mum isler. Donus: (aktif formasyonlar listesi, olaylar).
+    Ucgen ve donus formasyonu (OBO / ikili) ayni anda olabilir ama ayni noktayi paylasamaz.
+    Oncelik: omuz-bas-omuz > ucgen > ikili tepe/dip; cakisan dusuk oncelikli aktif formasyon devrilir.
+    Biten formasyonun cizgi baslangiclari bir daha hicbir formasyonda kullanilmaz (ayni yerden iki cizgi cikmaz)."""
     n = AYAR["PIVOT"]
     N = len(d["c"])
     A = atr(d["h"], d["l"], d["c"])
     ph, pl = pivotlar(d["h"], d["l"], n)
+    uT, uD = uclar(d, A, np.arange(N))
     ph_list, pl_list = [], []
-    aktif, olaylar, bozuk = None, [], set()
-    d.setdefault("_ist", {"kurulan": 0, "kirilim": 0, "apex": 0, "bozulan": 0, "omur": []})
+    ucg = don = aday = None
+    olaylar, kullanilmis, bozuk = [], [], set()
+    ist = d.setdefault("_ist", {"kurulan": 0, "kirilim": 0, "apex": 0, "bozulan": 0, "omur": [],
+                                "donus": 0, "devrilen": 0})
+
+    def bitir_ucgen(b, sebep):
+        nonlocal ucg
+        olaylar.append(dict(tur="bitti", b=b, f=ucg, desen="ucgen", sebep=sebep, yon=""))
+        kullanilmis.extend(ucgen_bas(ucg)); bozuk.add(ucg["key"]); ucg = None
+
+    def bitir_don(b, sebep):
+        nonlocal don
+        olaylar.append(dict(tur="bitti", b=b, f=don, desen=don["tur"], sebep=sebep, yon=""))
+        kullanilmis.extend(don["capa"]); don = None
+
     for b in range(n + 15, N):
         p = b - n
-        yeni_pivot = False
-        if ph[p]:
-            ph_list.append(p); yeni_pivot = True
-        if pl[p]:
-            pl_list.append(p); yeni_pivot = True
-        if yeni_pivot:
+        yh, yl = bool(ph[p]), bool(pl[p])
+        if yh:
+            ph_list.append(p)
+        if yl:
+            pl_list.append(p)
+        tol = AYAR["TOL_ATR"] * A[b]
+        # 1) donus adayi: yeni tepe -> OBO / ikili tepe, yeni dip -> ters OBO / ikili dip
+        for var, liste, ters in ((yh, ph_list, False), (yl, pl_list, True)):
+            if var:
+                c = obo(d, A, b, liste, uT, uD, ters) or ikili(d, A, b, liste, uT, uD, ters)
+                if c and not cakisir(c["capa"], kullanilmis):
+                    aday = c
+        # 2) ucgen: her yeni pivotta yeniden kur
+        if yh or yl:
             f = formasyon_kur(d, b, ph_list, pl_list, A)
-            if f and f["key"] not in bozuk:
-                if aktif and aktif["key"] == f["key"]:
-                    f["bayrak"], f["dogum"] = aktif["bayrak"], aktif["dogum"]
+            yeni_mi = f is not None and not (ucg and ucg["key"] == f["key"])
+            if f and yeni_mi and (f["key"] in bozuk or cakisir(ucgen_bas(f), kullanilmis)):
+                f = None
+            if f and don and cakisir(ucgen_capa(f), don["capa"]):
+                if ONCELIK[don["tur"]] >= ONCELIK["ucgen"]:
+                    f = None
+                else:                                    # ucgen ikili tepe/dibi devirir
+                    olaylar.append(dict(tur="bitti", b=b, f=don, desen=don["tur"], sebep="devrildi", yon=""))
+                    don = None; ist["devrilen"] += 1
+            if f:
+                if ucg and ucg["key"] == f["key"]:
+                    f["bayrak"], f["dogum"] = ucg["bayrak"], ucg["dogum"]
                 else:
                     f["bayrak"], f["dogum"] = set(), b
-                    d["_ist"]["kurulan"] += 1
-                aktif = f
-            elif aktif and not hala_gecerli(d, A, b, aktif):   # salinim cizgiden koptu: artik ucgen degil
-                d["_ist"]["bozulan"] += 1
-                bozuk.add(aktif["key"]); aktif = None
-        if not aktif:
-            continue
-        if b >= aktif["apex"] or b - aktif["x0"] > AYAR["MAX_OMUR"]:
-            d["_ist"]["apex"] += 1; d["_ist"]["omur"].append(b - aktif.get("dogum", b))
-            bozuk.add(aktif["key"]); aktif = None
-            continue
-        up, lw, c = deger(aktif, b, "u"), deger(aktif, b, "l"), d["c"][b]
-        tol = AYAR["TOL_ATR"] * A[b]
-        if c > up + tol or c < lw - tol:            # anlamli kirilim: cizginin 0.3 ATR disinda kapanis
-            yon = "yukari" if c > up else "asagi"
-            seviye = up if c > up else lw
-            olaylar.append(dict(tur="kirilim", yon=yon, b=b, f=aktif, seviye=seviye,
-                                hedef=seviye + aktif["w0"] if yon == "yukari" else seviye - aktif["w0"],
-                                gecersiz=lw if yon == "yukari" else up))
-            d["_ist"]["kirilim"] += 1; d["_ist"]["omur"].append(b - aktif.get("dogum", b))
-            bozuk.add(aktif["key"]); aktif = None
-            continue
-        for taraf, mesafe in (("ust", up - c), ("alt", c - lw)):
-            if mesafe <= AYAR["YAKIN_ATR"] * A[b] and taraf not in aktif["bayrak"]:
-                aktif["bayrak"].add(taraf)
-                olaylar.append(dict(tur="yakin", yon=taraf, b=b, f=aktif, seviye=up if taraf == "ust" else lw))
-    if aktif:
-        b = N - 1
-        aktif = dict(aktif, up=deger(aktif, b, "u"), lw=deger(aktif, b, "l"),
-                     olgunluk=(b - aktif["x0"]) / (aktif["apex"] - aktif["x0"]), atr=A[b])
-    return aktif, olaylar
+                    ist["kurulan"] += 1
+                f["desen"] = "ucgen"
+                ucg = f
+            elif ucg and not hala_gecerli(d, A, b, ucg):  # salinim cizgiden koptu: artik ucgen degil
+                ist["bozulan"] += 1
+                bitir_ucgen(b, "bozuldu")
+        # 3) donus adayi onaylandi mi: son noktadan yeterince uzaklasti, boyun henuz kirilmadi
+        if aday and not (don and ONCELIK[don["tur"]] >= ONCELIK[aday["tur"]]):
+            sx = aday["son_x"]
+            son_p = aday["noktalar"][-1][1]
+            kap = d["c"][sx:b + 1]
+            nl_b = boyun(aday, b)
+            if not aday["ters"]:
+                uzak = son_p - d["l"][sx:b + 1].min()
+                bozuk_mu = kap.max() > aday["gecersiz"] + tol or d["c"][b] < nl_b - tol
+            else:
+                uzak = d["h"][sx:b + 1].max() - son_p
+                bozuk_mu = kap.min() < aday["gecersiz"] - tol or d["c"][b] > nl_b + tol
+            if bozuk_mu:                                 # onaylanmadan bozuldu ya da boyun zaten kirilmis (gec)
+                aday = None
+            elif uzak >= max(DONUS["ONAY_ATR"] * A[b], DONUS["ONAY"] * aday["yuk"]):
+                if ucg and cakisir(aday["capa"], ucgen_capa(ucg)):
+                    if ONCELIK[aday["tur"]] > ONCELIK["ucgen"]:   # OBO ucgeni devirir
+                        olaylar.append(dict(tur="bitti", b=b, f=ucg, desen="ucgen", sebep="devrildi", yon=""))
+                        ucg = None; ist["devrilen"] += 1
+                    else:
+                        aday = None
+                if aday:
+                    if don:
+                        olaylar.append(dict(tur="bitti", b=b, f=don, desen=don["tur"], sebep="devrildi", yon=""))
+                        ist["devrilen"] += 1
+                    don = dict(aday, bayrak=set(), dogum=b, desen=aday["tur"])
+                    aday = None
+                    ist["donus"] += 1
+        # 4) donus olaylari
+        if don:
+            nl, c = boyun(don, b), d["c"][b]
+            asagi = not don["ters"]
+            if (asagi and c > don["gecersiz"] + tol) or (not asagi and c < don["gecersiz"] - tol):
+                bitir_don(b, "bozuldu")
+            elif b - don["son_x"] > max(15, DONUS["OMUR"] * don["genislik"]):
+                bitir_don(b, "sure")
+            elif (asagi and c < nl - tol) or (not asagi and c > nl + tol):
+                olaylar.append(dict(tur="kirilim", yon=don["yon"], b=b, f=don, seviye=nl, desen=don["tur"],
+                                    hedef=nl - don["yuk"] if asagi else nl + don["yuk"], gecersiz=don["gecersiz"]))
+                kullanilmis.extend(don["capa"]); don = None
+            elif "boyun" not in don["bayrak"] and abs(c - nl) <= AYAR["YAKIN_ATR"] * A[b]:
+                don["bayrak"].add("boyun")
+                olaylar.append(dict(tur="yakin", yon="boyun", b=b, f=don, seviye=nl, desen=don["tur"]))
+        # 5) ucgen olaylari
+        if ucg:
+            if b >= ucg["apex"] or b - ucg["x0"] > AYAR["MAX_OMUR"]:
+                ist["apex"] += 1; ist["omur"].append(b - ucg.get("dogum", b))
+                bitir_ucgen(b, "apex")
+            else:
+                up, lw, c = deger(ucg, b, "u"), deger(ucg, b, "l"), d["c"][b]
+                if c > up + tol or c < lw - tol:         # anlamli kirilim: cizginin 0.3 ATR disinda kapanis
+                    yon = "yukari" if c > up else "asagi"
+                    seviye = up if c > up else lw
+                    olaylar.append(dict(tur="kirilim", yon=yon, b=b, f=ucg, seviye=seviye, desen="ucgen",
+                                        hedef=seviye + ucg["w0"] if yon == "yukari" else seviye - ucg["w0"],
+                                        gecersiz=lw if yon == "yukari" else up))
+                    ist["kirilim"] += 1; ist["omur"].append(b - ucg.get("dogum", b))
+                    kullanilmis.extend(ucgen_bas(ucg)); bozuk.add(ucg["key"]); ucg = None
+                else:
+                    for taraf, mesafe in (("ust", up - c), ("alt", c - lw)):
+                        if mesafe <= AYAR["YAKIN_ATR"] * A[b] and taraf not in ucg["bayrak"]:
+                            ucg["bayrak"].add(taraf)
+                            olaylar.append(dict(tur="yakin", yon=taraf, b=b, f=ucg, desen="ucgen",
+                                                seviye=up if taraf == "ust" else lw))
+    aktifler = []
+    b = N - 1
+    if ucg:
+        aktifler.append(dict(ucg, up=deger(ucg, b, "u"), lw=deger(ucg, b, "l"), atr=A[b],
+                             olgunluk=(b - ucg["x0"]) / (ucg["apex"] - ucg["x0"])))
+    if don:
+        nl = boyun(don, b)
+        aktifler.append(dict(don, boyun_son=nl, atr=A[b], hedef=nl - don["yuk"] if not don["ters"] else nl + don["yuk"]))
+    return aktifler, olaylar
+
+
+def kirilima_uzaklik(a: dict, c: float) -> float:
+    """Aktif formasyonun kirilim cizgisine uzakligi (ATR cinsinden)."""
+    if a["desen"] == "ucgen":
+        return min(a["up"] - c, c - a["lw"]) / a["atr"]
+    return abs(c - a["boyun_son"]) / a["atr"]
 
 
 # ───────────────────────── Grafik ─────────────────────────
-def grafik(sym_ad: str, aralik_ad: str, d: dict, f: dict, olay: dict | None = None) -> bytes:
-    import matplotlib
-    matplotlib.use("Agg")
-    import matplotlib.pyplot as plt
-    N = len(d["c"])
-    son = olay["b"] if olay else N - 1
-    bas = max(0, f["x0"] - 25)
-    bit = min(N - 1, son + (8 if olay and olay["tur"] == "kirilim" else 0))
-    xs = np.arange(bas, bit + 1)
-    fig, ax = plt.subplots(figsize=(9, 4.6), dpi=110)
-    fig.patch.set_facecolor("#131722"); ax.set_facecolor("#131722")
-    for i in xs:
+def _mumlar(ax, d: dict, bas: int, bit: int, plt):
+    for i in range(bas, bit + 1):
         o, h, l, c = d["o"][i], d["h"][i], d["l"][i], d["c"][i]
         renk = "#26a69a" if c >= o else "#ef5350"
         ax.vlines(i, l, h, color=renk, linewidth=0.8)
         ax.add_patch(plt.Rectangle((i - 0.32, min(o, c)), 0.64, max(abs(c - o), (h - l) * 0.01), color=renk))
-    uc = min(f["apex"], son + 0.35 * (f["apex"] - f["x0"]))
-    for taraf, renk in (("u", "#ff9800"), ("l", "#2196f3")):
-        x0 = f[taraf]["i0"]
-        ax.plot([x0, son], [deger(f, x0, taraf), deger(f, son, taraf)], color=renk, linewidth=1.8)
-        ax.plot([son, uc], [deger(f, son, taraf), deger(f, uc, taraf)], color=renk, linewidth=1.2, linestyle="--")
-    for x, taraf in f.get("noktalar", []):                     # cizgiye dokunan salinimlar
-        if bas <= x <= son:
-            ax.plot(x, deger(f, x, taraf), "o", color="#ff9800" if taraf == "u" else "#2196f3", markersize=4.5,
-                    markeredgecolor="white", markeredgewidth=0.6, zorder=5)
-    ax.set_xlim(bas - 1, max(bit, uc) + 2)
-    if olay and olay["tur"] == "kirilim":
-        ax.axhline(olay["hedef"], color="#4caf50" if olay["yon"] == "yukari" else "#f44336", linestyle=":", linewidth=1)
-        ax.annotate("KIRILIM", (olay["b"], d["c"][olay["b"]]), color="white", fontsize=9,
-                    xytext=(5, 12 if olay["yon"] == "yukari" else -16), textcoords="offset points")
-    t = datetime.fromtimestamp(d["t"][son], tz=timezone.utc).strftime("%d.%m.%Y %H:%M")
-    ax.set_title(f"{sym_ad}  {aralik_ad}  —  {f['tip']} daralan üçgen  ({t} UTC)", color="white", fontsize=10)
+
+
+def _bitir_grafik(fig, ax, plt) -> bytes:
     ax.tick_params(colors="#b2b5be", labelsize=8)
     ax.set_xticks([])
     for s in ax.spines.values():
@@ -461,6 +750,82 @@ def grafik(sym_ad: str, aralik_ad: str, d: dict, f: dict, olay: dict | None = No
     fig.savefig(buf, format="png", facecolor=fig.get_facecolor())
     plt.close(fig)
     return buf.getvalue()
+
+
+def grafik(sym_ad: str, aralik_ad: str, d: dict, f: dict, olay: dict | None = None) -> bytes:
+    import matplotlib
+    matplotlib.use("Agg")
+    import matplotlib.pyplot as plt
+    N = len(d["c"])
+    son = olay["b"] if olay else N - 1
+    kirildi = bool(olay and olay["tur"] == "kirilim")
+    bit = min(N - 1, son + (8 if kirildi else 0))
+    fig, ax = plt.subplots(figsize=(9, 4.6), dpi=110)
+    fig.patch.set_facecolor("#131722"); ax.set_facecolor("#131722")
+    t = datetime.fromtimestamp(d["t"][son], tz=timezone.utc).strftime("%d.%m.%Y %H:%M")
+    if f.get("desen", "ucgen") == "ucgen":
+        bas = max(0, f["x0"] - 25)
+        _mumlar(ax, d, bas, bit, plt)
+        # kesik uzanti tepe noktasina (apex) kadar gitmez: iki cizgi tek noktada bulusmasin
+        uc = son + min(0.6 * (f["apex"] - son), 0.35 * (f["apex"] - f["x0"]))
+        for taraf, renk in (("u", "#ff9800"), ("l", "#2196f3")):
+            x0 = f[taraf]["i0"]
+            ax.plot([x0, son], [deger(f, x0, taraf), deger(f, son, taraf)], color=renk, linewidth=1.8)
+            ax.plot([son, uc], [deger(f, son, taraf), deger(f, uc, taraf)], color=renk, linewidth=1.2, linestyle="--")
+        for x, taraf in f.get("noktalar", []):                 # cizgiye dokunan salinimlar
+            if bas <= x <= son:
+                ax.plot(x, deger(f, x, taraf), "o", color="#ff9800" if taraf == "u" else "#2196f3", markersize=4.5,
+                        markeredgecolor="white", markeredgewidth=0.6, zorder=5)
+        sag = max(bit, uc)
+        baslik = f"{f['tip']} daralan üçgen"
+        yukari = olay["yon"] == "yukari" if kirildi else True
+    else:
+        tepe = not f["ters"]
+        renk = "#ef5350" if tepe else "#26a69a"
+        nk = f["noktalar"]
+        bas = max(0, nk[0][0] - 20)
+        _mumlar(ax, d, bas, bit, plt)
+        uz = son + max(3, int(0.15 * f["genislik"]))
+        if f["tur"] in ("ikili_tepe", "ikili_dip"):
+            (x1, p1, _), (xt, pt, _), (x2, p2, _) = nk
+            ax.plot([x1, x2], [p1, p2], color=renk, linewidth=1.8)          # iki tepeyi (dibi) birlestiren tek cizgi
+            ax.plot([xt, son], [pt, pt], color="#ffd54f", linewidth=1.6)     # boyun cizgisi
+            ax.plot([son, uz], [pt, pt], color="#ffd54f", linewidth=1.0, linestyle="--")
+            etiket = ("1. tepe", "2. tepe") if tepe else ("1. dip", "2. dip")
+            for (x, p_, _), e in zip((nk[0], nk[2]), etiket):
+                ax.annotate(e, (x, p_), xytext=(0, 9 if tepe else -14), textcoords="offset points", ha="center",
+                            color=renk, fontsize=8)
+            x_boyun = xt
+        else:
+            x_b1 = nk[1][0]                                              # boyun ilk noktadan baslar
+            ax.plot([x_b1, son], [boyun(f, x_b1), boyun(f, son)], color="#ffd54f", linewidth=1.6)
+            ax.plot([son, uz], [boyun(f, son), boyun(f, uz)], color="#ffd54f", linewidth=1.0, linestyle="--")
+            for (x, p_, rol) in (nk[0], nk[2], nk[4]):
+                ax.plot(x, p_, "o", color=renk, markersize=5, markeredgecolor="white", markeredgewidth=0.6, zorder=5)
+                ax.annotate(rol.capitalize(), (x, p_), xytext=(0, 9 if tepe else -14), textcoords="offset points",
+                            ha="center", color=renk, fontsize=8)
+            x_boyun = x_b1
+        ax.annotate("Boyun", (x_boyun, boyun(f, x_boyun)), xytext=(2, -12 if tepe else 6), textcoords="offset points",
+                    color="#ffd54f", fontsize=8)
+        sag = max(bit, uz)
+        baslik = DESEN_AD[f["tur"]]
+        yukari = not tepe
+    if kirildi:
+        renk_h = "#4caf50" if olay["yon"] == "yukari" else "#f44336"
+        ax.plot([olay["b"], sag], [olay["hedef"], olay["hedef"]], color=renk_h, linestyle=":", linewidth=1.2)
+        ax.annotate("hedef", (sag, olay["hedef"]), xytext=(-28, 3), textcoords="offset points", color=renk_h, fontsize=8)
+        ax.annotate("KIRILIM", (olay["b"], d["c"][olay["b"]]), color="white", fontsize=9,
+                    xytext=(5, 12 if yukari else -16), textcoords="offset points")
+    ax.set_xlim(bas - 1, sag + 2)
+    # dikey eksen formasyona odaklansin: soldaki bosluktaki asiri mumlar formasyonu ezmesin
+    x_f = f["x0"] if f.get("desen", "ucgen") == "ucgen" else f["noktalar"][0][0]
+    alt_y, ust_y = d["l"][x_f:bit + 1].min(), d["h"][x_f:bit + 1].max()
+    if kirildi:
+        alt_y, ust_y = min(alt_y, olay["hedef"]), max(ust_y, olay["hedef"])
+    pay = 0.06 * (ust_y - alt_y)
+    ax.set_ylim(alt_y - pay, ust_y + pay)
+    ax.set_title(f"{sym_ad}  {aralik_ad}  —  {baslik}  ({t} UTC)", color="white", fontsize=10)
+    return _bitir_grafik(fig, ax, plt)
 
 
 # ───────────────────────── Telegram ─────────────────────────
@@ -540,6 +905,38 @@ def veri_al(is_):
     return yahoo(sym + ".IS" if piyasa == "BIST" else sym)
 
 
+def _yuzde(x: float, c: float) -> str:
+    return f"{(x / c - 1) * 100:+.1f}%"
+
+
+def olay_metni(o: dict, d: dict, ad: str, aralik_ad: str, link: str) -> str:
+    f = o["f"]
+    c = d["c"][o["b"]]
+    if o["desen"] == "ucgen":
+        if o["tur"] == "kirilim":
+            bas = "🚀 YUKARI KIRILIM" if o["yon"] == "yukari" else "🔻 AŞAĞI KIRILIM"
+            return (f"{bas} — {ad} ({aralik_ad})\n{f['tip']} daralan üçgen, {f['dok']} dokunuş\n"
+                    f"Kapanış: {fiyat(c)}  |  Kırılan seviye: {fiyat(o['seviye'])}\n"
+                    f"Hedef (ölçülen hareket): {fiyat(o['hedef'])} ({_yuzde(o['hedef'], c)})\n"
+                    f"Geçersizlik: {fiyat(o['gecersiz'])} ({_yuzde(o['gecersiz'], c)})\n{link}")
+        taraf = "ÜST (direnç)" if o["yon"] == "ust" else "ALT (destek)"
+        return (f"🔺 KIRILIMA YAKIN — {ad} ({aralik_ad})\n{f['tip']} daralan üçgen, {f['dok']} dokunuş\n"
+                f"Fiyat {taraf} çizgisine yaklaştı: kapanış {fiyat(c)}, çizgi {fiyat(o['seviye'])} "
+                f"({_yuzde(o['seviye'], c)})\n{link}")
+    desen = DESEN_AD[o["desen"]]
+    yukari = f["yon"] == "yukari"
+    if o["tur"] == "kirilim":
+        bas = "🚀" if yukari else "🔻"
+        return (f"{bas} {desen.upper()} ONAYLANDI — {ad} ({aralik_ad})\n"
+                f"Boyun çizgisi {'yukarı' if yukari else 'aşağı'} kırıldı: kapanış {fiyat(c)}, boyun {fiyat(o['seviye'])}\n"
+                f"Hedef (ölçülen hareket): {fiyat(o['hedef'])} ({_yuzde(o['hedef'], c)})\n"
+                f"Geçersizlik: {fiyat(o['gecersiz'])} ({_yuzde(o['gecersiz'], c)})\n{link}")
+    hedef = o["seviye"] + f["yuk"] if yukari else o["seviye"] - f["yuk"]
+    return (f"⚠️ BOYUN ÇİZGİSİNE YAKIN — {ad} ({aralik_ad})\n{desen} (henüz onaylanmadı)\n"
+            f"Kapanış {fiyat(c)}, boyun {fiyat(o['seviye'])} ({_yuzde(o['seviye'], c)})\n"
+            f"Boyun {'yukarı' if yukari else 'aşağı'} kırılırsa hedef: {fiyat(hedef)} ({_yuzde(hedef, c)})\n{link}")
+
+
 def calistir(gunlukler: bool, ozet: bool, onizleme: bool):
     t0 = time.time()
     liste = isler(gunlukler)
@@ -549,8 +946,8 @@ def calistir(gunlukler: bool, ozet: bool, onizleme: bool):
     for (piyasa, sym, aralik), d in zip(liste, veriler):
         if d is None:
             continue
-        aktif, olaylar = tara(d)
-        sonuc.append(dict(piyasa=piyasa, sym=sym, aralik=aralik, d=d, aktif=aktif, olaylar=olaylar))
+        aktifler, olaylar = tara(d)
+        sonuc.append(dict(piyasa=piyasa, sym=sym, aralik=aralik, d=d, aktifler=aktifler, olaylar=olaylar))
     print(f"{len(liste)} grafik, {len(sonuc)} veri, {time.time() - t0:.0f} sn")
     if onizleme:
         return onizle(sonuc)
@@ -566,7 +963,7 @@ def calistir(gunlukler: bool, ozet: bool, onizleme: bool):
     for r in sonuc:
         N = len(r["d"]["c"])
         for o in r["olaylar"]:
-            if o["b"] < N - 2:          # sadece son 2 kapanmis mum (kacirilan calistirmaya karsi)
+            if o["tur"] == "bitti" or o["b"] < N - 2:   # sadece son 2 kapanmis mum (kacirilan calistirmaya karsi)
                 continue
             anahtar = f"{r['piyasa']}|{r['sym']}|{r['aralik']}|{o['f']['key']}|{o['tur']}|{o['yon']}"
             if anahtar in durum:
@@ -581,22 +978,11 @@ def calistir(gunlukler: bool, ozet: bool, onizleme: bool):
         ad = gorunen(r["piyasa"], r["sym"])
         _, link = tv(r["piyasa"], r["sym"], d.get("borsa", ""), r["aralik"])
         aralik_ad = "4 saatlik" if r["aralik"] == "4h" else "Günlük"
-        c = d["c"][o["b"]]
-        if o["tur"] == "kirilim":
-            bas = "🚀 YUKARI KIRILIM" if o["yon"] == "yukari" else "🔻 AŞAĞI KIRILIM"
-            metin = (f"{bas} — {ad} ({aralik_ad})\n{f['tip']} üçgen, {f['dok']} dokunuş\n"
-                     f"Kapanış: {fiyat(c)}  |  Kırılan seviye: {fiyat(o['seviye'])}\n"
-                     f"Hedef (ölçülen hareket): {fiyat(o['hedef'])} ({(o['hedef'] / c - 1) * 100:+.1f}%)\n"
-                     f"Geçersizlik: {fiyat(o['gecersiz'])} ({(o['gecersiz'] / c - 1) * 100:+.1f}%)\n{link}")
-        else:
-            taraf = "ÜST (direnç)" if o["yon"] == "ust" else "ALT (destek)"
-            metin = (f"🔺 KIRILIMA YAKIN — {ad} ({aralik_ad})\n{f['tip']} üçgen, {f['dok']} dokunuş\n"
-                     f"Fiyat {taraf} çizgisine yaklaştı: kapanış {fiyat(c)}, çizgi {fiyat(o['seviye'])} "
-                     f"({(o['seviye'] / c - 1) * 100:+.1f}%)\n{link}")
+        metin = olay_metni(o, d, ad, aralik_ad, link)
         if k < 15:
             try:
                 png = grafik(ad, aralik_ad, d, f, o)
-                tg("sendPhoto", dict(caption=metin[:1020]), files={"photo": ("ucgen.png", png)})
+                tg("sendPhoto", dict(caption=metin[:1020]), files={"photo": ("formasyon.png", png)})
             except Exception as exc:  # noqa: BLE001
                 print("grafik hatasi:", exc)
                 metin_gonder(metin)
@@ -613,39 +999,48 @@ def calistir(gunlukler: bool, ozet: bool, onizleme: bool):
 
 
 def ozet_gonder(sonuc: list):
-    aktifler = [r for r in sonuc if r["aktif"]]
+    aktifler = [(r, a) for r in sonuc for a in r["aktifler"]]
     tv_liste, satirlar = [], []
     for piyasa in ("KRIPTO", "BIST", "ABD"):
         for aralik in ("4h", "1d"):
-            grup = [r for r in aktifler if r["piyasa"] == piyasa and r["aralik"] == aralik]
+            grup = [(r, a) for r, a in aktifler if r["piyasa"] == piyasa and r["aralik"] == aralik]
             if not grup:
                 continue
-            grup.sort(key=lambda r: min(r["aktif"]["up"] - r["d"]["c"][-1], r["d"]["c"][-1] - r["aktif"]["lw"])
-                      / r["aktif"]["atr"])
+            grup.sort(key=lambda ra: kirilima_uzaklik(ra[1], ra[0]["d"]["c"][-1]))
             ad_ = {"KRIPTO": "Kripto", "BIST": "BIST", "ABD": "ABD"}[piyasa] + (" 4s" if aralik == "4h" else " günlük")
             satirlar.append(f"\n▪️ {ad_} ({len(grup)})")
-            for r in grup:
-                a, c = r["aktif"], r["d"]["c"][-1]
+            for r, a in grup:
+                c = r["d"]["c"][-1]
                 t, link = tv(r["piyasa"], r["sym"], r["d"].get("borsa", ""), aralik)
                 tv_liste.append(t)
-                du, dl = (a["up"] / c - 1) * 100, (a["lw"] / c - 1) * 100
-                satirlar.append(f"• {gorunen(piyasa, r['sym'])} — {a['tip']}, üst {fiyat(a['up'])} ({du:+.1f}%), "
-                                f"alt {fiyat(a['lw'])} ({dl:+.1f}%), olgunluk %{a['olgunluk'] * 100:.0f}\n  {link}")
-    bas = (f"📐 DARALAN ÜÇGEN ÖZETİ — {datetime.now(timezone.utc).strftime('%d.%m.%Y')}\n"
-           f"Şu an üçgen içinde olan {len(aktifler)} grafik (kırılım çizgisine en yakın olan önce):")
-    metin_gonder(bas + "\n" + "\n".join(satirlar) if aktifler else bas + "\nŞu an üçgen içinde grafik yok.")
+                if a["desen"] == "ucgen":
+                    satirlar.append(f"• {gorunen(piyasa, r['sym'])} — {a['tip']} üçgen, üst {fiyat(a['up'])} "
+                                    f"({_yuzde(a['up'], c)}), alt {fiyat(a['lw'])} ({_yuzde(a['lw'], c)}), "
+                                    f"olgunluk %{a['olgunluk'] * 100:.0f}\n  {link}")
+                else:
+                    satirlar.append(f"• {gorunen(piyasa, r['sym'])} — {DESEN_AD[a['desen']]}, boyun {fiyat(a['boyun_son'])} "
+                                    f"({_yuzde(a['boyun_son'], c)}), hedef {fiyat(a['hedef'])} "
+                                    f"({_yuzde(a['hedef'], c)})\n  {link}")
+    say = {}
+    for _, a in aktifler:
+        say[a["desen"]] = say.get(a["desen"], 0) + 1
+    kisa = {"ucgen": "üçgen", "ikili_tepe": "ikili tepe", "ikili_dip": "ikili dip", "obo": "OBO", "ters_obo": "ters OBO"}
+    dagilim = ", ".join(f"{kisa[k]} {v}" for k, v in sorted(say.items(), key=lambda kv: -kv[1]))
+    bas = (f"📐 FORMASYON ÖZETİ — {datetime.now(timezone.utc).strftime('%d.%m.%Y')}\n"
+           f"Şu an {len(aktifler)} aktif formasyon ({dagilim}). Kırılım çizgisine en yakın olan önce:"
+           if aktifler else f"📐 FORMASYON ÖZETİ — {datetime.now(timezone.utc).strftime('%d.%m.%Y')}")
+    metin_gonder(bas + "\n" + "\n".join(satirlar) if aktifler else bas + "\nŞu an aktif formasyon yok.")
     with open(LISTE_DOSYASI, "w", encoding="utf-8") as fh:
         fh.write(",".join(dict.fromkeys(tv_liste)))
-    # en yakin 10 grafik albumu
-    yakin = sorted(aktifler, key=lambda r: min(r["aktif"]["up"] - r["d"]["c"][-1], r["d"]["c"][-1] - r["aktif"]["lw"])
-                   / r["aktif"]["atr"])[:10]
+    # kirilim cizgisine en yakin 10 formasyonun grafik albumu
+    yakin = sorted(aktifler, key=lambda ra: kirilima_uzaklik(ra[1], ra[0]["d"]["c"][-1]))[:10]
     if len(yakin) >= 2:
         media, files = [], {}
-        for k, r in enumerate(yakin):
+        for k, (r, a) in enumerate(yakin):
             ad = gorunen(r["piyasa"], r["sym"])
             try:
-                files[f"f{k}"] = (f"f{k}.png", grafik(ad, "4 saatlik" if r["aralik"] == "4h" else "Günlük", r["d"], r["aktif"]))
-                media.append(dict(type="photo", media=f"attach://f{k}", caption=f"{ad} — {r['aktif']['tip']}"))
+                files[f"f{k}"] = (f"f{k}.png", grafik(ad, "4 saatlik" if r["aralik"] == "4h" else "Günlük", r["d"], a))
+                media.append(dict(type="photo", media=f"attach://f{k}", caption=f"{ad} — {desen_adi(a)}"))
             except Exception as exc:  # noqa: BLE001
                 print("grafik hatasi:", exc)
         if len(media) >= 2:
@@ -653,69 +1048,36 @@ def ozet_gonder(sonuc: list):
 
 
 def onizle(sonuc: list):
-    """Gozle kontrol: grafikleri onizleme/ klasorune cizer ve tarihsel kirilim istatistigini yazar."""
+    """Gozle kontrol: grafikleri onizleme/ klasorune cizer ve formasyon sayilarini yazar."""
     os.makedirs("onizleme", exist_ok=True)
     # ham mum verisi (yerelde gelistirme / gozle kontrol icin)
     np.savez_compressed("onizleme/veri.npz", **{
         f"{r['piyasa']}__{r['sym']}__{r['aralik']}":
             np.column_stack([r["d"][k] for k in ("t", "o", "h", "l", "c", "v")]) for r in sonuc})
-    aktifler = [r for r in sonuc if r["aktif"]]
-    tipler = {}
-    for r in aktifler:
-        tipler[r["aktif"]["tip"]] = tipler.get(r["aktif"]["tip"], 0) + 1
-    secim = sorted(aktifler, key=lambda r: (r["piyasa"], r["aralik"], r["sym"]))
-    adim = max(1, len(secim) // 24)
-    for r in secim[::adim][:24]:
+    aktifler = sorted(((r, a) for r in sonuc for a in r["aktifler"]),
+                      key=lambda ra: (ra[1]["desen"], ra[0]["piyasa"], ra[0]["aralik"], ra[0]["sym"]))
+    adim = max(1, len(aktifler) // 24)
+    for r, a in aktifler[::adim][:24]:
         ad = gorunen(r["piyasa"], r["sym"])
-        open(f"onizleme/aktif_{r['piyasa']}_{r['aralik']}_{ad}.png", "wb").write(
-            grafik(ad, r["aralik"], r["d"], r["aktif"]))
-    # tarihsel kirilimlar: hedefe ulasma / gecersizlik
-    istat = {"yukari": [0, 0, 0], "asagi": [0, 0, 0]}   # adet, hedef, gecersiz
-    ornek = 0
+        open(f"onizleme/aktif_{a['desen']}_{r['piyasa']}_{r['aralik']}_{ad}.png", "wb").write(
+            grafik(ad, r["aralik"], r["d"], a))
+    # her desenden birkac gecmis kirilim ornegi
+    ornek, say_kir, say_akt = {}, {}, {}
+    for _, a in aktifler:
+        say_akt[a["desen"]] = say_akt.get(a["desen"], 0) + 1
     for r in sonuc:
         d = r["d"]
         for o in r["olaylar"]:
-            if o["tur"] != "kirilim" or o["b"] > len(d["c"]) - 30:
+            if o["tur"] != "kirilim":
                 continue
-            s = istat[o["yon"]]
-            s[0] += 1
-            ileri = range(o["b"] + 1, min(len(d["c"]), o["b"] + 60))
-            for i in ileri:
-                if o["yon"] == "yukari":
-                    if d["l"][i] <= o["gecersiz"]:
-                        s[2] += 1; break
-                    if d["h"][i] >= o["hedef"]:
-                        s[1] += 1; break
-                else:
-                    if d["h"][i] >= o["gecersiz"]:
-                        s[2] += 1; break
-                    if d["l"][i] <= o["hedef"]:
-                        s[1] += 1; break
-            if ornek < 12 and o["b"] < len(d["c"]) - 10:
-                ornek += 1
+            say_kir[o["desen"]] = say_kir.get(o["desen"], 0) + 1
+            if ornek.get(o["desen"], 0) < 4 and o["b"] < len(d["c"]) - 10:
+                ornek[o["desen"]] = ornek.get(o["desen"], 0) + 1
                 ad = gorunen(r["piyasa"], r["sym"])
-                open(f"onizleme/kirilim_{r['piyasa']}_{r['aralik']}_{ad}_{ornek}.png", "wb").write(
+                open(f"onizleme/kirilim_{o['desen']}_{r['piyasa']}_{r['aralik']}_{ad}.png", "wb").write(
                     grafik(ad, r["aralik"], d, o["f"], o))
-    sayim = {}
-    for r in sonuc:
-        k = r["piyasa"] + "-" + r["aralik"]
-        sayim[k] = sayim.get(k, 0) + 1
-    akt = {}
-    for r in aktifler:
-        k = r["piyasa"] + "-" + r["aralik"]
-        akt[k] = akt.get(k, 0) + 1
-    kur = sum(r["d"]["_ist"]["kurulan"] for r in sonuc)
-    om = [x for r in sonuc for x in r["d"]["_ist"]["omur"]]
-    kir = sum(r["d"]["_ist"]["kirilim"] for r in sonuc); apx = sum(r["d"]["_ist"]["apex"] for r in sonuc)
-    satir0 = (f"kripto listesi {len(kripto_listesi())} | kurulan formasyon {kur}, kirilimla biten {kir}, apex {apx}, "
-              f"omur ort {np.mean(om) if om else 0:.1f} medyan {np.median(om) if om else 0:.0f} mum")
-    print(satir0)
-    if os.environ.get("GITHUB_ACTIONS") == "true":
-        print("::notice::" + satir0.replace("%", "%25"))
-    satir = (f"veri {sayim} | aktif {akt} | "
-             f"aktif ucgen: {len(aktifler)} / {len(sonuc)} grafik, tipler {tipler} | "
-             f"tarihsel kirilim: yukari {istat['yukari'][0]} (hedef {istat['yukari'][1]}, gecersiz {istat['yukari'][2]}), "
-             f"asagi {istat['asagi'][0]} (hedef {istat['asagi'][1]}, gecersiz {istat['asagi'][2]})")
+    satir = (f"{len(sonuc)} grafik | aktif {say_akt} | gecmis kirilim {say_kir} | "
+             f"devrilen {sum(r['d']['_ist']['devrilen'] for r in sonuc)}")
     print(satir)
     if os.environ.get("GITHUB_ACTIONS") == "true":
         print("::notice::" + satir.replace("%", "%25"))

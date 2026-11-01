@@ -117,15 +117,26 @@ def yahoo_4s(sym: str) -> dict | None:
     return None
 
 
+def _yukseklik(o: dict) -> float:
+    return o["f"]["w0"] if o["desen"] == "ucgen" else o["f"]["yuk"]
+
+
+def _kirilan_cizgi(o: dict, i: int) -> float:
+    """Sahte kirilim denetimi: ucgende kirilan cizgi, donus formasyonunda boyun cizgisi."""
+    if o["desen"] == "ucgen":
+        return u.deger(o["f"], i, "u" if o["yon"] == "yukari" else "l")
+    return u.boyun(o["f"], i)
+
+
 def kirilim_sonucu(d: dict, o: dict):
     N = len(d["c"])
     f, b, yukari = o["f"], o["b"], o["yon"] == "yukari"
-    yarim = o["seviye"] + (0.5 if yukari else -0.5) * f["w0"]
+    yarim = o["seviye"] + (0.5 if yukari else -0.5) * _yukseklik(o)
     hedef_ok = yarim_ok = None
     sahte = False
     for i in range(b + 1, min(N, b + 101)):
         if i <= b + 3:
-            if (yukari and d["c"][i] < u.deger(f, i, "u")) or (not yukari and d["c"][i] > u.deger(f, i, "l")):
+            if (yukari and d["c"][i] < _kirilan_cizgi(o, i)) or (not yukari and d["c"][i] > _kirilan_cizgi(o, i)):
                 sahte = True
         bozuldu = d["l"][i] <= o["gecersiz"] if yukari else d["h"][i] >= o["gecersiz"]
         if bozuldu:
@@ -146,7 +157,7 @@ def islem_r(d: dict, o: dict, kat: float):
     N, b = len(d["c"]), o["b"]
     s = 1 if o["yon"] == "yukari" else -1
     giris = d["c"][b]
-    tp = o["seviye"] + s * kat * o["f"]["w0"]
+    tp = o["seviye"] + s * kat * _yukseklik(o)
     risk, odul = s * (giris - o["gecersiz"]), s * (tp - giris)
     if risk <= 0 or odul <= 0:        # kar al seviyesi giriste zaten gecilmis: islem yok
         return None
@@ -223,35 +234,44 @@ def main():
             continue
         _, olaylar = u.tara(d)
         N = len(d["c"])
-        anahtarlar = {}
+        sonu = {}                                   # formasyon -> kirilim yonu / 'bitti'
         for o in olaylar:
-            if o["tur"] == "kirilim":
-                anahtarlar[o["f"]["key"]] = o["yon"]
-        hedefler = [(f"{p}-{a}", None)]
-        if a == "1d" and p in bas4:
-            hedefler.append((f"{p}-{a}-son-donem", bas4[p]))
-        for ad, bas in hedefler:
-            g = gruplar.setdefault(ad, dict(grafik=0, kir={"yukari": [], "asagi": []}, yakin=[]))
-            g["grafik"] += 1
-            for o in olaylar:
-                if o["b"] > N - 30 or (bas is not None and d["t"][o["b"]] < bas):
+            if o["tur"] in ("kirilim", "bitti"):
+                sonu[(o["desen"], o["f"]["key"])] = o["yon"] if o["tur"] == "kirilim" else "bitti"
+        for o in olaylar:
+            if o["tur"] == "bitti" or o["b"] > N - 30:
+                continue
+            if o["desen"] == "ucgen":
+                hedefler = [(f"{p}-{a}", None)]
+                if a == "1d" and p in bas4:
+                    hedefler.append((f"{p}-{a}-son-donem", bas4[p]))
+            else:
+                hedefler = [(f"{o['desen']}-{a}", None)]
+            for ad, bas in hedefler:
+                if bas is not None and d["t"][o["b"]] < bas:
                     continue
+                g = gruplar.setdefault(ad, dict(grafik=set(), kir={"yukari": [], "asagi": []}, yakin=[]))
+                g["grafik"].add((p, s, a))
                 if o["tur"] == "kirilim":
                     g["kir"][o["yon"]].append(kirilim_sonucu(d, o))
                 else:
-                    sonuc = anahtarlar.get(o["f"]["key"])
-                    beklenen = "yukari" if o["yon"] == "ust" else "asagi"
-                    g["yakin"].append(None if sonuc is None else sonuc == beklenen)
+                    sonuc = sonu.get((o["desen"], o["f"]["key"]))
+                    if o["desen"] == "ucgen":     # yakin uyarisinin yonu dogru mu (kirilan ucgenler arasinda)
+                        beklenen = "yukari" if o["yon"] == "ust" else "asagi"
+                        g["yakin"].append(None if sonuc in (None, "bitti") else sonuc == beklenen)
+                    else:                         # boyun yakini sonrasi formasyon onaylandi mi (bozulana karsi)
+                        g["yakin"].append(None if sonuc is None else sonuc != "bitti")
 
     satirlar = [f"sure {time.time() - t0:.0f} sn"]
     for ad in sorted(gruplar):
         g = gruplar[ad]
-        parca = [f"{ad} ({g['grafik']} grafik): KIRILIM {ozet(g['kir']['yukari'] + g['kir']['asagi'])}"]
+        parca = [f"{ad} ({len(g['grafik'])} grafik): KIRILIM {ozet(g['kir']['yukari'] + g['kir']['asagi'])}"]
         for yon in ("yukari", "asagi"):
-            parca.append(f"{yon} {ozet(g['kir'][yon])}")
+            if g["kir"][yon]:
+                parca.append(f"{yon} {ozet(g['kir'][yon])}")
         y = g["yakin"]
         cozulen = [x for x in y if x is not None]
-        parca.append(f"YAKIN n={len(y)} kirilan {len(cozulen)} dogru-yon {yuzde(cozulen)}")
+        parca.append(f"YAKIN n={len(y)} sonuclanan {len(cozulen)} {'dogru-yon' if '-' in ad and ad.split('-')[0] in ('KRIPTO', 'BIST', 'ABD') else 'onaylanan'} {yuzde(cozulen)}")
         satirlar.append(" | ".join(parca))
     for s in satirlar:
         print(s)
