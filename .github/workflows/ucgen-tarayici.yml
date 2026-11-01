@@ -23,6 +23,10 @@ on:
         description: "istatistik icin zaman dilimleri (4h,8h,1d,1dL,3d,1w)"
         type: string
         default: "4h,1d"
+      veri:
+        description: "true: Telegram yok, gelistirme verisini (veri.npz) ucgen-veri dalina kaydet"
+        type: boolean
+        default: false
 
 permissions:
   contents: write
@@ -66,6 +70,20 @@ jobs:
           if [ -f /tmp/ist.json ]; then cp /tmp/ist.json formasyon_istatistik.json && git add formasyon_istatistik.json; fi
           git commit -qm "istatistik [skip ci]" && git push -qf origin ucgen-istatistik
 
+      - name: Veri
+        if: ${{ github.event.inputs.veri == 'true' }}
+        env:
+          ARALIKLAR: ${{ github.event.inputs.araliklar }}
+        run: |
+          python veri_indir.py
+          git config user.name "izleme-bot"
+          git config user.email "izleme-bot@users.noreply.github.com"
+          mv veri.npz /tmp/veri.npz
+          git checkout -q --orphan ucgen-veri
+          git rm -rq --cached . && rm -rf ./*
+          mv /tmp/veri.npz veri.npz
+          git add veri.npz && git commit -qm "veri [skip ci]" && git push -qf origin ucgen-veri
+
       - name: Onizleme
         if: ${{ github.event.inputs.onizleme == 'true' }}
         run: |
@@ -79,7 +97,7 @@ jobs:
           git add *.png *.npz && git commit -qm "onizleme [skip ci]" && git push -qf origin ucgen-onizleme
 
       - name: Tara + Telegram
-        if: ${{ github.event.inputs.onizleme != 'true' && github.event.inputs.istatistik != 'true' }}
+        if: ${{ github.event.inputs.onizleme != 'true' && github.event.inputs.istatistik != 'true' && github.event.inputs.veri != 'true' }}
         env:
           TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
           TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
