@@ -649,6 +649,8 @@ def tara(d: dict):
                 ist["bozulan"] += 1
                 bitir_ucgen(b, "bozuldu")
         # 3) donus adayi onaylandi mi: son noktadan yeterince uzaklasti, boyun henuz kirilmadi
+        if aday and b - aday["son_x"] > AYAR["MAX_OMUR"]:    # cok bekleyen aday (TradingView gecmis siniri)
+            aday = None
         if aday and not (don and ONCELIK[don["tur"]] >= ONCELIK[aday["tur"]]):
             sx = aday["son_x"]
             son_p = aday["noktalar"][-1][1]
