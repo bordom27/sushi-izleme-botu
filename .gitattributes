@@ -1,0 +1,2 @@
+windows/*.bat eol=crlf
+windows/*.vbs eol=crlf

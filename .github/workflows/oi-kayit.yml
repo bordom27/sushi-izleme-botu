@@ -1,0 +1,47 @@
+name: OI kaydi
+
+# Binance vadeli konumlanma verisinin (OI, long/short, taker) kalici arsivi -> oi-kayit dali.
+# Binance gecmisi ~30 gun tutuyor; 12 saatte bir son 36 saati ekler. Bot ve arastirma isleriyle ilgisi yok.
+
+on:
+  schedule:
+    - cron: "41 */12 * * *"
+  push:
+    branches: [main]
+    paths: ["oi_kayit.py", ".github/workflows/oi-kayit.yml"]
+  workflow_dispatch:
+    inputs:
+      geri:
+        description: "true: son 29 gunu cek (ilk kurulum)"
+        type: boolean
+        default: false
+
+permissions:
+  contents: write
+
+concurrency:
+  group: oi-kayit
+  cancel-in-progress: false
+
+jobs:
+  kayit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - run: pip install -r requirements.txt
+      - name: oi-kayit dalini hazirla
+        run: |
+          git fetch origin oi-kayit && git worktree add kayit_dal origin/oi-kayit && cd kayit_dal && git checkout -B oi-kayit
+      - name: Kaydet
+        run: python oi_kayit.py kayit_dal/kayit ${{ (github.event_name == 'push' || inputs.geri) && 'geri' || '' }}
+      - name: Gonder
+        run: |
+          cd kayit_dal
+          git config user.name "oi-kayit"; git config user.email "a@users.noreply.github.com"
+          git add kayit
+          git commit -m "oi kaydi $(date -u +%F-%H%M)" || exit 0
+          for i in 1 2 3 4 5; do git pull --rebase origin oi-kayit && git push origin oi-kayit && break; sleep 10; done

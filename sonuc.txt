@@ -1,0 +1,108 @@
+sure 2857 sn | araliklar 4h,8h,1dL,3d,1w
+buyuk_ucgen 4h HEPSI (448 grafik): KIRILIM n=4485 hedef %41 yarim %64 sahte %23 Rtam +0.07R Ryarim +0.06R RR 1.5 | yukari n=2122 hedef %38 yarim %61 sahte %24 Rtam +0.03R Ryarim +0.04R RR 1.8 | asagi n=2363 hedef %43 yarim %66 sahte %23 Rtam +0.11R Ryarim +0.08R RR 1.3 | YAKIN n=8484 sonuclanan 4009 dogru-yon %87
+buyuk_ucgen 4h ABD (152 grafik): KIRILIM n=419 hedef %43 yarim %63 sahte %21 Rtam +0.06R Ryarim +0.03R RR 1.4 | yukari n=213 hedef %48 yarim %65 sahte %20 Rtam +0.27R Ryarim +0.10R RR 1.6 | asagi n=206 hedef %37 yarim %61 sahte %23 Rtam -0.16R Ryarim -0.05R RR 1.3 | YAKIN n=698 sonuclanan 352 dogru-yon %89
+buyuk_ucgen 4h BIST (100 grafik): KIRILIM n=363 hedef %37 yarim %62 sahte %20 Rtam +0.04R Ryarim +0.06R RR 1.6 | yukari n=182 hedef %38 yarim %62 sahte %16 Rtam +0.04R Ryarim +0.04R RR 1.7 | asagi n=181 hedef %36 yarim %62 sahte %23 Rtam +0.04R Ryarim +0.08R RR 1.4 | YAKIN n=657 sonuclanan 309 dogru-yon %86
+buyuk_ucgen 4h KRIPTO (196 grafik): KIRILIM n=3703 hedef %41 yarim %64 sahte %24 Rtam +0.07R Ryarim +0.06R RR 1.5 | yukari n=1727 hedef %37 yarim %60 sahte %26 Rtam -0.01R Ryarim +0.04R RR 1.9 | asagi n=1976 hedef %44 yarim %67 sahte %23 Rtam +0.14R Ryarim +0.09R RR 1.3 | YAKIN n=7129 sonuclanan 3348 dogru-yon %87
+buyuk_ucgen 8h HEPSI (194 grafik): KIRILIM n=1466 hedef %40 yarim %63 sahte %26 Rtam +0.01R Ryarim +0.03R RR 1.4 | yukari n=648 hedef %34 yarim %57 sahte %27 Rtam -0.08R Ryarim -0.05R RR 1.9 | asagi n=818 hedef %46 yarim %69 sahte %24 Rtam +0.09R Ryarim +0.09R RR 1.1 | YAKIN n=3035 sonuclanan 1362 dogru-yon %87
+buyuk_ucgen 8h KRIPTO (194 grafik): KIRILIM n=1466 hedef %40 yarim %63 sahte %26 Rtam +0.01R Ryarim +0.03R RR 1.4 | yukari n=648 hedef %34 yarim %57 sahte %27 Rtam -0.08R Ryarim -0.05R RR 1.9 | asagi n=818 hedef %46 yarim %69 sahte %24 Rtam +0.09R Ryarim +0.09R RR 1.1 | YAKIN n=3035 sonuclanan 1362 dogru-yon %87
+buyuk_ucgen 1dL HEPSI (433 grafik): KIRILIM n=4938 hedef %45 yarim %67 sahte %23 Rtam +0.22R Ryarim +0.13R RR 1.6 | yukari n=2663 hedef %47 yarim %70 sahte %21 Rtam +0.41R Ryarim +0.26R RR 2.0 | asagi n=2275 hedef %42 yarim %63 sahte %25 Rtam -0.01R Ryarim -0.01R RR 1.2 | YAKIN n=8525 sonuclanan 4522 dogru-yon %88
+buyuk_ucgen 1dL ABD (169 grafik): KIRILIM n=2405 hedef %42 yarim %65 sahte %23 Rtam +0.15R Ryarim +0.09R RR 1.6 | yukari n=1397 hedef %44 yarim %69 sahte %21 Rtam +0.32R Ryarim +0.22R RR 1.8 | asagi n=1008 hedef %39 yarim %59 sahte %26 Rtam -0.09R Ryarim -0.09R RR 1.2 | YAKIN n=4104 sonuclanan 2197 dogru-yon %89
+buyuk_ucgen 1dL BIST (102 grafik): KIRILIM n=1420 hedef %45 yarim %65 sahte %23 Rtam +0.26R Ryarim +0.15R RR 1.6 | yukari n=780 hedef %55 yarim %73 sahte %20 Rtam +0.60R Ryarim +0.33R RR 2.0 | asagi n=640 hedef %33 yarim %56 sahte %27 Rtam -0.16R Ryarim -0.08R RR 1.2 | YAKIN n=2461 sonuclanan 1289 dogru-yon %89
+buyuk_ucgen 1dL KRIPTO (162 grafik): KIRILIM n=1113 hedef %50 yarim %71 sahte %22 Rtam +0.32R Ryarim +0.20R RR 1.5 | yukari n=486 hedef %42 yarim %65 sahte %24 Rtam +0.39R Ryarim +0.23R RR 2.6 | asagi n=627 hedef %59 yarim %77 sahte %20 Rtam +0.27R Ryarim +0.18R RR 1.0 | YAKIN n=1960 sonuclanan 1036 dogru-yon %87
+buyuk_ucgen 3d HEPSI (368 grafik): KIRILIM n=1402 hedef %44 yarim %67 sahte %22 Rtam +0.27R Ryarim +0.15R RR 1.7 | yukari n=776 hedef %48 yarim %72 sahte %20 Rtam +0.60R Ryarim +0.35R RR 2.3 | asagi n=626 hedef %39 yarim %61 sahte %25 Rtam -0.15R Ryarim -0.10R RR 1.0 | YAKIN n=2427 sonuclanan 1293 dogru-yon %88
+buyuk_ucgen 3d ABD (160 grafik): KIRILIM n=725 hedef %40 yarim %65 sahte %23 Rtam +0.23R Ryarim +0.15R RR 1.7 | yukari n=425 hedef %47 yarim %72 sahte %19 Rtam +0.59R Ryarim +0.35R RR 2.2 | asagi n=300 hedef %33 yarim %57 sahte %29 Rtam -0.28R Ryarim -0.15R RR 1.1 | YAKIN n=1244 sonuclanan 669 dogru-yon %88
+buyuk_ucgen 3d BIST (92 grafik): KIRILIM n=408 hedef %47 yarim %68 sahte %24 Rtam +0.38R Ryarim +0.22R RR 1.8 | yukari n=260 hedef %57 yarim %78 sahte %20 Rtam +0.75R Ryarim +0.46R RR 2.3 | asagi n=148 hedef %30 yarim %52 sahte %30 Rtam -0.26R Ryarim -0.20R RR 1.0 | YAKIN n=733 sonuclanan 379 dogru-yon %86
+buyuk_ucgen 3d KRIPTO (116 grafik): KIRILIM n=269 hedef %49 yarim %68 sahte %17 Rtam +0.18R Ryarim +0.06R RR 1.0 | yukari n=91 hedef %30 yarim %53 sahte %24 Rtam +0.20R Ryarim +0.07R RR 3.9 | asagi n=178 hedef %60 yarim %76 sahte %13 Rtam +0.16R Ryarim +0.06R RR 0.7 | YAKIN n=450 sonuclanan 245 dogru-yon %88
+buyuk_ucgen 1w HEPSI (261 grafik): KIRILIM n=733 hedef %41 yarim %62 sahte %23 Rtam +0.27R Ryarim +0.14R RR 2.0 | yukari n=456 hedef %48 yarim %69 sahte %18 Rtam +0.62R Ryarim +0.36R RR 2.5 | asagi n=277 hedef %29 yarim %51 sahte %31 Rtam -0.31R Ryarim -0.22R RR 1.0 | YAKIN n=1336 sonuclanan 688 dogru-yon %88
+buyuk_ucgen 1w ABD (133 grafik): KIRILIM n=443 hedef %40 yarim %62 sahte %25 Rtam +0.29R Ryarim +0.14R RR 1.9 | yukari n=278 hedef %50 yarim %69 sahte %20 Rtam +0.68R Ryarim +0.37R RR 2.3 | asagi n=165 hedef %27 yarim %50 sahte %34 Rtam -0.38R Ryarim -0.23R RR 1.2 | YAKIN n=820 sonuclanan 424 dogru-yon %88
+buyuk_ucgen 1w BIST (76 grafik): KIRILIM n=218 hedef %45 yarim %63 sahte %23 Rtam +0.35R Ryarim +0.19R RR 2.0 | yukari n=146 hedef %50 yarim %71 sahte %18 Rtam +0.64R Ryarim +0.41R RR 2.6 | asagi n=72 hedef %34 yarim %48 sahte %33 Rtam -0.26R Ryarim -0.26R RR 1.0 | YAKIN n=375 sonuclanan 199 dogru-yon %87
+buyuk_ucgen 1w KRIPTO (52 grafik): KIRILIM n=72 hedef %31 yarim %61 sahte %11 Rtam -0.08R Ryarim -0.04R RR 1.0 | yukari n=32 hedef %27 yarim %54 sahte %6 Rtam +0.02R Ryarim +0.04R RR 4.5 | asagi n=40 hedef %38 yarim %68 sahte %15 Rtam -0.16R Ryarim -0.11R RR 0.3 | YAKIN n=141 sonuclanan 65 dogru-yon %95
+ucgen 4h HEPSI (460 grafik): KIRILIM n=2989 hedef %30 yarim %50 sahte %24 Rtam +0.08R Ryarim +0.08R RR 2.6 | yukari n=1370 hedef %29 yarim %49 sahte %25 Rtam +0.07R Ryarim +0.09R RR 3.1 | asagi n=1619 hedef %32 yarim %50 sahte %24 Rtam +0.08R Ryarim +0.07R RR 2.3 | YAKIN n=4012 sonuclanan 2896 dogru-yon %74
+ucgen 4h ABD (165 grafik): KIRILIM n=433 hedef %29 yarim %50 sahte %22 Rtam -0.11R Ryarim -0.06R RR 2.3 | yukari n=206 hedef %34 yarim %53 sahte %19 Rtam +0.14R Ryarim +0.06R RR 2.6 | asagi n=227 hedef %25 yarim %47 sahte %24 Rtam -0.34R Ryarim -0.17R RR 2.2 | YAKIN n=472 sonuclanan 355 dogru-yon %77
+ucgen 4h BIST (102 grafik): KIRILIM n=336 hedef %34 yarim %51 sahte %24 Rtam +0.22R Ryarim +0.10R RR 2.8 | yukari n=148 hedef %35 yarim %51 sahte %23 Rtam +0.22R Ryarim +0.09R RR 2.9 | asagi n=188 hedef %32 yarim %50 sahte %24 Rtam +0.22R Ryarim +0.10R RR 2.6 | YAKIN n=410 sonuclanan 288 dogru-yon %75
+ucgen 4h KRIPTO (193 grafik): KIRILIM n=2220 hedef %30 yarim %49 sahte %25 Rtam +0.09R Ryarim +0.10R RR 2.6 | yukari n=1016 hedef %27 yarim %48 sahte %26 Rtam +0.04R Ryarim +0.09R RR 3.2 | asagi n=1204 hedef %33 yarim %51 sahte %24 Rtam +0.14R Ryarim +0.11R RR 2.3 | YAKIN n=3130 sonuclanan 2253 dogru-yon %74
+ucgen 8h HEPSI (186 grafik): KIRILIM n=1143 hedef %27 yarim %47 sahte %26 Rtam -0.03R Ryarim +0.04R RR 2.7 | yukari n=539 hedef %22 yarim %42 sahte %29 Rtam -0.19R Ryarim -0.03R RR 3.5 | asagi n=604 hedef %32 yarim %52 sahte %24 Rtam +0.11R Ryarim +0.11R RR 2.1 | YAKIN n=1617 sonuclanan 1197 dogru-yon %73
+ucgen 8h KRIPTO (186 grafik): KIRILIM n=1143 hedef %27 yarim %47 sahte %26 Rtam -0.03R Ryarim +0.04R RR 2.7 | yukari n=539 hedef %22 yarim %42 sahte %29 Rtam -0.19R Ryarim -0.03R RR 3.5 | asagi n=604 hedef %32 yarim %52 sahte %24 Rtam +0.11R Ryarim +0.11R RR 2.1 | YAKIN n=1617 sonuclanan 1197 dogru-yon %73
+ucgen 1dL HEPSI (426 grafik): KIRILIM n=3319 hedef %32 yarim %52 sahte %26 Rtam +0.11R Ryarim +0.10R RR 2.5 | yukari n=1725 hedef %34 yarim %56 sahte %26 Rtam +0.31R Ryarim +0.26R RR 3.0 | asagi n=1594 hedef %29 yarim %48 sahte %26 Rtam -0.12R Ryarim -0.07R RR 2.0 | YAKIN n=4345 sonuclanan 3188 dogru-yon %76
+ucgen 1dL ABD (168 grafik): KIRILIM n=1868 hedef %31 yarim %51 sahte %29 Rtam +0.03R Ryarim +0.03R RR 2.3 | yukari n=1006 hedef %34 yarim %56 sahte %27 Rtam +0.27R Ryarim +0.21R RR 2.6 | asagi n=862 hedef %27 yarim %45 sahte %31 Rtam -0.24R Ryarim -0.18R RR 2.0 | YAKIN n=2373 sonuclanan 1783 dogru-yon %75
+ucgen 1dL BIST (102 grafik): KIRILIM n=874 hedef %32 yarim %52 sahte %23 Rtam +0.19R Ryarim +0.19R RR 2.6 | yukari n=422 hedef %35 yarim %57 sahte %24 Rtam +0.45R Ryarim +0.42R RR 3.1 | asagi n=452 hedef %28 yarim %47 sahte %22 Rtam -0.05R Ryarim -0.01R RR 2.2 | YAKIN n=1134 sonuclanan 831 dogru-yon %76
+ucgen 1dL KRIPTO (156 grafik): KIRILIM n=577 hedef %34 yarim %55 sahte %22 Rtam +0.23R Ryarim +0.21R RR 2.7 | yukari n=297 hedef %31 yarim %52 sahte %23 Rtam +0.29R Ryarim +0.22R RR 4.0 | asagi n=280 hedef %38 yarim %58 sahte %20 Rtam +0.17R Ryarim +0.19R RR 1.8 | YAKIN n=838 sonuclanan 574 dogru-yon %75
+ucgen 3d HEPSI (371 grafik): KIRILIM n=1021 hedef %31 yarim %49 sahte %26 Rtam +0.18R Ryarim +0.05R RR 2.5 | yukari n=539 hedef %37 yarim %53 sahte %22 Rtam +0.53R Ryarim +0.23R RR 3.6 | asagi n=482 hedef %26 yarim %44 sahte %30 Rtam -0.20R Ryarim -0.15R RR 1.8 | YAKIN n=1443 sonuclanan 1072 dogru-yon %73
+ucgen 3d ABD (165 grafik): KIRILIM n=537 hedef %29 yarim %50 sahte %27 Rtam +0.16R Ryarim +0.06R RR 2.5 | yukari n=307 hedef %35 yarim %54 sahte %22 Rtam +0.50R Ryarim +0.23R RR 3.1 | asagi n=230 hedef %22 yarim %44 sahte %34 Rtam -0.31R Ryarim -0.17R RR 1.8 | YAKIN n=745 sonuclanan 553 dogru-yon %73
+ucgen 3d BIST (92 grafik): KIRILIM n=313 hedef %36 yarim %49 sahte %28 Rtam +0.31R Ryarim +0.04R RR 2.5 | yukari n=156 hedef %46 yarim %58 sahte %24 Rtam +0.80R Ryarim +0.29R RR 3.6 | asagi n=157 hedef %27 yarim %40 sahte %31 Rtam -0.17R Ryarim -0.21R RR 2.0 | YAKIN n=426 sonuclanan 331 dogru-yon %73
+ucgen 3d KRIPTO (114 grafik): KIRILIM n=171 hedef %29 yarim %46 sahte %18 Rtam +0.03R Ryarim +0.03R RR 2.7 | yukari n=76 hedef %24 yarim %38 sahte %17 Rtam +0.08R Ryarim +0.07R RR 6.9 | asagi n=95 hedef %34 yarim %52 sahte %19 Rtam -0.01R Ryarim -0.00R RR 1.5 | YAKIN n=272 sonuclanan 188 dogru-yon %74
+ucgen 1w HEPSI (298 grafik): KIRILIM n=589 hedef %33 yarim %53 sahte %30 Rtam +0.26R Ryarim +0.14R RR 2.4 | yukari n=316 hedef %41 yarim %60 sahte %29 Rtam +0.70R Ryarim +0.44R RR 3.4 | asagi n=273 hedef %24 yarim %44 sahte %32 Rtam -0.24R Ryarim -0.20R RR 1.6 | YAKIN n=781 sonuclanan 603 dogru-yon %75
+ucgen 1w ABD (157 grafik): KIRILIM n=342 hedef %33 yarim %53 sahte %33 Rtam +0.25R Ryarim +0.14R RR 2.3 | yukari n=191 hedef %39 yarim %61 sahte %31 Rtam +0.64R Ryarim +0.41R RR 3.2 | asagi n=151 hedef %26 yarim %44 sahte %36 Rtam -0.25R Ryarim -0.20R RR 1.6 | YAKIN n=449 sonuclanan 344 dogru-yon %75
+ucgen 1w BIST (87 grafik): KIRILIM n=192 hedef %36 yarim %52 sahte %27 Rtam +0.44R Ryarim +0.21R RR 2.9 | yukari n=105 hedef %48 yarim %61 sahte %26 Rtam +0.99R Ryarim +0.56R RR 3.7 | asagi n=87 hedef %21 yarim %40 sahte %28 Rtam -0.23R Ryarim -0.20R RR 2.0 | YAKIN n=261 sonuclanan 202 dogru-yon %73
+ucgen 1w KRIPTO (54 grafik): KIRILIM n=55 hedef %24 yarim %50 sahte %22 Rtam -0.29R Ryarim -0.09R RR 1.3 | yukari n=20 hedef %20 yarim %40 sahte %20 Rtam -0.30R Ryarim +0.04R RR 11.2 | asagi n=35 hedef %27 yarim %56 sahte %23 Rtam -0.28R Ryarim -0.17R RR 0.8 | YAKIN n=71 sonuclanan 57 dogru-yon %79
+ikili_dip 4h HEPSI (191 grafik): KIRILIM n=159 hedef %60 yarim %81 sahte %29 Rtam -0.02R Ryarim -0.01R RR 0.8 | YAKIN n=209 sonuclanan 209 onaylanan %48
+ikili_dip 4h ABD (42 grafik): KIRILIM n=37 hedef %59 yarim %78 sahte %27 Rtam -0.02R Ryarim -0.03R RR 0.8 | YAKIN n=34 sonuclanan 34 onaylanan %65
+ikili_dip 4h BIST (32 grafik): KIRILIM n=26 hedef %60 yarim %77 sahte %23 Rtam -0.06R Ryarim -0.06R RR 0.8 | YAKIN n=30 sonuclanan 30 onaylanan %57
+ikili_dip 4h KRIPTO (117 grafik): KIRILIM n=96 hedef %61 yarim %82 sahte %31 Rtam -0.01R Ryarim +0.01R RR 0.8 | YAKIN n=145 sonuclanan 145 onaylanan %42
+ikili_dip 8h HEPSI (83 grafik): KIRILIM n=63 hedef %39 yarim %61 sahte %51 Rtam -0.34R Ryarim -0.25R RR 0.8 | YAKIN n=92 sonuclanan 92 onaylanan %48
+ikili_dip 8h KRIPTO (83 grafik): KIRILIM n=63 hedef %39 yarim %61 sahte %51 Rtam -0.34R Ryarim -0.25R RR 0.8 | YAKIN n=92 sonuclanan 92 onaylanan %48
+ikili_dip 1dL HEPSI (237 grafik): KIRILIM n=240 hedef %65 yarim %85 sahte %30 Rtam +0.10R Ryarim +0.07R RR 0.8 | YAKIN n=358 sonuclanan 358 onaylanan %53
+ikili_dip 1dL ABD (130 grafik): KIRILIM n=143 hedef %65 yarim %86 sahte %32 Rtam +0.12R Ryarim +0.10R RR 0.8 | YAKIN n=230 sonuclanan 230 onaylanan %53
+ikili_dip 1dL BIST (66 grafik): KIRILIM n=67 hedef %60 yarim %80 sahte %30 Rtam -0.04R Ryarim -0.03R RR 0.8 | YAKIN n=88 sonuclanan 88 onaylanan %53
+ikili_dip 1dL KRIPTO (41 grafik): KIRILIM n=30 hedef %76 yarim %93 sahte %23 Rtam +0.35R Ryarim +0.20R RR 0.8 | YAKIN n=40 sonuclanan 40 onaylanan %50
+ikili_dip 3d HEPSI (119 grafik): KIRILIM n=86 hedef %53 yarim %71 sahte %38 Rtam -0.02R Ryarim -0.07R RR 0.9 | YAKIN n=117 sonuclanan 117 onaylanan %56
+ikili_dip 3d ABD (59 grafik): KIRILIM n=40 hedef %57 yarim %71 sahte %38 Rtam +0.08R Ryarim -0.05R RR 0.9 | YAKIN n=63 sonuclanan 63 onaylanan %56
+ikili_dip 3d BIST (31 grafik): KIRILIM n=28 hedef %72 yarim %85 sahte %32 Rtam +0.28R Ryarim +0.11R RR 0.9 | YAKIN n=29 sonuclanan 29 onaylanan %66
+ikili_dip 3d KRIPTO (29 grafik): KIRILIM n=18 hedef %17 yarim %50 sahte %50 Rtam -0.71R Ryarim -0.38R RR 1.3 | YAKIN n=25 sonuclanan 25 onaylanan %48
+ikili_dip 1w HEPSI (78 grafik): KIRILIM n=54 hedef %64 yarim %78 sahte %43 Rtam +0.17R Ryarim +0.03R RR 1.0 | YAKIN n=69 sonuclanan 69 onaylanan %55
+ikili_dip 1w ABD (45 grafik): KIRILIM n=34 hedef %55 yarim %74 sahte %53 Rtam +0.05R Ryarim -0.01R RR 1.0 | YAKIN n=41 sonuclanan 41 onaylanan %56
+ikili_dip 1w BIST (24 grafik): KIRILIM n=16 hedef %93 yarim %100 sahte %12 Rtam +0.56R Ryarim +0.33R RR 0.9 | YAKIN n=21 sonuclanan 21 onaylanan %62
+ikili_dip 1w KRIPTO (9 grafik): KIRILIM n=4 hedef %25 yarim %25 sahte %75 Rtam -0.41R Ryarim -0.62R RR 2.2 | YAKIN n=7 sonuclanan 7 onaylanan %29
+ikili_tepe 4h HEPSI (196 grafik): KIRILIM n=152 hedef %67 yarim %82 sahte %32 Rtam +0.03R Ryarim +0.00R RR 0.7 | YAKIN n=245 sonuclanan 245 onaylanan %45
+ikili_tepe 4h ABD (46 grafik): KIRILIM n=34 hedef %62 yarim %74 sahte %38 Rtam -0.03R Ryarim -0.11R RR 0.7 | YAKIN n=46 sonuclanan 46 onaylanan %57
+ikili_tepe 4h BIST (29 grafik): KIRILIM n=23 hedef %50 yarim %74 sahte %43 Rtam -0.22R Ryarim -0.13R RR 0.6 | YAKIN n=28 sonuclanan 28 onaylanan %54
+ikili_tepe 4h KRIPTO (121 grafik): KIRILIM n=95 hedef %71 yarim %86 sahte %27 Rtam +0.12R Ryarim +0.07R RR 0.7 | YAKIN n=171 sonuclanan 171 onaylanan %41
+ikili_tepe 8h HEPSI (75 grafik): KIRILIM n=57 hedef %78 yarim %85 sahte %32 Rtam +0.14R Ryarim +0.00R RR 0.6 | YAKIN n=81 sonuclanan 81 onaylanan %47
+ikili_tepe 8h KRIPTO (75 grafik): KIRILIM n=57 hedef %78 yarim %85 sahte %32 Rtam +0.14R Ryarim +0.00R RR 0.6 | YAKIN n=81 sonuclanan 81 onaylanan %47
+ikili_tepe 1dL HEPSI (248 grafik): KIRILIM n=290 hedef %65 yarim %80 sahte %40 Rtam +0.02R Ryarim -0.00R RR 0.6 | YAKIN n=423 sonuclanan 423 onaylanan %48
+ikili_tepe 1dL ABD (143 grafik): KIRILIM n=195 hedef %68 yarim %84 sahte %42 Rtam +0.08R Ryarim +0.06R RR 0.6 | YAKIN n=278 sonuclanan 278 onaylanan %50
+ikili_tepe 1dL BIST (73 grafik): KIRILIM n=81 hedef %53 yarim %70 sahte %37 Rtam -0.17R Ryarim -0.14R RR 0.6 | YAKIN n=114 sonuclanan 114 onaylanan %52
+ikili_tepe 1dL KRIPTO (32 grafik): KIRILIM n=14 hedef %86 yarim %86 sahte %29 Rtam +0.26R Ryarim +0.03R RR 0.5 | YAKIN n=31 sonuclanan 31 onaylanan %23
+ikili_tepe 3d HEPSI (119 grafik): KIRILIM n=76 hedef %62 yarim %80 sahte %38 Rtam -0.12R Ryarim -0.07R RR 0.5 | YAKIN n=126 sonuclanan 126 onaylanan %44
+ikili_tepe 3d ABD (80 grafik): KIRILIM n=56 hedef %58 yarim %78 sahte %39 Rtam -0.16R Ryarim -0.10R RR 0.5 | YAKIN n=87 sonuclanan 87 onaylanan %47
+ikili_tepe 3d BIST (29 grafik): KIRILIM n=15 hedef %60 yarim %80 sahte %33 Rtam -0.11R Ryarim -0.06R RR 0.5 | YAKIN n=31 sonuclanan 31 onaylanan %42
+ikili_tepe 3d KRIPTO (10 grafik): KIRILIM n=5 hedef %100 yarim %100 sahte %40 Rtam +0.32R Ryarim +0.15R RR 0.3 | YAKIN n=8 sonuclanan 8 onaylanan %25
+ikili_tepe 1w HEPSI (63 grafik): KIRILIM n=48 hedef %63 yarim %81 sahte %29 Rtam -0.06R Ryarim -0.04R RR 0.5 | YAKIN n=61 sonuclanan 61 onaylanan %62
+ikili_tepe 1w ABD (43 grafik): KIRILIM n=38 hedef %65 yarim %82 sahte %34 Rtam -0.05R Ryarim -0.05R RR 0.5 | YAKIN n=41 sonuclanan 41 onaylanan %71
+ikili_tepe 1w BIST (16 grafik): KIRILIM n=8 hedef %62 yarim %75 sahte %12 Rtam -0.03R Ryarim -0.07R RR 0.5 | YAKIN n=17 sonuclanan 17 onaylanan %47
+ikili_tepe 1w KRIPTO (4 grafik): KIRILIM n=2 hedef %0 yarim %100 sahte %0 Rtam -0.35R Ryarim +0.21R RR 0.4 | YAKIN n=3 sonuclanan 3 onaylanan %33
+ters_obo 4h HEPSI (66 grafik): KIRILIM n=56 hedef %41 yarim %57 sahte %39 Rtam -0.00R Ryarim -0.12R RR 1.4 | YAKIN n=64 sonuclanan 64 onaylanan %69
+ters_obo 4h ABD (14 grafik): KIRILIM n=11 hedef %50 yarim %55 sahte %27 Rtam +0.08R Ryarim -0.20R RR 1.4 | YAKIN n=11 sonuclanan 11 onaylanan %73
+ters_obo 4h BIST (5 grafik): KIRILIM n=3 hedef %67 yarim %67 sahte %33 Rtam +0.14R Ryarim -0.16R RR 0.9 | YAKIN n=5 sonuclanan 5 onaylanan %60
+ters_obo 4h KRIPTO (47 grafik): KIRILIM n=42 hedef %37 yarim %57 sahte %43 Rtam -0.03R Ryarim -0.09R RR 1.5 | YAKIN n=48 sonuclanan 48 onaylanan %69
+ters_obo 8h HEPSI (29 grafik): KIRILIM n=26 hedef %52 yarim %69 sahte %42 Rtam +0.26R Ryarim +0.10R RR 1.5 | YAKIN n=27 sonuclanan 27 onaylanan %81
+ters_obo 8h KRIPTO (29 grafik): KIRILIM n=26 hedef %52 yarim %69 sahte %42 Rtam +0.26R Ryarim +0.10R RR 1.5 | YAKIN n=27 sonuclanan 27 onaylanan %81
+ters_obo 1dL HEPSI (108 grafik): KIRILIM n=96 hedef %46 yarim %62 sahte %30 Rtam +0.11R Ryarim -0.03R RR 1.5 | YAKIN n=106 sonuclanan 106 onaylanan %74
+ters_obo 1dL ABD (59 grafik): KIRILIM n=56 hedef %43 yarim %61 sahte %30 Rtam +0.05R Ryarim -0.07R RR 1.4 | YAKIN n=63 sonuclanan 63 onaylanan %78
+ters_obo 1dL BIST (37 grafik): KIRILIM n=34 hedef %47 yarim %61 sahte %29 Rtam +0.14R Ryarim -0.01R RR 1.7 | YAKIN n=33 sonuclanan 33 onaylanan %73
+ters_obo 1dL KRIPTO (12 grafik): KIRILIM n=6 hedef %67 yarim %83 sahte %33 Rtam +0.51R Ryarim +0.23R RR 1.4 | YAKIN n=10 sonuclanan 10 onaylanan %50
+ters_obo 3d HEPSI (34 grafik): KIRILIM n=27 hedef %44 yarim %67 sahte %33 Rtam +0.15R Ryarim +0.05R RR 1.7 | YAKIN n=28 sonuclanan 28 onaylanan %68
+ters_obo 3d ABD (14 grafik): KIRILIM n=13 hedef %58 yarim %85 sahte %31 Rtam +0.55R Ryarim +0.32R RR 1.5 | YAKIN n=12 sonuclanan 12 onaylanan %83
+ters_obo 3d BIST (11 grafik): KIRILIM n=10 hedef %44 yarim %60 sahte %30 Rtam +0.09R Ryarim -0.10R RR 1.8 | YAKIN n=8 sonuclanan 8 onaylanan %75
+ters_obo 3d KRIPTO (9 grafik): KIRILIM n=4 hedef %0 yarim %25 sahte %50 Rtam -1.00R Ryarim -0.51R RR 2.6 | YAKIN n=8 sonuclanan 8 onaylanan %38
+ters_obo 1w HEPSI (18 grafik): KIRILIM n=9 hedef %71 yarim %89 sahte %22 Rtam +0.66R Ryarim +0.32R RR 1.4 | YAKIN n=16 sonuclanan 16 onaylanan %38
+ters_obo 1w ABD (10 grafik): KIRILIM n=4 hedef %33 yarim %75 sahte %0 Rtam +0.11R Ryarim +0.13R RR 1.2 | YAKIN n=9 sonuclanan 9 onaylanan %22
+ters_obo 1w BIST (7 grafik): KIRILIM n=5 hedef %100 yarim %100 sahte %40 Rtam +1.10R Ryarim +0.52R RR 1.4 | YAKIN n=6 sonuclanan 6 onaylanan %67
+ters_obo 1w KRIPTO (1 grafik): KIRILIM n=0 hedef - yarim - sahte - Rtam - Ryarim - RR - | YAKIN n=1 sonuclanan 1 onaylanan %0
+obo 4h HEPSI (76 grafik): KIRILIM n=63 hedef %42 yarim %75 sahte %25 Rtam -0.11R Ryarim +0.13R RR 1.2 | YAKIN n=80 sonuclanan 80 onaylanan %66
+obo 4h ABD (22 grafik): KIRILIM n=19 hedef %32 yarim %68 sahte %37 Rtam -0.28R Ryarim +0.08R RR 1.2 | YAKIN n=21 sonuclanan 21 onaylanan %81
+obo 4h BIST (11 grafik): KIRILIM n=9 hedef %71 yarim %89 sahte %22 Rtam +0.44R Ryarim +0.41R RR 1.1 | YAKIN n=11 sonuclanan 11 onaylanan %64
+obo 4h KRIPTO (43 grafik): KIRILIM n=35 hedef %41 yarim %76 sahte %20 Rtam -0.16R Ryarim +0.08R RR 1.1 | YAKIN n=48 sonuclanan 48 onaylanan %60
+obo 8h HEPSI (27 grafik): KIRILIM n=17 hedef %38 yarim %65 sahte %6 Rtam -0.16R Ryarim -0.15R RR 1.0 | YAKIN n=29 sonuclanan 29 onaylanan %55
+obo 8h KRIPTO (27 grafik): KIRILIM n=17 hedef %38 yarim %65 sahte %6 Rtam -0.16R Ryarim -0.15R RR 1.0 | YAKIN n=29 sonuclanan 29 onaylanan %55
+obo 1dL HEPSI (98 grafik): KIRILIM n=94 hedef %39 yarim %67 sahte %37 Rtam -0.20R Ryarim -0.02R RR 1.0 | YAKIN n=103 sonuclanan 103 onaylanan %74
+obo 1dL ABD (64 grafik): KIRILIM n=67 hedef %37 yarim %64 sahte %37 Rtam -0.24R Ryarim -0.07R RR 1.1 | YAKIN n=68 sonuclanan 68 onaylanan %76
+obo 1dL BIST (28 grafik): KIRILIM n=22 hedef %42 yarim %71 sahte %45 Rtam -0.15R Ryarim +0.01R RR 1.0 | YAKIN n=29 sonuclanan 29 onaylanan %66
+obo 1dL KRIPTO (6 grafik): KIRILIM n=5 hedef %67 yarim %100 sahte %0 Rtam +0.19R Ryarim +0.41R RR 0.8 | YAKIN n=6 sonuclanan 6 onaylanan %83
+obo 3d HEPSI (44 grafik): KIRILIM n=34 hedef %35 yarim %53 sahte %44 Rtam -0.24R Ryarim -0.25R RR 1.0 | YAKIN n=35 sonuclanan 35 onaylanan %63
+obo 3d ABD (29 grafik): KIRILIM n=25 hedef %33 yarim %52 sahte %48 Rtam -0.33R Ryarim -0.28R RR 1.0 | YAKIN n=21 sonuclanan 21 onaylanan %67
+obo 3d BIST (12 grafik): KIRILIM n=7 hedef %20 yarim %43 sahte %43 Rtam -0.17R Ryarim -0.30R RR 1.1 | YAKIN n=11 sonuclanan 11 onaylanan %55
+obo 3d KRIPTO (3 grafik): KIRILIM n=2 hedef %100 yarim %100 sahte %0 Rtam +0.69R Ryarim +0.33R RR 0.7 | YAKIN n=3 sonuclanan 3 onaylanan %67
+obo 1w HEPSI (17 grafik): KIRILIM n=9 hedef %0 yarim %22 sahte %56 Rtam -1.00R Ryarim -0.72R RR 0.9 | YAKIN n=12 sonuclanan 12 onaylanan %33
+obo 1w ABD (10 grafik): KIRILIM n=6 hedef %0 yarim %17 sahte %50 Rtam -1.00R Ryarim -0.83R RR 0.9 | YAKIN n=6 sonuclanan 6 onaylanan %33
+obo 1w BIST (7 grafik): KIRILIM n=3 hedef %0 yarim %33 sahte %67 Rtam -1.00R Ryarim -0.49R RR 1.1 | YAKIN n=6 sonuclanan 6 onaylanan %33
