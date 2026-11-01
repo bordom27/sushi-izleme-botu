@@ -923,10 +923,12 @@ except Exception:  # noqa: BLE001
 # Kirilim kalitesi: gecmis ~8.000 kirilimda sonucu ayiran uc kontrol (ucgen ve OBO'da belirgin, ikilide zayif):
 #   1) risk/odul >= 1,25 (giris kirilim kapanisi, stop gecersizlik, kar al hedef; gercek fiyatla)
 #   2) EMA200 yonunde (yukari kirilimda kapanis EMA200 ustunde, asagi kirilimda altinda)
-#   3) hacim >= 1,5 x onceki 20 mumun ortalamasi
+#   3) Bollinger genisligi >= 3,2 ATR: onceki 20 kapanisin 4 standart sapmasi (fiyat cizgiye hareketli geliyor).
+#      Hacim (>= 1,5x) yerine: yukari kirilimlarda hacim ayirmiyordu, BB genisligi her zaman diliminde ayiriyor
+#      (gunluk +0,49R / +0,16R). MACD, RSI, ADX, OBV, CMF, ROC, yillik konum, ATR daralmasi denendi, ayirmadi.
 # Puan 3/3 'saglam', 2/3 'orta', 0-1/3 'zayif' diye gruplanir; ekranda bu formasyonun ayni gruptaki gecmis sonucu
 # (derece) gosterilir. Yukari kirilimlarda belirgin ayirt ediyor, asagi kirilimlarda zayif.
-KALITE = dict(RR=1.25, HACIM=1.5, HACIM_N=20, EMA=200)
+KALITE = dict(RR=1.25, HACIM=1.5, HACIM_N=20, EMA=200, BB=3.2, BB_N=20)
 
 
 def ema(x, n: int) -> np.ndarray:
@@ -968,13 +970,25 @@ def hacim_orani(d: dict, b: int) -> float | None:
     return float(v[b]) / ort if ort > 0 else None
 
 
+def bb_genislik(d: dict, b: int) -> float | None:
+    """Onceki 20 kapanisin Bollinger genisligi (4 standart sapma) / ATR: kirilima hareketli mi gelindi."""
+    n = KALITE["BB_N"]
+    if b < n:
+        return None
+    a = atr(d["h"], d["l"], d["c"])[b] if "_atr" not in d or len(d["_atr"]) != len(d["c"]) else d["_atr"][b]
+    return float(4 * np.std(d["c"][b - n:b]) / a) if a > 0 else None
+
+
 def kirilim_kalitesi(d: dict, o: dict) -> dict:
     """Kirilim mumundaki uc kontrol (bkz. KALITE). Donus: puan 0-3, sev, rr, trend, hacim."""
     b, yuk = o["b"], o["yon"] == "yukari"
     rr = rr_fiyat(d["c"][b], o["gecersiz"], o["hedef"], yuk)
-    tr, hc = trend_yonu(d, b, yuk), hacim_orani(d, b)
-    puan = int(rr is not None and rr >= KALITE["RR"]) + int(bool(tr)) + int(hc is not None and hc >= KALITE["HACIM"])
-    return dict(puan=puan, sev="saglam" if puan == 3 else "orta" if puan == 2 else "zayif", rr=rr, trend=tr, hacim=hc)
+    if "_atr" not in d or len(d["_atr"]) != len(d["c"]):
+        d["_atr"] = atr(d["h"], d["l"], d["c"])
+    tr, bb = trend_yonu(d, b, yuk), bb_genislik(d, b)
+    puan = int(rr is not None and rr >= KALITE["RR"]) + int(bool(tr)) + int(bb is not None and bb >= KALITE["BB"])
+    return dict(puan=puan, sev="saglam" if puan == 3 else "orta" if puan == 2 else "zayif", rr=rr, trend=tr, bb=bb,
+                hacim=hacim_orani(d, b))
 
 
 def kalite_gecmis(anahtar: str, aralik: str | None, sev: str) -> list | None:
@@ -1126,7 +1140,7 @@ def kalite_yazi(d: dict, o: dict, anahtar: str, aralik: str | None) -> dict:
     calismiyor (asagi kirilimlarda zayif), o yuzden gosterilen yargi puanin degil gecmisin."""
     q = kirilim_kalitesi(d, o)
     rr = f"R/Ö {_sayi(q['rr'])} {_isaret(q['rr'] >= KALITE['RR'])}" if q["rr"] else "R/Ö — ✗"
-    hc = f"hacim {_sayi(q['hacim'])}× {_isaret(q['hacim'] >= KALITE['HACIM'])}" if q["hacim"] is not None else "hacim —"
+    hc = f"BB {_sayi(q['bb'])} ATR {_isaret(q['bb'] >= KALITE['BB'])}" if q["bb"] is not None else "BB —"
     g = kalite_gecmis(anahtar, aralik, q["sev"])
     gec = None
     if g and g[3] >= MIN_ORNEK:
@@ -1147,8 +1161,9 @@ def _kalite_satiri(d: dict, o: dict, anahtar: str, aralik: str | None) -> list:
 def _kontrol_satiri(d: dict, son: int, yonler: list, onay: bool = False) -> list:
     """Aktif formasyon: saglam kirilim icin gerekenler. yonler: [(etiket, yukari)]; R/O hedef satirinda."""
     tr = " · ".join(f"{et}trend {_isaret(trend_yonu(d, son, yuk))}" for et, yuk in yonler)
-    return [[(f"Sağlam {'onay' if onay else 'kırılım'} için: hacim ≥ {_sayi(KALITE['HACIM'])}× · R/Ö ≥ "
-              f"{_sayi(KALITE['RR'], 2)} · {tr}", GRI, None)]]
+    bb = bb_genislik(d, son)
+    return [[(f"Sağlam {'onay' if onay else 'kırılım'} için: R/Ö ≥ {_sayi(KALITE['RR'], 2)} · {tr} · BB ≥ "
+              f"{_sayi(KALITE['BB'])} ATR (şimdi {_sayi(bb) if bb is not None else '—'})", GRI, None)]]
 
 
 def sembol_yazi(piyasa: str | None, sym: str | None, aralik: str | None) -> tuple | None:
@@ -1652,7 +1667,7 @@ def olay_metni(o: dict, d: dict, ad: str, aralik_ad: str, link: str, piyasa: str
                       f"Fiyat {taraf} çizgisine yaklaştı: kapanış {fiyat(c)}, çizgi {fiyat(o['seviye'])} "
                       f"({_yuzde(o['seviye'], c)})"
                       f"{guven_metni(g, ('Yukarı' if o['yon'] == 'ust' else 'Aşağı') + ' kırılırsa: ')}\n"
-                      f"Sağlam kırılım için: hacim ≥ {_sayi(KALITE['HACIM'])}× ortalama, R/Ö ≥ {_sayi(KALITE['RR'], 2)}, "
+                      f"Sağlam kırılım için: R/Ö ≥ {_sayi(KALITE['RR'], 2)}, BB genişliği ≥ {_sayi(KALITE['BB'])} ATR, "
                       f"EMA200 {dict([(True, 'yönünde ✓'), (False, 'ters ✗')]).get(trend_yonu(d, o['b'], o['yon'] == 'ust'), 'yok')}",
                       _ek_satirlar(o, d, "", piyasa, aralik, sym), link)
     desen = DESEN_AD[o["desen"]]

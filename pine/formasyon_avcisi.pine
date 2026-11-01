@@ -112,6 +112,7 @@ atr14 = ta.rma(trP, 14)
 float ema200 = ta.ema(pC, 200)                     // kırılım kalitesi: EMA200 yönü (log kapanış)
 float hacOrt = ta.sma(volume, 20)[1]               // kırılım kalitesi: önceki 20 mumun hacim ortalaması
 float hacOr = na(hacOrt) or hacOrt <= 0 or na(volume) ? na : volume / hacOrt
+float bbGen = atr14 > 0 ? 4 * ta.stdev(pC, 20)[1] / atr14 : na   // kırılım kalitesi: önceki 20 kapanışın BB genişliği / ATR
 fx(float v) => logOn ? math.exp(v) : v
 phv = ta.pivothigh(high, pvN, pvN)
 plv = ta.pivotlow(low, pvN, pvN)
@@ -757,10 +758,11 @@ kaynakSatir(int de1, int de2) =>
 
 // ───────── kırılım kalitesi (tarayıcıyla aynı) ─────────
 // Geçmiş ~8.000 kırılımda sonucu ayıran üç kontrol: R/Ö ≥ 1,25 (giriş kırılım kapanışı, stop geçersizlik, gerçek
-// fiyatla) · EMA200 yönünde · hacim ≥ 1,5 × önceki 20 mum. Gösterilen yargı, bu formasyonun aynı puandaki geçmiş
+// fiyatla) · EMA200 yönünde · BB genişliği ≥ 3,2 ATR (fiyat çizgiye hareketli geliyor; hacim, MACD, RSI, ADX, OBV
+// yerine seçildi: yalnız bu her zaman diliminde ayırdı). Gösterilen yargı, bu formasyonun aynı puandaki geçmiş
 // kırılımlarından (puan yukarı kırılımlarda belirgin ayırıyor, aşağı kırılımlarda zayıf).
 K_RR    = 1.25
-K_HACIM = 1.5
+K_BB    = 3.2
 rrFiyat(float giris, float gec, float hed, bool yuk) =>
     float s = yuk ? 1.0 : -1.0
     float risk = s * (fx(giris) - fx(gec))
@@ -769,8 +771,8 @@ rrFiyat(float giris, float gec, float hed, bool yuk) =>
 rrMetin(float rr) => na(rr) ? "R/Ö —" : "R/Ö 1 : " + str.tostring(rr, "0.0")
 isaret(int d) => d > 0 ? "✓" : d < 0 ? "✗" : "—"
 trendDurum(bool yuk) => bar_index < 200 or na(ema200) ? 0 : (yuk ? pC >= ema200 : pC <= ema200) ? 1 : -1
-kalPuan(float rr, bool yuk) => (not na(rr) and rr >= K_RR ? 1 : 0) + (trendDurum(yuk) > 0 ? 1 : 0) + (not na(hacOr) and hacOr >= K_HACIM ? 1 : 0)
-kalAyr(float rr, bool yuk) => "R/Ö " + (na(rr) ? "—" : str.tostring(rr, "0.0")) + " " + isaret(not na(rr) and rr >= K_RR ? 1 : -1) + " · trend " + isaret(trendDurum(yuk)) + " · hacim " + (na(hacOr) ? "—" : str.tostring(hacOr, "0.0") + "× " + isaret(hacOr >= K_HACIM ? 1 : -1))
+kalPuan(float rr, bool yuk) => (not na(rr) and rr >= K_RR ? 1 : 0) + (trendDurum(yuk) > 0 ? 1 : 0) + (not na(bbGen) and bbGen >= K_BB ? 1 : 0)
+kalAyr(float rr, bool yuk) => "R/Ö " + (na(rr) ? "—" : str.tostring(rr, "0.0")) + " " + isaret(not na(rr) and rr >= K_RR ? 1 : -1) + " · trend " + isaret(trendDurum(yuk)) + " · BB " + (na(bbGen) ? "—" : str.tostring(bbGen, "0.0") + " ATR " + isaret(bbGen >= K_BB ? 1 : -1))
 // bu formasyonun aynı kalite puanındaki geçmiş kırılımlarının derecesi (30'dan az örnekte boş)
 kalDerece(int de, int puan) =>
     int i = (de * 5 + tfIdx) * 3 + (puan >= 3 ? 0 : puan == 2 ? 1 : 2)
@@ -1418,7 +1420,7 @@ if barstate.islast
             hes += "\n      hedef = " + str.tostring(fx(lwN), format.mintick) + " " + hIslem(false) + " H = " + (logOn or hA > 0 ? str.tostring(fx(hA), format.mintick) + " (" + yuzdeS(hA, close) + ") · " + rrMetin(rrFiyat(lwN - tolN, upN, hA, false)) : "sıfırın altında (geçersiz)")
             hes += "\n      " + guvenSatir(ucgDe(false))
             hes += "\nEn iyi zaman dilimi: ▲ " + enIyiYazi(ucgDe(true), false) + " · ▼ " + enIyiYazi(ucgDe(false), false)
-            hes += "\nSağlam kırılım için: hacim ≥ 1.5× · R/Ö ≥ 1.25 · ▲ trend " + isaret(trendDurum(true)) + " · ▼ trend " + isaret(trendDurum(false))
+            hes += "\nSağlam kırılım için: R/Ö ≥ 1.25 · BB ≥ 3.2 ATR (şimdi " + (na(bbGen) ? "—" : str.tostring(bbGen, "0.0")) + ") · ▲ trend " + isaret(trendDurum(true)) + " · ▼ trend " + isaret(trendDurum(false))
             hes += "\n" + kaynakSatir(ucgDe(true), ucgDe(false))
             // kutu üçgenin içinde, geniş tarafta: tabandaki H çizgisinin hemen sağında
             int xk = fx0 + math.max(1, int((b - fx0) * 0.04))
