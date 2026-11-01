@@ -571,6 +571,87 @@ aBoyun(int x) => aBp0 + aBs * (x - aBi0)
 oncelik(string t) => t == "obo" or t == "ters_obo" ? 3 : t == "ucgen" ? 2 : 1
 desenAd(string t) => t == "ikili_tepe" ? "İkili tepe" : t == "ikili_dip" ? "İkili dip" : t == "obo" ? "Omuz-baş-omuz" : "Ters omuz-baş-omuz"
 
+// ───────── geçmiş isabet: güven derecesi ─────────
+// ucgen_istatistik.py sonuçları (01.11.2026): her kırılım sonrası en fazla 100 mumda, geçersizliğe dokunmadan
+// hedefe ulaşma oranı (stH, %), işlem başına ortalama sonuç (stR, R: giriş kırılım kapanışı, stop geçersizlik,
+// kâr al hedef) ve geçmiş kırılım sayısı (stN). Dizin = (formasyon × 4 + piyasa) × 5 + zaman dilimi.
+// formasyon: 0 üçgen↑ 1 üçgen↓ 2 ikili dip 3 ikili tepe 4 ters OBO 5 OBO · piyasa: 0 tümü 1 kripto 2 BIST 3 ABD
+// zaman dilimi: 0 4 saatlik 1 8 saatlik 2 günlük 3 3 günlük 4 haftalık
+var array<float> stH = array.from(
+     33.0, 29.0, 39.0, 47.0, 50.0, 30.0, 29.0, 39.0, 32.0, 44.0, 40.0, 0.0, 40.0, 57.0, 56.0, 38.0, 0.0, 38.0, 46.0, 47.0,
+     29.0, 30.0, 24.0, 21.0, 17.0, 29.0, 30.0, 26.0, 28.0, 0.0, 28.0, 0.0, 25.0, 23.0, 19.0, 27.0, 0.0, 22.0, 17.0, 18.0,
+     62.0, 52.0, 68.0, 66.0, 76.0, 62.0, 52.0, 70.0, 53.0, 75.0, 64.0, 0.0, 65.0, 77.0, 90.0, 64.0, 0.0, 69.0, 65.0, 68.0,
+     64.0, 75.0, 60.0, 53.0, 53.0, 72.0, 75.0, 67.0, 0.0, 0.0, 42.0, 0.0, 55.0, 50.0, 38.0, 47.0, 0.0, 62.0, 53.0, 57.0,
+     42.0, 59.0, 49.0, 57.0, 59.0, 46.0, 59.0, 57.0, 33.0, 0.0, 33.0, 0.0, 53.0, 44.0, 67.0, 33.0, 0.0, 46.0, 73.0, 55.0,
+     31.0, 22.0, 41.0, 32.0, 10.0, 31.0, 22.0, 60.0, 0.0, 0.0, 43.0, 0.0, 40.0, 0.0, 0.0, 28.0, 0.0, 39.0, 37.0, 17.0)
+var array<float> stR = array.from(
+     0.08, -0.07, 0.29, 0.59, 0.63, 0.03, -0.07, 0.28, 0.23, 0.43, 0.33, 0.00, 0.33, 0.79, 0.76, 0.14, 0.00, 0.27, 0.57, 0.59,
+     0.07, 0.14, -0.15, -0.15, -0.24, 0.10, 0.14, 0.04, 0.40, -0.28, 0.24, 0.00, -0.01, -0.13, -0.09, -0.22, 0.00, -0.28, -0.38, -0.31,
+     -0.04, -0.19, 0.10, 0.10, 0.23, -0.06, -0.19, 0.08, -0.32, 0.33, -0.07, 0.00, 0.03, 0.25, 0.40, 0.03, 0.00, 0.13, 0.12, 0.15,
+     0.06, 0.22, -0.00, -0.14, -0.12, 0.21, 0.22, 0.14, 0.00, 0.00, -0.26, 0.00, -0.09, -0.14, -0.22, -0.23, 0.00, 0.02, -0.17, -0.09,
+     0.01, 0.30, 0.08, 0.19, 0.19, 0.15, 0.30, 0.16, -0.06, 0.00, -0.52, 0.00, 0.22, -0.08, 0.20, -0.30, 0.00, 0.00, 0.43, 0.19,
+     -0.27, -0.28, -0.11, -0.17, -0.59, -0.34, -0.28, 0.36, 0.00, 0.00, 0.04, 0.00, -0.16, -1.00, -0.51, -0.31, 0.00, -0.14, -0.10, -0.66)
+var array<float> stN = array.from(
+     1601.0, 603.0, 2011.0, 596.0, 350.0, 1192.0, 603.0, 342.0, 83.0, 27.0, 166.0, 0.0, 532.0, 179.0, 117.0, 243.0, 0.0, 1137.0, 334.0, 206.0,
+     1773.0, 646.0, 1754.0, 474.0, 271.0, 1310.0, 646.0, 316.0, 92.0, 32.0, 210.0, 0.0, 482.0, 141.0, 84.0, 253.0, 0.0, 956.0, 241.0, 155.0,
+     218.0, 91.0, 312.0, 111.0, 69.0, 133.0, 91.0, 47.0, 17.0, 4.0, 35.0, 0.0, 84.0, 33.0, 22.0, 50.0, 0.0, 181.0, 61.0, 43.0,
+     165.0, 65.0, 300.0, 72.0, 44.0, 108.0, 65.0, 13.0, 0.0, 0.0, 20.0, 0.0, 76.0, 15.0, 10.0, 37.0, 0.0, 211.0, 53.0, 32.0,
+     53.0, 33.0, 101.0, 27.0, 17.0, 38.0, 33.0, 7.0, 3.0, 0.0, 3.0, 0.0, 34.0, 10.0, 6.0, 12.0, 0.0, 60.0, 14.0, 11.0,
+     60.0, 13.0, 74.0, 24.0, 12.0, 32.0, 13.0, 5.0, 0.0, 0.0, 10.0, 0.0, 17.0, 3.0, 6.0, 18.0, 0.0, 52.0, 20.0, 6.0)
+var string piyKod = syminfo.type == "crypto" ? "KRIPTO" : syminfo.prefix == "BIST" ? "BIST" : (syminfo.type == "stock" or syminfo.type == "dr" or syminfo.type == "fund") and syminfo.currency == "USD" ? "ABD" : "HEPSI"
+var int piyIdx = piyKod == "KRIPTO" ? 1 : piyKod == "BIST" ? 2 : piyKod == "ABD" ? 3 : 0
+var int tfSn = timeframe.in_seconds()
+// hissede seans 8 saatten kısa: 8 saatlik mum günlük mumla aynı
+var int tfIdx = tfSn < 6 * 3600 ? 0 : tfSn < 12 * 3600 ? (piyIdx >= 2 ? 2 : 1) : tfSn < 2 * 86400 ? 2 : tfSn < 5 * 86400 ? 3 : 4
+var bool tfTam = tfSn == 4 * 3600 or tfSn == 8 * 3600 or tfSn == 86400 or tfSn == 3 * 86400 or tfSn == 7 * 86400
+
+stIdx(int de, int pi, int tf) => (de * 4 + pi) * 5 + tf
+// bu piyasada 30'dan az kırılım varsa tüm piyasaların sonucu kullanılır
+stHucre(int de, int tf) =>
+    int i = stIdx(de, piyIdx, tf)
+    array.get(stN, i) >= 30 ? i : stIdx(de, 0, tf)
+derece(int i) =>
+    float n = array.get(stN, i)
+    float r = array.get(stR, i)
+    n < 30 ? "AZ ÖRNEK" : r >= 0.40 ? "GÜÇLÜ" : r >= 0.15 ? "İYİ" : r >= 0 ? "TEMKİNLİ" : "KAÇIN"
+dereceIkon(string d) => d == "GÜÇLÜ" or d == "İYİ" ? "🟢" : d == "TEMKİNLİ" ? "🟠" : d == "KAÇIN" ? "🔴" : "⚪"
+dereceRenk(string d) => d == "GÜÇLÜ" ? #4caf50 : d == "İYİ" ? #9ccc65 : d == "TEMKİNLİ" ? #ffb74d : d == "KAÇIN" ? #ef5350 : color.gray
+dereceNot(string d) => d == "GÜÇLÜ" or d == "İYİ" ? "işlem alınabilir" : d == "TEMKİNLİ" ? "küçük pozisyon, yarım hedefte kâr al" : d == "KAÇIN" ? "işlem alma" : "geçmiş örnek az, güvenme"
+rYazi(float r) => (r >= 0 ? "+" : "−") + str.tostring(math.abs(r), "0.00") + "R"
+tfAd(int t) => t == 0 ? "4 saatlik" : t == 1 ? "8 saatlik" : t == 2 ? "günlük" : t == 3 ? "3 günlük" : "haftalık"
+piyAd(int pk) => pk == 1 ? "kripto" : pk == 2 ? "BIST" : pk == 3 ? "ABD hisseleri" : "tüm piyasalar"
+desenNo(string t) => t == "ikili_dip" ? 2 : t == "ikili_tepe" ? 3 : t == "ters_obo" ? 4 : 5
+// "🟢 İYİ: işlem alınabilir · geçmiş %38 hedef, +0.27R/işlem"
+guvenSatir(int de) =>
+    int i = stHucre(de, tfIdx)
+    string d = derece(i)
+    array.get(stN, i) <= 0 ? "geçmiş veri yok" : dereceIkon(d) + " " + d + ": " + dereceNot(d) + " · geçmiş %" + str.tostring(array.get(stH, i), "#") + " hedef, " + rYazi(array.get(stR, i)) + "/işlem"
+guvenKisa(int de) =>
+    int i = stHucre(de, tfIdx)
+    derece(i) + " (%" + str.tostring(array.get(stH, i), "#") + ", " + rYazi(array.get(stR, i)) + ")"
+// bu formasyonun en kârlı zaman dilimi (en az 30 kırılım; bu piyasada yoksa tüm piyasalar)
+enIyiYazi(int de, bool kisa) =>
+    int en = -1
+    float enR = -99.0
+    for tf = 0 to 4
+        int i = stIdx(de, piyIdx, tf)
+        if array.get(stN, i) >= 30 and array.get(stR, i) > enR
+            enR := array.get(stR, i)
+            en := i
+    if en < 0
+        for tf = 0 to 4
+            int i = stIdx(de, 0, tf)
+            if array.get(stN, i) >= 30 and array.get(stR, i) > enR
+                enR := array.get(stR, i)
+                en := i
+    en < 0 ? "—" : enR < 0 ? (kisa ? "yok" : "hiçbiri kârlı değil") : tfAd(en % 5) + (kisa ? "" : " %" + str.tostring(array.get(stH, en), "#")) + " (" + rYazi(enR) + ")" + (en % 5 == tfIdx ? (kisa ? " ✓" : " ← bu grafik") : "")
+kaynakSatir(int de1, int de2) =>
+    int i1 = stHucre(de1, tfIdx)
+    string n = str.tostring(array.get(stN, i1), "#")
+    if de2 >= 0
+        n += " / " + str.tostring(array.get(stN, stHucre(de2, tfIdx)), "#")
+    "Kaynak: " + piyAd(int(math.floor(i1 / 5)) % 4) + " · " + tfAd(tfIdx) + " grafik" + (tfTam ? "" : " (en yakın test edilen)") + " · " + n + " geçmiş kırılım"
+
 kullan(array<int> xs, array<bool> ts) =>
     if array.size(xs) > 0
         for i = 0 to array.size(xs) - 1
@@ -895,7 +976,7 @@ if dVar
             line.new(bx1, dBoyun(bx1), b, nl, color = color.new(cBoyun, 25), width = 1)
             if array.size(dPX) == 3
                 line.new(array.get(dPX, 0), array.get(dPP, 0), array.get(dPX, 2), array.get(dPP, 2), color = color.new(asagi ? color.red : color.teal, 35), width = 1)
-            label.new(b, asagi ? low : high, (asagi ? "▼ " : "▲ ") + str.upper(desenAd(dTur)) + "\nOnay: " + str.tostring(nl, format.mintick) + "\nHedef: " + str.tostring(onayHedef, format.mintick), style = asagi ? label.style_label_up : label.style_label_down, color = asagi ? color.new(color.red, 10) : color.new(color.green, 10), textcolor = color.white, size = size.small)
+            label.new(b, asagi ? low : high, (asagi ? "▼ " : "▲ ") + str.upper(desenAd(dTur)) + "\nOnay: " + str.tostring(nl, format.mintick) + "\nHedef: " + str.tostring(onayHedef, format.mintick) + "\nGüven: " + guvenKisa(desenNo(dTur)), style = asagi ? label.style_label_up : label.style_label_down, color = asagi ? color.new(color.red, 10) : color.new(color.green, 10), textcolor = color.white, size = size.small)
         kullan(dPX, dPT)
         dVar := false
     else if not dYakin and math.abs(close - nl) <= yakAtr * atr14
@@ -935,7 +1016,7 @@ if aktif
         if gecmis
             line.new(uI0, ustDeger(uI0), b, up, color = color.new(cUst, 30), width = 1)
             line.new(lI0, altDeger(lI0), b, lw, color = color.new(cAlt, 30), width = 1)
-            label.new(b, evKirU ? high : low, (evKirU ? "▲ YUKARI KIRILIM\n" : "▼ AŞAĞI KIRILIM\n") + fTip + " üçgen\nKırılan seviye: " + str.tostring(kirSev, format.mintick) + "\nH (taban yüksekliği): " + str.tostring(fw0, format.mintick) + "\nHedef = seviye " + (evKirU ? "+" : "−") + " H = " + str.tostring(kirHedef, format.mintick), style = evKirU ? label.style_label_down : label.style_label_up, color = evKirU ? color.new(color.green, 10) : color.new(color.red, 10), textcolor = color.white, size = size.small)
+            label.new(b, evKirU ? high : low, (evKirU ? "▲ YUKARI KIRILIM\n" : "▼ AŞAĞI KIRILIM\n") + fTip + " üçgen\nKırılan seviye: " + str.tostring(kirSev, format.mintick) + "\nH (taban yüksekliği): " + str.tostring(fw0, format.mintick) + "\nHedef = seviye " + (evKirU ? "+" : "−") + " H = " + str.tostring(kirHedef, format.mintick) + "\nGüven: " + guvenKisa(evKirU ? 0 : 1), style = evKirU ? label.style_label_down : label.style_label_up, color = evKirU ? color.new(color.green, 10) : color.new(color.red, 10), textcolor = color.white, size = size.small)
     else
         if up - close <= yakAtr * atr14 and not yakU
             yakU := true
@@ -965,11 +1046,11 @@ if barstate.isconfirmed
     if evYakU or evYakL
         alert(syminfo.ticker + " " + fTip + " üçgen: " + (evYakU ? "ÜST" : "ALT") + " çizgiye yaklaştı. Üst " + str.tostring(up, format.mintick) + " / alt " + str.tostring(lw, format.mintick), alert.freq_once_per_bar_close)
     if evKirU or evKirL
-        alert(syminfo.ticker + (evKirU ? " YUKARI" : " AŞAĞI") + " KIRILIM (üçgen). Seviye " + str.tostring(kirSev, format.mintick) + ", hedef " + str.tostring(kirHedef, format.mintick), alert.freq_once_per_bar_close)
+        alert(syminfo.ticker + (evKirU ? " YUKARI" : " AŞAĞI") + " KIRILIM (üçgen). Seviye " + str.tostring(kirSev, format.mintick) + ", hedef " + str.tostring(kirHedef, format.mintick) + ". Güven: " + guvenKisa(evKirU ? 0 : 1), alert.freq_once_per_bar_close)
     if evBoyYak
         alert(syminfo.ticker + " " + desenAd(dTur) + ": boyun çizgisine yaklaştı (" + str.tostring(dBoyun(b), format.mintick) + ")", alert.freq_once_per_bar_close)
     if evOnay
-        alert(syminfo.ticker + " " + desenAd(onayTur) + " ONAYLANDI. Boyun " + str.tostring(onaySev, format.mintick) + ", hedef " + str.tostring(onayHedef, format.mintick), alert.freq_once_per_bar_close)
+        alert(syminfo.ticker + " " + desenAd(onayTur) + " ONAYLANDI. Boyun " + str.tostring(onaySev, format.mintick) + ", hedef " + str.tostring(onayHedef, format.mintick) + ". Güven: " + guvenKisa(desenNo(onayTur)), alert.freq_once_per_bar_close)
 
 // ───────── aktif formasyonları çiz (son mumda) ─────────
 yuzdeS(float x, float c) =>
@@ -1013,13 +1094,16 @@ if barstate.islast
             if hA > 0
                 array.push(ciz, line.new(b, hA, uc, hA, color = color.red, width = 1, style = line.style_dotted))
                 array.push(etk, label.new(uc, hA, "hedef ↓ " + str.tostring(hA, format.mintick) + " (" + yuzdeS(hA, close) + ")", style = label.style_label_left, color = color.new(color.black, 100), textcolor = color.red, size = size.small))
-            string hes = fTip + " üçgen · " + str.tostring(fDok) + " dokunuş · olgunluk %" + str.tostring(olg, "#")
-            hes += "\nH (taban yüksekliği) = " + str.tostring(fw0, format.mintick)
-            hes += "\nÜst " + str.tostring(upN, format.mintick) + " (" + yuzdeS(upN, close) + ") · kırılım: kapanış > " + str.tostring(upN + tolN, format.mintick)
-            hes += "\nAlt " + str.tostring(lwN, format.mintick) + " (" + yuzdeS(lwN, close) + ") · kırılım: kapanış < " + str.tostring(lwN - tolN, format.mintick)
-            hes += "\nHedef ↑ = " + str.tostring(upN, format.mintick) + " + H = " + str.tostring(hU, format.mintick) + " (" + yuzdeS(hU, close) + ")"
-            hes += "\nHedef ↓ = " + str.tostring(lwN, format.mintick) + " − H = " + (hA > 0 ? str.tostring(hA, format.mintick) + " (" + yuzdeS(hA, close) + ")" : "sıfırın altında (geçersiz)")
-            hes += "\nRisk/ödül 1 : " + str.tostring(rr, "#.#") + " (stop: karşı çizgi) · apex'e " + str.tostring(fApex - b, "#") + " mum"
+            string hes = fTip + " üçgen · " + str.tostring(fDok) + " dokunuş · olgunluk %" + str.tostring(olg, "#") + " · apex'e " + str.tostring(fApex - b, "#") + " mum"
+            hes += "\nH (taban yüksekliği) = " + str.tostring(fw0, format.mintick) + " · risk/ödül 1 : " + str.tostring(rr, "#.#") + " (stop: karşı çizgi)"
+            hes += "\n▲ Üst " + str.tostring(upN, format.mintick) + " (" + yuzdeS(upN, close) + ") · kırılım: kapanış > " + str.tostring(upN + tolN, format.mintick)
+            hes += "\n      hedef = " + str.tostring(upN, format.mintick) + " + H = " + str.tostring(hU, format.mintick) + " (" + yuzdeS(hU, close) + ")"
+            hes += "\n      " + guvenSatir(0)
+            hes += "\n▼ Alt " + str.tostring(lwN, format.mintick) + " (" + yuzdeS(lwN, close) + ") · kırılım: kapanış < " + str.tostring(lwN - tolN, format.mintick)
+            hes += "\n      hedef = " + str.tostring(lwN, format.mintick) + " − H = " + (hA > 0 ? str.tostring(hA, format.mintick) + " (" + yuzdeS(hA, close) + ")" : "sıfırın altında (geçersiz)")
+            hes += "\n      " + guvenSatir(1)
+            hes += "\nEn iyi zaman dilimi: ▲ " + enIyiYazi(0, false) + " · ▼ " + enIyiYazi(1, false)
+            hes += "\n" + kaynakSatir(0, 1)
             // kutu üçgenin içinde, geniş tarafta: tabandaki H çizgisinin hemen sağında
             int xk = fx0 + math.max(1, int((b - fx0) * 0.04))
             array.push(etk, label.new(xk, (ustDeger(xk) + altDeger(xk)) / 2, hes, style = label.style_label_left, color = color.new(#131722, 25), textcolor = #e0e3eb, size = size.small, textalign = text.align_left))
@@ -1046,15 +1130,33 @@ if barstate.islast
             for k = 0 to 4 by 2
                 string ad_ = k == 0 ? "Sol omuz" : k == 2 ? "Baş" : "Sağ omuz"
                 array.push(etk, label.new(array.get(dPX, k), array.get(dPP, k), ad_, style = tepeD ? label.style_label_down : label.style_label_up, color = color.new(rk, 20), textcolor = color.white, size = size.small))
-        array.push(etk, label.new(b, dBoyun(b), desenAd(dTur) + "  |  hedef " + str.tostring(tepeD ? dBoyun(b) - dYuk : dBoyun(b) + dYuk, format.mintick), style = label.style_label_left, color = color.new(rk, 60), textcolor = color.white, size = size.small))
+        if showHes
+            // boyun, onay eşiği, hedef (boyun ± H), geçersizlik, risk/ödül ve geçmiş güven derecesi
+            float nlD = dBoyun(b)
+            float tolD = tolAtr * atr14
+            float esikD = tepeD ? nlD - tolD : nlD + tolD
+            float hedD = tepeD ? nlD - dYuk : nlD + dYuk
+            float riskD = math.abs(esikD - dGec)
+            float odulD = tepeD ? esikD - hedD : hedD - esikD
+            int deD = desenNo(dTur)
+            string hd = desenAd(dTur) + " · H (yükseklik) = " + str.tostring(dYuk, format.mintick) + " · onay bekliyor"
+            hd += "\nBoyun " + str.tostring(nlD, format.mintick) + " (" + yuzdeS(nlD, close) + ") · onay: kapanış " + (tepeD ? "< " : "> ") + str.tostring(esikD, format.mintick)
+            hd += "\nHedef = boyun " + (tepeD ? "−" : "+") + " H = " + (hedD > 0 ? str.tostring(hedD, format.mintick) + " (" + yuzdeS(hedD, close) + ")" : "sıfırın altında (geçersiz)")
+            hd += "\nGeçersizlik " + str.tostring(dGec, format.mintick) + " (" + yuzdeS(dGec, close) + ") · risk/ödül " + (riskD > 0 and odulD > 0 ? "1 : " + str.tostring(odulD / riskD, "#.#") : "—")
+            hd += "\n" + guvenSatir(deD)
+            hd += "\nEn iyi zaman dilimi: " + enIyiYazi(deD, false)
+            hd += "\n" + kaynakSatir(deD, -1)
+            array.push(etk, label.new(b, nlD, hd, style = label.style_label_left, color = color.new(#131722, 25), textcolor = #e0e3eb, size = size.small, textalign = text.align_left))
+        else
+            array.push(etk, label.new(b, dBoyun(b), desenAd(dTur) + "  |  hedef " + str.tostring(tepeD ? dBoyun(b) - dYuk : dBoyun(b) + dYuk, format.mintick), style = label.style_label_left, color = color.new(rk, 60), textcolor = color.white, size = size.small))
 
 // ───────── panel ─────────
-var table tb = table.new(position.top_right, 2, 10, bgcolor = color.new(#131722, 10), border_width = 1, border_color = color.new(color.gray, 70))
+var table tb = table.new(position.top_right, 2, 16, bgcolor = color.new(#131722, 10), border_width = 1, border_color = color.new(color.gray, 70))
 satir(int r, string k, string v, color c) =>
     table.cell(tb, 0, r, k, text_color = color.silver, text_size = size.small, text_halign = text.align_left)
     table.cell(tb, 1, r, v, text_color = c, text_size = size.small, text_halign = text.align_right)
 if showT and barstate.islast
-    table.clear(tb, 0, 0, 1, 9)
+    table.clear(tb, 0, 0, 1, 15)
     table.cell(tb, 0, 0, "FORMASYON AVCISI", text_color = color.white, text_size = size.normal)
     table.cell(tb, 1, 0, timeframe.period, text_color = color.gray, text_size = size.small)
     int r = 1
@@ -1067,7 +1169,10 @@ if showT and barstate.islast
         satir(r + 1, "Üst çizgi (direnç)", str.tostring(up, format.mintick) + "  (" + (dU >= 0 ? "+" : "") + str.tostring(dU, "#.##") + "%)" + (yakinU ? "  ⚠ YAKIN" : ""), yakinU ? color.orange : color.white)
         satir(r + 2, "Alt çizgi (destek)", str.tostring(lw, format.mintick) + "  (" + (dL >= 0 ? "+" : "") + str.tostring(dL, "#.##") + "%)" + (yakinL ? "  ⚠ YAKIN" : ""), yakinL ? color.aqua : color.white)
         satir(r + 3, "Yukarı / aşağı hedef", str.tostring(up + fw0, format.mintick) + " / " + str.tostring(lw - fw0, format.mintick), color.gray)
-        r += 4
+        satir(r + 4, "Yukarı kırılırsa", guvenKisa(0), dereceRenk(derece(stHucre(0, tfIdx))))
+        satir(r + 5, "Aşağı kırılırsa", guvenKisa(1), dereceRenk(derece(stHucre(1, tfIdx))))
+        satir(r + 6, "En iyi zaman dilimi", "▲ " + enIyiYazi(0, true) + " · ▼ " + enIyiYazi(1, true), color.silver)
+        r += 7
     if dVar
         float nlS = dBoyun(b)
         float hd = dTers ? nlS + dYuk : nlS - dYuk
@@ -1075,6 +1180,8 @@ if showT and barstate.islast
         satir(r, "Dönüş", desenAd(dTur) + " (onay bekliyor)", dTers ? color.lime : color.red)
         satir(r + 1, "Boyun çizgisi", str.tostring(nlS, format.mintick) + "  (" + (nlS >= close ? "+" : "") + str.tostring((nlS / close - 1) * 100, "#.##") + "%)" + (yakinB ? "  ⚠ YAKIN" : ""), yakinB ? color.yellow : color.white)
         satir(r + 2, "Hedef / geçersizlik", str.tostring(hd, format.mintick) + " / " + str.tostring(dGec, format.mintick), color.gray)
-        r += 3
+        satir(r + 3, "Onaylanırsa", guvenKisa(desenNo(dTur)), dereceRenk(derece(stHucre(desenNo(dTur), tfIdx))))
+        satir(r + 4, "En iyi zaman dilimi", enIyiYazi(desenNo(dTur), true), color.silver)
+        r += 5
     if not aktif and not dVar
         satir(1, "Durum", "Aktif formasyon yok", color.gray)

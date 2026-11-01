@@ -24,6 +24,7 @@ Kriptoda 4 ve 8 saatlik ayni donemi (son ~1000 gun) kapsar.
 """
 from __future__ import annotations
 
+import json
 import os
 import time
 from concurrent.futures import ThreadPoolExecutor
@@ -228,6 +229,35 @@ def ozet(k: list) -> str:
             f"Ryarim {ort_r([x[4] for x in k])} RR {medyan([x[5] for x in k])}")
 
 
+def json_yaz(gruplar: dict, araliklar: list, dosya: str = "formasyon_istatistik.json"):
+    """Grafik kutusundaki guven derecesi icin tablo: desen-yon x piyasa x zaman dilimi ->
+    [hedefe ulasma %, yarim hedefe ulasma %, islem basina ortalama R, kirilim sayisi]. 1dL 'gunluk' (1d) yazilir."""
+    def say(k):
+        h = [x[0] for x in k if x[0] is not None]
+        y = [x[1] for x in k if x[1] is not None]
+        r = [min(x[3], R_TAVAN) for x in k if x[3] is not None]
+        if not (h and y and r):
+            return None
+        return [round(100 * sum(h) / len(h)), round(100 * sum(y) / len(y)), round(float(np.mean(r)), 2), len(k)]
+
+    veri: dict = {}
+    for (desen, a, p), g in gruplar.items():
+        if a not in ("4h", "8h", "1d", "1dL", "3d", "1w") or (a == "1d" and "1dL" in araliklar):
+            continue
+        if desen == "ucgen":
+            parcalar = [(f"ucgen_{yon}", g["kir"][yon]) for yon in ("yukari", "asagi")]
+        else:
+            parcalar = [(desen, g["kir"]["yukari"] + g["kir"]["asagi"])]
+        for anahtar, k in parcalar:
+            s = say(k)
+            if s:
+                veri.setdefault(anahtar, {}).setdefault(p, {})["1d" if a == "1dL" else a] = s
+    json.dump(dict(tarih=time.strftime("%Y-%m-%d"), kaynak=f"ucgen_istatistik.py: {','.join(araliklar)}",
+                   aciklama="her hucre: [hedefe ulasma %, yarim hedefe ulasma %, islem basina ortalama R, "
+                            "kirilim sayisi]; 1d = uzun gecmisli gunluk; 8h yalniz kripto", veri=veri),
+              open(dosya, "w", encoding="utf-8"), ensure_ascii=False, indent=1)
+
+
 def main():
     isler = []
     kripto = u.kripto_listesi()
@@ -305,6 +335,7 @@ def main():
     satirlar = [f"sure {time.time() - t0:.0f} sn | araliklar {','.join(araliklar)}"] + [satir(k) for k in anahtar]
     for s in satirlar:
         print(s)
+    json_yaz(gruplar, araliklar)
     if os.environ.get("GITHUB_ACTIONS") == "true":          # not sayisi sinirli: yalniz tum piyasalar, 3'erli
         ozetler = [satirlar[0]] + [satir(k) for k in anahtar if k[2] == "HEPSI"]
         for i in range(0, len(ozetler), 3):

@@ -756,6 +756,90 @@ def _bitir_grafik(fig, ax, plt, son_adim=None) -> bytes:
     return buf.getvalue()
 
 
+# ───────────────────────── Gecmis isabet: guven derecesi ─────────────────────────
+ISTATISTIK_DOSYA = os.path.join(os.path.dirname(os.path.abspath(__file__)), "formasyon_istatistik.json")
+ZAMAN_AD = {"4h": "4 saatlik", "8h": "8 saatlik", "1d": "günlük", "3d": "3 günlük", "1w": "haftalık"}
+PIYASA_AD = {"KRIPTO": "kripto", "BIST": "BIST", "ABD": "ABD hisseleri", "HEPSI": "tüm piyasalar"}
+MIN_ORNEK = 30                                  # bundan az kirilimli sonuca guvenilmez
+DERECE = ((0.40, "GÜÇLÜ", "#4caf50", "işlem alınabilir"),          # islem basina ortalama R'ye gore
+          (0.15, "İYİ", "#9ccc65", "işlem alınabilir"),
+          (0.00, "TEMKİNLİ", "#ffb74d", "küçük pozisyon, yarım hedefte kâr al"),
+          (-99.0, "KAÇIN", "#ef5350", "işlem alma"))
+try:
+    with open(ISTATISTIK_DOSYA, encoding="utf-8") as _fh:
+        ISTATISTIK = json.load(_fh).get("veri", {})
+except Exception:  # noqa: BLE001
+    ISTATISTIK = {}
+
+
+def _ilk_buyuk(s: str) -> str:
+    return ("İ" + s[1:]) if s[:1] == "i" else s[:1].upper() + s[1:]
+
+
+def _buyuk(s: str) -> str:
+    return s.replace("i", "İ").upper()
+
+
+def _r_yazi(x: float) -> str:
+    return f"{x:+.2f}R".replace(".", ",").replace("-", "−")
+
+
+def guven(anahtar: str, piyasa: str | None, aralik: str | None) -> dict | None:
+    """Gecmis kirilimlara gore guven derecesi (ucgen_istatistik.py sonuclari, formasyon_istatistik.json).
+    anahtar: ucgen_yukari / ucgen_asagi / ikili_dip / ikili_tepe / ters_obo / obo.
+    Piyasada en az 30 kirilim yoksa tum piyasalarin sonucu kullanilir. 'en': bu formasyonun en karli zaman dilimi."""
+    if not ISTATISTIK or aralik not in ZAMAN_AD:
+        return None
+    piyasa = piyasa if piyasa in PIYASA_AD else "HEPSI"
+    if aralik == "8h" and piyasa in ("BIST", "ABD"):
+        aralik = "1d"                                   # hisse seansi <= 8 saat: 8 saatlik mum = gunluk mum
+    tablo = ISTATISTIK.get(anahtar, {})
+    hucre = kaynak = None
+    for p in (piyasa, "HEPSI"):
+        x = tablo.get(p, {}).get(aralik)
+        if x and x[3] >= MIN_ORNEK:
+            hucre, kaynak = x, p
+            break
+    if hucre is None:
+        hucre, kaynak = tablo.get("HEPSI", {}).get(aralik), "HEPSI"
+        if not hucre:
+            return None
+    hedef, yarim, R, n = hucre
+    if n < MIN_ORNEK:
+        ad, renk, notu = "AZ ÖRNEK", "#9e9e9e", "geçmiş örnek az, güvenme"
+    else:
+        ad, renk, notu = next((a, r, t) for esik, a, r, t in DERECE if R >= esik)
+    en = None
+    for p in (piyasa, "HEPSI"):
+        aday = [(v[2], a, v[0]) for a, v in tablo.get(p, {}).items() if v[3] >= MIN_ORNEK]
+        if aday:
+            R_en, a_en, h_en = max(aday)
+            en = dict(aralik=a_en, hedef=h_en, R=R_en, burasi=a_en == aralik)
+            break
+    return dict(ad=ad, renk=renk, notu=notu, hedef=hedef, yarim=yarim, R=R, n=n, kaynak=kaynak, aralik=aralik, en=en)
+
+
+def en_iyi_yazi(g: dict | None) -> str:
+    e = g and g.get("en")
+    if not e:
+        return "—"
+    if e["R"] < 0:
+        return "hiçbiri kârlı değil"
+    return f"{ZAMAN_AD[e['aralik']]} %{e['hedef']} ({_r_yazi(e['R'])})" + (" ← bu grafik" if e["burasi"] else "")
+
+
+def guven_metni(g: dict | None, yon: str = "") -> str:
+    """Telegram mesaji icin tek satir."""
+    if not g:
+        return ""
+    return (f"\n📊 {yon}{g['ad']} — geçmişte %{g['hedef']} hedefe ulaştı, işlem başına {_r_yazi(g['R'])} "
+            f"({PIYASA_AD[g['kaynak']]}, {ZAMAN_AD[g['aralik']]}). {_ilk_buyuk(g['notu'])}. "
+            f"En iyi zaman dilimi: {en_iyi_yazi(g)}")
+
+
+BEYAZ, GRI = "#e0e3eb", "#9598a1"
+
+
 def _ucgen_hesap(d: dict, f: dict, son: int) -> dict:
     """Ucgenin o mumdaki hesaplari: cizgi degerleri, kirilim esigi, olculen hareket hedefleri, olgunluk."""
     A = atr(d["h"], d["l"], d["c"])
@@ -769,114 +853,213 @@ def _hedef_yazi(x: float, c: float) -> str:
     return f"{fiyat(x)} ({_yuzde(x, c)})" if x > 0 else "sıfırın altında (geçersiz)"
 
 
-def _hesap_metni(f: dict, h: dict, olay: dict | None) -> str:
-    """Ucgenin icine yazilan hesaplar. H = ucgenin baslangic yuksekligi (olculen hareket)."""
+def _guven_satiri(g: dict | None, girinti: str = "") -> list:
+    if not g:
+        return []
+    return [[(girinti, BEYAZ, None), (g["ad"], g["renk"], "bold"),
+             (f": {g['notu']} · geçmiş %{g['hedef']} hedef, {_r_yazi(g['R'])}/işlem", BEYAZ, None)]]
+
+
+def _kaynak_satiri(*gs) -> list:
+    gs = [g for g in gs if g]
+    if not gs:
+        return []
+    n = " / ".join(f"{g['n']:,}".replace(",", ".") for g in gs)
+    return [[(f"Kaynak: {PIYASA_AD[gs[0]['kaynak']]} · {ZAMAN_AD[gs[0]['aralik']]} grafik · {n} geçmiş kırılım",
+              GRI, None)]]
+
+
+def _ucgen_satirlari(f: dict, h: dict, olay: dict | None, piyasa: str | None, aralik: str | None) -> list:
+    """Ucgen kutusu: hesaplar + her kirilim yonunun gecmis guven derecesi ve en iyi zaman dilimi.
+    Her satir (metin, renk, kalinlik) parcalarindan olusur."""
     c = h["c"]
     if olay and olay["tur"] == "kirilim":
         yuk = olay["yon"] == "yukari"
         esik = olay["seviye"] + (h["tol"] if yuk else -h["tol"])
         risk, odul = abs(c - olay["gecersiz"]), (olay["hedef"] - c) * (1 if yuk else -1)
         rr = f"1 : {odul / risk:.1f}" if risk > 0 and odul > 0 else "—"
-        return "\n".join([
-            f"{f['tip']} üçgen · {f['dok']} dokunuş",
-            f"H (taban yüksekliği) = {fiyat(h['w0'])}",
-            f"Kırılan {'üst' if yuk else 'alt'} çizgi {fiyat(olay['seviye'])} · eşik {fiyat(esik)}",
-            f"Kırılım kapanışı {fiyat(c)}",
-            f"Hedef = {fiyat(olay['seviye'])} {'+' if yuk else '−'} H = {_hedef_yazi(olay['hedef'], c)}",
-            f"Geçersizlik ({'alt' if yuk else 'üst'} çizgi) {fiyat(olay['gecersiz'])} ({_yuzde(olay['gecersiz'], c)})",
-            f"Risk/ödül {rr} (giriş kapanış, stop geçersizlik)"])
+        g = guven("ucgen_yukari" if yuk else "ucgen_asagi", piyasa, aralik)
+        L = [[(f"{f['tip']} üçgen · {f['dok']} dokunuş · H (taban yüksekliği) = {fiyat(h['w0'])}", BEYAZ, "bold")],
+             [(f"{'▲ Yukarı' if yuk else '▼ Aşağı'} kırıldı: kapanış {fiyat(c)} · çizgi {fiyat(olay['seviye'])} · "
+               f"eşik {fiyat(esik)}", BEYAZ, None)],
+             [(f"Hedef = {fiyat(olay['seviye'])} {'+' if yuk else '−'} H = {_hedef_yazi(olay['hedef'], c)}",
+               BEYAZ, None)],
+             [(f"Geçersizlik ({'alt' if yuk else 'üst'} çizgi) {fiyat(olay['gecersiz'])} "
+               f"({_yuzde(olay['gecersiz'], c)}) · risk/ödül {rr}", BEYAZ, None)]]
+        L += _guven_satiri(g)
+        if g:
+            L.append([(f"En iyi zaman dilimi ({'yukarı' if yuk else 'aşağı'} kırılım): {en_iyi_yazi(g)}", BEYAZ, None)])
+        return L + _kaynak_satiri(g)
     rr = max(0.0, (h["w0"] - h["tol"]) / (h["gen"] + h["tol"]))
-    return "\n".join([
-        f"{f['tip']} üçgen · {f['dok']} dokunuş · olgunluk %{h['olg']:.0f}",
-        f"H (taban yüksekliği) = {fiyat(h['w0'])}",
-        f"Üst {fiyat(h['up'])} ({_yuzde(h['up'], c)}) · kırılım: kapanış > {fiyat(h['up'] + h['tol'])}",
-        f"Alt {fiyat(h['lw'])} ({_yuzde(h['lw'], c)}) · kırılım: kapanış < {fiyat(h['lw'] - h['tol'])}",
-        f"Hedef ↑ = {fiyat(h['up'])} + H = {_hedef_yazi(h['h_u'], c)}",
-        f"Hedef ↓ = {fiyat(h['lw'])} − H = {_hedef_yazi(h['h_a'], c)}",
-        f"Risk/ödül 1 : {rr:.1f} (stop: karşı çizgi) · apex'e {h['kalan']:.0f} mum"])
+    gy, ga = guven("ucgen_yukari", piyasa, aralik), guven("ucgen_asagi", piyasa, aralik)
+    L = [[(f"{f['tip']} üçgen · {f['dok']} dokunuş · olgunluk %{h['olg']:.0f} · apex'e {h['kalan']:.0f} mum",
+           BEYAZ, "bold")],
+         [(f"H (taban yüksekliği) = {fiyat(h['w0'])} · risk/ödül 1 : {rr:.1f} (stop: karşı çizgi)", BEYAZ, None)],
+         [(f"▲ Üst {fiyat(h['up'])} ({_yuzde(h['up'], c)}) · kırılım: kapanış > {fiyat(h['up'] + h['tol'])}",
+           BEYAZ, None)],
+         [(f"    hedef = {fiyat(h['up'])} + H = {_hedef_yazi(h['h_u'], c)}", BEYAZ, None)]]
+    L += _guven_satiri(gy, "    ")
+    L += [[(f"▼ Alt {fiyat(h['lw'])} ({_yuzde(h['lw'], c)}) · kırılım: kapanış < {fiyat(h['lw'] - h['tol'])}",
+            BEYAZ, None)],
+          [(f"    hedef = {fiyat(h['lw'])} − H = {_hedef_yazi(h['h_a'], c)}", BEYAZ, None)]]
+    L += _guven_satiri(ga, "    ")
+    if gy and ga:
+        L.append([(f"En iyi zaman dilimi: ▲ {en_iyi_yazi(gy)} · ▼ {en_iyi_yazi(ga)}", BEYAZ, None)])
+    return L + _kaynak_satiri(gy, ga)
 
 
-def _kutu_yerlestir(fig, ax, metin: str, d: dict, f: dict, bas: int, bit: int, son: int, uc: float):
-    """Hesap kutusunu ucgenin icine, mumlari en az ortecegi yere koyar (son mumlar ve diger yazilar ozellikle
-    korunur). Ucgen kutuya dar gelirse ucgenin hemen disindaki en bos yere koyar."""
+def _donus_satirlari(d: dict, f: dict, son: int, olay: dict | None, piyasa: str | None, aralik: str | None) -> list:
+    """Ikili tepe/dip ve OBO kutusu: boyun, onay esigi, hedef (boyun +/- H), gecersizlik, risk/odul,
+    gecmis guven derecesi ve en iyi zaman dilimi."""
+    A = atr(d["h"], d["l"], d["c"])
+    tol = AYAR["TOL_ATR"] * A[son]
+    yukari = f["yon"] == "yukari"
+    s = 1 if yukari else -1
+    c = d["c"][son]
+    kirildi = bool(olay and olay["tur"] == "kirilim")
+    nl = olay["seviye"] if kirildi else boyun(f, son)
+    hedef = olay["hedef"] if kirildi else nl + s * f["yuk"]
+    esik = nl + s * tol
+    gec = f["gecersiz"]
+    giris = c if kirildi else esik
+    risk, odul = abs(giris - gec), s * (hedef - giris)
+    rr = f"1 : {odul / risk:.1f}" if risk > 0 and odul > 0 else "—"
+    g = guven(f["tur"], piyasa, aralik)
+    L = [[(f"{DESEN_AD[f['tur']]} · H (yükseklik) = {fiyat(f['yuk'])} · {'ONAYLANDI' if kirildi else 'onay bekliyor'}",
+           BEYAZ, "bold")]]
+    if kirildi:
+        L.append([(f"Boyun {fiyat(nl)} {'yukarı' if yukari else 'aşağı'} kırıldı: kapanış {fiyat(c)} "
+                   f"(eşik {fiyat(esik)})", BEYAZ, None)])
+    else:
+        L.append([(f"Boyun {fiyat(nl)} ({_yuzde(nl, c)}) · onay: kapanış {'>' if yukari else '<'} {fiyat(esik)}",
+                   BEYAZ, None)])
+    L += [[(f"Hedef = boyun {'+' if yukari else '−'} H = {_hedef_yazi(hedef, c)}", BEYAZ, None)],
+          [(f"Geçersizlik {fiyat(gec)} ({_yuzde(gec, c)}) · risk/ödül {rr}", BEYAZ, None)]]
+    L += _guven_satiri(g)
+    if g:
+        L.append([(f"En iyi zaman dilimi: {en_iyi_yazi(g)}", BEYAZ, None)])
+    return L + _kaynak_satiri(g)
+
+
+def _kutu_yerlestir(fig, ax, satirlar: list, d: dict, f: dict, bas: int, bit: int, son: int, uc: float | None):
+    """Hesap kutusunu (satir satir renkli) yerlestirir. Ucgende: ucgenin icinde mumlari en az ortecegi yere
+    (son mumlar ve diger yazilar ozellikle korunur); ucgen dar gelirse hemen disindaki en bos yere.
+    Donus formasyonunda (uc=None): grafikteki en bos yere. Hicbir yer uygun degilse grafigin ustunde bos bir
+    serit acilir (dikey eksen genisletilir), kutu oraya konur: yazi ya da cizgi hicbir zaman ortulmez."""
+    from matplotlib.offsetbox import AnnotationBbox, HPacker, TextArea, VPacker
+    fs = 6.6
+    cocuk = []
+    for parcalar in satirlar:
+        ta = [TextArea(t, textprops=dict(color=r_, fontsize=fs, fontweight=w or "normal")) for t, r_, w in parcalar]
+        cocuk.append(ta[0] if len(ta) == 1 else HPacker(children=ta, align="baseline", pad=0, sep=0))
+    ab = AnnotationBbox(VPacker(children=cocuk, align="left", pad=0, sep=2.2), (0, 0), xycoords="data",
+                        box_alignment=(0, 0), pad=0.5, annotation_clip=False, zorder=8,
+                        bboxprops=dict(boxstyle="round,pad=0.2", facecolor="#131722", edgecolor="#787b86", alpha=0.75))
+    ab.set_in_layout(False)
+    ax.add_artist(ab)
     r = fig.canvas.get_renderer()
-    fs, pad_k = 6.6, 0.5
-    t = ax.text(0, 0, metin, ha="left", va="bottom", fontsize=fs, color="#e0e3eb", zorder=8, linespacing=1.4,
-                bbox=dict(boxstyle=f"round,pad={pad_k}", facecolor="#131722", edgecolor="#787b86", alpha=0.72))
-    t.set_in_layout(False)
-    ab = ax.get_window_extent(renderer=r)
-    (xa, xb), (ya, yb) = ax.get_xlim(), ax.get_ylim()
-    sx, sy = ab.width / (xb - xa), ab.height / (yb - ya)            # piksel / mum, piksel / fiyat
-    tb = t.get_window_extent(renderer=r)
-    pad = pad_k * fs * fig.dpi / 72
-    bw, bh = (tb.width + 2 * pad) / sx, (tb.height + 2 * pad) / sy  # kutu: mum ve fiyat cinsinden
-    mx, my = 6 / sx, 6 / sy                                         # cizgilerden birakilan pay
-    ters = ax.transData.inverted()
-    engel = []                                                      # ortulmemesi gerekenler: yazilar, cizgiler
-    for a in ax.texts:
-        if a is not t:
-            e = a.get_window_extent(renderer=r)
-            (x1, y1), (x2, y2) = ters.transform([[e.x0, e.y0], [e.x1, e.y1]])
-            engel.append((x1, x2, y1, y2))
-    for ln in ax.lines:
-        if ln.get_gid() != "ucgen":
-            xs, ys = np.asarray(ln.get_xdata(), float), np.asarray(ln.get_ydata(), float)
-            engel.append((xs.min() - mx, xs.max() + mx, ys.min() - my, ys.max() + my))
     idx = np.arange(bas, bit + 1)
     H, L = d["h"][bas:bit + 1], d["l"][bas:bit + 1]
     agirlik = np.where(idx > son - 3, 10.0, np.where(idx > son - 10, 3.0, 1.0))   # son mumlar (fiyatin bugunku
     #                                                               yeri, kirilim bolgesi) ozellikle ortulmesin
+    x_f = f["x0"] if uc is not None else f["noktalar"][0][0]
 
-    def maliyet(x1, y1):
+    def olc():
+        (xa, xb), (ya, yb) = ax.get_xlim(), ax.get_ylim()
+        ab.xy = ab.xybox = (xa, ya)
+        ab.update_positions(r)
+        pe = ab.patch.get_window_extent(r)
+        cx, cy = ax.transData.transform((xa, ya))
+        eb = ax.get_window_extent(renderer=r)
+        sx, sy = eb.width / (xb - xa), eb.height / (yb - ya)        # piksel / mum, piksel / fiyat
+        o = dict(xa=xa, xb=xb, ya=ya, yb=yb, bw=pe.width / sx, bh=pe.height / sy, hpx=pe.height, axpx=eb.height,
+                 ox=(cx - pe.x0) / sx, oy=(cy - pe.y0) / sy, mx=6 / sx, my=6 / sy)
+        ters = ax.transData.inverted()
+        o["engel"] = []                                             # ortulmemesi gerekenler: yazilar, cizgiler
+        for a in ax.texts:
+            e = a.get_window_extent(renderer=r)
+            (x1, y1), (x2, y2) = ters.transform([[e.x0, e.y0], [e.x1, e.y1]])
+            o["engel"].append((x1, x2, y1, y2))
+        for ln in ax.lines:
+            if ln.get_gid() != "ucgen":
+                xs, ys = np.asarray(ln.get_xdata(), float), np.asarray(ln.get_ydata(), float)
+                o["engel"].append((xs.min() - o["mx"], xs.max() + o["mx"], ys.min() - o["my"], ys.max() + o["my"]))
+        return o
+
+    def maliyet(o, x1, y1):
+        bw, bh = o["bw"], o["bh"]
         x2, y2 = x1 + bw, y1 + bh
         yatay = np.clip(np.minimum(idx + 0.4, x2) - np.maximum(idx - 0.4, x1), 0, None) / 0.8
         dikey = np.clip(np.minimum(H, y2) - np.maximum(L, y1), 0, None) / bh
         m = float((yatay * dikey * agirlik).sum()) / max(bw, 1.0)
-        for ex1, ex2, ey1, ey2 in engel:
+        for ex1, ex2, ey1, ey2 in o["engel"]:
             if ex1 < x2 and x1 < ex2 and ey1 < y2 and y1 < ey2:
                 m += 2.0
         return m
 
-    x0 = f["x0"]
+    def serbest(o, y_min):                                          # verilen yukseklikten yukarida en bos yer
+        en = None
+        orta = (x_f + son) / 2
+        for x1 in np.arange(o["xa"] + 0.3, o["xb"] - o["bw"] - 0.3, max(0.5, o["bw"] / 10)):
+            for y1 in np.linspace(max(y_min, o["ya"] + o["my"]), o["yb"] - o["my"] - o["bh"], 20):
+                m = maliyet(o, x1, y1) + 0.05 * abs(x1 + o["bw"] / 2 - orta) / (o["xb"] - o["xa"])
+                if en is None or m < en[0]:
+                    en = (m, x1, y1)
+        return en
+
+    o = olc()
+    bw, bh, mx, my = o["bw"], o["bh"], o["mx"], o["my"]
+    xa, xb, ya, yb = o["xa"], o["xb"], o["ya"], o["yb"]
     en_iyi = None
-    x1 = x0 + max(0.8, 1.5 * mx)                                    # tabandaki H cizgisinin hemen sagi
-    while x1 + bw <= min(uc, xb - 0.3):                             # 1) ucgenin icinde
-        x2 = x1 + bw
-        alt = max(deger(f, x1, "l"), deger(f, x2, "l")) + my
-        ust = min(deger(f, x1, "u"), deger(f, x2, "u")) - my
-        if ust - alt >= bh:
-            for y1 in np.linspace(alt, ust - bh, 12):
-                m = maliyet(x1, y1) + 0.03 * (x1 - x0) / max(1.0, son - x0)
-                if en_iyi is None or m < en_iyi[0]:
-                    en_iyi = (m, x1, y1)
-        x1 += max(0.5, bw / 12)
-    if en_iyi is None or en_iyi[0] > 0.2:                           # 2) sigmadiysa / cok mum ortuyorsa: hemen disi
-        for x1 in np.arange(xa + 0.3, xb - bw - 0.3, max(0.5, bw / 8)):
+    if uc is None:                                                  # donus formasyonu: en bos yer
+        en_iyi = serbest(o, ya)
+    else:
+        x0 = f["x0"]
+        x1 = x0 + max(0.8, 1.5 * mx)                                # tabandaki H cizgisinin hemen sagi
+        while x1 + bw <= min(uc, xb - 0.3):                         # 1) ucgenin icinde
             x2 = x1 + bw
-            ka, kb = max(x1, x0), min(x2, uc)
-            for y1 in np.linspace(ya + my, yb - my - bh, 18):
-                y2 = y1 + bh
-                if ka < kb:                                         # ucgenle ayni dikey seritte: ustunde ya da altinda
-                    ust_c = max(deger(f, ka, "u"), deger(f, kb, "u"))
-                    alt_c = min(deger(f, ka, "l"), deger(f, kb, "l"))
-                    if y1 >= ust_c + my:
-                        bosluk = (y1 - ust_c) / (yb - ya)
-                    elif y2 <= alt_c - my:
-                        bosluk = (alt_c - y2) / (yb - ya)
+            alt = max(deger(f, x1, "l"), deger(f, x2, "l")) + my
+            ust = min(deger(f, x1, "u"), deger(f, x2, "u")) - my
+            if ust - alt >= bh:
+                for y1 in np.linspace(alt, ust - bh, 12):
+                    m = maliyet(o, x1, y1) + 0.03 * (x1 - x0) / max(1.0, son - x0)
+                    if en_iyi is None or m < en_iyi[0]:
+                        en_iyi = (m, x1, y1)
+            x1 += max(0.5, bw / 12)
+        if en_iyi is None or en_iyi[0] > 0.2:                       # 2) sigmadiysa / cok mum ortuyorsa: hemen disi
+            for x1 in np.arange(xa + 0.3, xb - bw - 0.3, max(0.5, bw / 8)):
+                x2 = x1 + bw
+                ka, kb = max(x1, x0), min(x2, uc)
+                for y1 in np.linspace(ya + my, yb - my - bh, 18):
+                    y2 = y1 + bh
+                    if ka < kb:                                     # ucgenle ayni dikey seritte: ustunde ya da altinda
+                        ust_c = max(deger(f, ka, "u"), deger(f, kb, "u"))
+                        alt_c = min(deger(f, ka, "l"), deger(f, kb, "l"))
+                        if y1 >= ust_c + my:
+                            bosluk = (y1 - ust_c) / (yb - ya)
+                        elif y2 <= alt_c - my:
+                            bosluk = (alt_c - y2) / (yb - ya)
+                        else:
+                            continue
                     else:
-                        continue
-                else:
-                    bosluk = (ka - kb) / (xb - xa)
-                m = 0.45 + maliyet(x1, y1) + 0.5 * bosluk
-                if en_iyi is None or m < en_iyi[0]:
-                    en_iyi = (m, x1, y1)
+                        bosluk = (ka - kb) / (xb - xa)
+                    m = 0.45 + maliyet(o, x1, y1) + 0.5 * bosluk
+                    if en_iyi is None or m < en_iyi[0]:
+                        en_iyi = (m, x1, y1)
+    k = (o["hpx"] + 12) / o["axpx"]                                 # kutunun eksen yuksekligine orani
+    if (en_iyi is None or en_iyi[0] >= 1.0) and k < 0.6:            # 3) uygun yer yok: ustte bos serit ac
+        ax.set_ylim(ya, yb + (yb - ya) * k / (1 - k))
+        o = olc()
+        en_iyi = serbest(o, yb) or en_iyi
     if en_iyi is None:
-        en_iyi = (0, xa + 0.5, yb - bh - my)
+        en_iyi = (0, o["xa"] + 0.5, o["yb"] - o["bh"] - o["my"])
     _, x1, y1 = en_iyi
-    t.set_position((x1 + pad / sx, y1 + pad / sy))
+    ab.xy = ab.xybox = (x1 + o["ox"], y1 + o["oy"])
 
 
-def grafik(sym_ad: str, aralik_ad: str, d: dict, f: dict, olay: dict | None = None) -> bytes:
+def grafik(sym_ad: str, aralik_ad: str, d: dict, f: dict, olay: dict | None = None,
+           piyasa: str | None = None, aralik: str | None = None) -> bytes:
+    """aralik: 4h / 8h / 1d / 3d / 1w (gecmis isabet tablosu icin), piyasa: KRIPTO / BIST / ABD."""
     import matplotlib
     matplotlib.use("Agg")
     import matplotlib.pyplot as plt
@@ -888,7 +1071,6 @@ def grafik(sym_ad: str, aralik_ad: str, d: dict, f: dict, olay: dict | None = No
     fig, ax = plt.subplots(figsize=(9, 4.6), dpi=140)
     fig.patch.set_facecolor("#131722"); ax.set_facecolor("#131722")
     t = datetime.fromtimestamp(d["t"][son], tz=timezone.utc).strftime("%d.%m.%Y %H:%M")
-    son_adim = None
     if ucgen:
         bas = max(0, f["x0"] - 25)
         _mumlar(ax, d, bas, bit, plt)
@@ -911,8 +1093,8 @@ def grafik(sym_ad: str, aralik_ad: str, d: dict, f: dict, olay: dict | None = No
                     color="#d1d4dc", fontsize=8, fontweight="bold")
         h = _ucgen_hesap(d, f, son)
         sag = max(bit, uc)
-        metin = _hesap_metni(f, h, olay if kirildi else None)
-        son_adim = lambda: _kutu_yerlestir(fig, ax, metin, d, f, bas, bit, son, uc)  # noqa: E731
+        satirlar = _ucgen_satirlari(f, h, olay if kirildi else None, piyasa, aralik)
+        son_adim = lambda: _kutu_yerlestir(fig, ax, satirlar, d, f, bas, bit, son, uc)  # noqa: E731
         baslik = f"{f['tip']} daralan üçgen"
         yukari = olay["yon"] == "yukari" if kirildi else True
     else:
@@ -944,6 +1126,8 @@ def grafik(sym_ad: str, aralik_ad: str, d: dict, f: dict, olay: dict | None = No
         ax.annotate("Boyun", (x_boyun, boyun(f, x_boyun)), xytext=(2, -12 if tepe else 6), textcoords="offset points",
                     color="#ffd54f", fontsize=8)
         sag = max(bit, uz)
+        satirlar = _donus_satirlari(d, f, son, olay, piyasa, aralik)
+        son_adim = lambda: _kutu_yerlestir(fig, ax, satirlar, d, f, bas, bit, son, None)  # noqa: E731
         baslik = DESEN_AD[f["tur"]]
         yukari = not tepe
     if kirildi:
@@ -1069,32 +1253,38 @@ def _yuzde(x: float, c: float) -> str:
     return f"{(x / c - 1) * 100:+.1f}%"
 
 
-def olay_metni(o: dict, d: dict, ad: str, aralik_ad: str, link: str) -> str:
+def olay_metni(o: dict, d: dict, ad: str, aralik_ad: str, link: str, piyasa: str | None = None,
+               aralik: str | None = None) -> str:
     f = o["f"]
     c = d["c"][o["b"]]
     if o["desen"] == "ucgen":
         if o["tur"] == "kirilim":
             bas = "🚀 YUKARI KIRILIM" if o["yon"] == "yukari" else "🔻 AŞAĞI KIRILIM"
+            g = guven(f"ucgen_{o['yon']}", piyasa, aralik)
             return (f"{bas} — {ad} ({aralik_ad})\n{f['tip']} daralan üçgen, {f['dok']} dokunuş\n"
                     f"Kapanış: {fiyat(c)}  |  Kırılan seviye: {fiyat(o['seviye'])}\n"
                     f"Hedef (ölçülen hareket): {fiyat(o['hedef'])} ({_yuzde(o['hedef'], c)})\n"
-                    f"Geçersizlik: {fiyat(o['gecersiz'])} ({_yuzde(o['gecersiz'], c)})\n{link}")
+                    f"Geçersizlik: {fiyat(o['gecersiz'])} ({_yuzde(o['gecersiz'], c)}){guven_metni(g)}\n{link}")
         taraf = "ÜST (direnç)" if o["yon"] == "ust" else "ALT (destek)"
+        g = guven("ucgen_yukari" if o["yon"] == "ust" else "ucgen_asagi", piyasa, aralik)
         return (f"🔺 KIRILIMA YAKIN — {ad} ({aralik_ad})\n{f['tip']} daralan üçgen, {f['dok']} dokunuş\n"
                 f"Fiyat {taraf} çizgisine yaklaştı: kapanış {fiyat(c)}, çizgi {fiyat(o['seviye'])} "
-                f"({_yuzde(o['seviye'], c)})\n{link}")
+                f"({_yuzde(o['seviye'], c)})"
+                f"{guven_metni(g, ('Yukarı' if o['yon'] == 'ust' else 'Aşağı') + ' kırılırsa: ')}\n{link}")
     desen = DESEN_AD[o["desen"]]
     yukari = f["yon"] == "yukari"
+    g = guven(o["desen"], piyasa, aralik)
     if o["tur"] == "kirilim":
         bas = "🚀" if yukari else "🔻"
-        return (f"{bas} {desen.upper()} ONAYLANDI — {ad} ({aralik_ad})\n"
+        return (f"{bas} {_buyuk(desen)} ONAYLANDI — {ad} ({aralik_ad})\n"
                 f"Boyun çizgisi {'yukarı' if yukari else 'aşağı'} kırıldı: kapanış {fiyat(c)}, boyun {fiyat(o['seviye'])}\n"
                 f"Hedef (ölçülen hareket): {fiyat(o['hedef'])} ({_yuzde(o['hedef'], c)})\n"
-                f"Geçersizlik: {fiyat(o['gecersiz'])} ({_yuzde(o['gecersiz'], c)})\n{link}")
+                f"Geçersizlik: {fiyat(o['gecersiz'])} ({_yuzde(o['gecersiz'], c)}){guven_metni(g)}\n{link}")
     hedef = o["seviye"] + f["yuk"] if yukari else o["seviye"] - f["yuk"]
     return (f"⚠️ BOYUN ÇİZGİSİNE YAKIN — {ad} ({aralik_ad})\n{desen} (henüz onaylanmadı)\n"
             f"Kapanış {fiyat(c)}, boyun {fiyat(o['seviye'])} ({_yuzde(o['seviye'], c)})\n"
-            f"Boyun {'yukarı' if yukari else 'aşağı'} kırılırsa hedef: {fiyat(hedef)} ({_yuzde(hedef, c)})\n{link}")
+            f"Boyun {'yukarı' if yukari else 'aşağı'} kırılırsa hedef: {fiyat(hedef)} ({_yuzde(hedef, c)})"
+            f"{guven_metni(g, 'Onaylanırsa: ')}\n{link}")
 
 
 def calistir(gunlukler: bool, ozet: bool, onizleme: bool):
@@ -1138,10 +1328,10 @@ def calistir(gunlukler: bool, ozet: bool, onizleme: bool):
         ad = gorunen(r["piyasa"], r["sym"])
         _, link = tv(r["piyasa"], r["sym"], d.get("borsa", ""), r["aralik"])
         aralik_ad = "4 saatlik" if r["aralik"] == "4h" else "Günlük"
-        metin = olay_metni(o, d, ad, aralik_ad, link)
+        metin = olay_metni(o, d, ad, aralik_ad, link, r["piyasa"], r["aralik"])
         if k < 15:
             try:
-                png = grafik(ad, aralik_ad, d, f, o)
+                png = grafik(ad, aralik_ad, d, f, o, r["piyasa"], r["aralik"])
                 tg("sendPhoto", dict(caption=metin[:1020]), files={"photo": ("formasyon.png", png)})
             except Exception as exc:  # noqa: BLE001
                 print("grafik hatasi:", exc)
@@ -1174,13 +1364,17 @@ def ozet_gonder(sonuc: list):
                 t, link = tv(r["piyasa"], r["sym"], r["d"].get("borsa", ""), aralik)
                 tv_liste.append(t)
                 if a["desen"] == "ucgen":
+                    gy, ga = guven("ucgen_yukari", piyasa, aralik), guven("ucgen_asagi", piyasa, aralik)
+                    etiket = f" [▲ {gy['ad']} · ▼ {ga['ad']}]" if gy and ga else ""
                     satirlar.append(f"• {gorunen(piyasa, r['sym'])} — {a['tip']} üçgen, üst {fiyat(a['up'])} "
                                     f"({_yuzde(a['up'], c)}), alt {fiyat(a['lw'])} ({_yuzde(a['lw'], c)}), "
-                                    f"olgunluk %{a['olgunluk'] * 100:.0f}\n  {link}")
+                                    f"olgunluk %{a['olgunluk'] * 100:.0f}{etiket}\n  {link}")
                 else:
+                    g = guven(a["desen"], piyasa, aralik)
+                    etiket = f" [{g['ad']}]" if g else ""
                     satirlar.append(f"• {gorunen(piyasa, r['sym'])} — {DESEN_AD[a['desen']]}, boyun {fiyat(a['boyun_son'])} "
                                     f"({_yuzde(a['boyun_son'], c)}), hedef {fiyat(a['hedef'])} "
-                                    f"({_yuzde(a['hedef'], c)})\n  {link}")
+                                    f"({_yuzde(a['hedef'], c)}){etiket}\n  {link}")
     say = {}
     for _, a in aktifler:
         say[a["desen"]] = say.get(a["desen"], 0) + 1
@@ -1199,7 +1393,8 @@ def ozet_gonder(sonuc: list):
         for k, (r, a) in enumerate(yakin):
             ad = gorunen(r["piyasa"], r["sym"])
             try:
-                files[f"f{k}"] = (f"f{k}.png", grafik(ad, "4 saatlik" if r["aralik"] == "4h" else "Günlük", r["d"], a))
+                files[f"f{k}"] = (f"f{k}.png", grafik(ad, "4 saatlik" if r["aralik"] == "4h" else "Günlük", r["d"], a,
+                                                      piyasa=r["piyasa"], aralik=r["aralik"]))
                 media.append(dict(type="photo", media=f"attach://f{k}", caption=f"{ad} — {desen_adi(a)}"))
             except Exception as exc:  # noqa: BLE001
                 print("grafik hatasi:", exc)
@@ -1220,7 +1415,7 @@ def onizle(sonuc: list):
     for r, a in aktifler[::adim][:24]:
         ad = gorunen(r["piyasa"], r["sym"])
         open(f"onizleme/aktif_{a['desen']}_{r['piyasa']}_{r['aralik']}_{ad}.png", "wb").write(
-            grafik(ad, r["aralik"], r["d"], a))
+            grafik(ad, r["aralik"], r["d"], a, piyasa=r["piyasa"], aralik=r["aralik"]))
     # her desenden birkac gecmis kirilim ornegi
     ornek, say_kir, say_akt = {}, {}, {}
     for _, a in aktifler:
@@ -1235,7 +1430,7 @@ def onizle(sonuc: list):
                 ornek[o["desen"]] = ornek.get(o["desen"], 0) + 1
                 ad = gorunen(r["piyasa"], r["sym"])
                 open(f"onizleme/kirilim_{o['desen']}_{r['piyasa']}_{r['aralik']}_{ad}.png", "wb").write(
-                    grafik(ad, r["aralik"], d, o["f"], o))
+                    grafik(ad, r["aralik"], d, o["f"], o, r["piyasa"], r["aralik"]))
     satir = (f"{len(sonuc)} grafik | aktif {say_akt} | gecmis kirilim {say_kir} | "
              f"devrilen {sum(r['d']['_ist']['devrilen'] for r in sonuc)}")
     print(satir)
