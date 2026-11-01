@@ -275,8 +275,9 @@ def main():
         satirlar.append(" | ".join(parca))
     for s in satirlar:
         print(s)
-    if os.environ.get("GITHUB_ACTIONS") == "true":
-        print("::notice::" + " %0A ".join(x.replace("%", "%25") for x in satirlar))
+    if os.environ.get("GITHUB_ACTIONS") == "true":          # not basina sinir var: 4'erli parcalar
+        for i in range(0, len(satirlar), 4):
+            print("::notice::" + " %0A ".join(x.replace("%", "%25") for x in satirlar[i:i + 4]))
 
 
 if __name__ == "__main__":
