@@ -1252,6 +1252,10 @@ def _ucgen_satirlari(f: dict, h: dict, olay: dict | None, piyasa: str | None, ar
     if gy and ga:
         L.append([(f"En iyi zaman dilimi: ▲ {en_iyi_yazi(gy)} · ▼ {en_iyi_yazi(ga)}", BEYAZ, None)])
     if d is not None and son is not None:
+        et = eski_tepe(d, dict(f=f, b=son, yon="yukari", hedef=h["h_u"]))
+        if et is not None:
+            L.append([("▲ Hedef yolunda eski tepe: ", BEYAZ, None), ("var ✓" if et else "yok", "#4caf50" if et else GRI, "bold"),
+                      (" (geçmişte var +0,62R · yok +0,30R)", BEYAZ, None)])
         L += _kontrol_satiri(d, son, [("▲ ", True), ("▼ ", False)])
     L += _sembol_satiri(piyasa, sym, aralik)
     return L + _kaynak_satiri(gy, ga, buyuk=f.get("buyuk", False))
