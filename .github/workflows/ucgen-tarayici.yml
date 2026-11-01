@@ -19,6 +19,10 @@ on:
         description: "true: Telegram yok, gecmis kirilimlarin isabetini hesapla"
         type: boolean
         default: false
+      araliklar:
+        description: "istatistik icin zaman dilimleri (4h,1d,3d,1w)"
+        type: string
+        default: "4h,1d"
 
 permissions:
   contents: write
@@ -47,6 +51,8 @@ jobs:
 
       - name: Istatistik
         if: ${{ github.event.inputs.istatistik == 'true' }}
+        env:
+          ARALIKLAR: ${{ github.event.inputs.araliklar }}
         run: python ucgen_istatistik.py
 
       - name: Onizleme

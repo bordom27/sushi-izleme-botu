@@ -16,7 +16,9 @@ Hisselerde 4 saatlik mumlar Yahoo'nun 1 saatlik verisinden (son ~2 yil) seans ic
 bloklar halinde kurulur (TradingView 4s ile ayni hiza: ABD 09:30/13:30, BIST 10:00/14:00).
 '-son-donem' gruplari gunluk veriyi 4 saatlik verinin kapsadigi doneme kirpar (adil karsilastirma).
 
-Kullanim: python ucgen_istatistik.py   (GitHub Actions'ta sonuclar not olarak yazilir)
+Kullanim: ARALIKLAR=4h,1d,3d,1w python ucgen_istatistik.py   (GitHub Actions'ta sonuclar not olarak yazilir)
+3 gunluk (3d) ve haftalik (1w): kripto Binance'in kendi mumlari; hisselerde haftalik Yahoo, 3 gunluk ise
+gunluk verinin 3'er islem gunluk bloklari (son 20 yil).
 """
 from __future__ import annotations
 
@@ -28,8 +30,10 @@ import numpy as np
 
 import ucgen_tarayici as u
 
-ARALIK_MS = {"4h": 4 * 3600_000, "1d": 86400_000}
-BAR = {"4h": 2000, "1d": 1000}           # kripto: 4s ~ 333 gun, 1g ~ 2,7 yil
+ARALIK_MS = {"4h": 4 * 3600_000, "1d": 86400_000, "3d": 3 * 86400_000, "1w": 7 * 86400_000}
+BAR = {"4h": 2000, "1d": 1000, "3d": 1300, "1w": 700}   # kripto: 4s ~ 333 gun, 1g ~ 2,7 yil, 3g / 1h tum gecmis
+MIN_VERI = {"4h": 300, "1d": 300, "3d": 120, "1w": 120}  # bundan kisa gecmisli grafik alinmaz
+YAHOO_YIL = 20                           # hisselerde 3 gunluk / haftalik icin gecmis (yil)
 R_TAVAN = 5.0                            # ortalamada tek islemin katkisi en fazla +5R (tepe noktasina yakin
                                          # kirilimlarda stop cok dar olur, ortalamayi sisirmesin)
 
@@ -48,7 +52,7 @@ def binance_uzun(sym: str, aralik: str) -> dict | None:
             break
         bas = v[-1][0] + ARALIK_MS[aralik]
     satir = [k for k in satir if k[6] < simdi]
-    if len(satir) < 300 or simdi - satir[-1][6] > 2 * ARALIK_MS[aralik]:
+    if len(satir) < MIN_VERI[aralik] or simdi - satir[-1][6] > 2 * ARALIK_MS[aralik]:
         return None
     a = np.array([[k[0] / 1000, float(k[1]), float(k[2]), float(k[3]), float(k[4]), float(k[7])] for k in satir])
     kap = a[-120:, 4]
@@ -57,9 +61,18 @@ def binance_uzun(sym: str, aralik: str) -> dict | None:
     return dict(t=a[:, 0], o=a[:, 1], h=a[:, 2], l=a[:, 3], c=a[:, 4], v=a[:, 5])
 
 
-def yahoo_uzun(sym: str) -> dict | None:
+def yahoo_uzun(sym: str, aralik: str = "1d") -> dict | None:
+    """Gunluk: son 5 yil. Haftalik: son 20 yil (bitmemis son hafta atilir).
+    3 gunluk: son 20 yilin gunlugu 3'er islem gunluk bloklara birlestirilir (bitmemis son blok atilir)."""
+    simdi = int(time.time())
+    if aralik == "1d":
+        parametre = dict(range="5y", interval="1d")
+    else:
+        parametre = dict(period1=simdi - YAHOO_YIL * 365 * 86400, period2=simdi,
+                         interval="1wk" if aralik == "1w" else "1d")
+    yas = {"1d": 8, "3d": 12, "1w": 21}[aralik]           # son mumun en fazla kac gunluk olabilecegi
     for host in ("query1", "query2"):
-        j = u._get(f"https://{host}.finance.yahoo.com/v8/finance/chart/{sym}", dict(range="5y", interval="1d"), deneme=2)
+        j = u._get(f"https://{host}.finance.yahoo.com/v8/finance/chart/{sym}", parametre, deneme=2)
         if not j:
             continue
         try:
@@ -69,7 +82,12 @@ def yahoo_uzun(sym: str) -> dict | None:
             sat = [(t, o, h, l, c, v or 0) for t, o, h, l, c, v in
                    zip(x["timestamp"], q["open"], q["high"], q["low"], q["close"], q["volume"])
                    if None not in (o, h, l, c) and t // 86400 < bugun]
-            if len(sat) < 300 or time.time() - sat[-1][0] > 8 * 86400:
+            if aralik == "1w":
+                sat = sat[:-1]                                  # bu haftanin mumu henuz bitmedi
+            elif aralik == "3d":
+                sat = [(sat[i][0], sat[i][1], max(r[2] for r in sat[i:i + 3]), min(r[3] for r in sat[i:i + 3]),
+                        sat[i + 2][4], sum(r[5] for r in sat[i:i + 3])) for i in range(0, len(sat) - 2, 3)]
+            if len(sat) < MIN_VERI[aralik] or time.time() - sat[-1][0] > yas * 86400:
                 return None
             a = np.array(sat, dtype=float)
             return dict(t=a[:, 0], o=a[:, 1], h=a[:, 2], l=a[:, 3], c=a[:, 4], v=a[:, 5])
@@ -209,7 +227,8 @@ def main():
     isler = []
     kripto = u.kripto_listesi()
     bist, abd = list(dict.fromkeys(u.BIST)), list(u.ABD)
-    for a in ("4h", "1d"):
+    araliklar = [a.strip() for a in (os.environ.get("ARALIKLAR") or "4h,1d").split(",") if a.strip() in ARALIK_MS]
+    for a in araliklar:
         isler += [("KRIPTO", s, a) for s in kripto] + [("BIST", s, a) for s in bist] + [("ABD", s, a) for s in abd]
 
     def al(is_):
@@ -217,7 +236,7 @@ def main():
         if p == "KRIPTO":
             return binance_uzun(s, a)
         ys = s + ".IS" if p == "BIST" else s
-        return yahoo_uzun(ys) if a == "1d" else yahoo_4s(ys)
+        return yahoo_4s(ys) if a == "4h" else yahoo_uzun(ys, a)
 
     t0 = time.time()
     with ThreadPoolExecutor(max_workers=6) as ex:
