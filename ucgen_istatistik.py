@@ -30,9 +30,10 @@ import numpy as np
 
 import ucgen_tarayici as u
 
-ARALIK_MS = {"4h": 4 * 3600_000, "1d": 86400_000, "3d": 3 * 86400_000, "1w": 7 * 86400_000}
-BAR = {"4h": 2000, "1d": 1000, "3d": 1300, "1w": 700}   # kripto: 4s ~ 333 gun, 1g ~ 2,7 yil, 3g / 1h tum gecmis
-MIN_VERI = {"4h": 300, "1d": 300, "3d": 120, "1w": 120}  # bundan kisa gecmisli grafik alinmaz
+ARALIK_MS = {"4h": 4 * 3600_000, "1d": 86400_000, "3d": 3 * 86400_000, "1w": 7 * 86400_000, "1dL": 86400_000}
+BAR = {"4h": 2000, "1d": 1000, "3d": 1300, "1w": 700, "1dL": 4000}   # kripto: 4s ~ 333 gun, 1g ~ 2,7 yil
+MIN_VERI = {"4h": 300, "1d": 300, "3d": 120, "1w": 120, "1dL": 300}  # bundan kisa gecmisli grafik alinmaz
+BINANCE_AD = {"1dL": "1d"}               # 1dL: uzun gecmisli gunluk (hisse 20 yil, kripto tum gecmis)
 YAHOO_YIL = 20                           # hisselerde 3 gunluk / haftalik icin gecmis (yil)
 R_TAVAN = 5.0                            # ortalamada tek islemin katkisi en fazla +5R (tepe noktasina yakin
                                          # kirilimlarda stop cok dar olur, ortalamayi sisirmesin)
@@ -44,7 +45,7 @@ def binance_uzun(sym: str, aralik: str) -> dict | None:
     satir = []
     while bas < simdi:
         v = u._get("https://data-api.binance.vision/api/v3/klines",
-                   dict(symbol=sym, interval=aralik, startTime=bas, limit=1000))
+                   dict(symbol=sym, interval=BINANCE_AD.get(aralik, aralik), startTime=bas, limit=1000))
         if not v:
             break
         satir += v
@@ -70,7 +71,7 @@ def yahoo_uzun(sym: str, aralik: str = "1d") -> dict | None:
     else:
         parametre = dict(period1=simdi - YAHOO_YIL * 365 * 86400, period2=simdi,
                          interval="1wk" if aralik == "1w" else "1d")
-    yas = {"1d": 8, "3d": 12, "1w": 21}[aralik]           # son mumun en fazla kac gunluk olabilecegi
+    yas = {"1d": 8, "1dL": 8, "3d": 12, "1w": 21}[aralik]  # son mumun en fazla kac gunluk olabilecegi
     for host in ("query1", "query2"):
         j = u._get(f"https://{host}.finance.yahoo.com/v8/finance/chart/{sym}", parametre, deneme=2)
         if not j:
