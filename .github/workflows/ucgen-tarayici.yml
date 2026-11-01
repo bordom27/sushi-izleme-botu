@@ -61,6 +61,7 @@ jobs:
           python ucgen_istatistik.py | tee /tmp/ham.txt
           grep -v '^::notice::' /tmp/ham.txt > /tmp/sonuc.txt || true
           cp formasyon_istatistik.json /tmp/ist.json 2>/dev/null || true
+          cp sembol_istatistik.json /tmp/sem.json 2>/dev/null || true
           git config user.name "izleme-bot"
           git config user.email "izleme-bot@users.noreply.github.com"
           git checkout -q --orphan ucgen-istatistik
@@ -68,6 +69,7 @@ jobs:
           cp /tmp/sonuc.txt sonuc.txt
           git add sonuc.txt
           if [ -f /tmp/ist.json ]; then cp /tmp/ist.json formasyon_istatistik.json && git add formasyon_istatistik.json; fi
+          if [ -f /tmp/sem.json ]; then cp /tmp/sem.json sembol_istatistik.json && git add sembol_istatistik.json; fi
           git commit -qm "istatistik [skip ci]" && git push -qf origin ucgen-istatistik
 
       - name: Veri

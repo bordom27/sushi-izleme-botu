@@ -109,6 +109,9 @@ float pO = logOn ? math.log(open) : open
 float pC = logOn ? math.log(close) : close
 float trP = na(pC[1]) ? pH - pL : math.max(pH - pL, math.abs(pH - pC[1]), math.abs(pL - pC[1]))
 atr14 = ta.rma(trP, 14)
+float ema200 = ta.ema(pC, 200)                     // kırılım kalitesi: EMA200 yönü (log kapanış)
+float hacOrt = ta.sma(volume, 20)[1]               // kırılım kalitesi: önceki 20 mumun hacim ortalaması
+float hacOr = na(hacOrt) or hacOrt <= 0 or na(volume) ? na : volume / hacOrt
 fx(float v) => logOn ? math.exp(v) : v
 phv = ta.pivothigh(high, pvN, pvN)
 plv = ta.pivotlow(low, pvN, pvN)
@@ -638,32 +641,59 @@ desenAd(string t) => t == "ikili_tepe" ? "İkili tepe" : t == "ikili_dip" ? "İk
 // piyasa: 0 tümü 1 kripto 2 BIST 3 ABD
 // zaman dilimi: 0 4 saatlik 1 8 saatlik 2 günlük 3 3 günlük 4 haftalık
 var array<float> stH = array.from(
-     38.0, 33.0, 47.0, 48.0, 48.0, 37.0, 33.0, 42.0, 30.0, 27.0, 39.0, 0.0, 55.0, 57.0, 50.0, 48.0, 0.0, 44.0, 47.0, 50.0,
-     43.0, 46.0, 42.0, 39.0, 29.0, 44.0, 46.0, 59.0, 60.0, 38.0, 38.0, 0.0, 33.0, 30.0, 34.0, 38.0, 0.0, 39.0, 33.0, 27.0,
-     29.0, 22.0, 34.0, 37.0, 41.0, 27.0, 22.0, 31.0, 24.0, 19.0, 35.0, 0.0, 35.0, 47.0, 48.0, 35.0, 0.0, 34.0, 36.0, 39.0,
-     31.0, 32.0, 29.0, 26.0, 24.0, 33.0, 32.0, 38.0, 34.0, 27.0, 32.0, 0.0, 28.0, 27.0, 21.0, 25.0, 0.0, 27.0, 22.0, 26.0,
-     60.0, 40.0, 65.0, 53.0, 64.0, 61.0, 40.0, 77.0, 17.0, 25.0, 61.0, 0.0, 61.0, 72.0, 93.0, 58.0, 0.0, 65.0, 57.0, 55.0,
-     67.0, 78.0, 65.0, 61.0, 63.0, 71.0, 78.0, 86.0, 100.0, 0.0, 53.0, 0.0, 54.0, 60.0, 62.0, 60.0, 0.0, 69.0, 57.0, 65.0,
-     38.0, 52.0, 46.0, 44.0, 71.0, 37.0, 52.0, 67.0, 0.0, 0.0, 67.0, 0.0, 47.0, 44.0, 100.0, 36.0, 0.0, 43.0, 58.0, 33.0,
-     43.0, 38.0, 39.0, 35.0, 0.0, 43.0, 38.0, 67.0, 100.0, 0.0, 71.0, 0.0, 42.0, 20.0, 0.0, 32.0, 0.0, 37.0, 33.0, 0.0)
+     50.0, 0.0, 47.0, 48.0, 48.0, 50.0, 0.0, 38.0, 30.0, 27.0, 0.0, 0.0, 64.0, 57.0, 50.0, 0.0, 0.0, 44.0, 47.0, 50.0,
+     33.0, 0.0, 42.0, 39.0, 29.0, 33.0, 0.0, 62.0, 59.0, 38.0, 0.0, 0.0, 18.0, 30.0, 34.0, 0.0, 0.0, 32.0, 33.0, 27.0,
+     28.0, 0.0, 31.0, 37.0, 41.0, 28.0, 0.0, 25.0, 25.0, 20.0, 0.0, 0.0, 34.0, 46.0, 48.0, 0.0, 0.0, 34.0, 35.0, 39.0,
+     33.0, 0.0, 28.0, 26.0, 25.0, 33.0, 0.0, 38.0, 35.0, 28.0, 0.0, 0.0, 22.0, 27.0, 21.0, 0.0, 0.0, 25.0, 22.0, 26.0,
+     59.0, 0.0, 63.0, 53.0, 64.0, 59.0, 0.0, 79.0, 17.0, 25.0, 0.0, 0.0, 44.0, 72.0, 93.0, 0.0, 0.0, 67.0, 57.0, 55.0,
+     30.0, 0.0, 69.0, 61.0, 63.0, 30.0, 0.0, 71.0, 100.0, 0.0, 0.0, 0.0, 54.0, 60.0, 62.0, 0.0, 0.0, 76.0, 58.0, 65.0,
+     12.0, 0.0, 54.0, 44.0, 71.0, 12.0, 0.0, 75.0, 0.0, 0.0, 0.0, 0.0, 58.0, 44.0, 100.0, 0.0, 0.0, 43.0, 58.0, 33.0,
+     50.0, 0.0, 37.0, 35.0, 0.0, 50.0, 0.0, 0.0, 100.0, 0.0, 0.0, 0.0, 40.0, 20.0, 0.0, 0.0, 0.0, 38.0, 33.0, 0.0)
 var array<float> stR = array.from(
-     0.02, -0.10, 0.41, 0.60, 0.62, -0.01, -0.10, 0.39, 0.20, 0.02, 0.05, 0.00, 0.60, 0.75, 0.64, 0.28, 0.00, 0.32, 0.59, 0.68,
-     0.11, 0.09, -0.01, -0.15, -0.31, 0.14, 0.09, 0.27, 0.16, -0.16, 0.06, 0.00, -0.16, -0.26, -0.26, -0.15, 0.00, -0.09, -0.28, -0.38,
-     0.07, -0.19, 0.31, 0.53, 0.69, 0.03, -0.19, 0.29, 0.06, -0.33, 0.18, 0.00, 0.44, 0.80, 0.99, 0.17, 0.00, 0.26, 0.51, 0.63,
-     0.07, 0.11, -0.12, -0.20, -0.24, 0.13, 0.11, 0.16, -0.02, -0.28, 0.22, 0.00, -0.06, -0.17, -0.23, -0.37, 0.00, -0.24, -0.31, -0.25,
-     -0.01, -0.33, 0.11, -0.02, 0.17, -0.00, -0.33, 0.37, -0.71, -0.41, -0.05, 0.00, -0.02, 0.28, 0.56, -0.02, 0.00, 0.11, 0.08, 0.05,
-     0.03, 0.14, 0.03, -0.13, -0.06, 0.12, 0.14, 0.26, 0.32, -0.35, -0.18, 0.00, -0.16, -0.11, -0.03, -0.08, 0.00, 0.09, -0.18, -0.05,
-     -0.05, 0.26, 0.11, 0.15, 0.66, -0.03, 0.26, 0.51, -1.00, 0.00, 0.14, 0.00, 0.14, 0.09, 1.10, -0.17, 0.00, 0.05, 0.55, 0.11,
-     -0.10, -0.16, -0.20, -0.24, -1.00, -0.13, -0.16, 0.19, 0.69, 0.00, 0.44, 0.00, -0.15, -0.17, -1.00, -0.28, 0.00, -0.24, -0.33, -1.00)
+     0.25, 0.00, 0.34, 0.60, 0.62, 0.25, 0.00, 0.15, 0.22, 0.02, 0.00, 0.00, 0.71, 0.75, 0.64, 0.00, 0.00, 0.21, 0.59, 0.68,
+     -0.07, 0.00, -0.03, -0.15, -0.32, -0.07, 0.00, 0.26, 0.16, -0.17, 0.00, 0.00, -0.30, -0.26, -0.26, 0.00, 0.00, -0.20, -0.28, -0.38,
+     0.05, 0.00, 0.19, 0.53, 0.70, 0.05, 0.00, 0.01, 0.09, -0.30, 0.00, 0.00, 0.36, 0.80, 0.99, 0.00, 0.00, 0.21, 0.50, 0.64,
+     0.17, 0.00, -0.18, -0.20, -0.24, 0.17, 0.00, 0.12, 0.00, -0.26, 0.00, 0.00, -0.26, -0.17, -0.23, 0.00, 0.00, -0.33, -0.31, -0.25,
+     -0.02, 0.00, -0.00, -0.02, 0.17, -0.02, 0.00, 0.39, -0.71, -0.41, 0.00, 0.00, -0.44, 0.28, 0.56, 0.00, 0.00, 0.05, 0.08, 0.05,
+     -0.47, 0.00, 0.05, -0.13, -0.06, -0.47, 0.00, 0.07, 0.28, -0.35, 0.00, 0.00, -0.17, -0.11, -0.03, 0.00, 0.00, 0.16, -0.16, -0.05,
+     -0.76, 0.00, 0.34, 0.15, 0.66, -0.76, 0.00, 0.67, -1.00, 0.00, 0.00, 0.00, 0.44, 0.09, 1.10, 0.00, 0.00, 0.13, 0.55, 0.11,
+     0.29, 0.00, -0.24, -0.24, -1.00, 0.29, 0.00, -0.61, 0.69, 0.00, 0.00, 0.00, -0.11, -0.17, -1.00, 0.00, 0.00, -0.24, -0.33, -1.00)
 var array<float> stN = array.from(
-     2143.0, 657.0, 2666.0, 776.0, 456.0, 1753.0, 657.0, 490.0, 91.0, 32.0, 179.0, 0.0, 780.0, 260.0, 146.0, 211.0, 0.0, 1396.0, 425.0, 278.0,
-     2395.0, 829.0, 2272.0, 626.0, 277.0, 2007.0, 829.0, 625.0, 178.0, 40.0, 180.0, 0.0, 639.0, 148.0, 72.0, 208.0, 0.0, 1008.0, 300.0, 165.0,
-     1384.0, 544.0, 1734.0, 545.0, 318.0, 1031.0, 544.0, 301.0, 77.0, 21.0, 150.0, 0.0, 424.0, 157.0, 105.0, 203.0, 0.0, 1009.0, 311.0, 192.0,
-     1641.0, 619.0, 1598.0, 484.0, 273.0, 1215.0, 619.0, 281.0, 97.0, 35.0, 195.0, 0.0, 453.0, 157.0, 87.0, 231.0, 0.0, 864.0, 230.0, 151.0,
-     158.0, 62.0, 241.0, 86.0, 54.0, 95.0, 62.0, 31.0, 18.0, 4.0, 24.0, 0.0, 68.0, 28.0, 16.0, 39.0, 0.0, 142.0, 40.0, 34.0,
-     149.0, 57.0, 288.0, 77.0, 48.0, 95.0, 57.0, 14.0, 5.0, 2.0, 22.0, 0.0, 82.0, 15.0, 8.0, 32.0, 0.0, 192.0, 57.0, 38.0,
-     57.0, 26.0, 96.0, 27.0, 9.0, 42.0, 26.0, 6.0, 4.0, 0.0, 3.0, 0.0, 34.0, 10.0, 5.0, 12.0, 0.0, 56.0, 13.0, 4.0,
-     64.0, 17.0, 94.0, 34.0, 9.0, 36.0, 17.0, 5.0, 2.0, 0.0, 9.0, 0.0, 22.0, 7.0, 3.0, 19.0, 0.0, 67.0, 25.0, 6.0)
+     299.0, 0.0, 762.0, 775.0, 456.0, 299.0, 0.0, 249.0, 90.0, 32.0, 0.0, 0.0, 228.0, 260.0, 146.0, 0.0, 0.0, 285.0, 425.0, 278.0,
+     341.0, 0.0, 795.0, 621.0, 275.0, 341.0, 0.0, 329.0, 173.0, 38.0, 0.0, 0.0, 192.0, 148.0, 72.0, 0.0, 0.0, 274.0, 300.0, 165.0,
+     172.0, 0.0, 543.0, 537.0, 316.0, 172.0, 0.0, 152.0, 74.0, 20.0, 0.0, 0.0, 131.0, 156.0, 105.0, 0.0, 0.0, 260.0, 307.0, 191.0,
+     235.0, 0.0, 534.0, 482.0, 272.0, 235.0, 0.0, 157.0, 95.0, 34.0, 0.0, 0.0, 151.0, 157.0, 87.0, 0.0, 0.0, 226.0, 230.0, 151.0,
+     19.0, 0.0, 68.0, 86.0, 54.0, 19.0, 0.0, 14.0, 18.0, 4.0, 0.0, 0.0, 17.0, 28.0, 16.0, 0.0, 0.0, 37.0, 40.0, 34.0,
+     11.0, 0.0, 89.0, 75.0, 48.0, 11.0, 0.0, 7.0, 4.0, 2.0, 0.0, 0.0, 29.0, 15.0, 8.0, 0.0, 0.0, 53.0, 56.0, 38.0,
+     8.0, 0.0, 42.0, 27.0, 9.0, 8.0, 0.0, 4.0, 4.0, 0.0, 0.0, 0.0, 21.0, 10.0, 5.0, 0.0, 0.0, 17.0, 13.0, 4.0,
+     3.0, 0.0, 30.0, 34.0, 9.0, 3.0, 0.0, 2.0, 2.0, 0.0, 0.0, 0.0, 6.0, 7.0, 3.0, 0.0, 0.0, 22.0, 25.0, 6.0)
+// kırılım kalitesine göre (tüm piyasalar): [formasyon][zaman dilimi][3/3, 2/3, 0-1/3]
+var array<float> kalH = array.from(
+     45.0, 56.0, 42.0, 0.0, 0.0, 0.0, 48.0, 48.0, 41.0, 50.0, 50.0, 34.0, 49.0, 50.0, 35.0, 26.0, 34.0, 35.0, 0.0, 0.0,
+     0.0, 42.0, 45.0, 39.0, 22.0, 38.0, 41.0, 36.0, 30.0, 29.0, 46.0, 24.0, 19.0, 0.0, 0.0, 0.0, 33.0, 36.0, 25.0, 44.0,
+     36.0, 35.0, 57.0, 36.0, 40.0, 27.0, 24.0, 43.0, 0.0, 0.0, 0.0, 22.0, 24.0, 30.0, 13.0, 22.0, 28.0, 14.0, 21.0, 26.0,
+     0.0, 67.0, 60.0, 0.0, 0.0, 0.0, 100.0, 52.0, 69.0, 0.0, 43.0, 62.0, 0.0, 64.0, 68.0, 0.0, 25.0, 33.0, 0.0, 0.0,
+     0.0, 0.0, 80.0, 67.0, 0.0, 58.0, 62.0, 0.0, 50.0, 64.0, 0.0, 25.0, 0.0, 0.0, 0.0, 0.0, 71.0, 55.0, 40.0, 20.0,
+     62.0, 29.0, 0.0, 83.0, 0.0, 0.0, 0.0, 50.0, 0.0, 0.0, 0.0, 0.0, 23.0, 50.0, 0.0, 43.0, 33.0, 0.0, 0.0, 0.0)
+var array<float> kalR = array.from(
+     0.22, 0.35, -0.09, 0.00, 0.00, 0.00, 0.36, 0.37, 0.22, 0.70, 0.60, 0.16, 0.67, 0.68, 0.21, -0.08, -0.03, -0.14, 0.00, 0.00,
+     0.00, 0.25, 0.02, -0.11, -0.33, -0.18, -0.12, 0.08, -0.27, -0.38, 0.55, -0.08, -0.15, 0.00, 0.00, 0.00, 0.33, 0.27, -0.00, 0.61,
+     0.51, 0.55, 1.12, 0.52, 0.81, 0.08, -0.03, 0.36, 0.00, 0.00, 0.00, -0.38, -0.28, -0.08, -0.41, -0.20, -0.19, -0.22, -0.32, -0.21,
+     -1.00, 0.05, 0.03, 0.00, 0.00, 0.00, 1.49, -0.19, 0.08, -1.00, -0.26, 0.16, -0.84, 0.13, 0.27, 0.00, -0.47, -0.47, 0.00, 0.00,
+     0.00, 0.00, 0.10, 0.04, 0.00, -0.27, -0.10, 0.00, -0.13, -0.05, -1.00, -0.52, -1.00, 0.00, 0.00, 0.00, 0.96, 0.22, -0.00, -0.36,
+     0.56, -0.36, 0.00, 0.86, -1.00, 0.00, 0.00, -0.15, 0.00, 0.00, 0.00, 0.00, -0.46, -0.05, 0.00, 0.14, -0.37, 0.00, -1.00, -1.00)
+var array<float> kalN = array.from(
+     137.0, 132.0, 30.0, 0.0, 0.0, 0.0, 231.0, 418.0, 113.0, 288.0, 421.0, 66.0, 144.0, 259.0, 53.0, 64.0, 170.0, 107.0, 0.0, 0.0,
+     0.0, 55.0, 330.0, 410.0, 31.0, 225.0, 365.0, 15.0, 87.0, 173.0, 40.0, 94.0, 38.0, 0.0, 0.0, 0.0, 89.0, 278.0, 176.0, 72.0,
+     343.0, 122.0, 56.0, 185.0, 75.0, 37.0, 92.0, 106.0, 0.0, 0.0, 0.0, 35.0, 210.0, 289.0, 16.0, 159.0, 307.0, 7.0, 68.0, 197.0,
+     1.0, 6.0, 12.0, 0.0, 0.0, 0.0, 1.0, 26.0, 41.0, 5.0, 23.0, 58.0, 3.0, 15.0, 36.0, 0.0, 5.0, 6.0, 0.0, 0.0,
+     0.0, 0.0, 11.0, 78.0, 0.0, 13.0, 62.0, 0.0, 5.0, 43.0, 1.0, 4.0, 3.0, 0.0, 0.0, 0.0, 10.0, 21.0, 11.0, 5.0,
+     15.0, 7.0, 0.0, 7.0, 1.0, 0.0, 0.0, 2.0, 0.0, 0.0, 0.0, 0.0, 14.0, 16.0, 0.0, 9.0, 25.0, 0.0, 4.0, 5.0)
+// sembol -> bu sembolde tüm formasyonların en iyi zaman dilimi: kod,hedef %,kırılım sayısı ('-' kârlı yok, '?' örnek az)
+var array<string> semT = array.from(
+     ";A:AAL=3G,50,9;A:AAPL=3G,50,8;A:ABBV=3G,67,6;A:ADBE=H,50,4;A:ALGN=3G,50,4;A:AMAT=3G,57,7;A:AMD=3G,60,5;A:AMGN=G,67,5;A:AMZN=3G,57,7;A:ANET=H,67,3;A:ARM=-;A:ASML=-;A:AVGO=3G,50,4;A:AXON=H,0,5;A:AXP=3G,57,8;A:BA=H,33,7;A:BABA=3G,50,7;A:BAC=3G,80,6;A:BBY=H,25,8;A:BKNG=H,33,3;A:BMY=H,0,5;A:C=3G,40,7;A:CAT=G,67,4;A:CCL=H,75,6;A:CL=3G,60,10;A:CMCSA=H,67,9;A:CMG=-;A:COIN=-;A:COP=H,55,11;A:COST=H,100,4;A:CPRT=3G,25,4;A:CRM=H,50,3;A:CRWD=G,67,6;A:CSCO=H,57,8;A:CVS=H,25,6;A:CVX=H,40,7;A:DAL=H,29,7;A:DE=3G,12,12;A:DECK=H,60,7;A:DELL=G,29,8;A:DG=H,75,5;A:DIA=-;A:DIS=G,60,8;A:DLTR=3G,50,11;A:DUK=H,50,6;A:DXCM=-;A:EBAY=H,33,3;A:EEM=3G,57,9;A:EFA=3G,75,6;A:ENPH=H,80,5;A:ETSY=3G,40,6;A:EWJ=H,33,3;A:EWZ=3G,43,10;A:F=3G,44,11;A:FCX=-;A:FDX=3G,25,7;A:FSLR=G,75,9;A:FTNT=3G,80,7;A:FXI=H,29,10;A:GDX=3G,29,16;A:GE=G,71,7;A:GILD=H,40,5;A:GLD=G,62,9;A:GM=H,62,8;A:GOOGL=3G,50,6;A:GS=H,62,10;A:HAL=H,50,7;A:HD=3G,60,8;A:HON=3G,43,11;A:HOOD=G,43,7;A:HYG=-;A:IBM=H,33,6;A:IEF=3G,33,12;A:INTC=H,71,12;A:ISRG=-;A:ITB=H,25,6;A:IWM=H,50,5;A:JD=G,42,13;A:JNJ=H,0,3;A:JPM=G,40,5;A:KLAC=G,38,8;A:KO=H,33,3;A:KRE=H,40,7;A:KSS=3G,30,14;A:LLY=3G,33,7;A:LMT=H,33,9;A:LOW=G,67,6;A:LRCX=3G,50,4;A:LULU=H,60,6;A:M=3G,40,5;A:MA=H,60,6;A:MCD=-;A:META=G,57,8;A:MMM=3G,40,5;A:MNST=H,62,10;A:MO=H,25,5;A:MRK=H,50,5;A:MRVL=G,67,7;A:MS=3G,40,11;A:MSFT=G,67,7;A:MSTR=3G,53,19;A:MU=3G,67,15;A:NEE=H,57,8;A:NEM=-;A:NFLX=3G,33,6;A:NIO=G,33,4;A:NKE=3G,80,12;A:NOW=G,67,7;A:NVDA=3G,80,5;A:ODFL=H,100,5;A:ORCL=H,100,6;A:OXY=3G,29,11;A:PANW=G,50,10;A:PDD=3G,50,5;A:PEP=G,40,10;A:PFE=3G,57,8;A:PG=H,100,3;A:PLTR=G,50,9;A:PM=H,30,10;A:PYPL=3G,67,4;A:QCOM=G,50,6;A:QQQ=3G,50,4;A:REGN=H,67,3;A:RIVN=3G,0,3;A:ROKU=3G,67,3;A:RTX=3G,71,7;A:SBUX=3G,50,13;A:SHOP=?;A:SLB=3G,50,9;A:SLV=H,50,8;A:SMCI=G,100,10;A:SMH=3G,57,7;A:SNOW=-;A:SOFI=H,100,3;A:SPY=?;A:T=G,33,3;A:TGT=3G,80,5;A:TLT=3G,45,14;A:TSCO=H,100,4;A:TSLA=G,86,9;A:TSM=H,67,3;A:TTWO=3G,67,5;A:TXN=H,100,4;A:UAL=3G,38,15;A:UBER=-;A:ULTA=3G,50,9;A:UNG=3G,62,9;A:UNH=-;A:UPS=H,25,4;A:URA=H,80,6;A:USO=-;A:V=3G,83,6;A:VRTX=H,50,5;A:VZ=-;A:WFC=G,50,12;A:WMT=H,50,10;A:XBI=3G,44,11;A:XHB=H,20,7;A:XLB=H,25,6;A:XLE=H,83,8;A:XLF=3G,100,4;A:XLI=3G,80,7;A:XLK=3G,75,4;A:XLP=H,33,4;A:XLU=3G,38,11;A:XLV=H,33,5;A:XLY=G,67,6;A:XOM=H,29,10;A:ZM=-;B:AEFES=H,33,4;B:AGHOL=3G,60,12;B:AKBNK=H,33,7;B:AKFYE=-;B:AKSA=3G,73,13;B:AKSEN=3G,29,12;B:ALARK=G,50,5;B:ALBRK=H,50,6;B:ALFAS=-;B:ALTNY=-;B:ANSGR=H,67,4;B:ARCLK=3G,33,6;B:ASELS=G,33,6;B:ASTOR=G,100,3;B:AYDEM=G,67,4;B:BAGFS=G,40,7;B:BERA=3G,29,8;B:BIMAS=H,67,3;B:BINHO=G,50,4;B:BRSAN=3G,50,10;B:BRYAT=H,50,13;B:BSOKE=G,88,8;B:BTCIM=G,71,7;B:CANTE=H,67,3;B:CCOLA=H,60,6;B:CIMSA=3G,75,7;B:CLEBI=H,100,3;B:CWENE=G,60,7;B:DEVA=G,67,4;B:DOAS=3G,33,4;B:DOHOL=H,58,14;B:ECILC=H,100,4;B:EGEEN=3G,71,9;B:EKGYO=H,75,4;B:ENERY=G,33,4;B:ENJSA=3G,67,6;B:ENKAI=H,33,4;B:EREGL=H,25,5;B:EUPWR=G,71,8;B:FENER=G,43,7;B:FROTO=-;B:GARAN=3G,80,5;B:GESAN=3G,50,3;B:GLYHO=H,50,5;B:GOLTS=3G,40,11;B:GRSEL=G,17,7;B:GSDHO=H,80,6;B:GUBRF=G,29,10;B:HALKB=H,57,10;B:HEKTS=3G,80,6;B:IHLAS=3G,67,9;B:ISCTR=3G,50,8;B:ISGYO=3G,67,12;B:ISMEN=H,33,9;B:KARSN=3G,64,15;B:KCAER=G,40,9;B:KCHOL=3G,40,6;B:KLSER=3G,67,3;B:KONTR=3G,100,3;B:KONYA=H,75,6;B:KRDMD=H,57,9;B:LMKDC=-;B:LOGO=3G,50,13;B:MAVI=G,47,17;B:MGROS=H,0,3;B:MIATK=G,60,8;B:MPARK=3G,67,4;B:NETAS=G,50,6;B:OBAMS=G,75,4;B:ODAS=H,50,5;B:OTKAR=H,100,3;B:OYAKC=3G,50,13;B:PASEU=?;B:PEKGY=?;B:PETKM=3G,55,13;B:PGSUS=3G,40,7;B:QUAGR=G,50,8;B:REEDR=?;B:SAHOL=H,60,5;B:SASA=3G,67,5;B:SELEC=H,75,6;B:SISE=H,100,6;B:SKBNK=3G,50,15;B:SMRTG=G,50,6;",
+     ";B:SOKM=G,60,10;B:TABGD=G,67,4;B:TAVHL=3G,43,8;B:TCELL=G,67,7;B:THYAO=3G,55,12;B:TKFEN=H,50,3;B:TMSN=3G,33,6;B:TOASO=3G,50,5;B:TSKB=3G,67,13;B:TTKOM=G,25,10;B:TTRAK=H,50,6;B:TUKAS=3G,50,16;B:TUPRS=3G,67,7;B:TURSG=G,75,7;B:ULKER=G,62,8;B:VAKBN=3G,25,9;B:VESTL=G,43,8;B:YEOTK=3G,33,6;B:YKBNK=H,50,3;B:ZOREN=H,50,12;K:AAVEUSDT=G,100,4;K:ACEUSDT=-;K:ADAUSDT=G,89,9;K:ADXUSDT=G,60,6;K:AEROUSDT=4S,50,4;K:ALGOUSDT=4S,67,3;K:ALTUSDT=G,50,9;K:AMPUSDT=G,100,5;K:APEUSDT=G,100,6;K:APTUSDT=4S,100,6;K:ARBUSDT=G,75,4;K:ARKMUSDT=-;K:ARUSDT=G,0,6;K:ASTERUSDT=4S,50,6;K:ATOMUSDT=G,40,10;K:AUDIOUSDT=G,75,4;K:AUSDT=G,33,3;K:AVAUSDT=G,67,4;K:AVAXUSDT=G,67,12;K:AWEUSDT=-;K:AXLUSDT=4S,75,6;K:AXSUSDT=G,75,8;K:BATUSDT=4S,100,4;K:BCHUSDT=3G,33,4;K:BEAMXUSDT=G,50,5;K:BERAUSDT=4S,50,4;K:BIOUSDT=4S,67,7;K:BLURUSDT=G,80,6;K:BMTUSDT=G,80,5;K:BNBUSDT=3G,17,10;K:BOMEUSDT=G,80,7;K:BONKUSDT=4S,50,5;K:BTCUSDT=-;K:CAKEUSDT=4S,100,8;K:CELOUSDT=4S,40,5;K:CFGUSDT=4S,80,5;K:CFXUSDT=-;K:COMPUSDT=G,33,6;K:COWUSDT=4S,50,4;K:CRCLBUSDT=?;K:CRVUSDT=3G,25,6;K:CVCUSDT=G,33,3;K:CVXUSDT=G,33,7;K:CYBERUSDT=G,50,4;K:DASHUSDT=3G,100,3;K:DEXEUSDT=4S,67,4;K:DODOUSDT=G,60,5;K:DOGEUSDT=-;K:DOTUSDT=4S,25,8;K:DUSKUSDT=3G,100,5;K:EDENUSDT=-;K:EIGENUSDT=4S,40,7;K:ENAUSDT=G,40,5;K:ENSOUSDT=4S,33,5;K:ENSUSDT=G,25,5;K:ERAUSDT=-;K:ETCUSDT=G,67,3;K:ETHFIUSDT=3G,50,3;K:ETHUSDT=G,83,6;K:FETUSDT=3G,50,10;K:FFUSDT=?;K:FILUSDT=3G,67,8;K:FLOKIUSDT=4S,40,7;K:GALAUSDT=G,71,8;K:GIGGLEUSDT=4S,25,9;K:GOOGLBUSDT=?;K:GRAMUSDT=4S,75,9;K:GTCUSDT=-;K:GUNUSDT=-;K:GUSDT=-;K:HAEDALUSDT=4S,25,8;K:HBARUSDT=-;K:HEIUSDT=-;K:HOTUSDT=G,100,3;K:HYPERUSDT=-;K:ICPUSDT=-;K:IDUSDT=G,100,7;K:INITUSDT=-;K:INJUSDT=G,80,7;K:INTWBUSDT=4S,67,4;K:IOSTUSDT=3G,100,4;K:IOUSDT=G,50,8;K:JASMYUSDT=3G,75,4;K:JSTUSDT=G,33,4;K:JTOUSDT=G,71,12;K:KAIAUSDT=G,67,4;K:KATUSDT=-;K:KERNELUSDT=4S,75,4;K:KITEUSDT=-;K:KMNOUSDT=4S,75,4;K:LAUSDT=?;K:LDOUSDT=G,80,5;K:LINKUSDT=4S,100,3;K:LSKUSDT=3G,67,3;K:LTCUSDT=4S,67,5;K:LUMIAUSDT=4S,80,5;K:MAGICUSDT=4S,40,7;K:METISUSDT=G,100,4;K:METUSDT=4S,33,5;K:MINAUSDT=3G,75,4;K:MORPHOUSDT=4S,50,8;K:MOVRUSDT=3G,33,3;K:MSTRBUSDT=4S,40,5;K:MUBARAKUSDT=4S,20,6;K:NEARUSDT=G,25,7;K:NEIROUSDT=G,100,4;K:NIGHTUSDT=-;K:NILUSDT=4S,29,7;K:NMRUSDT=4S,67,6;K:NVDABUSDT=4S,67,3;K:NXPCUSDT=4S,60,5;K:OGNUSDT=4S,40,5;K:ONDOUSDT=-;K:ONTUSDT=G,50,4;K:OPENUSDT=4S,80,5;K:OPNUSDT=-;K:OPUSDT=3G,33,3;K:ORDIUSDT=4S,56,12;K:PARTIUSDT=G,100,4;K:PAXGUSDT=G,80,5;K:PENDLEUSDT=4S,83,7;K:PENGUUSDT=4S,50,3;K:PEPEUSDT=4S,50,4;K:PHAUSDT=4S,67,7;K:PLUMEUSDT=-;K:PNUTUSDT=G,100,3;K:POLUSDT=G,50,4;K:POWRUSDT=4S,50,4;K:PROMUSDT=G,40,5;K:PROVEUSDT=4S,60,8;K:PUMPUSDT=-;K:PYTHUSDT=4S,40,5;K:QNTUSDT=G,17,6;K:RADUSDT=4S,33,6;K:RAREUSDT=-;K:RAYUSDT=3G,33,4;K:REDUSDT=4S,50,4;K:RENDERUSDT=4S,33,9;K:REZUSDT=G,50,4;K:RLCUSDT=3G,50,7;K:ROSEUSDT=4S,75,7;K:RSRUSDT=3G,60,8;K:RUNEUSDT=G,100,6;K:RVNUSDT=3G,80,6;K:SAGAUSDT=G,80,11;K:SANDUSDT=G,57,8;K:SEIUSDT=4S,33,3;K:SENTUSDT=4S,50,6;K:SHIBUSDT=3G,56,9;K:SKYUSDT=-;K:SLPUSDT=4S,50,5;K:SOLUSDT=3G,17,7;K:SOLVUSDT=4S,67,3;K:SOPHUSDT=4S,60,5;K:SPCXBUSDT=?;K:STOUSDT=4S,50,6;K:STRAXUSDT=G,80,8;K:STRKUSDT=4S,50,8;K:STXUSDT=3G,80,6;K:SUIUSDT=4S,75,6;K:SUSDT=4S,50,9;K:SUSHIUSDT=3G,67,3;K:TAOUSDT=G,40,8;K:THETAUSDT=G,50,10;K:TIAUSDT=4S,33,9;K:TREEUSDT=4S,62,9;K:TRUMPUSDT=3G,67,3;K:TRXUSDT=H,100,3;K:TUTUSDT=4S,43,7;K:UNIUSDT=4S,57,8;K:USUALUSDT=G,67,3;K:VELODROMEUSDT=?;K:VETUSDT=G,62,9;K:VIRTUALUSDT=-;K:WALUSDT=4S,57,8;K:WIFUSDT=3G,100,3;K:WLDUSDT=G,67,6;K:WLFIUSDT=-;K:WUSDT=G,40,6;K:XLMUSDT=3G,40,7;K:XPLUSDT=4S,33,6;K:XRPUSDT=H,67,4;",
+     ";K:ZAMAUSDT=4S,40,8;K:ZBTUSDT=-;K:ZECUSDT=3G,67,7;K:ZENUSDT=G,44,11;K:ZILUSDT=G,56,9;K:ZKUSDT=4S,100,5;K:ZROUSDT=-;K:币安人生USDT=4S,50,8;K:牛来USDT=4S,50,4;")
 var string piyKod = syminfo.type == "crypto" ? "KRIPTO" : syminfo.prefix == "BIST" ? "BIST" : (syminfo.type == "stock" or syminfo.type == "dr" or syminfo.type == "fund") and syminfo.currency == "USD" ? "ABD" : "HEPSI"
 var int piyIdx = piyKod == "KRIPTO" ? 1 : piyKod == "BIST" ? 2 : piyKod == "ABD" ? 3 : 0
 var int tfSn = timeframe.in_seconds()
@@ -724,6 +754,83 @@ kaynakSatir(int de1, int de2) =>
     if de2 >= 0
         n += " / " + str.tostring(array.get(stN, stHucre(de2, tfIdx)), "#")
     "Kaynak: " + piyAd(int(math.floor(i1 / 5)) % 4) + " · " + tfAd(tfIdx) + " grafik" + (tfTam ? "" : " (en yakın test edilen)") + " · " + n + " geçmiş kırılım"
+
+// ───────── kırılım kalitesi (tarayıcıyla aynı) ─────────
+// Geçmiş ~8.000 kırılımda sonucu ayıran üç kontrol: R/Ö ≥ 1,25 (giriş kırılım kapanışı, stop geçersizlik, gerçek
+// fiyatla) · EMA200 yönünde · hacim ≥ 1,5 × önceki 20 mum. Gösterilen yargı, bu formasyonun aynı puandaki geçmiş
+// kırılımlarından (puan yukarı kırılımlarda belirgin ayırıyor, aşağı kırılımlarda zayıf).
+K_RR    = 1.25
+K_HACIM = 1.5
+rrFiyat(float giris, float gec, float hed, bool yuk) =>
+    float s = yuk ? 1.0 : -1.0
+    float risk = s * (fx(giris) - fx(gec))
+    float odul = s * (fx(hed) - fx(giris))
+    risk > 0 and odul > 0 ? odul / risk : na
+rrMetin(float rr) => na(rr) ? "R/Ö —" : "R/Ö 1 : " + str.tostring(rr, "0.0")
+isaret(int d) => d > 0 ? "✓" : d < 0 ? "✗" : "—"
+trendDurum(bool yuk) => bar_index < 200 or na(ema200) ? 0 : (yuk ? pC >= ema200 : pC <= ema200) ? 1 : -1
+kalPuan(float rr, bool yuk) => (not na(rr) and rr >= K_RR ? 1 : 0) + (trendDurum(yuk) > 0 ? 1 : 0) + (not na(hacOr) and hacOr >= K_HACIM ? 1 : 0)
+kalAyr(float rr, bool yuk) => "R/Ö " + (na(rr) ? "—" : str.tostring(rr, "0.0")) + " " + isaret(not na(rr) and rr >= K_RR ? 1 : -1) + " · trend " + isaret(trendDurum(yuk)) + " · hacim " + (na(hacOr) ? "—" : str.tostring(hacOr, "0.0") + "× " + isaret(hacOr >= K_HACIM ? 1 : -1))
+// bu formasyonun aynı kalite puanındaki geçmiş kırılımlarının derecesi (30'dan az örnekte boş)
+kalDerece(int de, int puan) =>
+    int i = (de * 5 + tfIdx) * 3 + (puan >= 3 ? 0 : puan == 2 ? 1 : 2)
+    float r = array.get(kalR, i)
+    array.get(kalN, i) < 30 ? "" : (r >= 0.40 ? "GÜÇLÜ" : r >= 0.15 ? "İYİ" : r >= 0 ? "TEMKİNLİ" : "KAÇIN") + " (%" + str.tostring(array.get(kalH, i), "#") + ", " + rYazi(r) + ")"
+kalSonuc(int de, float rr, bool yuk) =>
+    int pu = kalPuan(rr, yuk)
+    string d = kalDerece(de, pu)
+    "Kalite " + str.tostring(pu) + "/3: " + kalAyr(rr, yuk) + (d == "" ? "" : "\n→ bu durumda geçmiş " + d)
+kalKisa(int de, float rr, bool yuk) =>
+    int pu = kalPuan(rr, yuk)
+    string d = kalDerece(de, pu)
+    "Kalite " + str.tostring(pu) + "/3" + (d == "" ? "" : " → " + d)
+
+// ───────── bu grafiğin geçmiş başarısı ─────────
+// Bu grafikte bulunan her kırılım izlenir: hedef, geçersizlikten önce en fazla 100 mumda gelirse başarılı
+// (tarayıcıdaki istatistikle aynı ölçü). 100 mumda ikisi de olmazsa sayılmaz.
+var array<int>   tkB = array.new<int>()
+var array<float> tkH = array.new<float>()
+var array<float> tkG = array.new<float>()
+var array<bool>  tkY = array.new<bool>()
+var int tkN = 0
+var int tkOk = 0
+takipEkle(bool yuk, float hed, float gec) =>
+    array.push(tkB, bar_index)
+    array.push(tkH, hed)
+    array.push(tkG, gec)
+    array.push(tkY, yuk)
+tfKod(int t) => t == 0 ? "4S" : t == 1 ? "8S" : t == 2 ? "G" : t == 3 ? "3G" : "H"
+// bu sembolün tüm formasyonlarda en iyi zaman dilimi (tarayıcı istatistiği, semT tablosu)
+semMetni() =>
+    string t0 = str.replace(syminfo.ticker, ".P", "")
+    string pk = piyIdx == 1 ? "K:" : piyIdx == 2 ? "B:" : piyIdx == 3 ? "A:" : ""
+    string r = ""
+    if pk != ""
+        for k = 0 to 1
+            string anah = ";" + pk + (k == 0 ? t0 : t0 + "T") + "="
+            for i = 0 to array.size(semT) - 1
+                string t = array.get(semT, i)
+                int ps = str.pos(t, anah)
+                if not na(ps)
+                    string kalan = str.substring(t, ps + str.length(anah))
+                    int e = str.pos(kalan, ";")
+                    r := na(e) ? kalan : str.substring(kalan, 0, e)
+                    break
+            if r != "" or not str.endswith(t0, "USD")
+                break
+    r
+semYazi() =>
+    string r = semMetni()
+    string canli = tkN > 0 ? "bu grafik %" + str.tostring(100.0 * tkOk / tkN, "#") + " (" + str.tostring(tkN) + ")" : "bu grafikte sonuçlanan kırılım yok"
+    string en = ""
+    if r == "-"
+        en := " · hiçbir zaman dilimi kârlı değil"
+    else if r != "" and r != "?"
+        array<string> pr = str.split(r, ",")
+        if array.size(pr) == 3
+            string kod = array.get(pr, 0)
+            en := " · en iyi: " + kod + " %" + array.get(pr, 1) + " (" + array.get(pr, 2) + ")" + (tfTam and kod == tfKod(tfIdx) ? " ✓" : "")
+    canli + en
 
 kullan(array<int> xs, array<bool> ts) =>
     if array.size(xs) > 0
@@ -799,6 +906,21 @@ if aktif and bar_index - fx0 > MAXOMUR
 int b = bar_index
 float Ab = atr14
 float tol = tolAtr * atr14
+if array.size(tkB) > 0
+    for i = array.size(tkB) - 1 to 0
+        int bi = array.get(tkB, i)
+        if b > bi
+            bool yk = array.get(tkY, i)
+            bool bozuldu = yk ? pL <= array.get(tkG, i) : pH >= array.get(tkG, i)
+            bool vardi = yk ? pH >= array.get(tkH, i) : pL <= array.get(tkH, i)
+            if bozuldu or vardi or b - bi >= 100
+                if bozuldu or vardi
+                    tkN += 1
+                    tkOk += vardi and not bozuldu ? 1 : 0
+                array.remove(tkB, i)
+                array.remove(tkH, i)
+                array.remove(tkG, i)
+                array.remove(tkY, i)
 bool onayPiv = yh or yl
 bool yeniPiv = (onayPiv or gh or gl) and atr14 > 0
 
@@ -898,6 +1020,7 @@ float kirSev = na
 float kirHedef = na
 string kirAd = ""
 string kirGuv = ""
+string kirKal = ""
 float up = na
 float lw = na
 if aktif
@@ -917,6 +1040,9 @@ if aktif
         kirHedef := evKirU ? up + fw0 : lw - fw0
         kirAd := ucgAd()
         kirGuv := guvenKisa(ucgDe(evKirU))
+        float rrK = rrFiyat(pC, evKirU ? lw : up, kirHedef, evKirU)
+        kirKal := kalKisa(ucgDe(evKirU), rrK, evKirU)
+        takipEkle(evKirU, kirHedef, evKirU ? lw : up)
         array.push(bozuk, fKey)
         array.push(kulX, uI0)
         array.push(kulT, true)
@@ -926,7 +1052,7 @@ if aktif
         if gecmis
             line.new(uI0, fx(ustDeger(uI0)), b, fx(up), color = color.new(cUst, 30), width = 1)
             line.new(lI0, fx(altDeger(lI0)), b, fx(lw), color = color.new(cAlt, 30), width = 1)
-            label.new(b, evKirU ? high : low, (evKirU ? "▲ YUKARI KIRILIM\n" : "▼ AŞAĞI KIRILIM\n") + ucgAd() + " üçgen\nKırılan seviye: " + str.tostring(fx(kirSev), format.mintick) + "\n" + hYazi(fw0) + "\nHedef = seviye " + hIslem(evKirU) + " H = " + str.tostring(fx(kirHedef), format.mintick) + "\nGüven: " + guvenKisa(ucgDe(evKirU)), style = evKirU ? label.style_label_down : label.style_label_up, color = evKirU ? color.new(color.green, 10) : color.new(color.red, 10), textcolor = color.white, size = size.small)
+            label.new(b, evKirU ? high : low, (evKirU ? "▲ YUKARI KIRILIM\n" : "▼ AŞAĞI KIRILIM\n") + ucgAd() + " üçgen\nKırılan seviye: " + str.tostring(fx(kirSev), format.mintick) + "\n" + hYazi(fw0) + "\nHedef = seviye " + hIslem(evKirU) + " H = " + str.tostring(fx(kirHedef), format.mintick) + "\nGüven: " + guvenKisa(ucgDe(evKirU)) + "\n" + kalSonuc(ucgDe(evKirU), rrK, evKirU), style = evKirU ? label.style_label_down : label.style_label_up, color = evKirU ? color.new(color.green, 10) : color.new(color.red, 10), textcolor = color.white, size = size.small)
     else
         if up - pC <= yakAtr * atr14 and not yakU
             yakU := true
@@ -934,6 +1060,45 @@ if aktif
         if pC - lw <= yakAtr * atr14 and not yakL
             yakL := true
             evYakL := true
+// dönüş olayları: mevcut boyuna göre (yeni formasyon eskisinin onayını yutmasın)
+bool evBoyYak = false
+bool evOnay = false
+string onayTur = ""
+bool onayYukari = false
+float onaySev = na
+float onayHedef = na
+string onayKal = ""
+if dVar
+    float nl = dBoyun(b)
+    bool asagi = not dTers
+    int sonX = array.get(dPX, array.size(dPX) - 1)
+    if (asagi and pC > dGec + tol) or (not asagi and pC < dGec - tol)
+        kullan(dPX, dPT)
+        dVar := false
+    else if b - sonX > math.max(15, D_OMUR * dGen)
+        kullan(dPX, dPT)
+        dVar := false
+    else if (asagi and pC < nl - tol) or (not asagi and pC > nl + tol)
+        evOnay := true
+        onayTur := dTur
+        onayYukari := not asagi
+        onaySev := nl
+        onayHedef := asagi ? nl - dYuk : nl + dYuk
+        float rrO = rrFiyat(pC, dGec, onayHedef, not asagi)
+        onayKal := kalKisa(desenNo(dTur), rrO, not asagi)
+        takipEkle(not asagi, onayHedef, dGec)
+        if gecmis
+            int bx1 = array.get(dPX, 1)
+            line.new(bx1, fx(dBoyun(bx1)), b, fx(nl), color = color.new(cBoyun, 25), width = 1)
+            if array.size(dPX) == 3
+                line.new(array.get(dPX, 0), fx(array.get(dPP, 0)), array.get(dPX, 2), fx(array.get(dPP, 2)), color = color.new(asagi ? color.red : color.teal, 35), width = 1)
+            label.new(b, asagi ? low : high, (asagi ? "▼ " : "▲ ") + str.upper(desenAd(dTur)) + "\nOnay: " + str.tostring(fx(nl), format.mintick) + "\nHedef: " + str.tostring(fx(onayHedef), format.mintick) + "\nGüven: " + guvenKisa(desenNo(dTur)) + "\n" + kalSonuc(desenNo(dTur), rrO, not asagi), style = asagi ? label.style_label_up : label.style_label_down, color = asagi ? color.new(color.red, 10) : color.new(color.green, 10), textcolor = color.white, size = size.small)
+        kullan(dPX, dPT)
+        dVar := false
+    else if not dYakin and math.abs(pC - nl) <= yakAtr * atr14
+        dYakin := true
+        evBoyYak := true
+
 // 2) üçgen: her yeni pivotta yeniden kur (Python: formasyon_kur). Önce büyük üçgen aranır (elle çizen gibi);
 //    bulunursa içindeki küçük üçgenler gösterilmez. Büyük üçgen geçerli kaldıkça çizgileri sabit kalır.
 // Python: hala_gecerli — kapanışlar içeride ve salınımlar hâlâ çizgilere değiyor mu
@@ -1173,41 +1338,6 @@ if aVar and not (dVar and oncelik(dTur) >= oncelik(aTur))
                 array.push(dPT, array.get(aPT, i))
             aVar := false
 
-// 4) dönüş olayları
-bool evBoyYak = false
-bool evOnay = false
-string onayTur = ""
-bool onayYukari = false
-float onaySev = na
-float onayHedef = na
-if dVar
-    float nl = dBoyun(b)
-    bool asagi = not dTers
-    int sonX = array.get(dPX, array.size(dPX) - 1)
-    if (asagi and pC > dGec + tol) or (not asagi and pC < dGec - tol)
-        kullan(dPX, dPT)
-        dVar := false
-    else if b - sonX > math.max(15, D_OMUR * dGen)
-        kullan(dPX, dPT)
-        dVar := false
-    else if (asagi and pC < nl - tol) or (not asagi and pC > nl + tol)
-        evOnay := true
-        onayTur := dTur
-        onayYukari := not asagi
-        onaySev := nl
-        onayHedef := asagi ? nl - dYuk : nl + dYuk
-        if gecmis
-            int bx1 = array.get(dPX, 1)
-            line.new(bx1, fx(dBoyun(bx1)), b, fx(nl), color = color.new(cBoyun, 25), width = 1)
-            if array.size(dPX) == 3
-                line.new(array.get(dPX, 0), fx(array.get(dPP, 0)), array.get(dPX, 2), fx(array.get(dPP, 2)), color = color.new(asagi ? color.red : color.teal, 35), width = 1)
-            label.new(b, asagi ? low : high, (asagi ? "▼ " : "▲ ") + str.upper(desenAd(dTur)) + "\nOnay: " + str.tostring(fx(nl), format.mintick) + "\nHedef: " + str.tostring(fx(onayHedef), format.mintick) + "\nGüven: " + guvenKisa(desenNo(dTur)), style = asagi ? label.style_label_up : label.style_label_down, color = asagi ? color.new(color.red, 10) : color.new(color.green, 10), textcolor = color.white, size = size.small)
-        kullan(dPX, dPT)
-        dVar := false
-    else if not dYakin and math.abs(pC - nl) <= yakAtr * atr14
-        dYakin := true
-        evBoyYak := true
-
 while array.size(bozuk) > 50
     array.shift(bozuk)
 while array.size(kulX) > 200
@@ -1230,11 +1360,11 @@ if barstate.isconfirmed
     if evYakU or evYakL
         alert(syminfo.ticker + " " + ucgAd() + " üçgen: " + (evYakU ? "ÜST" : "ALT") + " çizgiye yaklaştı. Üst " + str.tostring(fx(up), format.mintick) + " / alt " + str.tostring(fx(lw), format.mintick), alert.freq_once_per_bar_close)
     if evKirU or evKirL
-        alert(syminfo.ticker + (evKirU ? " YUKARI" : " AŞAĞI") + " KIRILIM (" + kirAd + " üçgen). Seviye " + str.tostring(fx(kirSev), format.mintick) + ", hedef " + str.tostring(fx(kirHedef), format.mintick) + ". Güven: " + kirGuv, alert.freq_once_per_bar_close)
+        alert(syminfo.ticker + (evKirU ? " YUKARI" : " AŞAĞI") + " KIRILIM (" + kirAd + " üçgen). Seviye " + str.tostring(fx(kirSev), format.mintick) + ", hedef " + str.tostring(fx(kirHedef), format.mintick) + ". Güven: " + kirGuv + ". " + kirKal, alert.freq_once_per_bar_close)
     if evBoyYak
         alert(syminfo.ticker + " " + desenAd(dTur) + ": boyun çizgisine yaklaştı (" + str.tostring(fx(dBoyun(b)), format.mintick) + ")", alert.freq_once_per_bar_close)
     if evOnay
-        alert(syminfo.ticker + " " + desenAd(onayTur) + " ONAYLANDI. Boyun " + str.tostring(fx(onaySev), format.mintick) + ", hedef " + str.tostring(fx(onayHedef), format.mintick) + ". Güven: " + guvenKisa(desenNo(onayTur)), alert.freq_once_per_bar_close)
+        alert(syminfo.ticker + " " + desenAd(onayTur) + " ONAYLANDI. Boyun " + str.tostring(fx(onaySev), format.mintick) + ", hedef " + str.tostring(fx(onayHedef), format.mintick) + ". Güven: " + guvenKisa(desenNo(onayTur)) + ". " + onayKal, alert.freq_once_per_bar_close)
 
 // ───────── aktif formasyonları çiz (son mumda) ─────────
 // x: tespit uzayında seviye, c: gerçek fiyat
@@ -1280,14 +1410,15 @@ if barstate.islast
                 array.push(ciz, line.new(b, fx(hA), uc, fx(hA), color = color.red, width = 1, style = line.style_dotted))
                 array.push(etk, label.new(uc, fx(hA), "hedef ↓ " + str.tostring(fx(hA), format.mintick) + " (" + yuzdeS(hA, close) + ")", style = label.style_label_left, color = color.new(color.black, 100), textcolor = color.red, size = size.small))
             string hes = ucgAd() + " üçgen · " + str.tostring(fDok) + " dokunuş · olgunluk %" + str.tostring(olg, "#") + " · apex'e " + str.tostring(fApex - b, "#") + " mum"
-            hes += "\n" + hYazi(fw0) + " · risk/ödül 1 : " + str.tostring(rr, "#.#") + " (stop: karşı çizgi)"
+            hes += "\n" + hYazi(fw0) + " · stop: karşı çizgi"
             hes += "\n▲ Üst " + str.tostring(fx(upN), format.mintick) + " (" + yuzdeS(upN, close) + ") · kırılım: kapanış > " + str.tostring(fx(upN + tolN), format.mintick)
-            hes += "\n      hedef = " + str.tostring(fx(upN), format.mintick) + " " + hIslem(true) + " H = " + str.tostring(fx(hU), format.mintick) + " (" + yuzdeS(hU, close) + ")"
+            hes += "\n      hedef = " + str.tostring(fx(upN), format.mintick) + " " + hIslem(true) + " H = " + str.tostring(fx(hU), format.mintick) + " (" + yuzdeS(hU, close) + ") · " + rrMetin(rrFiyat(upN + tolN, lwN, hU, true))
             hes += "\n      " + guvenSatir(ucgDe(true))
             hes += "\n▼ Alt " + str.tostring(fx(lwN), format.mintick) + " (" + yuzdeS(lwN, close) + ") · kırılım: kapanış < " + str.tostring(fx(lwN - tolN), format.mintick)
-            hes += "\n      hedef = " + str.tostring(fx(lwN), format.mintick) + " " + hIslem(false) + " H = " + (logOn or hA > 0 ? str.tostring(fx(hA), format.mintick) + " (" + yuzdeS(hA, close) + ")" : "sıfırın altında (geçersiz)")
+            hes += "\n      hedef = " + str.tostring(fx(lwN), format.mintick) + " " + hIslem(false) + " H = " + (logOn or hA > 0 ? str.tostring(fx(hA), format.mintick) + " (" + yuzdeS(hA, close) + ") · " + rrMetin(rrFiyat(lwN - tolN, upN, hA, false)) : "sıfırın altında (geçersiz)")
             hes += "\n      " + guvenSatir(ucgDe(false))
             hes += "\nEn iyi zaman dilimi: ▲ " + enIyiYazi(ucgDe(true), false) + " · ▼ " + enIyiYazi(ucgDe(false), false)
+            hes += "\nSağlam kırılım için: hacim ≥ 1.5× · R/Ö ≥ 1.25 · ▲ trend " + isaret(trendDurum(true)) + " · ▼ trend " + isaret(trendDurum(false))
             hes += "\n" + kaynakSatir(ucgDe(true), ucgDe(false))
             // kutu üçgenin içinde, geniş tarafta: tabandaki H çizgisinin hemen sağında
             int xk = fx0 + math.max(1, int((b - fx0) * 0.04))
@@ -1364,9 +1495,11 @@ if showT and barstate.islast
         bool yakinB = math.abs(pC - nlS) <= yakAtr * atr14
         satir(r, "Dönüş", desenAd(dTur) + " (onay bekliyor)", dTers ? color.lime : color.red)
         satir(r + 1, "Boyun çizgisi", str.tostring(fx(nlS), format.mintick) + "  (" + (fx(nlS) >= close ? "+" : "") + str.tostring((fx(nlS) / close - 1) * 100, "#.##") + "%)" + (yakinB ? "  ⚠ YAKIN" : ""), yakinB ? color.yellow : color.white)
-        satir(r + 2, "Hedef / geçersizlik", str.tostring(fx(hd), format.mintick) + " / " + str.tostring(fx(dGec), format.mintick), color.gray)
+        satir(r + 2, "Hedef / geçersizlik", str.tostring(fx(hd), format.mintick) + " / " + str.tostring(fx(dGec), format.mintick) + " · " + rrMetin(rrFiyat(nlS, dGec, hd, dTers)), color.gray)
         satir(r + 3, "Onaylanırsa", guvenKisa(desenNo(dTur)), dereceRenk(derece(stHucre(desenNo(dTur), tfIdx))))
         satir(r + 4, "En iyi zaman dilimi", enIyiYazi(desenNo(dTur), true), color.silver)
         r += 5
     if not aktif and not dVar
         satir(1, "Durum", "Aktif formasyon yok", color.gray)
+        r := 2
+    satir(r, "Bu sembol", semYazi(), color.silver)

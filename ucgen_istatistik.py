@@ -237,18 +237,40 @@ def ozet(k: list) -> str:
             f"Ryarim {ort_r([x[4] for x in k])} RR {medyan([x[5] for x in k])}")
 
 
+def _say(k):
+    h = [x[0] for x in k if x[0] is not None]
+    y = [x[1] for x in k if x[1] is not None]
+    r = [min(x[3], R_TAVAN) for x in k if x[3] is not None]
+    if not (h and y and r):
+        return None
+    return [round(100 * sum(h) / len(h)), round(100 * sum(y) / len(y)), round(float(np.mean(r)), 2), len(k)]
+
+
+def sembol_yaz(sem: dict, dosya: str = "sembol_istatistik.json"):
+    """Sembol x zaman dilimi (tum formasyonlar): [kirilim sayisi, hedefe ulasma %, islem basina R, R0].
+    R0: ayni piyasa ve zaman dilimindeki tum kirilimlarin ortalamasi (az ornekli sembolu ortalamaya cekmek icin)."""
+    taban: dict = {}
+    for (p, s, a), k in sem.items():
+        taban.setdefault((p, a), []).extend(min(x[1], R_TAVAN) for x in k if x[1] is not None)
+    veri: dict = {}
+    for (p, s, a), k in sem.items():
+        r = [min(x[1], R_TAVAN) for x in k if x[1] is not None]
+        h = [x[0] for x in k if x[0] is not None]
+        if not r or not h:
+            continue
+        veri.setdefault(f"{p}:{s}", {})["1d" if a == "1dL" else a] = [
+            len(k), round(100 * sum(h) / len(h)), round(float(np.mean(r)), 2), round(float(np.mean(taban[(p, a)])), 2)]
+    json.dump(dict(tarih=time.strftime("%Y-%m-%d"), aciklama="sembol -> zaman dilimi -> [kirilim sayisi, hedef %, "
+                   "islem basina R, piyasa+zaman dilimi ortalama R]; tum formasyonlar", veri=veri),
+              open(dosya, "w", encoding="utf-8"), ensure_ascii=False, separators=(",", ":"))
+
+
 def json_yaz(gruplar: dict, araliklar: list, dosya: str = "formasyon_istatistik.json"):
     """Grafik kutusundaki guven derecesi icin tablo: desen-yon x piyasa x zaman dilimi ->
     [hedefe ulasma %, yarim hedefe ulasma %, islem basina ortalama R, kirilim sayisi]. 1dL 'gunluk' (1d) yazilir."""
-    def say(k):
-        h = [x[0] for x in k if x[0] is not None]
-        y = [x[1] for x in k if x[1] is not None]
-        r = [min(x[3], R_TAVAN) for x in k if x[3] is not None]
-        if not (h and y and r):
-            return None
-        return [round(100 * sum(h) / len(h)), round(100 * sum(y) / len(y)), round(float(np.mean(r)), 2), len(k)]
-
+    say = _say
     veri: dict = {}
+    kalite: dict = {}
     for (desen, a, p), g in gruplar.items():
         if a not in ("4h", "8h", "1d", "1dL", "3d", "1w") or (a == "1d" and "1dL" in araliklar):
             continue
@@ -260,9 +282,17 @@ def json_yaz(gruplar: dict, araliklar: list, dosya: str = "formasyon_istatistik.
             s = say(k)
             if s:
                 veri.setdefault(anahtar, {}).setdefault(p, {})["1d" if a == "1dL" else a] = s
+        if p == "HEPSI":                                  # kirilim kalitesi (saglam / orta / zayif), tum piyasalar
+            for anahtar, yonler in ([(f"{desen}_{y}", (y,)) for y in ("yukari", "asagi")]
+                                   if desen in ("ucgen", "buyuk_ucgen") else [(desen, ("yukari", "asagi"))]):
+                for sev in ("saglam", "orta", "zayif"):
+                    s = say([x for y in yonler for x in g["kal"][y][sev]])
+                    if s:
+                        kalite.setdefault(anahtar, {}).setdefault("1d" if a == "1dL" else a, {})[sev] = s
     json.dump(dict(tarih=time.strftime("%Y-%m-%d"), kaynak=f"ucgen_istatistik.py: {','.join(araliklar)}",
                    aciklama="her hucre: [hedefe ulasma %, yarim hedefe ulasma %, islem basina ortalama R, "
-                            "kirilim sayisi]; 1d = uzun gecmisli gunluk; 8h yalniz kripto", veri=veri),
+                            "kirilim sayisi]; 1d = uzun gecmisli gunluk; 8h yalniz kripto; kalite: kirilim kalitesine "
+                            "gore (saglam 3/3, orta 2/3, zayif 0-1/3), tum piyasalar", veri=veri, kalite=kalite),
               open(dosya, "w", encoding="utf-8"), ensure_ascii=False, indent=1)
 
 
@@ -293,6 +323,7 @@ def main():
             bas4[p] = min(bas4.get(p, d["t"][0]), d["t"][0])
 
     gruplar: dict = {}
+    sem: dict = {}                                  # sembol x zaman dilimi -> [(hedef, R)] (tum formasyonlar)
     for (p, s, a), d in zip(isler, veriler):
         if d is None:
             continue
@@ -314,10 +345,16 @@ def main():
             for ad, bas in hedefler:
                 if bas is not None and d["t"][o["b"]] < bas:
                     continue
-                g = gruplar.setdefault(ad, dict(grafik=set(), kir={"yukari": [], "asagi": []}, yakin=[]))
+                g = gruplar.setdefault(ad, dict(grafik=set(), kir={"yukari": [], "asagi": []}, yakin=[],
+                                                kal={y: {"saglam": [], "orta": [], "zayif": []}
+                                                     for y in ("yukari", "asagi")}))
                 g["grafik"].add((p, s, a))
                 if o["tur"] == "kirilim":
-                    g["kir"][o["yon"]].append(kirilim_sonucu(d, o, dP, ex))
+                    sonuc = kirilim_sonucu(d, o, dP, ex)
+                    g["kir"][o["yon"]].append(sonuc)
+                    if ad[2] == "HEPSI" and bas is None:
+                        g["kal"][o["yon"]][u.kirilim_kalitesi(d, o)["sev"]].append(sonuc)
+                        sem.setdefault((p, s, a), []).append((sonuc[0], sonuc[3]))
                 else:
                     sonuc = sonu.get((o["desen"], o["f"]["key"]))
                     if o["desen"] == "ucgen":     # yakin uyarisinin yonu dogru mu (kirilan ucgenler arasinda)
@@ -347,6 +384,7 @@ def main():
     for s in satirlar:
         print(s)
     json_yaz(gruplar, araliklar)
+    sembol_yaz(sem)
     if os.environ.get("GITHUB_ACTIONS") == "true":          # not sayisi sinirli: yalniz tum piyasalar, 3'erli
         ozetler = [satirlar[0]] + [satir(k) for k in anahtar if k[2] == "HEPSI"]
         for i in range(0, len(ozetler), 3):
