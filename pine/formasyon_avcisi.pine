@@ -1,0 +1,1047 @@
+//@version=6
+// ══════════════════════════════════════════════════════════════════════
+//  FORMASYON AVCISI  (daralan üçgen + ikili tepe/dip + omuz-baş-omuz)
+//  Telegram tarayıcısı (ucgen_tarayici.py) ile birebir aynı kurallar.
+// ──────────────────────────────────────────────────────────────────────
+//  DARALAN ÜÇGEN
+//   Çizgi mumun görünen ucuna dayanır (fitil gövdeden 1 ATR'den uzunsa gövdeye). Her tepe/dip
+//   başlangıcından sonrakilere en sıkı yaslanan çizgi; bütün çiftler denenir. Her büyük salınım
+//   karşı çizgiye değer, her çizgide en az 2 ayrı dokunuş, iki çizgi aynı mumdan çıkmaz.
+//  İKİLİ TEPE / DİP
+//   İki tepe (dip) eşit seviyede: fark ≤ min(yüksekliğin %15'i, 1 ATR); yükseklik ≥ 3 ATR;
+//   aralarında 10–100 mum, temiz M / W (bacaklarda ters salınım yok), formasyona güçlü
+//   hareketle girilmiş, hiçbir bacak tek mumla oluşmamış. Boyun = aradaki dip (tepe).
+//  OMUZ-BAŞ-OMUZ (normal / ters)
+//   Baş, omuzlardan belirgin yüksek; omuzlar benzer seviyede ve boyundan yeterince yüksek;
+//   boyun çizgisi fazla eğimli değil; zaman simetrisi; temiz bacaklar.
+//  Formasyonlar aynı noktayı paylaşmaz (aynı yerden iki çizgi çıkmaz). Öncelik: OBO > üçgen > ikili.
+//  Sinyaller: kırılıma / boyuna yakın (0,75 ATR) ve kırılım / onay (0,3 ATR dışında kapanış).
+//  Hedef = ölçülen hareket (formasyon yüksekliği).
+// ══════════════════════════════════════════════════════════════════════
+indicator("Formasyon Avcısı", overlay = true, max_lines_count = 200, max_labels_count = 250, max_bars_back = 500)
+
+grpA = "Daralan üçgen"
+pvN    = input.int(5, "Pivot gücü (sol/sağ mum)", minval = 2, maxval = 20, group = grpA)
+maxBar = input.int(150, "En uzun üçgen (mum)", minval = 30, maxval = 400, group = grpA)
+minBar = input.int(20, "En kısa üçgen (mum)", minval = 5, group = grpA)
+tolAtr = input.float(0.3, "Kapanış toleransı (× ATR)", minval = 0, step = 0.05, group = grpA)
+yatay  = input.float(0.10, "Yatay sayılma eşiği (yüksekliğe oranla)", minval = 0, step = 0.05, group = grpA)
+minYuk = input.float(3.0, "En az yükseklik (× ATR)", minval = 0, step = 0.5, group = grpA)
+darMax = input.float(0.85, "Daralma şartı (bugünkü genişlik / başlangıç)", minval = 0.1, maxval = 1, step = 0.05, group = grpA)
+grpC = "Çizgi kalitesi"
+fitilAtr = input.float(1.0, "Fitil sınırı (× ATR, daha uzun fitilde gövde)", minval = 0, step = 0.25, group = grpC)
+salTeta  = input.float(0.40, "Büyük salınım (genişliğin oranı)", minval = 0.1, maxval = 0.9, step = 0.05, group = grpC)
+dokAtr   = input.float(0.75, "Dokunuş: en fazla (× ATR)", minval = 0, step = 0.05, group = grpC)
+dokGen   = input.float(0.20, "Dokunuş: en fazla (genişliğin oranı)", minval = 0, step = 0.05, group = grpC)
+kabAtr   = input.float(1.5, "Çizgiden kopma sınırı (× ATR)", minval = 0, step = 0.25, group = grpC)
+kabGen   = input.float(0.30, "Çizgiden kopma sınırı (genişliğin oranı)", minval = 0, step = 0.05, group = grpC)
+minDok   = input.int(2, "Her çizgide en az dokunuş", minval = 2, maxval = 5, group = grpC)
+grpD = "Dönüş formasyonları"
+showIk  = input.bool(true, "İkili tepe / ikili dip", group = grpD)
+showObo = input.bool(true, "Omuz-baş-omuz (normal / ters)", group = grpD)
+grpB = "Sinyal ve görünüm"
+yakAtr  = input.float(0.75, "Kırılıma / boyuna yakın mesafesi (× ATR)", minval = 0, step = 0.25, group = grpB)
+gecmis  = input.bool(true, "Geçmiş formasyonları ve kırılımları da çiz", group = grpB)
+showDok = input.bool(true, "Üçgen dokunuş noktalarını işaretle", group = grpB)
+showT   = input.bool(true, "Bilgi panelini göster", group = grpB)
+cUst    = input.color(color.orange, "Üçgen üst çizgi", group = grpB)
+cAlt    = input.color(color.blue, "Üçgen alt çizgi", group = grpB)
+cBoyun  = input.color(#ffd54f, "Boyun çizgisi", group = grpB)
+
+// tarayıcıyla aynı sabitler
+MAXP     = 12      // üçgen: pencere içindeki en son 12 tepe / dip
+DENGE    = 0.50    // üçgen: iki çizginin başlangıç farkı ≤ sürenin yarısı
+TASMA    = 0.25    // üçgen: sonra başlayan çizgi geriye uzatılınca gerçek fiyatın dışına taşma sınırı
+MAXBACAK = 0.50    // üçgen: tek bir bacak ≤ sürenin yarısı
+MAXOMUR  = 450     // bu kadar mumdan eski formasyon / aday bırakılır (geçmiş sınırı)
+TEKMUM   = 0.5     // bir bacağı tek mum yapamaz: gövde > max(bacağın yarısı, 2 × ortalama mum boyu)
+TEKORT   = 2.0
+D_MINYUK = 3.0     // dönüş: yükseklik ≥ 3 ATR
+D_ESIT   = 0.15    // ikili: iki tepe farkı ≤ min(yüksekliğin %15'i, 1 ATR)
+D_ESITA  = 1.0
+D_MINARA = 10      // ikili: iki tepe arası mum
+D_MAXARA = 100
+D_DENGE  = 0.25    // ikili: kısa bacak / uzun bacak (süre)
+D_ONCEKI = 1.0     // ikili: girişte hareket ≥ 1 × yükseklik
+D_ONCOBO = 0.6     // OBO: sol omza girişte hareket ≥ 0,6 × baş yüksekliği
+D_TEMIZ  = 0.40    // bacaklarda yüksekliğe göre %40'lık ters salınım yok
+D_DOLU   = 0.20    // aradaki kapanışların ≥ %20'si formasyonun iç yarısında
+D_FITIL  = 1.0     // gerçek fitil seviyeyi en fazla 1 ATR aşabilir
+D_BASFRK = 0.20    // OBO: baş, yüksek omuzdan ≥ %20 yükseklik fazla
+D_OMUZMN = 0.40    // OBO: her omuz boyundan ≥ %40 yükseklikte
+D_OMUZSV = 0.30    // OBO: omuzlar arası fark ≤ %30 yükseklik
+D_BOYEGM = 0.25    // OBO: iki boyun noktası farkı ≤ %25 yükseklik
+D_ZAMAN  = 0.40    // OBO: kısa yan / uzun yan (süre)
+D_MINGEN = 15      // OBO: sol omuzdan sağ omuza mum
+D_MAXGEN = 150
+D_ONAY   = 0.20    // son noktadan max(1 ATR, %20 yükseklik) uzaklaşınca formasyon gösterilir
+D_ONAYA  = 1.0
+D_OMUR   = 0.75    // son noktadan sonra genişliğin %75'i (en az 15 mum) içinde kırılmazsa biter
+D_YAKIN  = 2       // iki nokta "aynı yer": aynı tip ve ≤ 2 mum
+DIZI     = 240     // dönüş aramasının okuduğu geçmiş (mum)
+
+atr14 = ta.atr(14)
+phv = ta.pivothigh(high, pvN, pvN)
+plv = ta.pivotlow(low, pvN, pvN)
+
+// mumun çizgi için ucu (Python: uclar): fitil gövdeden fitilAtr × ATR'den kısaysa fitilin ucu, değilse gövde
+float govU = math.max(open, close)
+float govA = math.min(open, close)
+float ucT = high - govU <= fitilAtr * atr14 ? high : govU
+float ucD = govA - low <= fitilAtr * atr14 ? low : govA
+
+var array<int>    phB = array.new<int>()
+var array<float>  phP = array.new<float>()
+var array<int>    plB = array.new<int>()
+var array<float>  plP = array.new<float>()
+var array<string> bozuk = array.new<string>()
+// kullanılmış noktalar: biten formasyonların çizgi başlangıçları (aynı yerden iki çizgi çıkmasın)
+var array<int>  kulX = array.new<int>()
+var array<bool> kulT = array.new<bool>()     // true = tepe, false = dip
+
+// aday üçgen çizgileri
+var array<int>   cuI = array.new<int>()
+var array<float> cuP = array.new<float>()
+var array<float> cuS = array.new<float>()
+var array<int>   cuF = array.new<int>()
+var array<int>   clI = array.new<int>()
+var array<float> clP = array.new<float>()
+var array<float> clS = array.new<float>()
+var array<int>   clF = array.new<int>()
+var array<float> sufH = array.new<float>()
+var array<float> sufL = array.new<float>()
+// geçmiş (indeks = kaç mum önce), her kurulumda doldurulur
+var array<float> aT = array.new<float>()
+var array<float> aD = array.new<float>()
+var array<float> aA = array.new<float>()
+var array<float> aH = array.new<float>()
+var array<float> aL = array.new<float>()
+var array<float> aO = array.new<float>()
+var array<float> aC = array.new<float>()
+// üçgen dokunuş noktaları: aktif (dk) ve aday (ck)
+var array<int>  dkX = array.new<int>()
+var array<bool> dkU = array.new<bool>()
+var array<int>  ckX = array.new<int>()
+var array<bool> ckU = array.new<bool>()
+
+// ───────── ortak yardımcılar ─────────
+tekMum(int b, int xa, int xb, float genlik) =>
+    bool r = false
+    if xb > xa
+        float gmax = 0.0
+        float top = 0.0
+        for x = xa + 1 to xb
+            int o = b - x
+            gmax := math.max(gmax, math.abs(array.get(aC, o) - array.get(aO, o)))
+            top += array.get(aH, o) - array.get(aL, o)
+        r := gmax > math.max(TEKMUM * math.abs(genlik), TEKORT * top / (xb - xa))
+    r
+
+// iki nokta listesi aynı yeri paylaşıyor mu (aynı tip, ≤ D_YAKIN mum)
+cakisir(array<int> ax_, array<bool> at_, array<int> bx_, array<bool> bt_) =>
+    bool r = false
+    int na_ = array.size(ax_)
+    int nb_ = array.size(bx_)
+    if na_ > 0 and nb_ > 0
+        for i = 0 to na_ - 1
+            for j = 0 to nb_ - 1
+                if array.get(at_, i) == array.get(bt_, j) and math.abs(array.get(ax_, i) - array.get(bx_, j)) <= D_YAKIN
+                    r := true
+                    break
+            if r
+                break
+    r
+
+// ───────── üçgen: aday çizgiler (Python: cizgiler) ─────────
+cizgiAdaylari(array<int> bs, array<float> ps, int b, float tol, bool ust, array<int> oI, array<float> oP, array<float> oS, array<int> oF) =>
+    array.clear(oI)
+    array.clear(oP)
+    array.clear(oS)
+    array.clear(oF)
+    int n = array.size(bs)
+    int j0 = n
+    if n > 0
+        for j = n - 1 to 0
+            int bj = array.get(bs, j)
+            if bj >= b - maxBar
+                if bj <= b - pvN
+                    j0 := j
+            else
+                break
+    j0 := math.max(j0, n - MAXP)
+    float sg = ust ? 1.0 : -1.0
+    if n - j0 >= 2
+        for a = j0 to n - 2
+            int i0 = array.get(bs, a)
+            float p0 = array.get(ps, a)
+            float smin = na
+            for e = a + 1 to n - 1
+                float sn = ((array.get(ps, e) - sg * tol) - p0) / (array.get(bs, e) - i0)
+                smin := na(smin) ? sn : ust ? math.max(smin, sn) : math.min(smin, sn)
+            float sonS = na
+            bool bulundu = false
+            int deneme = 0
+            while not bulundu and deneme < n - 1 - a
+                float enS = na
+                for e = a + 1 to n - 1
+                    float s = (array.get(ps, e) - p0) / (array.get(bs, e) - i0)
+                    bool gec = ust ? s >= smin - 1e-12 : s <= smin + 1e-12
+                    bool yeni = na(sonS) or (ust ? s > sonS : s < sonS)
+                    if gec and yeni and (na(enS) or (ust ? s < enS : s > enS))
+                        enS := s
+                if na(enS)
+                    break
+                sonS := enS
+                deneme += 1
+                bool ok = true
+                for x = i0 to b
+                    if sg * (close[b - x] - (p0 + enS * (x - i0))) > tol
+                        ok := false
+                        break
+                if ok
+                    int x = i0 - 1
+                    while x >= b - maxBar and sg * (close[b - x] - (p0 + enS * (x - i0))) <= tol
+                        x -= 1
+                    int ser = x + 1
+                    if a > j0
+                        for e = j0 to a - 1
+                            int be = array.get(bs, e)
+                            if be >= ser and be < i0 and sg * (array.get(ps, e) - (p0 + enS * (be - i0))) > tol
+                                ser := math.max(ser, be + 1)
+                    array.push(oI, i0)
+                    array.push(oP, p0)
+                    array.push(oS, enS)
+                    array.push(oF, ser)
+                    bulundu := true
+    j0
+
+// ───────── üçgen: salınım denetimi (Python: salinim) ─────────
+// Döndürür: [ihlal, üst dokunuş, alt dokunuş, yakın geçen]; kaydet ise dokunuş noktaları ox/ou'ya yazılır
+salinim(int x0, int b, int ui0, float up0, float us, int li0, float lp0, float ls, bool ustBas, bool kaydet, array<int> ox, array<bool> ou) =>
+    int nn = b - x0
+    int ihlal = 0
+    int ud = 0
+    int ad = 0
+    int yakin = 0
+    if kaydet
+        array.clear(ox)
+        array.clear(ou)
+        array.push(ox, x0)
+        array.push(ou, ustBas)
+    float U0 = up0 + us * (x0 - ui0)
+    float L0 = lp0 + ls * (x0 - li0)
+    float W0 = U0 - L0
+    if W0 <= 0
+        ihlal := 99
+    bool ararDip = ustBas
+    float aday = na
+    int ax = 0
+    int sonDonus = 0
+    int enBacak = 0
+    float pOnc = ustBas ? array.get(aT, b - x0) : array.get(aD, b - x0)
+    if ihlal == 0
+        if ustBas
+            ud := 1
+            aday := (array.get(aD, b - x0) - L0) / W0
+        else
+            ad := 1
+            aday := (array.get(aT, b - x0) - L0) / W0
+        for r = 1 to nn
+            int x = x0 + r
+            float Lx = lp0 + ls * (x - li0)
+            float Wx = up0 + us * (x - ui0) - Lx
+            if Wx <= 0
+                ihlal := 99
+                break
+            float hp = (array.get(aT, b - x) - Lx) / Wx
+            float lp = (array.get(aD, b - x) - Lx) / Wx
+            if ararDip
+                if lp < aday
+                    aday := lp
+                    ax := r
+                else if hp >= aday + salTeta
+                    int xa = x0 + ax
+                    float Wa = up0 + us * (xa - ui0) - (lp0 + ls * (xa - li0))
+                    float aa = array.get(aA, b - xa)
+                    float td = math.min(dokAtr * aa, dokGen * Wa) / Wa
+                    float tk = math.min(kabAtr * aa, kabGen * Wa) / Wa
+                    if aday <= td
+                        ad += 1
+                        if kaydet
+                            array.push(ox, xa)
+                            array.push(ou, false)
+                    else if aday > tk
+                        ihlal += 1
+                    else
+                        yakin += 1
+                    float pYeni = array.get(aD, b - xa)
+                    if tekMum(b, x0 + sonDonus, xa, pYeni - pOnc)
+                        ihlal += 1
+                    enBacak := math.max(enBacak, ax - sonDonus)
+                    sonDonus := ax
+                    pOnc := pYeni
+                    ararDip := false
+                    aday := hp
+                    ax := r
+            else
+                if hp > aday
+                    aday := hp
+                    ax := r
+                else if lp <= aday - salTeta
+                    int xa = x0 + ax
+                    float Wa = up0 + us * (xa - ui0) - (lp0 + ls * (xa - li0))
+                    float aa = array.get(aA, b - xa)
+                    float td = math.min(dokAtr * aa, dokGen * Wa) / Wa
+                    float tk = math.min(kabAtr * aa, kabGen * Wa) / Wa
+                    if 1 - aday <= td
+                        ud += 1
+                        if kaydet
+                            array.push(ox, xa)
+                            array.push(ou, true)
+                    else if 1 - aday > tk
+                        ihlal += 1
+                    else
+                        yakin += 1
+                    float pYeni = array.get(aT, b - xa)
+                    if tekMum(b, x0 + sonDonus, xa, pYeni - pOnc)
+                        ihlal += 1
+                    enBacak := math.max(enBacak, ax - sonDonus)
+                    sonDonus := ax
+                    pOnc := pYeni
+                    ararDip := true
+                    aday := lp
+                    ax := r
+        if ihlal < 99
+            enBacak := math.max(enBacak, nn - sonDonus)
+            if enBacak > MAXBACAK * nn
+                ihlal += 1
+    [ihlal, ud, ad, yakin]
+
+// ───────── dönüş formasyonları (Python: ikili / obo) ─────────
+// Hesaplar "tepe" yönünde yapılır; dip formasyonlarında fiyatlar ters çevrilir (−fiyat).
+fU(int b, int x, bool ters) => ters ? -array.get(aD, b - x) : array.get(aT, b - x)
+fA(int b, int x, bool ters) => ters ? -array.get(aT, b - x) : array.get(aD, b - x)
+fG(int b, int x, bool ters) => ters ? -array.get(aL, b - x) : array.get(aH, b - x)
+fK(int b, int x, bool ters) => ters ? -array.get(aC, b - x) : array.get(aC, b - x)
+
+bacakTemiz(int b, int xa, int xb, bool asagi, float teta, bool ters) =>
+    bool ok = true
+    if xb - xa >= 2
+        float m = asagi ? 1e100 : -1e100
+        for x = xa + 1 to xb - 1
+            if asagi
+                if fU(b, x, ters) > m + teta
+                    ok := false
+                    break
+                m := math.min(m, fA(b, x, ters))
+            else
+                if fA(b, x, ters) < m - teta
+                    ok := false
+                    break
+                m := math.max(m, fU(b, x, ters))
+    ok
+
+onceOk(int b, int x1, float v1, float yuk, int K, float Ab, float oran, bool ters) =>
+    int a = math.max(math.max(0, x1 - K), b - (array.size(aT) - 1))
+    bool ok = x1 - a >= 5
+    if ok
+        float mx = -1e100
+        for x = a to x1 - 1
+            mx := math.max(mx, fU(b, x, ters))
+        ok := mx <= v1 + 0.25 * Ab
+    if ok
+        float mn = 1e100
+        for x = a to x1
+            mn := math.min(mn, fA(b, x, ters))
+        ok := v1 - mn >= oran * yuk
+    ok
+
+// ikili tepe (ters: ikili dip). Son pivot ikinci tepe mi. Döndürür: [bulundu, x1, xt, x2, yükseklik]
+ikiliBul(int b, array<int> piv, bool ters, float Ab) =>
+    int n = array.size(piv)
+    bool bul = false
+    int rx1 = na
+    int rxt = na
+    int rx2 = na
+    float ryuk = na
+    if n >= 2
+        int x2 = array.get(piv, n - 1)
+        float v2 = fU(b, x2, ters)
+        for j = n - 2 to 0
+            int x1 = array.get(piv, j)
+            int ara = x2 - x1
+            if ara > D_MAXARA
+                break
+            if ara < D_MINARA
+                continue
+            float v1 = fU(b, x1, ters)
+            int xt = x1
+            float vt = fA(b, x1, ters)
+            for x = x1 + 1 to x2
+                float ax_ = fA(b, x, ters)
+                if ax_ < vt
+                    vt := ax_
+                    xt := x
+            float tepe = math.max(v1, v2)
+            float yuk = tepe - vt
+            if yuk < D_MINYUK * Ab or math.abs(v1 - v2) > math.min(D_ESIT * yuk, D_ESITA * Ab)
+                continue
+            float mx = -1e100
+            for x = x1 + 1 to x2 - 1
+                mx := math.max(mx, fU(b, x, ters))
+            if mx > tepe + 0.25 * Ab
+                continue
+            float gmx = -1e100
+            for x = x1 to x2
+                gmx := math.max(gmx, fG(b, x, ters))
+            if gmx > tepe + D_FITIL * Ab
+                continue
+            if math.min(xt - x1, x2 - xt) < D_DENGE * math.max(xt - x1, x2 - xt)
+                continue
+            int icte = 0
+            for x = x1 + 1 to x2 - 1
+                if fK(b, x, ters) <= tepe - 0.5 * yuk
+                    icte += 1
+            if icte < D_DOLU * (x2 - x1 - 1)
+                continue
+            float teta = D_TEMIZ * yuk
+            if not (bacakTemiz(b, x1, xt, true, teta, ters) and bacakTemiz(b, xt, x2, false, teta, ters))
+                continue
+            if tekMum(b, x1, xt, v1 - vt) or tekMum(b, xt, x2, v2 - vt)
+                continue
+            if not onceOk(b, x1, v1, yuk, math.max(ara, 20), Ab, D_ONCEKI, ters)
+                continue
+            bul := true
+            rx1 := x1
+            rxt := xt
+            rx2 := x2
+            ryuk := yuk
+            break
+    [bul, rx1, rxt, rx2, ryuk]
+
+// omuz-baş-omuz (ters: ters OBO). Son pivot sağ omuz mu. Döndürür: [bulundu, xl, x1, xh, x2, xr, yükseklik]
+oboBul(int b, array<int> piv, bool ters, float Ab) =>
+    int n = array.size(piv)
+    bool bul = false
+    int rxl = na
+    int rx1 = na
+    int rxh = na
+    int rx2 = na
+    int rxr = na
+    float ryuk = na
+    if n >= 3
+        int xr = array.get(piv, n - 1)
+        float vr = fU(b, xr, ters)
+        for ih = n - 2 to 1
+            int xh = array.get(piv, ih)
+            if xr - xh > D_MAXGEN
+                break
+            float vh = fU(b, xh, ters)
+            if vh <= vr
+                continue
+            for il = ih - 1 to 0
+                int xl = array.get(piv, il)
+                int gen = xr - xl
+                if gen > D_MAXGEN
+                    break
+                if gen < D_MINGEN
+                    continue
+                float vl = fU(b, xl, ters)
+                if vl >= vh
+                    break
+                int x1 = xl
+                float v1 = fA(b, xl, ters)
+                for x = xl + 1 to xh
+                    float t_ = fA(b, x, ters)
+                    if t_ < v1
+                        v1 := t_
+                        x1 := x
+                int x2 = xh
+                float v2 = fA(b, xh, ters)
+                for x = xh + 1 to xr
+                    float t_ = fA(b, x, ters)
+                    if t_ < v2
+                        v2 := t_
+                        x2 := x
+                if not (xl < x1 and x1 < xh and xh < x2 and x2 < xr)
+                    continue
+                float s = (v2 - v1) / (x2 - x1)
+                float yuk = vh - (v1 + s * (xh - x1))
+                if yuk < D_MINYUK * Ab
+                    continue
+                float hL = vl - (v1 + s * (xl - x1))
+                float hR = vr - (v1 + s * (xr - x1))
+                if vh - math.max(vl, vr) < math.max(D_BASFRK * yuk, 0.5 * Ab)
+                    continue
+                if math.min(hL, hR) < D_OMUZMN * yuk or math.abs(vl - vr) > D_OMUZSV * yuk
+                    continue
+                if math.abs(v2 - v1) > D_BOYEGM * yuk
+                    continue
+                int dl = xh - xl
+                int dr = xr - xh
+                if math.min(dl, dr) / math.max(dl, dr) < D_ZAMAN
+                    continue
+                int icte = 0
+                if x2 - x1 >= 2
+                    for x = x1 + 1 to x2 - 1
+                        if fK(b, x, ters) - (v1 + s * (x - x1)) >= 0.5 * yuk
+                            icte += 1
+                if icte < D_DOLU * (x2 - x1 - 1)
+                    continue
+                float mx = -1e100
+                for x = xl + 1 to xr - 1
+                    mx := math.max(mx, fU(b, x, ters))
+                float gmx = -1e100
+                for x = xl to xr
+                    gmx := math.max(gmx, fG(b, x, ters))
+                if mx > vh + 0.25 * Ab or gmx > vh + D_FITIL * Ab
+                    continue
+                float to_ = D_TEMIZ * math.min(hL, hR)
+                float tb_ = D_TEMIZ * yuk
+                if not (bacakTemiz(b, xl, x1, true, to_, ters) and bacakTemiz(b, x1, xh, false, tb_, ters) and bacakTemiz(b, xh, x2, true, tb_, ters) and bacakTemiz(b, x2, xr, false, to_, ters))
+                    continue
+                if not onceOk(b, xl, vl, yuk, math.max(int(gen / 2), 20), Ab, D_ONCOBO, ters)
+                    continue
+                if tekMum(b, xl, x1, vl - v1) or tekMum(b, x1, xh, vh - v1) or tekMum(b, xh, x2, vh - v2) or tekMum(b, x2, xr, vr - v2)
+                    continue
+                bul := true
+                rxl := xl
+                rx1 := x1
+                rxh := xh
+                rx2 := x2
+                rxr := xr
+                ryuk := yuk
+                break
+            if bul
+                break
+    [bul, rxl, rx1, rxh, rx2, rxr, ryuk]
+
+// ───────── durum ─────────
+// aktif üçgen
+var bool   aktif = false
+var int    uI0 = na
+var float  uP0 = na
+var float  uS = na
+var int    lI0 = na
+var float  lP0 = na
+var float  lS = na
+var int    fx0 = na
+var float  fw0 = na
+var float  fApex = na
+var string fTip = ""
+var int    fDok = 0
+var string fKey = ""
+var bool   yakU = false
+var bool   yakL = false
+
+// dönüş formasyonu: aday (a…) ve aktif (d…). Noktalar: ikili 3, OBO 5 (tepe/dip sırayla).
+var bool   aVar = false
+var string aTur = ""
+var bool   aTers = false
+var float  aYuk = na
+var int    aGen = na
+var float  aGec = na
+var int    aBi0 = na
+var float  aBp0 = na
+var float  aBs = 0.0
+var string aKey = ""
+var array<int>   aPX = array.new<int>()
+var array<float> aPP = array.new<float>()
+var array<bool>  aPT = array.new<bool>()
+var bool   dVar = false
+var string dTur = ""
+var bool   dTers = false
+var float  dYuk = na
+var int    dGen = na
+var float  dGec = na
+var int    dBi0 = na
+var float  dBp0 = na
+var float  dBs = 0.0
+var string dKey = ""
+var bool   dYakin = false
+var array<int>   dPX = array.new<int>()
+var array<float> dPP = array.new<float>()
+var array<bool>  dPT = array.new<bool>()
+
+ustDeger(int x) => uP0 + uS * (x - uI0)
+altDeger(int x) => lP0 + lS * (x - lI0)
+dBoyun(int x) => dBp0 + dBs * (x - dBi0)
+aBoyun(int x) => aBp0 + aBs * (x - aBi0)
+oncelik(string t) => t == "obo" or t == "ters_obo" ? 3 : t == "ucgen" ? 2 : 1
+desenAd(string t) => t == "ikili_tepe" ? "İkili tepe" : t == "ikili_dip" ? "İkili dip" : t == "obo" ? "Omuz-baş-omuz" : "Ters omuz-baş-omuz"
+
+kullan(array<int> xs, array<bool> ts) =>
+    if array.size(xs) > 0
+        for i = 0 to array.size(xs) - 1
+            array.push(kulX, array.get(xs, i))
+            array.push(kulT, array.get(ts, i))
+    while array.size(kulX) > 200
+        array.shift(kulX)
+        array.shift(kulT)
+
+// pivotları kaydet (fiyat: mumun çizgi ucu)
+bool yh = not na(phv)
+bool yl = not na(plv)
+if yh
+    array.push(phB, bar_index - pvN)
+    array.push(phP, ucT[pvN])
+if yl
+    array.push(plB, bar_index - pvN)
+    array.push(plP, ucD[pvN])
+if array.size(phB) > 40
+    array.shift(phB)
+    array.shift(phP)
+if array.size(plB) > 40
+    array.shift(plB)
+    array.shift(plP)
+
+// bayatlamış üçgen (salınım geçmişi MAXOMUR mumla sınırlı)
+if aktif and bar_index - fx0 > MAXOMUR
+    array.push(bozuk, fKey)
+    array.push(kulX, uI0)
+    array.push(kulT, true)
+    array.push(kulX, lI0)
+    array.push(kulT, false)
+    aktif := false
+
+int b = bar_index
+float Ab = atr14
+float tol = tolAtr * atr14
+bool yeniPiv = (yh or yl) and atr14 > 0
+
+// geçmiş dizileri (yalnızca yeni pivotta)
+if yeniPiv
+    int lim = math.min(math.max(math.max(maxBar, DIZI), aktif ? b - fx0 : 0), MAXOMUR)
+    array.clear(aT)
+    array.clear(aD)
+    array.clear(aA)
+    array.clear(aH)
+    array.clear(aL)
+    array.clear(aO)
+    array.clear(aC)
+    for k = 0 to lim
+        array.push(aT, ucT[k])
+        array.push(aD, ucD[k])
+        array.push(aA, atr14[k])
+        array.push(aH, high[k])
+        array.push(aL, low[k])
+        array.push(aO, open[k])
+        array.push(aC, close[k])
+
+// 1) dönüş adayı: yeni tepe → OBO / ikili tepe, yeni dip → ters OBO / ikili dip
+if yeniPiv
+    for q = 0 to 1
+        bool ters = q == 1
+        bool var_ = ters ? yl : yh
+        if var_
+            array<int> piv = ters ? plB : phB
+            float sg = ters ? -1.0 : 1.0
+            bool bul = false
+            string tur = ""
+            array<int>   px = array.new<int>()
+            array<bool>  pt = array.new<bool>()
+            float yuk = na
+            if showObo
+                [ok1, xl, x1, xh, x2, xr, y1] = oboBul(b, piv, ters, Ab)
+                if ok1
+                    bul := true
+                    tur := ters ? "ters_obo" : "obo"
+                    yuk := y1
+                    array.push(px, xl)
+                    array.push(px, x1)
+                    array.push(px, xh)
+                    array.push(px, x2)
+                    array.push(px, xr)
+            if not bul and showIk
+                [ok2, j1, jt, j2, y2] = ikiliBul(b, piv, ters, Ab)
+                if ok2
+                    bul := true
+                    tur := ters ? "ikili_dip" : "ikili_tepe"
+                    yuk := y2
+                    array.push(px, j1)
+                    array.push(px, jt)
+                    array.push(px, j2)
+            if bul
+                for i = 0 to array.size(px) - 1
+                    array.push(pt, ters ? i % 2 == 1 : i % 2 == 0)
+                if not cakisir(px, pt, kulX, kulT)
+                    aVar := true
+                    aTur := tur
+                    aTers := ters
+                    aYuk := yuk
+                    aGen := array.get(px, array.size(px) - 1) - array.get(px, 0)
+                    array.clear(aPX)
+                    array.clear(aPP)
+                    array.clear(aPT)
+                    for i = 0 to array.size(px) - 1
+                        int xi = array.get(px, i)
+                        array.push(aPX, xi)
+                        array.push(aPT, array.get(pt, i))
+                        // gerçek fiyat: tepe noktası → tepe ucu, dip noktası → dip ucu (ters çerçevede ters)
+                        bool tepeNok = i % 2 == 0
+                        array.push(aPP, sg * (tepeNok ? fU(b, xi, ters) : fA(b, xi, ters)))
+                    if array.size(px) == 3
+                        aBi0 := array.get(px, 1)
+                        aBp0 := array.get(aPP, 1)
+                        aBs := 0.0
+                        aGec := sg * math.max(sg * array.get(aPP, 0), sg * array.get(aPP, 2))
+                    else
+                        aBi0 := array.get(px, 1)
+                        aBp0 := array.get(aPP, 1)
+                        aBs := (array.get(aPP, 3) - array.get(aPP, 1)) / (array.get(px, 3) - array.get(px, 1))
+                        aGec := array.get(aPP, 4)
+                    aKey := tur + "_" + str.tostring(array.get(px, 0)) + "_" + str.tostring(array.get(px, array.size(px) - 1))
+
+// 2) üçgen: her yeni pivotta yeniden kur (Python: formasyon_kur)
+if yeniPiv
+    int jh = cizgiAdaylari(phB, phP, b, tol, true, cuI, cuP, cuS, cuF)
+    int jl = cizgiAdaylari(plB, plP, b, tol, false, clI, clP, clS, clF)
+    array.clear(sufH)
+    array.clear(sufL)
+    float mh = high
+    float ml = low
+    for k = 0 to maxBar
+        mh := math.max(mh, nz(high[k], mh))
+        ml := math.min(ml, nz(low[k], ml))
+        array.push(sufH, mh)
+        array.push(sufL, ml)
+    bool bulundu = false
+    float enSkor = na
+    int bU = -1
+    int bL = -1
+    float bW0 = na
+    float bApex = na
+    string bTip = ""
+    int bDok = 0
+    if array.size(phB) - jh >= 2 and array.size(plB) - jl >= 2 and array.size(cuI) > 0 and array.size(clI) > 0
+        for iu = 0 to array.size(cuI) - 1
+            for il = 0 to array.size(clI) - 1
+                int ui0 = array.get(cuI, iu)
+                float up0 = array.get(cuP, iu)
+                float us = array.get(cuS, iu)
+                int li0 = array.get(clI, il)
+                float lp0 = array.get(clP, il)
+                float ls = array.get(clS, il)
+                int x0 = math.min(ui0, li0)
+                int sure = b - x0
+                bool ok = sure >= minBar and sure <= maxBar and math.abs(ui0 - li0) <= DENGE * sure and array.get(cuF, iu) <= x0 and array.get(clF, il) <= x0
+                ok := ok and math.abs(ui0 - li0) >= pvN          // iki çizgi aynı mumdan çıkmasın
+                float w0 = na
+                float wb = na
+                string tip = ""
+                if ok
+                    w0 := (up0 + us * (x0 - ui0)) - (lp0 + ls * (x0 - li0))
+                    wb := (up0 + us * (b - ui0)) - (lp0 + ls * (b - li0))
+                    ok := w0 > 0 and wb > 0 and wb / w0 <= darMax and w0 >= minYuk * atr14
+                if ok
+                    float du = us * (b - x0) / w0
+                    float dl = ls * (b - x0) / w0
+                    tip := du < -yatay and dl > yatay ? "Simetrik" : math.abs(du) <= yatay and dl > yatay ? "Yükselen" : du < -yatay and math.abs(dl) <= yatay ? "Alçalan" : ""
+                    ok := tip != ""
+                if ok
+                    ok := (up0 + us * (x0 - ui0)) <= array.get(sufH, sure) + TASMA * w0 and (lp0 + ls * (x0 - li0)) >= array.get(sufL, sure) - TASMA * w0
+                if ok
+                    [ih, ud, ad, yk] = salinim(x0, b, ui0, up0, us, li0, lp0, ls, ui0 <= li0, false, ckX, ckU)
+                    if ih == 0 and ud >= minDok and ad >= minDok
+                        float skor = ud + ad - 0.5 * yk - 0.25 * sure / maxBar
+                        if na(enSkor) or skor > enSkor
+                            enSkor := skor
+                            bU := iu
+                            bL := il
+                            bW0 := w0
+                            bApex := x0 + w0 / (w0 - wb) * sure
+                            bTip := tip
+                            bDok := ud + ad
+                            bulundu := true
+    string key = bulundu ? str.tostring(array.get(cuI, bU)) + "_" + str.tostring(array.get(clI, bL)) : ""
+    if bulundu
+        bool yeniMi = not (aktif and fKey == key)
+        if yeniMi
+            array<int>  bx = array.from(array.get(cuI, bU), array.get(clI, bL))
+            array<bool> bt = array.from(true, false)
+            if array.includes(bozuk, key) or cakisir(bx, bt, kulX, kulT)
+                bulundu := false
+    if bulundu
+        int ui0 = array.get(cuI, bU)
+        int li0 = array.get(clI, bL)
+        [c1, c2, c3, c4] = salinim(math.min(ui0, li0), b, ui0, array.get(cuP, bU), array.get(cuS, bU), li0, array.get(clP, bL), array.get(clS, bL), ui0 <= li0, true, ckX, ckU)
+        if dVar and cakisir(ckX, ckU, dPX, dPT)
+            if oncelik(dTur) >= 2
+                bulundu := false
+            else
+                dVar := false                                  // üçgen ikili tepe/dibi devirir
+    if bulundu
+        if not (aktif and fKey == key)
+            yakU := false
+            yakL := false
+        aktif := true
+        uI0 := array.get(cuI, bU)
+        uP0 := array.get(cuP, bU)
+        uS := array.get(cuS, bU)
+        lI0 := array.get(clI, bL)
+        lP0 := array.get(clP, bL)
+        lS := array.get(clS, bL)
+        fx0 := math.min(uI0, lI0)
+        fw0 := bW0
+        fApex := bApex
+        fTip := bTip
+        fDok := bDok
+        fKey := key
+        array.clear(dkX)
+        array.clear(dkU)
+        for i = 0 to array.size(ckX) - 1
+            array.push(dkX, array.get(ckX, i))
+            array.push(dkU, array.get(ckU, i))
+    else if aktif
+        // Python: hala_gecerli — kapanışlar içeride ve salınımlar hâlâ çizgilere değiyor mu
+        bool gecerli = true
+        for x = fx0 to b
+            float cx = close[b - x]
+            if cx - ustDeger(x) > tol or altDeger(x) - cx > tol
+                gecerli := false
+                break
+        if gecerli
+            [ih2, ud2, ad2, yk2] = salinim(fx0, b, uI0, uP0, uS, lI0, lP0, lS, uI0 <= lI0, false, ckX, ckU)
+            gecerli := ih2 == 0
+        if not gecerli
+            array.push(bozuk, fKey)
+            array.push(kulX, uI0)
+            array.push(kulT, true)
+            array.push(kulX, lI0)
+            array.push(kulT, false)
+            aktif := false
+
+// 3) dönüş adayı onaylandı mı: son noktadan yeterince uzaklaştı, boyun henüz kırılmadı
+if aVar
+    if b - array.get(aPX, array.size(aPX) - 1) > MAXOMUR
+        aVar := false
+if aVar and not (dVar and oncelik(dTur) >= oncelik(aTur))
+    int sx = array.get(aPX, array.size(aPX) - 1)
+    float sonP = array.get(aPP, array.size(aPP) - 1)
+    float nlB = aBoyun(b)
+    float uzak = 0.0
+    bool bozukMu = false
+    if not aTers
+        float mnL = low
+        float mxC = close
+        for x = sx to b
+            mnL := math.min(mnL, low[b - x])
+            mxC := math.max(mxC, close[b - x])
+        uzak := sonP - mnL
+        bozukMu := mxC > aGec + tol or close < nlB - tol
+    else
+        float mxH = high
+        float mnC = close
+        for x = sx to b
+            mxH := math.max(mxH, high[b - x])
+            mnC := math.min(mnC, close[b - x])
+        uzak := mxH - sonP
+        bozukMu := mnC < aGec - tol or close > nlB + tol
+    if bozukMu
+        aVar := false
+    else if uzak >= math.max(D_ONAYA * Ab, D_ONAY * aYuk)
+        if aktif and cakisir(aPX, aPT, dkX, dkU)
+            if oncelik(aTur) > 2
+                aktif := false                                 // OBO üçgeni devirir
+            else
+                aVar := false
+        if aVar
+            dVar := true
+            dTur := aTur
+            dTers := aTers
+            dYuk := aYuk
+            dGen := aGen
+            dGec := aGec
+            dBi0 := aBi0
+            dBp0 := aBp0
+            dBs := aBs
+            dKey := aKey
+            dYakin := false
+            array.clear(dPX)
+            array.clear(dPP)
+            array.clear(dPT)
+            for i = 0 to array.size(aPX) - 1
+                array.push(dPX, array.get(aPX, i))
+                array.push(dPP, array.get(aPP, i))
+                array.push(dPT, array.get(aPT, i))
+            aVar := false
+
+// 4) dönüş olayları
+bool evBoyYak = false
+bool evOnay = false
+string onayTur = ""
+bool onayYukari = false
+float onaySev = na
+float onayHedef = na
+if dVar
+    float nl = dBoyun(b)
+    bool asagi = not dTers
+    int sonX = array.get(dPX, array.size(dPX) - 1)
+    if (asagi and close > dGec + tol) or (not asagi and close < dGec - tol)
+        kullan(dPX, dPT)
+        dVar := false
+    else if b - sonX > math.max(15, D_OMUR * dGen)
+        kullan(dPX, dPT)
+        dVar := false
+    else if (asagi and close < nl - tol) or (not asagi and close > nl + tol)
+        evOnay := true
+        onayTur := dTur
+        onayYukari := not asagi
+        onaySev := nl
+        onayHedef := asagi ? nl - dYuk : nl + dYuk
+        if gecmis
+            int bx1 = array.get(dPX, 1)
+            line.new(bx1, dBoyun(bx1), b, nl, color = color.new(cBoyun, 25), width = 1)
+            if array.size(dPX) == 3
+                line.new(array.get(dPX, 0), array.get(dPP, 0), array.get(dPX, 2), array.get(dPP, 2), color = color.new(asagi ? color.red : color.teal, 35), width = 1)
+            label.new(b, asagi ? low : high, (asagi ? "▼ " : "▲ ") + str.upper(desenAd(dTur)) + "\nOnay: " + str.tostring(nl, format.mintick) + "\nHedef: " + str.tostring(onayHedef, format.mintick), style = asagi ? label.style_label_up : label.style_label_down, color = asagi ? color.new(color.red, 10) : color.new(color.green, 10), textcolor = color.white, size = size.small)
+        kullan(dPX, dPT)
+        dVar := false
+    else if not dYakin and math.abs(close - nl) <= yakAtr * atr14
+        dYakin := true
+        evBoyYak := true
+
+// 5) üçgen olayları
+bool evYakU = false
+bool evYakL = false
+bool evKirU = false
+bool evKirL = false
+float kirSev = na
+float kirHedef = na
+float up = na
+float lw = na
+if aktif
+    up := ustDeger(b)
+    lw := altDeger(b)
+    if b >= fApex or b - fx0 > MAXOMUR
+        array.push(bozuk, fKey)
+        array.push(kulX, uI0)
+        array.push(kulT, true)
+        array.push(kulX, lI0)
+        array.push(kulT, false)
+        aktif := false
+    else if close > up + tol or close < lw - tol
+        evKirU := close > up
+        evKirL := not evKirU
+        kirSev := evKirU ? up : lw
+        kirHedef := evKirU ? up + fw0 : lw - fw0
+        array.push(bozuk, fKey)
+        array.push(kulX, uI0)
+        array.push(kulT, true)
+        array.push(kulX, lI0)
+        array.push(kulT, false)
+        aktif := false
+        if gecmis
+            line.new(uI0, ustDeger(uI0), b, up, color = color.new(cUst, 30), width = 1)
+            line.new(lI0, altDeger(lI0), b, lw, color = color.new(cAlt, 30), width = 1)
+            label.new(b, evKirU ? high : low, (evKirU ? "▲ YUKARI KIRILIM\n" : "▼ AŞAĞI KIRILIM\n") + fTip + " üçgen\nSeviye: " + str.tostring(kirSev, format.mintick) + "\nHedef: " + str.tostring(kirHedef, format.mintick), style = evKirU ? label.style_label_down : label.style_label_up, color = evKirU ? color.new(color.green, 10) : color.new(color.red, 10), textcolor = color.white, size = size.small)
+    else
+        if up - close <= yakAtr * atr14 and not yakU
+            yakU := true
+            evYakU := true
+        if close - lw <= yakAtr * atr14 and not yakL
+            yakL := true
+            evYakL := true
+while array.size(bozuk) > 50
+    array.shift(bozuk)
+while array.size(kulX) > 200
+    array.shift(kulX)
+    array.shift(kulT)
+
+plotshape(evYakU, "Üçgen: üst kırılıma yakın", shape.triangleup, location.abovebar, color.new(color.orange, 0), size = size.tiny, text = "YAKIN", textcolor = color.orange)
+plotshape(evYakL, "Üçgen: alt kırılıma yakın", shape.triangledown, location.belowbar, color.new(color.blue, 0), size = size.tiny, text = "YAKIN", textcolor = color.blue)
+plotshape(evBoyYak, "Boyun çizgisine yakın", shape.diamond, location.abovebar, color.new(#ffd54f, 0), size = size.tiny, text = "BOYUN", textcolor = #ffd54f)
+
+// ───────── alarmlar ─────────
+alertcondition(evYakU, "Üçgen: üst kırılıma yakın", "{{ticker}} daralan üçgende üst çizgiye yaklaştı ({{interval}})")
+alertcondition(evYakL, "Üçgen: alt kırılıma yakın", "{{ticker}} daralan üçgende alt çizgiye yaklaştı ({{interval}})")
+alertcondition(evKirU, "Üçgen: YUKARI KIRILIM", "{{ticker}} daralan üçgeni YUKARI kırdı ({{interval}})")
+alertcondition(evKirL, "Üçgen: AŞAĞI KIRILIM", "{{ticker}} daralan üçgeni AŞAĞI kırdı ({{interval}})")
+alertcondition(evBoyYak, "Dönüş: boyun çizgisine yakın", "{{ticker}} ikili tepe/dip veya OBO boyun çizgisine yaklaştı ({{interval}})")
+alertcondition(evOnay and not onayYukari, "Dönüş: AŞAĞI ONAY (ikili tepe / OBO)", "{{ticker}} ikili tepe veya OBO boyun çizgisini aşağı kırdı ({{interval}})")
+alertcondition(evOnay and onayYukari, "Dönüş: YUKARI ONAY (ikili dip / ters OBO)", "{{ticker}} ikili dip veya ters OBO boyun çizgisini yukarı kırdı ({{interval}})")
+if barstate.isconfirmed
+    if evYakU or evYakL
+        alert(syminfo.ticker + " " + fTip + " üçgen: " + (evYakU ? "ÜST" : "ALT") + " çizgiye yaklaştı. Üst " + str.tostring(up, format.mintick) + " / alt " + str.tostring(lw, format.mintick), alert.freq_once_per_bar_close)
+    if evKirU or evKirL
+        alert(syminfo.ticker + (evKirU ? " YUKARI" : " AŞAĞI") + " KIRILIM (üçgen). Seviye " + str.tostring(kirSev, format.mintick) + ", hedef " + str.tostring(kirHedef, format.mintick), alert.freq_once_per_bar_close)
+    if evBoyYak
+        alert(syminfo.ticker + " " + desenAd(dTur) + ": boyun çizgisine yaklaştı (" + str.tostring(dBoyun(b), format.mintick) + ")", alert.freq_once_per_bar_close)
+    if evOnay
+        alert(syminfo.ticker + " " + desenAd(onayTur) + " ONAYLANDI. Boyun " + str.tostring(onaySev, format.mintick) + ", hedef " + str.tostring(onayHedef, format.mintick), alert.freq_once_per_bar_close)
+
+// ───────── aktif formasyonları çiz (son mumda) ─────────
+var array<line>  ciz = array.new<line>()
+var array<label> etk = array.new<label>()
+var linefill lf = na
+if barstate.islast
+    while array.size(ciz) > 0
+        line.delete(array.pop(ciz))
+    while array.size(etk) > 0
+        label.delete(array.pop(etk))
+    linefill.delete(lf)
+    if aktif
+        // kesik uzantı tepe noktasına (apex) kadar gitmez: iki çizgi tek noktada buluşmasın
+        int uc = int(b + math.min(0.6 * (fApex - b), 0.35 * (fApex - fx0)))
+        line lU = line.new(uI0, ustDeger(uI0), b, ustDeger(b), color = cUst, width = 2)
+        line lL = line.new(lI0, altDeger(lI0), b, altDeger(b), color = cAlt, width = 2)
+        array.push(ciz, lU)
+        array.push(ciz, lL)
+        array.push(ciz, line.new(b, ustDeger(b), uc, ustDeger(uc), color = cUst, width = 1, style = line.style_dashed))
+        array.push(ciz, line.new(b, altDeger(b), uc, altDeger(uc), color = cAlt, width = 1, style = line.style_dashed))
+        lf := linefill.new(lU, lL, color.new(color.gray, 88))
+        float olg = (b - fx0) / (fApex - fx0) * 100
+        array.push(etk, label.new(b, ustDeger(b), fTip + " üçgen  |  olgunluk %" + str.tostring(olg, "#") + "  |  " + str.tostring(fDok) + " dokunuş", style = label.style_label_lower_left, color = color.new(color.gray, 70), textcolor = color.white, size = size.small))
+        if showDok and array.size(dkX) > 0
+            for k = 0 to array.size(dkX) - 1
+                int xk = array.get(dkX, k)
+                bool uk = array.get(dkU, k)
+                array.push(etk, label.new(xk, uk ? ustDeger(xk) : altDeger(xk), "", style = label.style_circle, color = uk ? cUst : cAlt, size = size.tiny))
+    if dVar
+        bool tepeD = not dTers
+        color rk = tepeD ? color.red : color.teal
+        int uz = b + math.max(3, int(0.15 * dGen))
+        int xb1 = array.get(dPX, 1)
+        array.push(ciz, line.new(xb1, dBoyun(xb1), b, dBoyun(b), color = cBoyun, width = 2))
+        array.push(ciz, line.new(b, dBoyun(b), uz, dBoyun(uz), color = cBoyun, width = 1, style = line.style_dashed))
+        array.push(etk, label.new(xb1, dBoyun(xb1), "Boyun", style = tepeD ? label.style_label_up : label.style_label_down, color = color.new(color.black, 100), textcolor = cBoyun, size = size.small))
+        if array.size(dPX) == 3
+            array.push(ciz, line.new(array.get(dPX, 0), array.get(dPP, 0), array.get(dPX, 2), array.get(dPP, 2), color = rk, width = 2))
+            for k = 0 to 2 by 2
+                array.push(etk, label.new(array.get(dPX, k), array.get(dPP, k), (k == 0 ? "1. " : "2. ") + (tepeD ? "tepe" : "dip"), style = tepeD ? label.style_label_down : label.style_label_up, color = color.new(color.black, 100), textcolor = rk, size = size.small))
+        else
+            for k = 0 to 4 by 2
+                string ad_ = k == 0 ? "Sol omuz" : k == 2 ? "Baş" : "Sağ omuz"
+                array.push(etk, label.new(array.get(dPX, k), array.get(dPP, k), ad_, style = tepeD ? label.style_label_down : label.style_label_up, color = color.new(rk, 20), textcolor = color.white, size = size.small))
+        array.push(etk, label.new(b, dBoyun(b), desenAd(dTur) + "  |  hedef " + str.tostring(tepeD ? dBoyun(b) - dYuk : dBoyun(b) + dYuk, format.mintick), style = label.style_label_left, color = color.new(rk, 60), textcolor = color.white, size = size.small))
+
+// ───────── panel ─────────
+var table tb = table.new(position.top_right, 2, 10, bgcolor = color.new(#131722, 10), border_width = 1, border_color = color.new(color.gray, 70))
+satir(int r, string k, string v, color c) =>
+    table.cell(tb, 0, r, k, text_color = color.silver, text_size = size.small, text_halign = text.align_left)
+    table.cell(tb, 1, r, v, text_color = c, text_size = size.small, text_halign = text.align_right)
+if showT and barstate.islast
+    table.clear(tb, 0, 0, 1, 9)
+    table.cell(tb, 0, 0, "FORMASYON AVCISI", text_color = color.white, text_size = size.normal)
+    table.cell(tb, 1, 0, timeframe.period, text_color = color.gray, text_size = size.small)
+    int r = 1
+    if aktif
+        float dU = (up / close - 1) * 100
+        float dL = (lw / close - 1) * 100
+        bool yakinU = up - close <= yakAtr * atr14
+        bool yakinL = close - lw <= yakAtr * atr14
+        satir(r, "Üçgen", fTip + " (" + str.tostring(fDok) + " dokunuş)", color.lime)
+        satir(r + 1, "Üst çizgi (direnç)", str.tostring(up, format.mintick) + "  (" + (dU >= 0 ? "+" : "") + str.tostring(dU, "#.##") + "%)" + (yakinU ? "  ⚠ YAKIN" : ""), yakinU ? color.orange : color.white)
+        satir(r + 2, "Alt çizgi (destek)", str.tostring(lw, format.mintick) + "  (" + (dL >= 0 ? "+" : "") + str.tostring(dL, "#.##") + "%)" + (yakinL ? "  ⚠ YAKIN" : ""), yakinL ? color.aqua : color.white)
+        satir(r + 3, "Yukarı / aşağı hedef", str.tostring(up + fw0, format.mintick) + " / " + str.tostring(lw - fw0, format.mintick), color.gray)
+        r += 4
+    if dVar
+        float nlS = dBoyun(b)
+        float hd = dTers ? nlS + dYuk : nlS - dYuk
+        bool yakinB = math.abs(close - nlS) <= yakAtr * atr14
+        satir(r, "Dönüş", desenAd(dTur) + " (onay bekliyor)", dTers ? color.lime : color.red)
+        satir(r + 1, "Boyun çizgisi", str.tostring(nlS, format.mintick) + "  (" + (nlS >= close ? "+" : "") + str.tostring((nlS / close - 1) * 100, "#.##") + "%)" + (yakinB ? "  ⚠ YAKIN" : ""), yakinB ? color.yellow : color.white)
+        satir(r + 2, "Hedef / geçersizlik", str.tostring(hd, format.mintick) + " / " + str.tostring(dGec, format.mintick), color.gray)
+        r += 3
+    if not aktif and not dVar
+        satir(1, "Durum", "Aktif formasyon yok", color.gray)
