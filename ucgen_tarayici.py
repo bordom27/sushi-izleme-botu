@@ -991,6 +991,21 @@ def kirilim_kalitesi(d: dict, o: dict) -> dict:
                 hacim=hacim_orani(d, b))
 
 
+def eski_tepe(d: dict, o: dict) -> bool | None:
+    """Yukari kirilimda: formasyondan onceki 250 mumda giris ile hedef arasinda kalan eski tepe var mi.
+    Test (~3.600 yukari kirilim): varsa +0,62R, yoksa +0,30R; her zaman dilimi, piyasa ve iki donemde ayni yonde
+    (fiyat eski zirvesine geri donuyor). Asagi kirilimda fark yok."""
+    if o["yon"] != "yukari":
+        return None
+    f, b = o["f"], o["b"]
+    x0 = int(f["x0"]) if "x0" in f else int(min(n_[0] for n_ in f.get("noktalar", [(b, 0)])))
+    bas = max(0, b - 250)
+    if x0 <= bas:
+        return None
+    ext = float(np.max(d["h"][bas:x0]))
+    return bool(ext > d["c"][b] and ext < o["hedef"])
+
+
 def kalite_gecmis(anahtar: str, aralik: str | None, sev: str) -> list | None:
     """Bu formasyonun bu kalitedeki gecmis kirilimlari (tum piyasalar): [hedef %, yarim %, R, n]."""
     if aralik == "8h" and not KALITE_IST.get(anahtar, {}).get("8h"):
@@ -1155,7 +1170,11 @@ def _kalite_satiri(d: dict, o: dict, anahtar: str, aralik: str | None) -> list:
     if k["gec"]:
         satir += [(" → bu durumda geçmiş ", BEYAZ, None), (k["gec"]["ad"], k["gec"]["renk"], "bold"),
                   (f" %{k['gec']['hedef']}, {_r_yazi(k['gec']['R'])}", BEYAZ, None)]
-    return [satir]
+    et = eski_tepe(d, o)
+    if et is None:
+        return [satir]
+    return [satir, [("Hedef yolunda eski tepe: ", BEYAZ, None), ("var ✓" if et else "yok", "#4caf50" if et else GRI, "bold"),
+                    (" (geçmişte var +0,62R · yok +0,30R)", BEYAZ, None)]]
 
 
 def _kontrol_satiri(d: dict, son: int, yonler: list, onay: bool = False) -> list:
@@ -1635,6 +1654,9 @@ def _ek_satirlar(o: dict, d: dict, anahtar: str, piyasa: str | None, aralik: str
         g = k["gec"]
         ek.append(f"\n🔎 Kırılım kalitesi {k['puan']} ({k['ayr']})"
                   + (f" → bu durumda geçmiş {g['ad']}: %{g['hedef']}, {_r_yazi(g['R'])}" if g else ""))
+        et = eski_tepe(d, o)
+        if et is not None:
+            ek.append(f"\n⛰ Hedef yolunda eski tepe {'var ✓ (geçmişte +0,62R)' if et else 'yok (geçmişte +0,30R)'}")
     x = sembol_yazi(piyasa, sym, aralik)
     if x:
         ek.append(f"\n📈 Bu sembol: {x[0]} → {x[1]}")

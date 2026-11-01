@@ -787,6 +787,10 @@ kalKisa(int de, float rr, bool yuk) =>
     string d = kalDerece(de, pu)
     "Kalite " + str.tostring(pu) + "/3" + (d == "" ? "" : " → " + d)
 
+// yukarı kırılımda hedef yolunda eski tepe (formasyondan önceki 250 mumda giriş ile hedef arasında tepe):
+// test ~3.600 yukarı kırılım: varsa +0,62R, yoksa +0,30R (her zaman dilimi ve piyasada aynı yönde)
+eskiTepeYazi(float ext, float hed) => na(ext) ? "" : "\nHedef yolunda eski tepe: " + (ext > pC and ext < hed ? "var ✓ (geçmişte +0.62R)" : "yok (geçmişte +0.30R)")
+
 // ───────── bu grafiğin geçmiş başarısı ─────────
 // Bu grafikte bulunan her kırılım izlenir: hedef, geçersizlikten önce en fazla 100 mumda gelirse başarılı
 // (tarayıcıdaki istatistikle aynı ölçü). 100 mumda ikisi de olmazsa sayılmaz.
@@ -1043,6 +1047,10 @@ if aktif
         kirAd := ucgAd()
         kirGuv := guvenKisa(ucgDe(evKirU))
         float rrK = rrFiyat(pC, evKirU ? lw : up, kirHedef, evKirU)
+        float extK = na
+        if evKirU and b - fx0 + 1 <= 250
+            for k = b - fx0 + 1 to math.min(250, b)
+                extK := math.max(nz(extK, pH[k]), pH[k])
         kirKal := kalKisa(ucgDe(evKirU), rrK, evKirU)
         takipEkle(evKirU, kirHedef, evKirU ? lw : up)
         array.push(bozuk, fKey)
@@ -1054,7 +1062,7 @@ if aktif
         if gecmis
             line.new(uI0, fx(ustDeger(uI0)), b, fx(up), color = color.new(cUst, 30), width = 1)
             line.new(lI0, fx(altDeger(lI0)), b, fx(lw), color = color.new(cAlt, 30), width = 1)
-            label.new(b, evKirU ? high : low, (evKirU ? "▲ YUKARI KIRILIM\n" : "▼ AŞAĞI KIRILIM\n") + ucgAd() + " üçgen\nKırılan seviye: " + str.tostring(fx(kirSev), format.mintick) + "\n" + hYazi(fw0) + "\nHedef = seviye " + hIslem(evKirU) + " H = " + str.tostring(fx(kirHedef), format.mintick) + "\nGüven: " + guvenKisa(ucgDe(evKirU)) + "\n" + kalSonuc(ucgDe(evKirU), rrK, evKirU), style = evKirU ? label.style_label_down : label.style_label_up, color = evKirU ? color.new(color.green, 10) : color.new(color.red, 10), textcolor = color.white, size = size.small)
+            label.new(b, evKirU ? high : low, (evKirU ? "▲ YUKARI KIRILIM\n" : "▼ AŞAĞI KIRILIM\n") + ucgAd() + " üçgen\nKırılan seviye: " + str.tostring(fx(kirSev), format.mintick) + "\n" + hYazi(fw0) + "\nHedef = seviye " + hIslem(evKirU) + " H = " + str.tostring(fx(kirHedef), format.mintick) + "\nGüven: " + guvenKisa(ucgDe(evKirU)) + "\n" + kalSonuc(ucgDe(evKirU), rrK, evKirU) + eskiTepeYazi(extK, kirHedef), style = evKirU ? label.style_label_down : label.style_label_up, color = evKirU ? color.new(color.green, 10) : color.new(color.red, 10), textcolor = color.white, size = size.small)
     else
         if up - pC <= yakAtr * atr14 and not yakU
             yakU := true
@@ -1087,6 +1095,11 @@ if dVar
         onaySev := nl
         onayHedef := asagi ? nl - dYuk : nl + dYuk
         float rrO = rrFiyat(pC, dGec, onayHedef, not asagi)
+        float extO = na
+        int x0O = array.get(dPX, 0)
+        if not asagi and b - x0O + 1 <= 250
+            for k = b - x0O + 1 to math.min(250, b)
+                extO := math.max(nz(extO, pH[k]), pH[k])
         onayKal := kalKisa(desenNo(dTur), rrO, not asagi)
         takipEkle(not asagi, onayHedef, dGec)
         if gecmis
@@ -1094,7 +1107,7 @@ if dVar
             line.new(bx1, fx(dBoyun(bx1)), b, fx(nl), color = color.new(cBoyun, 25), width = 1)
             if array.size(dPX) == 3
                 line.new(array.get(dPX, 0), fx(array.get(dPP, 0)), array.get(dPX, 2), fx(array.get(dPP, 2)), color = color.new(asagi ? color.red : color.teal, 35), width = 1)
-            label.new(b, asagi ? low : high, (asagi ? "▼ " : "▲ ") + str.upper(desenAd(dTur)) + "\nOnay: " + str.tostring(fx(nl), format.mintick) + "\nHedef: " + str.tostring(fx(onayHedef), format.mintick) + "\nGüven: " + guvenKisa(desenNo(dTur)) + "\n" + kalSonuc(desenNo(dTur), rrO, not asagi), style = asagi ? label.style_label_up : label.style_label_down, color = asagi ? color.new(color.red, 10) : color.new(color.green, 10), textcolor = color.white, size = size.small)
+            label.new(b, asagi ? low : high, (asagi ? "▼ " : "▲ ") + str.upper(desenAd(dTur)) + "\nOnay: " + str.tostring(fx(nl), format.mintick) + "\nHedef: " + str.tostring(fx(onayHedef), format.mintick) + "\nGüven: " + guvenKisa(desenNo(dTur)) + "\n" + kalSonuc(desenNo(dTur), rrO, not asagi) + eskiTepeYazi(extO, onayHedef), style = asagi ? label.style_label_up : label.style_label_down, color = asagi ? color.new(color.red, 10) : color.new(color.green, 10), textcolor = color.white, size = size.small)
         kullan(dPX, dPT)
         dVar := false
     else if not dYakin and math.abs(pC - nl) <= yakAtr * atr14
