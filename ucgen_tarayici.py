@@ -16,6 +16,12 @@ Ucgen tanimi (TradingView gostergesi "Daralan Ucgen Avcisi" ile birebir ayni):
     tepe noktasi (apex) gecilmemis olmali.
   * Tip: ust alcalan + alt yukselen = SIMETRIK, ust yatay + alt yukselen = YUKSELEN,
     ust alcalan + alt yatay = ALCALAN. (Kama ve yatay kanal sayilmaz.)
+  * BUYUK UCGEN (once aranir, elle cizen gibi; 50-300 mum): cizgi mumlarin kenarindan gecer (hicbir fitil ucu
+    cizgiyi 0.3 ATR'den fazla delmez, ani cokus ignesi haric; yeni bir dip/tepe delerse cizgi yeniden cizilir),
+    kirilimdan hemen onceki son dokunus onay beklemez (gecici pivot), ara dalga en az ortaya kadar gelmeli,
+    ucgene giris hareketi >= taban (buyuk hareketin icini degil ardindaki sikismayi ciz), ikinci cizgi ucgen
+    %25 daralmadan baslar, en buyuk yapi secilir. Kirilim icin kapanis max(0.3 ATR, tabanin %5'i) disinda.
+  * Kirilim her mumda cizgiler yeniden cizilmeden ONCE denetlenir.
 Olaylar:
   * KIRILIMA YAKIN: kapanis, ust (ya da alt) cizgiye 0.75 ATR'den yakin.
   * KIRILIM: kapanis cizginin 0.3 ATR disinda (tolerans: cizgiye yapisik kapanislar kirilim sayilmaz). Hedef = kirilim seviyesi +/- baslangic yuksekligi (olculen hareket).
