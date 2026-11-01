@@ -1381,6 +1381,15 @@ if barstate.isconfirmed
     if evOnay
         alert(syminfo.ticker + " " + desenAd(onayTur) + " ONAYLANDI. Boyun " + str.tostring(fx(onaySev), format.mintick) + ", hedef " + str.tostring(fx(onayHedef), format.mintick) + ". Güven: " + guvenKisa(desenNo(onayTur)) + ". " + onayKal, alert.freq_once_per_bar_close)
 
+// aktif üçgen: yukarı kırılırsa hedef yolunda eski tepe var mı (formasyondan önceki 250 mum)
+string etAktif = "—"
+if barstate.islast and aktif and bar_index - fx0 + 1 <= math.min(250, bar_index)
+    float extA = na
+    for k = bar_index - fx0 + 1 to math.min(250, bar_index)
+        extA := math.max(nz(extA, pH[k]), pH[k])
+    float girA = ustDeger(bar_index)
+    etAktif := extA > girA and extA < girA + fw0 ? "var ✓ (geçmişte +0.62R)" : "yok (geçmişte +0.30R)"
+
 // ───────── aktif formasyonları çiz (son mumda) ─────────
 // x: tespit uzayında seviye, c: gerçek fiyat
 yuzdeS(float x, float c) =>
@@ -1433,6 +1442,7 @@ if barstate.islast
             hes += "\n      hedef = " + str.tostring(fx(lwN), format.mintick) + " " + hIslem(false) + " H = " + (logOn or hA > 0 ? str.tostring(fx(hA), format.mintick) + " (" + yuzdeS(hA, close) + ") · " + rrMetin(rrFiyat(lwN - tolN, upN, hA, false)) : "sıfırın altında (geçersiz)")
             hes += "\n      " + guvenSatir(ucgDe(false))
             hes += "\nEn iyi zaman dilimi: ▲ " + enIyiYazi(ucgDe(true), false) + " · ▼ " + enIyiYazi(ucgDe(false), false)
+            hes += "\n▲ Hedef yolunda eski tepe: " + etAktif
             hes += "\nSağlam kırılım için: R/Ö ≥ 1.25 · BB ≥ 3.2 ATR (şimdi " + (na(bbGen) ? "—" : str.tostring(bbGen, "0.0")) + ") · ▲ trend " + isaret(trendDurum(true)) + " · ▼ trend " + isaret(trendDurum(false))
             hes += "\n" + kaynakSatir(ucgDe(true), ucgDe(false))
             // kutu üçgenin içinde, geniş tarafta: tabandaki H çizgisinin hemen sağında
@@ -1503,7 +1513,9 @@ if showT and barstate.islast
         satir(r + 4, "Yukarı kırılırsa", guvenKisa(ucgDe(true)), dereceRenk(derece(stHucre(ucgDe(true), tfIdx))))
         satir(r + 5, "Aşağı kırılırsa", guvenKisa(ucgDe(false)), dereceRenk(derece(stHucre(ucgDe(false), tfIdx))))
         satir(r + 6, "En iyi zaman dilimi", "▲ " + enIyiYazi(ucgDe(true), true) + " · ▼ " + enIyiYazi(ucgDe(false), true), color.silver)
-        r += 7
+        string et = etAktif
+        satir(r + 7, "▲ Hedef yolunda eski tepe", et, str.startswith(et, "var") ? color.lime : color.gray)
+        r += 8
     if dVar
         float nlS = dBoyun(b)
         float hd = dTers ? nlS + dYuk : nlS - dYuk
