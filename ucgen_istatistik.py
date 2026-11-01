@@ -25,6 +25,7 @@ Kriptoda 4 ve 8 saatlik ayni donemi (son ~1000 gun) kapsar.
 from __future__ import annotations
 
 import json
+import math
 import os
 import time
 from concurrent.futures import ThreadPoolExecutor
@@ -37,7 +38,7 @@ ARALIK_MS = {"4h": 4 * 3600_000, "8h": 8 * 3600_000, "1d": 86400_000, "3d": 3 * 
              "1dL": 86400_000}
 BAR = {"4h": 6000, "8h": 3000, "1d": 1000, "3d": 1300, "1w": 700, "1dL": 4000}   # kripto: 4s/8s ~ 1000 gun
 MIN_VERI = {"4h": 300, "8h": 300, "1d": 300, "3d": 120, "1w": 120, "1dL": 300}  # bundan kisa gecmis alinmaz
-SIRA = ["ucgen", "ikili_dip", "ikili_tepe", "ters_obo", "obo"]
+SIRA = ["buyuk_ucgen", "ucgen", "ikili_dip", "ikili_tepe", "ters_obo", "obo"]
 BINANCE_AD = {"1dL": "1d"}               # 1dL: uzun gecmisli gunluk (hisse 20 yil, kripto tum gecmis)
 YAHOO_YIL = 20                           # hisselerde 3 gunluk / haftalik icin gecmis (yil)
 R_TAVAN = 5.0                            # ortalamada tek islemin katkisi en fazla +5R (tepe noktasina yakin
@@ -152,7 +153,10 @@ def _kirilan_cizgi(o: dict, i: int) -> float:
     return u.boyun(o["f"], i)
 
 
-def kirilim_sonucu(d: dict, o: dict):
+def kirilim_sonucu(d: dict, o: dict, dP: dict | None = None, ex=None):
+    """Isabet (hedef / yarim / sahte) tespit uzayinda olculur (log fiyatta da ayni sonuc: tekduze donusum);
+    R ve odul/risk gercek fiyatla (dP, seviyeler ex ile fiyata cevrilir)."""
+    dP, ex = dP or d, ex or (lambda x: x)
     N = len(d["c"])
     f, b, yukari = o["f"], o["b"], o["yon"] == "yukari"
     yarim = o["seviye"] + (0.5 if yukari else -0.5) * _yukseklik(o)
@@ -173,16 +177,19 @@ def kirilim_sonucu(d: dict, o: dict):
         if hedef_ok is None and ((yukari and uc >= o["hedef"]) or (not yukari and uc <= o["hedef"])):
             hedef_ok = True
             break
-    return hedef_ok, yarim_ok, sahte, islem_r(d, o, 1.0), islem_r(d, o, 0.5), rr_oran(d, o)
+    return hedef_ok, yarim_ok, sahte, islem_r(dP, o, 1.0, ex), islem_r(dP, o, 0.5, ex), rr_oran(dP, o, ex)
 
 
-def islem_r(d: dict, o: dict, kat: float):
-    """Kirilim kapanisindan giris; stop = gecersizlik, kar al = seviye +/- kat*yukseklik. Sonuc R cinsinden."""
+def islem_r(d: dict, o: dict, kat: float, ex=None):
+    """Kirilim kapanisindan giris; stop = gecersizlik, kar al = seviye +/- kat*yukseklik. Sonuc R cinsinden.
+    d gercek fiyat; seviyeler tespit uzayindan ex ile fiyata cevrilir (log tespitte exp)."""
+    ex = ex or (lambda x: x)
     N, b = len(d["c"]), o["b"]
     s = 1 if o["yon"] == "yukari" else -1
     giris = d["c"][b]
-    tp = o["seviye"] + s * kat * _yukseklik(o)
-    risk, odul = s * (giris - o["gecersiz"]), s * (tp - giris)
+    tp = ex(o["seviye"] + s * kat * _yukseklik(o))
+    gec = ex(o["gecersiz"])
+    risk, odul = s * (giris - gec), s * (tp - giris)
     if risk <= 0 or odul <= 0:        # kar al seviyesi giriste zaten gecilmis: islem yok
         return None
     son = min(N - 1, b + 100)
@@ -190,9 +197,9 @@ def islem_r(d: dict, o: dict, kat: float):
         acilis = d["o"][i]
         aleyhe = d["l"][i] if s == 1 else d["h"][i]
         lehe = d["h"][i] if s == 1 else d["l"][i]
-        if s * (acilis - o["gecersiz"]) <= 0:      # stopun otesinde acildi
+        if s * (acilis - gec) <= 0:                # stopun otesinde acildi
             return s * (acilis - giris) / risk
-        if s * (aleyhe - o["gecersiz"]) <= 0:
+        if s * (aleyhe - gec) <= 0:
             return -1.0
         if s * (acilis - tp) >= 0:                 # hedefin otesinde acildi
             return s * (acilis - giris) / risk
@@ -201,10 +208,11 @@ def islem_r(d: dict, o: dict, kat: float):
     return s * (d["c"][son] - giris) / risk
 
 
-def rr_oran(d: dict, o: dict):
+def rr_oran(d: dict, o: dict, ex=None):
+    ex = ex or (lambda x: x)
     s = 1 if o["yon"] == "yukari" else -1
     giris = d["c"][o["b"]]
-    risk, odul = s * (giris - o["gecersiz"]), s * (o["hedef"] - giris)
+    risk, odul = s * (giris - ex(o["gecersiz"])), s * (ex(o["hedef"]) - giris)
     return odul / risk if risk > 0 and odul > 0 else None
 
 
@@ -244,8 +252,8 @@ def json_yaz(gruplar: dict, araliklar: list, dosya: str = "formasyon_istatistik.
     for (desen, a, p), g in gruplar.items():
         if a not in ("4h", "8h", "1d", "1dL", "3d", "1w") or (a == "1d" and "1dL" in araliklar):
             continue
-        if desen == "ucgen":
-            parcalar = [(f"ucgen_{yon}", g["kir"][yon]) for yon in ("yukari", "asagi")]
+        if desen in ("ucgen", "buyuk_ucgen"):
+            parcalar = [(f"{desen}_{yon}", g["kir"][yon]) for yon in ("yukari", "asagi")]
         else:
             parcalar = [(desen, g["kir"]["yukari"] + g["kir"]["asagi"])]
         for anahtar, k in parcalar:
@@ -288,6 +296,8 @@ def main():
     for (p, s, a), d in zip(isler, veriler):
         if d is None:
             continue
+        dP, d = d, u.log_veri(d)                    # tespit tarayiciyla ayni uzayda (log fiyat), R gercek fiyatla
+        ex = math.exp if d.get("log") else None
         _, olaylar = u.tara(d)
         N = len(d["c"])
         sonu = {}                                   # formasyon -> kirilim yonu / 'bitti'
@@ -297,7 +307,8 @@ def main():
         for o in olaylar:
             if o["tur"] == "bitti" or o["b"] > N - 30:
                 continue
-            hedefler = [((o["desen"], a, "HEPSI"), None), ((o["desen"], a, p), None)]
+            dg = "buyuk_ucgen" if o["desen"] == "ucgen" and o["f"].get("buyuk") else o["desen"]   # buyuk ucgen ayri
+            hedefler = [((dg, a, "HEPSI"), None), ((dg, a, p), None)]
             if o["desen"] == "ucgen" and a == "1d" and p in bas4:
                 hedefler.append((("ucgen", "1d-son-donem", p), bas4[p]))
             for ad, bas in hedefler:
@@ -306,7 +317,7 @@ def main():
                 g = gruplar.setdefault(ad, dict(grafik=set(), kir={"yukari": [], "asagi": []}, yakin=[]))
                 g["grafik"].add((p, s, a))
                 if o["tur"] == "kirilim":
-                    g["kir"][o["yon"]].append(kirilim_sonucu(d, o))
+                    g["kir"][o["yon"]].append(kirilim_sonucu(d, o, dP, ex))
                 else:
                     sonuc = sonu.get((o["desen"], o["f"]["key"]))
                     if o["desen"] == "ucgen":     # yakin uyarisinin yonu dogru mu (kirilan ucgenler arasinda)
@@ -319,14 +330,14 @@ def main():
         g = gruplar[ad]
         desen, a, p = ad
         parca = [f"{desen} {a} {p} ({len(g['grafik'])} grafik): KIRILIM {ozet(g['kir']['yukari'] + g['kir']['asagi'])}"]
-        if desen == "ucgen":                         # donus formasyonlarinda yon zaten belli
+        if desen in ("ucgen", "buyuk_ucgen"):        # donus formasyonlarinda yon zaten belli
             for yon in ("yukari", "asagi"):
                 if g["kir"][yon]:
                     parca.append(f"{yon} {ozet(g['kir'][yon])}")
         y = g["yakin"]
         cozulen = [x for x in y if x is not None]
         parca.append(f"YAKIN n={len(y)} sonuclanan {len(cozulen)} "
-                     f"{'dogru-yon' if desen == 'ucgen' else 'onaylanan'} {yuzde(cozulen)}")
+                     f"{'dogru-yon' if desen in ('ucgen', 'buyuk_ucgen') else 'onaylanan'} {yuzde(cozulen)}")
         return " | ".join(parca)
 
     sira = {d: i for i, d in enumerate(SIRA)}
