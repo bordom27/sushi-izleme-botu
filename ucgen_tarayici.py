@@ -991,6 +991,21 @@ def kirilim_kalitesi(d: dict, o: dict) -> dict:
                 hacim=hacim_orani(d, b))
 
 
+def haftalik_trend(d: dict, b: int, yukari: bool) -> bool | None:
+    """Gunluk grafikte: son kapanmis haftanin kapanisi haftalik EMA50'nin kirilim yonunde mi. Test (gunluk
+    yukari kirilim): yonundeyse +0,38R, degilse +0,20R (asagi kirilimda -0,05R / -0,20R); 4s ve 3g'de fark yok."""
+    hafta = (np.asarray(d["t"], float) // 1 + 3 * 86400) // (7 * 86400)    # pazartesi baslayan hafta numarasi
+    h0 = hafta[b]
+    son = {}
+    for i in range(b + 1):
+        if hafta[i] < h0:
+            son[hafta[i]] = d["c"][i]                    # haftanin son kapanisi
+    if len(son) < 52:
+        return None
+    wc = np.array([son[k] for k in sorted(son)])
+    return bool((1 if yukari else -1) * (wc[-1] - ema(wc, 50)[-1]) > 0)
+
+
 def eski_tepe(d: dict, o: dict) -> bool | None:
     """Yukari kirilimda: formasyondan onceki 250 mumda giris ile hedef arasinda kalan eski tepe var mi.
     Test (~3.600 yukari kirilim): varsa +0,62R, yoksa +0,30R; her zaman dilimi, piyasa ve iki donemde ayni yonde
@@ -1170,10 +1185,17 @@ def _kalite_satiri(d: dict, o: dict, anahtar: str, aralik: str | None) -> list:
     if k["gec"]:
         satir += [(" → bu durumda geçmiş ", BEYAZ, None), (k["gec"]["ad"], k["gec"]["renk"], "bold"),
                   (f" %{k['gec']['hedef']}, {_r_yazi(k['gec']['R'])}", BEYAZ, None)]
+    L_ = [satir]
+    if aralik == "1d":
+        ht = haftalik_trend(d, o["b"], o["yon"] == "yukari")
+        if ht is not None:
+            L_.append([("Haftalık trend: ", BEYAZ, None), ("yönünde ✓" if ht else "ters", "#4caf50" if ht else GRI, "bold"),
+                       (" (günlük geçmiş: yönünde +0,38R · değil +0,20R)" if o["yon"] == "yukari" else
+                        " (günlük geçmiş: yönünde −0,05R · değil −0,20R)", BEYAZ, None)])
     et = eski_tepe(d, o)
     if et is None:
-        return [satir]
-    return [satir, [("Hedef yolunda eski tepe: ", BEYAZ, None), ("var ✓" if et else "yok", "#4caf50" if et else GRI, "bold"),
+        return L_
+    return L_ + [[("Hedef yolunda eski tepe: ", BEYAZ, None), ("var ✓" if et else "yok", "#4caf50" if et else GRI, "bold"),
                     (" (geçmişte var +0,62R · yok +0,30R)", BEYAZ, None)]]
 
 
@@ -1252,6 +1274,11 @@ def _ucgen_satirlari(f: dict, h: dict, olay: dict | None, piyasa: str | None, ar
     if gy and ga:
         L.append([(f"En iyi zaman dilimi: ▲ {en_iyi_yazi(gy)} · ▼ {en_iyi_yazi(ga)}", BEYAZ, None)])
     if d is not None and son is not None:
+        if aralik == "1d":
+            hu, ha = haftalik_trend(d, son, True), haftalik_trend(d, son, False)
+            if hu is not None:
+                L.append([("Haftalık trend: ", BEYAZ, None), ("▲ yönünde ✓" if hu else "▼ yönünde" if ha else "yatay", "#4caf50" if hu else GRI, "bold"),
+                          (" (günlük ▲ kırılımda yönündeyse +0,38R · değilse +0,20R)", BEYAZ, None)])
         et = eski_tepe(d, dict(f=f, b=son, yon="yukari", hedef=h["h_u"]))
         if et is not None:
             L.append([("▲ Hedef yolunda eski tepe: ", BEYAZ, None), ("var ✓" if et else "yok", "#4caf50" if et else GRI, "bold"),
@@ -1629,7 +1656,7 @@ def isler(gunlukler: bool) -> list:
 def veri_al(is_):
     piyasa, sym, aralik = is_
     if piyasa == "KRIPTO":
-        return binance(sym, aralik)
+        return binance(sym, aralik, 1000 if aralik == "1d" else 400)   # gunlukte haftalik EMA50 icin ~3 yil
     return yahoo(sym + ".IS" if piyasa == "BIST" else sym)
 
 
@@ -1658,6 +1685,11 @@ def _ek_satirlar(o: dict, d: dict, anahtar: str, piyasa: str | None, aralik: str
         g = k["gec"]
         ek.append(f"\n🔎 Kırılım kalitesi {k['puan']} ({k['ayr']})"
                   + (f" → bu durumda geçmiş {g['ad']}: %{g['hedef']}, {_r_yazi(g['R'])}" if g else ""))
+        if aralik == "1d":
+            ht = haftalik_trend(d, o["b"], o["yon"] == "yukari")
+            if ht is not None:
+                ek.append(f"\n📅 Haftalık trend {'yönünde ✓' if ht else 'ters'}"
+                          + (" (günlükte yönündeyse +0,38R, değilse +0,20R)" if o["yon"] == "yukari" else ""))
         et = eski_tepe(d, o)
         if et is not None:
             ek.append(f"\n⛰ Hedef yolunda eski tepe {'var ✓ (geçmişte +0,62R)' if et else 'yok (geçmişte +0,30R)'}")
