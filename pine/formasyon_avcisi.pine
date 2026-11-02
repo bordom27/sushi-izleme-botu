@@ -796,15 +796,28 @@ kalKisa(int de, float rr, bool yuk) =>
 // test ~3.600 yukarı kırılım: varsa +0,62R, yoksa +0,30R (her zaman dilimi ve piyasada aynı yönde)
 // çizgiye değen mum: kırılan (üst / boyun) çizgiye ucu 0,3 ATR yakın, kapanışı geçmeyen mum sayısı (yukarı kırılım)
 // test ~3.600 yukarı kırılım: ≤10 mum %50 kazanç +0.53R · 11+ mum %43 +0.47R; aşağıda fark yok
+// geçmiş mumlar dizilerde tutulur ([] operatörü koşullu çağrılan fonksiyonda güvenilir değil)
+var array<float> gecH = array.new<float>()
+var array<float> gecC = array.new<float>()
+var array<float> gecA = array.new<float>()
+array.push(gecH, pH)
+array.push(gecC, pC)
+array.push(gecA, nz(atr14))
+if array.size(gecH) > 450
+    array.shift(gecH)
+    array.shift(gecC)
+    array.shift(gecA)
 degSay(int x0, bool boyunC) =>
     int n = 0
-    int m = math.min(bar_index - x0, 400)
+    int sz = array.size(gecH)
+    int m = math.min(bar_index - x0, sz - 1)
     if m > 0
         for k = 1 to m
             int x = bar_index - k
+            int j = sz - 1 - k
             float lv = boyunC ? dBoyun(x) : ustDeger(x)
-            float a = nz(atr14[k])
-            if pH[k] - lv >= -0.3 * a and pC[k] - lv <= 0.3 * a
+            float a = array.get(gecA, j)
+            if array.get(gecH, j) - lv >= -0.3 * a and array.get(gecC, j) - lv <= 0.3 * a
                 n += 1
     n
 degYazi(int n) => "\nÇizgiye değen mum: " + str.tostring(n) + (n >= 11 ? " ⚠ fazla (11+ geçmişte %43 kazanç)" : " ✓ (≤10 geçmişte %50 kazanç)")
