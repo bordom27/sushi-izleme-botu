@@ -794,6 +794,22 @@ kalKisa(int de, float rr, bool yuk) =>
 
 // yukarı kırılımda hedef yolunda eski tepe (formasyondan önceki 250 mumda giriş ile hedef arasında tepe):
 // test ~3.600 yukarı kırılım: varsa +0,62R, yoksa +0,30R (her zaman dilimi ve piyasada aynı yönde)
+// çizgiye değen mum: kırılan (üst / boyun) çizgiye ucu 0,3 ATR yakın, kapanışı geçmeyen mum sayısı (yukarı kırılım)
+// test ~3.600 yukarı kırılım: ≤10 mum %50 kazanç +0.53R · 11+ mum %43 +0.47R; aşağıda fark yok
+degSay(int x0, bool boyunC) =>
+    int n = 0
+    int m = math.min(bar_index - x0, 400)
+    if m > 0
+        for k = 1 to m
+            int x = bar_index - k
+            float lv = boyunC ? dBoyun(x) : ustDeger(x)
+            float a = nz(atr14[k])
+            if pH[k] - lv >= -0.3 * a and pC[k] - lv <= 0.3 * a
+                n += 1
+    n
+degYazi(int n) => "\nÇizgiye değen mum: " + str.tostring(n) + (n >= 11 ? " ⚠ fazla (11+ geçmişte %43 kazanç)" : " ✓ (≤10 geçmişte %50 kazanç)")
+// hacim: kripto ve BIST'te kırılım mumu hacmi ≥1,5× ise hedefe ulaşma ~10 puan yüksek (ABD'de fark yok)
+hacYazi() => (piyIdx == 1 or piyIdx == 2) and not na(hacOr) ? "\nHacim: " + str.tostring(hacOr, "#.#") + "×" + (hacOr >= 1.5 ? " ✓ (≥1,5× geçmişte hedefe ulaşma ~10 puan yüksek)" : " (1,5× altı)") : ""
 eskiTepeYazi(float ext, float hed) => na(ext) ? "" : "\nHedef yolunda eski tepe: " + (ext > pC and ext < hed ? "var ✓ (geçmişte +0.62R)" : "yok (geçmişte +0.30R)")
 
 // ───────── bu grafiğin geçmiş başarısı ─────────
@@ -1067,7 +1083,7 @@ if aktif
         if gecmis
             line.new(uI0, fx(ustDeger(uI0)), b, fx(up), color = color.new(cUst, 30), width = 1)
             line.new(lI0, fx(altDeger(lI0)), b, fx(lw), color = color.new(cAlt, 30), width = 1)
-            label.new(b, evKirU ? high : low, (evKirU ? "▲ YUKARI KIRILIM\n" : "▼ AŞAĞI KIRILIM\n") + ucgAd() + " üçgen\nKırılan seviye: " + str.tostring(fx(kirSev), format.mintick) + "\n" + hYazi(fw0) + "\nHedef = seviye " + hIslem(evKirU) + " H = " + str.tostring(fx(kirHedef), format.mintick) + "\nGüven: " + guvenKisa(ucgDe(evKirU)) + "\n" + kalSonuc(ucgDe(evKirU), rrK, evKirU) + hfYazi(evKirU) + eskiTepeYazi(extK, kirHedef), style = evKirU ? label.style_label_down : label.style_label_up, color = evKirU ? color.new(color.green, 10) : color.new(color.red, 10), textcolor = color.white, size = size.small)
+            label.new(b, evKirU ? high : low, (evKirU ? "▲ YUKARI KIRILIM\n" : "▼ AŞAĞI KIRILIM\n") + ucgAd() + " üçgen\nKırılan seviye: " + str.tostring(fx(kirSev), format.mintick) + "\n" + hYazi(fw0) + "\nHedef = seviye " + hIslem(evKirU) + " H = " + str.tostring(fx(kirHedef), format.mintick) + "\nGüven: " + guvenKisa(ucgDe(evKirU)) + "\n" + kalSonuc(ucgDe(evKirU), rrK, evKirU) + hfYazi(evKirU) + eskiTepeYazi(extK, kirHedef) + (evKirU ? degYazi(degSay(fx0, false)) : "") + hacYazi(), style = evKirU ? label.style_label_down : label.style_label_up, color = evKirU ? color.new(color.green, 10) : color.new(color.red, 10), textcolor = color.white, size = size.small)
     else
         if up - pC <= yakAtr * atr14 and not yakU
             yakU := true
@@ -1112,7 +1128,7 @@ if dVar
             line.new(bx1, fx(dBoyun(bx1)), b, fx(nl), color = color.new(cBoyun, 25), width = 1)
             if array.size(dPX) == 3
                 line.new(array.get(dPX, 0), fx(array.get(dPP, 0)), array.get(dPX, 2), fx(array.get(dPP, 2)), color = color.new(asagi ? color.red : color.teal, 35), width = 1)
-            label.new(b, asagi ? low : high, (asagi ? "▼ " : "▲ ") + str.upper(desenAd(dTur)) + "\nOnay: " + str.tostring(fx(nl), format.mintick) + "\nHedef: " + str.tostring(fx(onayHedef), format.mintick) + "\nGüven: " + guvenKisa(desenNo(dTur)) + "\n" + kalSonuc(desenNo(dTur), rrO, not asagi) + hfYazi(not asagi) + eskiTepeYazi(extO, onayHedef), style = asagi ? label.style_label_up : label.style_label_down, color = asagi ? color.new(color.red, 10) : color.new(color.green, 10), textcolor = color.white, size = size.small)
+            label.new(b, asagi ? low : high, (asagi ? "▼ " : "▲ ") + str.upper(desenAd(dTur)) + "\nOnay: " + str.tostring(fx(nl), format.mintick) + "\nHedef: " + str.tostring(fx(onayHedef), format.mintick) + "\nGüven: " + guvenKisa(desenNo(dTur)) + "\n" + kalSonuc(desenNo(dTur), rrO, not asagi) + hfYazi(not asagi) + eskiTepeYazi(extO, onayHedef) + (not asagi ? degYazi(degSay(x0O, true)) : "") + hacYazi(), style = asagi ? label.style_label_up : label.style_label_down, color = asagi ? color.new(color.red, 10) : color.new(color.green, 10), textcolor = color.white, size = size.small)
         kullan(dPX, dPT)
         dVar := false
     else if not dYakin and math.abs(pC - nl) <= yakAtr * atr14
@@ -1499,12 +1515,12 @@ if barstate.islast
             array.push(etk, label.new(b, fx(dBoyun(b)), desenAd(dTur) + "  |  hedef " + str.tostring(fx(tepeD ? dBoyun(b) - dYuk : dBoyun(b) + dYuk), format.mintick), style = label.style_label_left, color = color.new(rk, 60), textcolor = color.white, size = size.small))
 
 // ───────── panel ─────────
-var table tb = table.new(position.top_right, 2, 18, bgcolor = color.new(#131722, 10), border_width = 1, border_color = color.new(color.gray, 70))
+var table tb = table.new(position.top_right, 2, 19, bgcolor = color.new(#131722, 10), border_width = 1, border_color = color.new(color.gray, 70))
 satir(int r, string k, string v, color c) =>
     table.cell(tb, 0, r, k, text_color = color.silver, text_size = size.small, text_halign = text.align_left)
     table.cell(tb, 1, r, v, text_color = c, text_size = size.small, text_halign = text.align_right)
 if showT and barstate.islast
-    table.clear(tb, 0, 0, 1, 17)
+    table.clear(tb, 0, 0, 1, 18)
     table.cell(tb, 0, 0, "FORMASYON AVCISI", text_color = color.white, text_size = size.normal)
     table.cell(tb, 1, 0, timeframe.period, text_color = color.gray, text_size = size.small)
     int r = 1
@@ -1522,7 +1538,9 @@ if showT and barstate.islast
         satir(r + 6, "En iyi zaman dilimi", "▲ " + enIyiYazi(ucgDe(true), true) + " · ▼ " + enIyiYazi(ucgDe(false), true), color.silver)
         string et = etAktif
         satir(r + 7, "▲ Hedef yolunda eski tepe", et, str.startswith(et, "var") ? color.lime : color.gray)
-        r += 8
+        int dsU = degSay(fx0, false)
+        satir(r + 8, "▲ Üst çizgiye değen mum", str.tostring(dsU) + (dsU >= 11 ? "  ⚠ fazla" : "  ✓"), dsU >= 11 ? color.orange : color.lime)
+        r += 9
         if hfYon != 0
             satir(r, "Haftalık trend", hfYon > 0 ? "▲ yönünde (yukarı kırılım için ✓)" : "▼ yönünde", hfYon > 0 ? color.lime : color.gray)
             r += 1

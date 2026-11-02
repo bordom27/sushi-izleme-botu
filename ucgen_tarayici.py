@@ -1006,6 +1006,24 @@ def haftalik_trend(d: dict, b: int, yukari: bool) -> bool | None:
     return bool((1 if yukari else -1) * (wc[-1] - ema(wc, 50)[-1]) > 0)
 
 
+def degen_mum(d: dict, o: dict) -> int | None:
+    """Yukari kirilimda: formasyon boyunca kirilan cizgiye degen (ucu cizgiye 0,3 ATR yakin, kapanisi gecmeyen) mum sayisi.
+    Test (~3.600 yukari kirilim, gunluk+): <=10 mum kazanc orani %50 · +0,53R, 11+ mum %43 · +0,47R. Asagida fark yok."""
+    if o["yon"] != "yukari" or o["tur"] != "kirilim":
+        return None
+    f, b = o["f"], o["b"]
+    x0 = int(f["x0"]) if "x0" in f else int(min(n_[0] for n_ in f.get("noktalar", [(b, 0)])))
+    A = d.get("_A")
+    if A is None:
+        A = d["_A"] = np.nan_to_num(atr(d["h"], d["l"], d["c"]))
+    cz = (lambda i: deger(f, i, "u")) if o["desen"] == "ucgen" else (lambda i: boyun(f, i))
+    n = 0
+    for i in range(max(x0, 0), b):
+        if d["h"][i] - cz(i) >= -0.3 * A[i] and d["c"][i] - cz(i) <= 0.3 * A[i]:
+            n += 1
+    return n
+
+
 def eski_tepe(d: dict, o: dict) -> bool | None:
     """Yukari kirilimda: formasyondan onceki 250 mumda giris ile hedef arasinda kalan eski tepe var mi.
     Test (~3.600 yukari kirilim): varsa +0,62R, yoksa +0,30R; her zaman dilimi, piyasa ve iki donemde ayni yonde
@@ -1693,6 +1711,14 @@ def _ek_satirlar(o: dict, d: dict, anahtar: str, piyasa: str | None, aralik: str
         et = eski_tepe(d, o)
         if et is not None:
             ek.append(f"\n⛰ Hedef yolunda eski tepe {'var ✓ (geçmişte +0,62R)' if et else 'yok (geçmişte +0,30R)'}")
+        dm = degen_mum(d, o)
+        if dm is not None:
+            ek.append(f"\n✋ Çizgiye değen mum: {dm}" + (" ⚠ fazla (11+ geçmişte %43 kazanç)" if dm >= 11 else " ✓ (≤10 geçmişte %50 kazanç)"))
+        if piyasa in ("KRIPTO", "BIST"):
+            ho = hacim_orani(d, o["b"])
+            if ho is not None:
+                ek.append(f"\n📊 Hacim {ho:.1f}×".replace(".", ",")
+                          + (" ✓ (≥1,5× geçmişte hedefe ulaşma ~10 puan yüksek)" if ho >= 1.5 else " (1,5× altı)"))
     x = sembol_yazi(piyasa, sym, aralik)
     if x:
         ek.append(f"\n📈 Bu sembol: {x[0]} → {x[1]}")
