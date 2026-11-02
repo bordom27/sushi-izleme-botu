@@ -810,6 +810,29 @@ degSay(int x0, bool boyunC) =>
 degYazi(int n) => "\nÇizgiye değen mum: " + str.tostring(n) + (n >= 11 ? " ⚠ fazla (11+ geçmişte %43 kazanç)" : " ✓ (≤10 geçmişte %50 kazanç)")
 // hacim: kripto ve BIST'te kırılım mumu hacmi ≥1,5× ise hedefe ulaşma ~10 puan yüksek (ABD'de fark yok)
 hacYazi() => (piyIdx == 1 or piyIdx == 2) and not na(hacOr) ? "\nHacim: " + str.tostring(hacOr, "#.#") + "×" + (hacOr >= 1.5 ? " ✓ (≥1,5× geçmişte hedefe ulaşma ~10 puan yüksek)" : " (1,5× altı)") : ""
+// işlem planı (test ~3.700 yukarı kırılım, günlük+): yarısını giriş→hedef yolunun yarısında sat, stopu girişe çek,
+// kalanı 1,5×H'ye taşı → kazanç oranı %47→%58, ort. getiri +11,3%→+10,1%, medyan −3,5%→+5,4%
+kismiSev(float giris, float hed, float k) => fx(giris) + k * (fx(hed) - fx(giris))
+planYazi(float giris, float hed) => "\n½ sat: " + str.tostring(kismiSev(giris, hed, 0.5), format.mintick) + " (yolun yarısı) → stop girişe\nKalan hedef: " + str.tostring(kismiSev(giris, hed, 1.5), format.mintick) + " (1,5×H)"
+var line ksL1 = na
+var line ksL2 = na
+var label ksT1 = na
+var label ksT2 = na
+var float ksY1 = na
+var float ksY2 = na
+var int ksBar = na
+planCiz(int b0, float giris, float hed, bool yuk, line o1, line o2, label o3, label o4) =>
+    float y1 = kismiSev(giris, hed, 0.5)
+    float y2 = kismiSev(giris, hed, 1.5)
+    line.delete(o1)
+    line.delete(o2)
+    label.delete(o3)
+    label.delete(o4)
+    line l1 = line.new(b0, y1, b0 + 30, y1, color = color.yellow, style = line.style_dotted, width = 1)
+    line l2 = line.new(b0, y2, b0 + 30, y2, color = yuk ? color.lime : color.red, style = line.style_dotted, width = 1)
+    label t1 = label.new(b0 + 30, y1, "½ sat → stop girişe", style = label.style_label_left, color = color.new(color.black, 100), textcolor = color.yellow, size = size.tiny)
+    label t2 = label.new(b0 + 30, y2, "kalan hedef 1,5×H", style = label.style_label_left, color = color.new(color.black, 100), textcolor = yuk ? color.lime : color.red, size = size.tiny)
+    [l1, l2, t1, t2]
 eskiTepeYazi(float ext, float hed) => na(ext) ? "" : "\nHedef yolunda eski tepe: " + (ext > pC and ext < hed ? "var ✓ (geçmişte +0.62R)" : "yok (geçmişte +0.30R)")
 
 // ───────── bu grafiğin geçmiş başarısı ─────────
@@ -1074,6 +1097,14 @@ if aktif
                 extK := math.max(nz(extK, pH[k]), pH[k])
         kirKal := kalKisa(ucgDe(evKirU), rrK, evKirU)
         takipEkle(evKirU, kirHedef, evKirU ? lw : up)
+        [pl1, pl2, pt1, pt2] = planCiz(b, pC, kirHedef, evKirU, ksL1, ksL2, ksT1, ksT2)
+        ksL1 := pl1
+        ksL2 := pl2
+        ksT1 := pt1
+        ksT2 := pt2
+        ksY1 := kismiSev(pC, kirHedef, 0.5)
+        ksY2 := kismiSev(pC, kirHedef, 1.5)
+        ksBar := b
         array.push(bozuk, fKey)
         array.push(kulX, uI0)
         array.push(kulT, true)
@@ -1083,7 +1114,7 @@ if aktif
         if gecmis
             line.new(uI0, fx(ustDeger(uI0)), b, fx(up), color = color.new(cUst, 30), width = 1)
             line.new(lI0, fx(altDeger(lI0)), b, fx(lw), color = color.new(cAlt, 30), width = 1)
-            label.new(b, evKirU ? high : low, (evKirU ? "▲ YUKARI KIRILIM\n" : "▼ AŞAĞI KIRILIM\n") + ucgAd() + " üçgen\nKırılan seviye: " + str.tostring(fx(kirSev), format.mintick) + "\n" + hYazi(fw0) + "\nHedef = seviye " + hIslem(evKirU) + " H = " + str.tostring(fx(kirHedef), format.mintick) + "\nGüven: " + guvenKisa(ucgDe(evKirU)) + "\n" + kalSonuc(ucgDe(evKirU), rrK, evKirU) + hfYazi(evKirU) + eskiTepeYazi(extK, kirHedef) + (evKirU ? degYazi(degSay(fx0, false)) : "") + hacYazi(), style = evKirU ? label.style_label_down : label.style_label_up, color = evKirU ? color.new(color.green, 10) : color.new(color.red, 10), textcolor = color.white, size = size.small)
+            label.new(b, evKirU ? high : low, (evKirU ? "▲ YUKARI KIRILIM\n" : "▼ AŞAĞI KIRILIM\n") + ucgAd() + " üçgen\nKırılan seviye: " + str.tostring(fx(kirSev), format.mintick) + "\n" + hYazi(fw0) + "\nHedef = seviye " + hIslem(evKirU) + " H = " + str.tostring(fx(kirHedef), format.mintick) + "\nGüven: " + guvenKisa(ucgDe(evKirU)) + "\n" + kalSonuc(ucgDe(evKirU), rrK, evKirU) + hfYazi(evKirU) + eskiTepeYazi(extK, kirHedef) + (evKirU ? degYazi(degSay(fx0, false)) : "") + hacYazi() + planYazi(pC, kirHedef), style = evKirU ? label.style_label_down : label.style_label_up, color = evKirU ? color.new(color.green, 10) : color.new(color.red, 10), textcolor = color.white, size = size.small)
     else
         if up - pC <= yakAtr * atr14 and not yakU
             yakU := true
@@ -1123,12 +1154,20 @@ if dVar
                 extO := math.max(nz(extO, pH[k]), pH[k])
         onayKal := kalKisa(desenNo(dTur), rrO, not asagi)
         takipEkle(not asagi, onayHedef, dGec)
+        [pl1, pl2, pt1, pt2] = planCiz(b, pC, onayHedef, not asagi, ksL1, ksL2, ksT1, ksT2)
+        ksL1 := pl1
+        ksL2 := pl2
+        ksT1 := pt1
+        ksT2 := pt2
+        ksY1 := kismiSev(pC, onayHedef, 0.5)
+        ksY2 := kismiSev(pC, onayHedef, 1.5)
+        ksBar := b
         if gecmis
             int bx1 = array.get(dPX, 1)
             line.new(bx1, fx(dBoyun(bx1)), b, fx(nl), color = color.new(cBoyun, 25), width = 1)
             if array.size(dPX) == 3
                 line.new(array.get(dPX, 0), fx(array.get(dPP, 0)), array.get(dPX, 2), fx(array.get(dPP, 2)), color = color.new(asagi ? color.red : color.teal, 35), width = 1)
-            label.new(b, asagi ? low : high, (asagi ? "▼ " : "▲ ") + str.upper(desenAd(dTur)) + "\nOnay: " + str.tostring(fx(nl), format.mintick) + "\nHedef: " + str.tostring(fx(onayHedef), format.mintick) + "\nGüven: " + guvenKisa(desenNo(dTur)) + "\n" + kalSonuc(desenNo(dTur), rrO, not asagi) + hfYazi(not asagi) + eskiTepeYazi(extO, onayHedef) + (not asagi ? degYazi(degSay(x0O, true)) : "") + hacYazi(), style = asagi ? label.style_label_up : label.style_label_down, color = asagi ? color.new(color.red, 10) : color.new(color.green, 10), textcolor = color.white, size = size.small)
+            label.new(b, asagi ? low : high, (asagi ? "▼ " : "▲ ") + str.upper(desenAd(dTur)) + "\nOnay: " + str.tostring(fx(nl), format.mintick) + "\nHedef: " + str.tostring(fx(onayHedef), format.mintick) + "\nGüven: " + guvenKisa(desenNo(dTur)) + "\n" + kalSonuc(desenNo(dTur), rrO, not asagi) + hfYazi(not asagi) + eskiTepeYazi(extO, onayHedef) + (not asagi ? degYazi(degSay(x0O, true)) : "") + hacYazi() + planYazi(pC, onayHedef), style = asagi ? label.style_label_up : label.style_label_down, color = asagi ? color.new(color.red, 10) : color.new(color.green, 10), textcolor = color.white, size = size.small)
         kullan(dPX, dPT)
         dVar := false
     else if not dYakin and math.abs(pC - nl) <= yakAtr * atr14
@@ -1515,12 +1554,12 @@ if barstate.islast
             array.push(etk, label.new(b, fx(dBoyun(b)), desenAd(dTur) + "  |  hedef " + str.tostring(fx(tepeD ? dBoyun(b) - dYuk : dBoyun(b) + dYuk), format.mintick), style = label.style_label_left, color = color.new(rk, 60), textcolor = color.white, size = size.small))
 
 // ───────── panel ─────────
-var table tb = table.new(position.top_right, 2, 19, bgcolor = color.new(#131722, 10), border_width = 1, border_color = color.new(color.gray, 70))
+var table tb = table.new(position.top_right, 2, 20, bgcolor = color.new(#131722, 10), border_width = 1, border_color = color.new(color.gray, 70))
 satir(int r, string k, string v, color c) =>
     table.cell(tb, 0, r, k, text_color = color.silver, text_size = size.small, text_halign = text.align_left)
     table.cell(tb, 1, r, v, text_color = c, text_size = size.small, text_halign = text.align_right)
 if showT and barstate.islast
-    table.clear(tb, 0, 0, 1, 18)
+    table.clear(tb, 0, 0, 1, 19)
     table.cell(tb, 0, 0, "FORMASYON AVCISI", text_color = color.white, text_size = size.normal)
     table.cell(tb, 1, 0, timeframe.period, text_color = color.gray, text_size = size.small)
     int r = 1
@@ -1557,4 +1596,7 @@ if showT and barstate.islast
     if not aktif and not dVar
         satir(1, "Durum", "Aktif formasyon yok", color.gray)
         r := 2
+    if not na(ksBar) and b - ksBar <= 60
+        satir(r, "Son kırılım planı", "½ sat " + str.tostring(ksY1, format.mintick) + " · kalan " + str.tostring(ksY2, format.mintick), color.yellow)
+        r += 1
     satir(r, "Bu sembol", semYazi(), color.silver)

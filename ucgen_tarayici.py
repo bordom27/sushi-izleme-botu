@@ -1006,6 +1006,11 @@ def haftalik_trend(d: dict, b: int, yukari: bool) -> bool | None:
     return bool((1 if yukari else -1) * (wc[-1] - ema(wc, 50)[-1]) > 0)
 
 
+def _fiyat_r(x: float) -> str:
+    """Gercek fiyati yazar (fiyat() ile ayni bicim)."""
+    return fiyat(math.log(x) if LOG else x)
+
+
 def degen_mum(d: dict, o: dict) -> int | None:
     """Yukari kirilimda: formasyon boyunca kirilan cizgiye degen (ucu cizgiye 0,3 ATR yakin, kapanisi gecmeyen) mum sayisi.
     Test (~3.600 yukari kirilim, gunluk+): <=10 mum kazanc orani %50 · +0,53R, 11+ mum %43 · +0,47R. Asagida fark yok."""
@@ -1703,6 +1708,10 @@ def _ek_satirlar(o: dict, d: dict, anahtar: str, piyasa: str | None, aralik: str
         g = k["gec"]
         ek.append(f"\n🔎 Kırılım kalitesi {k['puan']} ({k['ayr']})"
                   + (f" → bu durumda geçmiş {g['ad']}: %{g['hedef']}, {_r_yazi(g['R'])}" if g else ""))
+        gr = math.exp(d["c"][o["b"]]) if LOG else float(d["c"][o["b"]])
+        hr = math.exp(o["hedef"]) if LOG else float(o["hedef"])
+        ek.append(f"\n💰 Plan: ½ sat {_fiyat_r(gr + 0.5 * (hr - gr))} (yolun yarısı) → stop girişe · kalan hedef "
+                  f"{_fiyat_r(gr + 1.5 * (hr - gr))} (1,5×H)")
         if aralik == "1d":
             ht = haftalik_trend(d, o["b"], o["yon"] == "yukari")
             if ht is not None:
