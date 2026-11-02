@@ -706,6 +706,7 @@ def tara(d: dict):
     ph_list, pl_list = [], []
     ucg = don = aday = None
     olaylar, kullanilmis, bozuk = [], [], set()
+    kirik = {}                      # buyuk ucgen cizgi baslangiclari -> onceki kirilim yonu (ayni ucgen tekrar kirilirsa)
     ist = d.setdefault("_ist", {"kurulan": 0, "kirilim": 0, "apex": 0, "bozulan": 0, "omur": [],
                                 "donus": 0, "devrilen": 0})
 
@@ -735,7 +736,9 @@ def tara(d: dict):
             seviye = up if c > up else lw
             olaylar.append(dict(tur="kirilim", yon=yon, b=b, f=ucg, seviye=seviye, desen="ucgen",
                                 hedef=seviye + ucg["w0"] if yon == "yukari" else seviye - ucg["w0"],
-                                gecersiz=lw if yon == "yukari" else up))
+                                gecersiz=lw if yon == "yukari" else up,
+                                tekrar=kirik.get(ucg["key"][:2]) if ucg.get("buyuk") else None))
+            kirik[ucg["key"][:2]] = yon
             ist["kirilim"] += 1; ist["omur"].append(b - ucg.get("dogum", b))
             kullanilmis.extend(ucgen_bas(ucg)); bozuk.add(ucg["key"]); ucg = None
             return
@@ -1708,10 +1711,16 @@ def _ek_satirlar(o: dict, d: dict, anahtar: str, piyasa: str | None, aralik: str
         g = k["gec"]
         ek.append(f"\n🔎 Kırılım kalitesi {k['puan']} ({k['ayr']})"
                   + (f" → bu durumda geçmiş {g['ad']}: %{g['hedef']}, {_r_yazi(g['R'])}" if g else ""))
+        if o.get("tekrar"):
+            sahte = o["tekrar"] != o["yon"]
+            ek.append(f"\n🔁 2. kırılım: bu üçgen daha önce {'▲ yukarı' if o['tekrar'] == 'yukari' else '▼ aşağı'} kırılmıştı"
+                      + (" (o kırılım sahte çıktı, çizgi yeniden çizildi)" if sahte else " (aynı yönde)"))
+    if o["tur"] == "kirilim" and o["yon"] == "yukari":
         gr = math.exp(d["c"][o["b"]]) if LOG else float(d["c"][o["b"]])
         hr = math.exp(o["hedef"]) if LOG else float(o["hedef"])
         ek.append(f"\n💰 Plan: ½ sat {_fiyat_r(gr + 0.5 * (hr - gr))} (yolun yarısı) → stop girişe · kalan hedef "
                   f"{_fiyat_r(gr + 1.5 * (hr - gr))} (1,5×H)")
+    if o["tur"] == "kirilim":
         if aralik == "1d":
             ht = haftalik_trend(d, o["b"], o["yon"] == "yukari")
             if ht is not None:
