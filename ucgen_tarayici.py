@@ -1014,6 +1014,22 @@ def _fiyat_r(x: float) -> str:
     return fiyat(math.log(x) if LOG else x)
 
 
+def tasma_atr(d: dict, o: dict) -> float | None:
+    """Kirilim mumunun kapanisinin kirilan cizgiden (ucgen cizgisi / boyun) ATR cinsinden uzakligi.
+    Test (~3.800 yukari kirilim, gunluk+): 0,3-0,5 ATR %41 kazanc +7,4% · 0,5-1 ATR %48 +10,9%; 1 ATR beklemek toplami dusurur."""
+    if o["tur"] != "kirilim":
+        return None
+    f, b = o["f"], o["b"]
+    A = d.get("_A")
+    if A is None:
+        A = d["_A"] = np.nan_to_num(atr(d["h"], d["l"], d["c"]))
+    if A[b] <= 0:
+        return None
+    yuk = o["yon"] == "yukari"
+    cz = deger(f, b, "u" if yuk else "l") if o["desen"] == "ucgen" else boyun(f, b)
+    return float((d["c"][b] - cz) / A[b] * (1 if yuk else -1))
+
+
 def degen_mum(d: dict, o: dict) -> int | None:
     """Yukari kirilimda: formasyon boyunca kirilan cizgiye degen (ucu cizgiye 0,3 ATR yakin, kapanisi gecmeyen) mum sayisi.
     Test (~3.600 yukari kirilim, gunluk+): <=10 mum kazanc orani %50 · +0,53R, 11+ mum %43 · +0,47R. Asagida fark yok."""
@@ -1711,6 +1727,9 @@ def _ek_satirlar(o: dict, d: dict, anahtar: str, piyasa: str | None, aralik: str
         g = k["gec"]
         ek.append(f"\n🔎 Kırılım kalitesi {k['puan']} ({k['ayr']})"
                   + (f" → bu durumda geçmiş {g['ad']}: %{g['hedef']}, {_r_yazi(g['R'])}" if g else ""))
+        ts = tasma_atr(d, o)
+        if ts is not None and ts < 0.5:
+            ek.append(f"\n⚠ Zayıf kapanış: çizgiden {ts:.1f} ATR dışarıda (0,5 altı geçmişte %41 kazanç; kriptoda zararda)".replace(".", ",", 1))
         if o.get("tekrar"):
             sahte = o["tekrar"] != o["yon"]
             ek.append(f"\n🔁 2. kırılım: bu üçgen daha önce {'▲ yukarı' if o['tekrar'] == 'yukari' else '▼ aşağı'} kırılmıştı"

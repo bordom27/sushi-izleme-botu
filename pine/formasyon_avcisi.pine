@@ -813,6 +813,10 @@ hacYazi() => (piyIdx == 1 or piyIdx == 2) and not na(hacOr) ? "\nHacim: " + str.
 // işlem planı (test ~3.700 yukarı kırılım, günlük+): yarısını giriş→hedef yolunun yarısında sat, stopu girişe çek,
 // kalanı 1,5×H'ye taşı → kazanç oranı %47→%58, ort. getiri +11,3%→+10,1%, medyan −3,5%→+5,4%
 kismiSev(float giris, float hed, float k) => fx(giris) + k * (fx(hed) - fx(giris))
+// kırılım mumunun çizgiden taşması (ATR): test ~3.800 yukarı kırılım (günlük+): 0,3–0,5 ATR %41 kazanç +7,4% ·
+// 0,5–1 ATR %48 +10,9% · 1 ATR üstü beklemek toplamı düşürüyor. Kriptoda 0,5 altı zararda (−1,8%, %24).
+tasKisa(float t) => t < 0.5 ? "\n⚠ zayıf kapanış (" + str.tostring(t, "0.0") + " ATR)" : ""
+tasUzun(float t) => "\nKapanış çizgiden " + str.tostring(t, "0.0") + " ATR dışarıda" + (t < 0.5 ? " ⚠ zayıf (0,5 altı geçmişte %41 kazanç; kriptoda zararda)" : " ✓")
 planKisa(float giris, float hed) => "\n½ sat " + str.tostring(kismiSev(giris, hed, 0.5), format.mintick) + " · kalan " + str.tostring(kismiSev(giris, hed, 1.5), format.mintick)
 // aynı büyük üçgen (aynı iki çizgi başlangıcı) ikinci kez kırılırsa: çizgi yeni dipten/tepeden yeniden çizilmiştir.
 // test (günlük+): sahte ▼ sonrası ▲ +0.46R %49 · aynı yönde tekrar ▲ +0.43R %53 · ilk ▲ +0.56R
@@ -1109,6 +1113,7 @@ if aktif
         kirGuv := guvenKisa(ucgDe(evKirU))
         float rrK = rrFiyat(pC, evKirU ? lw : up, kirHedef, evKirU)
         int tkr = fBuyuk ? tekrarBul(uI0, lI0) : 0
+        float tasK = atr14 > 0 ? (evKirU ? pC - up : lw - pC) / atr14 : 1.0
         array.push(kbU, uI0)
         array.push(kbL, lI0)
         array.push(kbY, evKirU)
@@ -1140,7 +1145,7 @@ if aktif
         if gecmis
             line.new(uI0, fx(ustDeger(uI0)), b, fx(up), color = color.new(cUst, 30), width = 1)
             line.new(lI0, fx(altDeger(lI0)), b, fx(lw), color = color.new(cAlt, 30), width = 1)
-            label.new(b, evKirU ? high : low, (evKirU ? "▲ YUKARI KIRILIM" : "▼ AŞAĞI KIRILIM") + tekrarKisa(tkr, evKirU) + "\n" + ucgAd() + " üçgen · hedef " + str.tostring(fx(kirHedef), format.mintick) + "\nGüven: " + guvenKisa(ucgDe(evKirU)) + "\n" + kalKisa(ucgDe(evKirU), rrK, evKirU) + (evKirU ? planKisa(pC, kirHedef) : ""), style = evKirU ? label.style_label_down : label.style_label_up, color = evKirU ? color.new(color.green, 10) : color.new(color.red, 10), textcolor = color.white, size = size.small, tooltip = (evKirU ? "▲ YUKARI KIRILIM\n" : "▼ AŞAĞI KIRILIM\n") + ucgAd() + " üçgen\nKırılan seviye: " + str.tostring(fx(kirSev), format.mintick) + "\n" + hYazi(fw0) + "\nHedef = seviye " + hIslem(evKirU) + " H = " + str.tostring(fx(kirHedef), format.mintick) + "\nGüven: " + guvenKisa(ucgDe(evKirU)) + "\n" + kalSonuc(ucgDe(evKirU), rrK, evKirU) + hfYazi(evKirU) + eskiTepeYazi(extK, kirHedef) + (evKirU ? degYazi(degSay(fx0, false)) : "") + hacYazi() + (evKirU ? planYazi(pC, kirHedef) : "") + tekrarUzun(tkr, evKirU))
+            label.new(b, evKirU ? high : low, (evKirU ? "▲ YUKARI KIRILIM" : "▼ AŞAĞI KIRILIM") + tekrarKisa(tkr, evKirU) + tasKisa(tasK) + "\n" + ucgAd() + " üçgen · hedef " + str.tostring(fx(kirHedef), format.mintick) + "\nGüven: " + guvenKisa(ucgDe(evKirU)) + "\n" + kalKisa(ucgDe(evKirU), rrK, evKirU) + (evKirU ? planKisa(pC, kirHedef) : ""), style = evKirU ? label.style_label_down : label.style_label_up, color = evKirU ? color.new(color.green, 10) : color.new(color.red, 10), textcolor = color.white, size = size.small, tooltip = (evKirU ? "▲ YUKARI KIRILIM\n" : "▼ AŞAĞI KIRILIM\n") + ucgAd() + " üçgen\nKırılan seviye: " + str.tostring(fx(kirSev), format.mintick) + "\n" + hYazi(fw0) + "\nHedef = seviye " + hIslem(evKirU) + " H = " + str.tostring(fx(kirHedef), format.mintick) + "\nGüven: " + guvenKisa(ucgDe(evKirU)) + "\n" + kalSonuc(ucgDe(evKirU), rrK, evKirU) + hfYazi(evKirU) + eskiTepeYazi(extK, kirHedef) + (evKirU ? degYazi(degSay(fx0, false)) : "") + hacYazi() + (evKirU ? planYazi(pC, kirHedef) : "") + tekrarUzun(tkr, evKirU) + tasUzun(tasK))
     else
         if up - pC <= yakAtr * atr14 and not yakU
             yakU := true
@@ -1173,6 +1178,7 @@ if dVar
         onaySev := nl
         onayHedef := asagi ? nl - dYuk : nl + dYuk
         float rrO = rrFiyat(pC, dGec, onayHedef, not asagi)
+        float tasO = atr14 > 0 ? (asagi ? nl - pC : pC - nl) / atr14 : 1.0
         float extO = na
         int x0O = array.get(dPX, 0)
         if not asagi and b - x0O + 1 <= 250
@@ -1194,7 +1200,7 @@ if dVar
             line.new(bx1, fx(dBoyun(bx1)), b, fx(nl), color = color.new(cBoyun, 25), width = 1)
             if array.size(dPX) == 3
                 line.new(array.get(dPX, 0), fx(array.get(dPP, 0)), array.get(dPX, 2), fx(array.get(dPP, 2)), color = color.new(asagi ? color.red : color.teal, 35), width = 1)
-            label.new(b, asagi ? low : high, (asagi ? "▼ " : "▲ ") + str.upper(desenAd(dTur)) + " · hedef " + str.tostring(fx(onayHedef), format.mintick) + "\nGüven: " + guvenKisa(desenNo(dTur)) + "\n" + kalKisa(desenNo(dTur), rrO, not asagi) + (not asagi ? planKisa(pC, onayHedef) : ""), style = asagi ? label.style_label_up : label.style_label_down, color = asagi ? color.new(color.red, 10) : color.new(color.green, 10), textcolor = color.white, size = size.small, tooltip = (asagi ? "▼ " : "▲ ") + str.upper(desenAd(dTur)) + "\nOnay: " + str.tostring(fx(nl), format.mintick) + "\nHedef: " + str.tostring(fx(onayHedef), format.mintick) + "\nGüven: " + guvenKisa(desenNo(dTur)) + "\n" + kalSonuc(desenNo(dTur), rrO, not asagi) + hfYazi(not asagi) + eskiTepeYazi(extO, onayHedef) + (not asagi ? degYazi(degSay(x0O, true)) : "") + hacYazi() + (not asagi ? planYazi(pC, onayHedef) : ""))
+            label.new(b, asagi ? low : high, (asagi ? "▼ " : "▲ ") + str.upper(desenAd(dTur)) + tasKisa(tasO) + "\n" + "hedef " + str.tostring(fx(onayHedef), format.mintick) + "\nGüven: " + guvenKisa(desenNo(dTur)) + "\n" + kalKisa(desenNo(dTur), rrO, not asagi) + (not asagi ? planKisa(pC, onayHedef) : ""), style = asagi ? label.style_label_up : label.style_label_down, color = asagi ? color.new(color.red, 10) : color.new(color.green, 10), textcolor = color.white, size = size.small, tooltip = (asagi ? "▼ " : "▲ ") + str.upper(desenAd(dTur)) + "\nOnay: " + str.tostring(fx(nl), format.mintick) + "\nHedef: " + str.tostring(fx(onayHedef), format.mintick) + "\nGüven: " + guvenKisa(desenNo(dTur)) + "\n" + kalSonuc(desenNo(dTur), rrO, not asagi) + hfYazi(not asagi) + eskiTepeYazi(extO, onayHedef) + (not asagi ? degYazi(degSay(x0O, true)) : "") + hacYazi() + (not asagi ? planYazi(pC, onayHedef) : "") + tasUzun(tasO))
         kullan(dPX, dPT)
         dVar := false
     else if not dYakin and math.abs(pC - nl) <= yakAtr * atr14
