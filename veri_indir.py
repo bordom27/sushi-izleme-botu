@@ -10,6 +10,11 @@ import ucgen_istatistik as st
 import ucgen_tarayici as u
 
 st.BAR.update({"4h": 1000, "1d": 1000})          # kripto: 4s ~166 gun, gunluk ~2,7 yil (hisse gunluk 5 yil)
+# 4hL: uzun 4 saatlik (kripto ~1000 gun, hisse Yahoo 1s'ten ~2 yil) — gunluk kirilimin 4s icindeki seyri testi
+st.ARALIK_MS["4hL"] = 4 * 3600_000
+st.BINANCE_AD["4hL"] = "4h"
+st.BAR["4hL"] = 6000
+st.MIN_VERI["4hL"] = 300
 
 
 def al(is_):
@@ -18,7 +23,7 @@ def al(is_):
         if p == "KRIPTO":
             return st.binance_uzun(s, a)
         ys = s + ".IS" if p == "BIST" else s
-        return st.yahoo_4s(ys) if a == "4h" else st.yahoo_uzun(ys, a)
+        return st.yahoo_4s(ys) if a in ("4h", "4hL") else st.yahoo_uzun(ys, a)
     except Exception:  # noqa: BLE001
         return None
 
