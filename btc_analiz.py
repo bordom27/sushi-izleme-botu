@@ -77,7 +77,7 @@ def tekil():
         print(R[(R.kurulum == k)].head(30).to_string(index=False))
 
 
-def model(kilit=False):
+def model(kilit=False, egit_bas="2015-01-01"):
     from sklearn.ensemble import HistGradientBoostingClassifier
     F = pd.read_pickle(TP)
     Y = pd.read_pickle(YP)
@@ -91,7 +91,7 @@ def model(kilit=False):
             bas = pd.Timestamp(f"{yil}-01-01"); bit = pd.Timestamp(f"{yil + 1}-01-01")
             if not kilit:
                 bit = min(bit, L.KILIT)
-            egit = (F.index < bas - pd.Timedelta("4D")) & y.notna()            # hedefin sizmasini onlemek icin bosluk
+            egit = (F.index < bas - pd.Timedelta("4D")) & (F.index >= pd.Timestamp(egit_bas)) & y.notna()   # 4 gun bosluk: hedef sizmasin
             test = (F.index >= bas) & (F.index < bit)
             if not kilit:
                 test &= F.index < L.KILIT
@@ -104,7 +104,7 @@ def model(kilit=False):
         sonuc[k] = p
         print(k, "tahmin dolu", p.notna().sum(), flush=True)
     P = pd.DataFrame(sonuc)
-    P.to_pickle("arastirma_cikti/btc_tahmin" + ("_kilit" if kilit else "") + ".pkl")
+    P.to_pickle("arastirma_cikti/btc_tahmin" + ("_kilit" if kilit else "") + f"_{egit_bas[:4]}.pkl")
     return P
 
 
@@ -168,7 +168,9 @@ if __name__ == "__main__":
     elif a == "tekil":
         tekil()
     elif a == "model":
-        degerlendir(model())
+        eb = sys.argv[2] if len(sys.argv) > 2 else "2015-01-01"
+        print("EGITIM BASLANGICI", eb)
+        degerlendir(model(egit_bas=eb))
     elif a == "kilit":
         P = model(kilit=True)
         esik = json.load(open("arastirma_cikti/btc_esik.json"))

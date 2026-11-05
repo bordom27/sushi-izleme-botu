@@ -422,14 +422,15 @@ def tablo(bas: str | None = None) -> pd.DataFrame:
                 F[f"defter_dengesi_{p}"] = (ed[a_] - ed[s_]) / (ed[a_] + ed[s_])
     # vade gunleri: CME aylik (ayin son cumasi), Deribit ceyreklik (Mar/Haz/Eyl/Ara son cuma), opsiyon haftalik (cuma 08:00 UTC)
     son_cuma = {}
-    for y in range(2019, 2028):
+    for y in range(2014, 2028):
         for m in range(1, 13):
             d = pd.Timestamp(y, m, 1) + pd.offsets.MonthEnd(0)
             while d.dayofweek != 4:
                 d -= pd.Timedelta("1D")
             son_cuma[(y, m)] = d
     vade = pd.Series([son_cuma[(t.year, t.month)] for t in karar], index=karar)
-    F["vade_gun_kaldi"] = (vade - karar.normalize()).days.where((vade - karar.normalize()).days >= 0)
+    kalan_ = (vade - pd.Series(karar.normalize(), index=karar)).dt.days
+    F["vade_gun_kaldi"] = kalan_.where(kalan_ >= 0)
     F["ceyrek_vade_ay"] = karar.month.isin([3, 6, 9, 12]).astype(int)
     F["cuma_opsiyon_oncesi"] = ((karar.dayofweek == 4) & (karar.hour <= 8)).astype(int)
     # kritik seviyeler: yuvarlak sayi, zirve, onceki haftalik/aylik tepe-dip
