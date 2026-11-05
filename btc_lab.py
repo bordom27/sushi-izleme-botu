@@ -207,6 +207,57 @@ def tablo() -> pd.DataFrame:
             F["haber_ton_d7"] = F.haber_ton - F.haber_ton.rolling(24 * 7).mean()
         except Exception as exc:
             print("haber hatasi", exc)
+    def gunluk_ekle(s, gecikme="1D"):
+        s = s.copy()
+        s.index = s.index + pd.Timedelta(gecikme)
+        s = s[~s.index.duplicated(keep="last")]
+        return s.reindex(karar.union(s.index)).sort_index().ffill().reindex(karar)
+
+    dv = oku("dvol")
+    if dv is not None:
+        s = dv.set_index("t").dvol
+        s.index = s.index + pd.Timedelta("1h")
+        s = s[~s.index.duplicated(keep="last")].reindex(karar).ffill(limit=6)
+        F["dvol"] = s
+        F["dvol_d7"] = s - s.rolling(168).mean()
+        if "h1_atrp" in F:
+            F["dvol_rv"] = s / (F.h1_atrp * 100 * np.sqrt(24 * 365))       # opsiyon beklentisi / gerceklesen oynaklik
+    zc = oku("zincir")
+    if zc is not None:
+        zc = zc.set_index("t").sort_index()
+        if "hash_rate" in zc:
+            hr = zc.hash_rate
+            F["hash_ribbon"] = gunluk_ekle(hr.rolling(30).mean() / hr.rolling(60).mean() - 1)
+        for c in ("n_transactions", "n_unique_addresses", "transaction_fees_usd", "miners_revenue", "estimated_transaction_volume_usd"):
+            if c in zc:
+                F[f"z_{c}_d"] = gunluk_ekle(zc[c].rolling(7).mean() / zc[c].rolling(90).mean() - 1)
+    km = oku("kimchi")
+    if km is not None and sp is not None:
+        km = km.set_index("t").sort_index()
+        spd = sp.copy(); spd.index = spd.index - pd.Timedelta("1h")
+        spd = spd.resample("1D").last()
+        prem = km.krw_btc / km.usdkrw / spd.reindex(km.index) - 1
+        F["kimchi"] = gunluk_ekle(prem)
+        F["kimchi_d"] = gunluk_ekle(prem - prem.rolling(30).mean())
+    bd = oku("btcdom_1h")
+    if bd is not None:
+        b = bd.set_index("t").c
+        b.index = b.index + pd.Timedelta("1h")
+        b = b[~b.index.duplicated()].reindex(karar).ffill(limit=3)
+        F["btcdom_r24"] = b.pct_change(24)
+        F["btcdom_r168"] = b.pct_change(168)
+    pz = oku("piyasalar")
+    if pz is not None:
+        pz = pz.set_index("t").sort_index()
+        pz = pz[~pz.index.duplicated(keep="last")]
+        for a in ("altin", "dxy", "mstr", "cme"):
+            if f"{a}_c" in pz:
+                c_ = pz[f"{a}_c"].dropna()
+                F[f"y_{a}_r5"] = gunluk_ekle(c_.pct_change(5), "1D21h")
+        if "cme_c" in pz:
+            # CME boslugu: son CME kapanisina gore fiyat farki (hafta sonu BTC hareketi)
+            cme = pz.cme_c.dropna()
+            F["cme_bosluk"] = g1.c.set_axis(karar) / gunluk_ekle(cme, "21h") - 1
     # takvim
     F["saat"] = karar.hour
     F["gun"] = karar.dayofweek
