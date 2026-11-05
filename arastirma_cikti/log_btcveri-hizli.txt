@@ -1,0 +1,30 @@
+/home/runner/work/sushi-izleme-botu/sushi-izleme-botu/btc_veri.py:57: Pandas4Warning: Timestamp.utcnow is deprecated and will be removed in a future version. Use Timestamp.now('UTC') instead.
+  return df[df.t < pd.Timestamp.utcnow().tz_localize(None) - pd.Timedelta(ms, "ms")]
+kaydedildi perp_15m: 251039 satir, 2019-09-08 17:45:00 -> 2026-11-05 17:15:00
+/home/runner/work/sushi-izleme-botu/sushi-izleme-botu/btc_veri.py:57: Pandas4Warning: Timestamp.utcnow is deprecated and will be removed in a future version. Use Timestamp.now('UTC') instead.
+  return df[df.t < pd.Timestamp.utcnow().tz_localize(None) - pd.Timedelta(ms, "ms")]
+kaydedildi perp_1h: 62760 satir, 2019-09-08 17:00:00 -> 2026-11-05 16:00:00
+/home/runner/work/sushi-izleme-botu/sushi-izleme-botu/btc_veri.py:57: Pandas4Warning: Timestamp.utcnow is deprecated and will be removed in a future version. Use Timestamp.now('UTC') instead.
+  return df[df.t < pd.Timestamp.utcnow().tz_localize(None) - pd.Timedelta(ms, "ms")]
+kaydedildi perp_4h: 15690 satir, 2019-09-08 16:00:00 -> 2026-11-05 12:00:00
+/home/runner/work/sushi-izleme-botu/sushi-izleme-botu/btc_veri.py:57: Pandas4Warning: Timestamp.utcnow is deprecated and will be removed in a future version. Use Timestamp.now('UTC') instead.
+  return df[df.t < pd.Timestamp.utcnow().tz_localize(None) - pd.Timedelta(ms, "ms")]
+kaydedildi perp_1d: 2615 satir, 2019-09-08 00:00:00 -> 2026-11-04 00:00:00
+/home/runner/work/sushi-izleme-botu/sushi-izleme-botu/btc_veri.py:57: Pandas4Warning: Timestamp.utcnow is deprecated and will be removed in a future version. Use Timestamp.now('UTC') instead.
+  return df[df.t < pd.Timestamp.utcnow().tz_localize(None) - pd.Timedelta(ms, "ms")]
+kaydedildi spot_1h: 62909 satir, 2019-09-01 00:00:00 -> 2026-11-05 16:00:00
+/home/runner/work/sushi-izleme-botu/sushi-izleme-botu/btc_veri.py:57: Pandas4Warning: Timestamp.utcnow is deprecated and will be removed in a future version. Use Timestamp.now('UTC') instead.
+  return df[df.t < pd.Timestamp.utcnow().tz_localize(None) - pd.Timedelta(ms, "ms")]
+kaydedildi eth_perp_1h: 60850 satir, 2019-11-27 07:00:00 -> 2026-11-05 16:00:00
+kaydedildi funding: 7841 satir, 2019-09-10 08:00:00 -> 2026-11-05 16:00:00
+kaydedildi fng: 3196 satir, 2018-02-01 00:00:00 -> 2026-11-05 00:00:00
+kaydedildi stablecoin: 3264 satir, 2017-11-29 00:00:00 -> 2026-11-05 00:00:00
+HATA fred SP500: ReadTimeout(ReadTimeoutError("HTTPSConnectionPool(host='fred.stlouisfed.org', port=443): Read timed out. (read timeout=60)"))
+HATA fred NASDAQCOM: ReadTimeout(ReadTimeoutError("HTTPSConnectionPool(host='fred.stlouisfed.org', port=443): Read timed out. (read timeout=60)"))
+HATA fred VIXCLS: ReadTimeout(ReadTimeoutError("HTTPSConnectionPool(host='fred.stlouisfed.org', port=443): Read timed out. (read timeout=60)"))
+HATA fred DTWEXBGS: ReadTimeout(ReadTimeoutError("HTTPSConnectionPool(host='fred.stlouisfed.org', port=443): Read timed out. (read timeout=60)"))
+HATA fred DGS10: ReadTimeout(ReadTimeoutError("HTTPSConnectionPool(host='fred.stlouisfed.org', port=443): Read timed out. (read timeout=60)"))
+HATA fred T10Y2Y: ReadTimeout(ReadTimeoutError("HTTPSConnectionPool(host='fred.stlouisfed.org', port=443): Read timed out. (read timeout=60)"))
+HATA fred DFF: ReadTimeout(ReadTimeoutError("HTTPSConnectionPool(host='fred.stlouisfed.org', port=443): Read timed out. (read timeout=60)"))
+HATA fred DCOILWTICO: ReadTimeout(ReadTimeoutError("HTTPSConnectionPool(host='fred.stlouisfed.org', port=443): Read timed out. (read timeout=60)"))
+HATA fred: AttributeError("'NoneType' object has no attribute 'sort_values'")
