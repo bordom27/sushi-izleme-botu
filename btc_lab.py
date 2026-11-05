@@ -341,6 +341,14 @@ def tablo() -> pd.DataFrame:
     F["secim_gun_sonra"] = [(t - max([s for s in st_ if s <= t], default=pd.Timestamp("2014-11-04"))).days for t in karar]
     F["secim_gun_once"] = [(min([s for s in st_ if s > t], default=pd.Timestamp("2028-11-07")) - t).days for t in karar]
     F["son_secim_baskanlik"] = [secim.get(max([s for s in st_ if s <= t], default=st_[0]), 0) for t in karar]
+    # kuresel soklar (savas / salgin / makro / kripto krizi): son olaydan bu yana gun
+    soklar = {"savas": ["2022-02-24", "2023-10-07", "2024-04-13", "2024-10-01", "2025-06-13", "2025-06-22"],
+              "salgin": ["2020-03-12"],
+              "makro_sok": ["2023-03-10", "2024-08-05", "2025-04-02", "2025-10-10"],
+              "kripto_kriz": ["2021-05-21", "2022-05-09", "2022-11-08"]}
+    for ad, ds in soklar.items():
+        ds = sorted(pd.to_datetime(ds))
+        F[f"sok_{ad}_gun"] = [min(((t - d).days for d in ds if d <= t), default=9999) for t in karar]
     halv = [pd.Timestamp("2020-05-11"), pd.Timestamp("2024-04-20")]
     F["halving_gun"] = [(t - max([h for h in halv if h <= t], default=pd.Timestamp("2016-07-09"))).days for t in karar]
     # Bitfinex marjin long/short (bilinen balina gostergesi)
