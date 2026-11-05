@@ -263,6 +263,13 @@ def tablo() -> pd.DataFrame:
     F["gun"] = karar.dayofweek
     F["hafta_sonu"] = (karar.dayofweek >= 5).astype(int)
     F["ay_sonu"] = (karar.days_in_month - karar.day <= 1).astype(int)
+    # ABD secimleri (baskanlik ve ara secim; Kasim'in ilk pazartesisinden sonraki sali)
+    secim = {pd.Timestamp("2016-11-08"): 1, pd.Timestamp("2018-11-06"): 0, pd.Timestamp("2020-11-03"): 1,
+             pd.Timestamp("2022-11-08"): 0, pd.Timestamp("2024-11-05"): 1, pd.Timestamp("2026-11-03"): 0}
+    st_ = sorted(secim)
+    F["secim_gun_sonra"] = [(t - max([s for s in st_ if s <= t], default=pd.Timestamp("2014-11-04"))).days for t in karar]
+    F["secim_gun_once"] = [(min([s for s in st_ if s > t], default=pd.Timestamp("2028-11-07")) - t).days for t in karar]
+    F["son_secim_baskanlik"] = [secim.get(max([s for s in st_ if s <= t], default=st_[0]), 0) for t in karar]
     halv = [pd.Timestamp("2020-05-11"), pd.Timestamp("2024-04-20")]
     F["halving_gun"] = [(t - max([h for h in halv if h <= t], default=pd.Timestamp("2016-07-09"))).days for t in karar]
     F.index.name = "karar"
