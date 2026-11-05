@@ -57,6 +57,24 @@ def klines(symbol, interval, bas="2019-09-01", vadeli=True):
     return df[df.t < pd.Timestamp.utcnow().tz_localize(None) - pd.Timedelta(ms, "ms")]
 
 
+def uzun():
+    """Haftalik/aylik analiz icin uzun gunluk gecmis: Binance spot (2017-08'den) + Coinbase (2015'ten)."""
+    kaydet(klines("BTCUSDT", "1d", "2017-08-01", vadeli=False), "spot_1d_uzun")
+    rows, bas = [], pd.Timestamp("2015-07-20")
+    son = pd.Timestamp.utcnow().tz_localize(None)
+    while bas < son:
+        bit = min(bas + pd.Timedelta(days=300), son)
+        r = requests.get("https://api.exchange.coinbase.com/products/BTC-USD/candles",
+                         params={"granularity": 86400, "start": bas.isoformat(), "end": bit.isoformat()}, headers=H, timeout=30)
+        if r.ok:
+            rows.extend(r.json())
+        bas = bit
+        time.sleep(0.5)
+    df = pd.DataFrame(rows, columns=["t", "l", "h", "o", "c", "v"]).drop_duplicates("t")
+    df["t"] = pd.to_datetime(df["t"], unit="s")
+    kaydet(df.sort_values("t")[["t", "o", "h", "l", "c", "v"]], "coinbase_1d_uzun")
+
+
 def adim(ad, f):
     try:
         f()
@@ -196,8 +214,8 @@ if __name__ == "__main__":
     import sys
     secim = sys.argv[1] if len(sys.argv) > 1 else "hepsi"
     isler = {"fiyat": fiyatlar, "funding": funding, "metrics": metrics, "fng": fng, "coinbase": coinbase,
-             "stable": stablecoin, "fred": fred, "haber": haber}
+             "stable": stablecoin, "fred": fred, "haber": haber, "uzun": uzun}
     for ad, f in isler.items():
-        if secim in ("hepsi", ad) or (secim == "hizli" and ad not in ("metrics", "haber", "coinbase")):
+        if secim in ("hepsi", ad) or (secim == "hizli" and ad not in ("metrics", "haber", "coinbase", "uzun")):
             adim(ad, f)
     open(f"{OUT}/log_{secim}.txt", "w").write("\n".join(LOG))
