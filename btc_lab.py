@@ -263,6 +263,77 @@ def tablo() -> pd.DataFrame:
     F["gun"] = karar.dayofweek
     F["hafta_sonu"] = (karar.dayofweek >= 5).astype(int)
     F["ay_sonu"] = (karar.days_in_month - karar.day <= 1).astype(int)
+    # petrol
+    pt = oku("petrol")
+    if pt is not None:
+        pt = pt.set_index("t").sort_index()
+        pt = pt[~pt.index.duplicated(keep="last")]
+        for c in ("wti", "brent"):
+            if c in pt:
+                s = pt[c].dropna()
+                F[f"petrol_{c}_r5"] = gunluk_ekle(s.pct_change(5), "1D21h")
+                F[f"petrol_{c}_r20"] = gunluk_ekle(s.pct_change(20), "1D21h")
+                F[f"petrol_{c}_e50"] = gunluk_ekle(s / s.rolling(50).mean() - 1, "1D21h")
+    # ETF akislari (gunluk, ABD kapanisindan sonra aciklanir)
+    ef = oku("etf_akis")
+    if ef is not None and "Total" in ef:
+        s = ef.set_index("t").Total.astype(float)
+        F["etf_akis"] = gunluk_ekle(s, "1D21h").fillna(0)
+        F["etf_akis5"] = gunluk_ekle(s.rolling(5).sum(), "1D21h").fillna(0)
+    # zincir ustu (Coin Metrics community)
+    cm = oku("coinmetrics")
+    if cm is not None:
+        cm = cm.set_index("t").sort_index()
+        for c in cm.columns:
+            s = pd.to_numeric(cm[c], errors="coerce")
+            if s.notna().sum() < 500:
+                continue
+            if any(k in c for k in ("MVRV", "NVT", "SER", "Vty")):
+                F[f"cm_{c}"] = gunluk_ekle(s)
+            else:
+                F[f"cm_{c}_d"] = gunluk_ekle(s.rolling(7).mean() / s.rolling(90).mean() - 1)
+    # likidasyonlar (COIN-M arsivi; 2023-06 .. 2024-10 arasi)
+    lq = oku("likidasyon_cm")
+    if lq is not None:
+        lq = lq.set_index("t").sort_index()
+        lq.index = lq.index + pd.Timedelta("1h")
+        for c in lq.columns:
+            F[f"{c}_24"] = lq[c].reindex(karar).fillna(0).rolling(24).sum().where(karar >= lq.index.min()).where(karar <= lq.index.max() + pd.Timedelta("1D"))
+    # FOMC (karar gunu ABD saatiyle aksam; o gun ve +-gun mesafesi)
+    fo = oku("fomc")
+    if fo is not None:
+        fd = sorted(fo.t)
+        F["fomc_gun_once"] = [min([(d - t.normalize()).days for d in fd if d >= t.normalize()], default=99) for t in karar]
+        F["fomc_gun_sonra"] = [min([(t.normalize() - d).days for d in fd if d < t.normalize()], default=99) for t in karar]
+    # CFTC: CME kurumsal pozisyonlar (Sali verisi, Cuma aksami yayinlanir -> +3.5 gun gecikme)
+    cf = oku("cftc")
+    if cf is not None:
+        cf = cf[cf.cftc_contract_market_code.astype(str) == "133741"].set_index("t").sort_index()
+        for grup in ("asset_mgr", "lev_money", "dealer"):
+            l_ = [c for c in cf.columns if c.startswith(grup) and "long" in c]
+            s_ = [c for c in cf.columns if c.startswith(grup) and "short" in c]
+            if l_ and s_:
+                net = (cf[l_[0]] - cf[s_[0]]) / cf.open_interest_all
+                F[f"cftc_{grup}_net"] = gunluk_ekle(net, "3D20h")
+                F[f"cftc_{grup}_net_d"] = gunluk_ekle(net.diff(), "3D20h")
+    # Hyperliquid basarili cuzdanlar: her an, O ANA KADAR kumulatif kari pozitif olan cuzdanlarin net BTC pozisyonu
+    hf = oku("hl_fills")
+    if hf is not None and len(hf):
+        hf = hf.sort_values("t")
+        hf["isaret"] = np.where(hf.side.astype(str).str.upper().isin(["B", "BUY"]), 1.0, -1.0)
+        hf["poz"] = hf.startPosition + hf.isaret * hf.sz
+        saat = hf.t.dt.ceil("1h")
+        poz = hf.assign(s=saat).groupby(["s", "adres"]).poz.last().unstack()
+        pnl = hf.assign(s=saat).groupby(["s", "adres"]).closedPnl.sum().unstack().fillna(0).cumsum()
+        ix = karar[karar >= poz.index.min()]
+        poz = poz.reindex(poz.index.union(ix)).sort_index().ffill().reindex(ix).fillna(0)
+        pnl = pnl.reindex(pnl.index.union(ix)).sort_index().ffill().reindex(ix).fillna(0)
+        basarili = pnl > 0
+        notional = poz.abs().where(basarili).sum(axis=1)
+        F["hl_net"] = (poz.where(basarili).sum(axis=1) / notional.replace(0, np.nan)).reindex(karar)
+        aktif = (poz.abs() > 0) & basarili
+        F["hl_long_oran"] = ((poz > 0) & basarili).sum(axis=1).div(aktif.sum(axis=1).replace(0, np.nan)).reindex(karar)
+        F["hl_net_d24"] = F.hl_net - F.hl_net.shift(24)
     # ABD secimleri (baskanlik ve ara secim; Kasim'in ilk pazartesisinden sonraki sali)
     secim = {pd.Timestamp("2016-11-08"): 1, pd.Timestamp("2018-11-06"): 0, pd.Timestamp("2020-11-03"): 1,
              pd.Timestamp("2022-11-08"): 0, pd.Timestamp("2024-11-05"): 1, pd.Timestamp("2026-11-03"): 0}
