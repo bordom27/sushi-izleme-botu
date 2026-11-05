@@ -1,0 +1,34 @@
+bitfinex long: 49955
+bitfinex short: 49955
+kaydedildi bitfinex_marjin: 49955 satir, 2021-02-22 17:00:00 -> 2026-11-05 17:00:00
+fred WALCL deneme 0: ReadTimeout(ReadTimeoutError("HTTPSConnectionPool(host='fred.stlouisfed.org', port=443): Read timed out. (read timeout=120)"))
+fred WALCL deneme 1: ReadTimeout(ReadTimeoutError("HTTPSConnectionPool(host='fred.stlouisfed.org', port=443): Read timed out. (read timeout=120)"))
+fred WALCL deneme 2: ReadTimeout(ReadTimeoutError("HTTPSConnectionPool(host='fred.stlouisfed.org', port=443): Read timed out. (read timeout=120)"))
+fred RRPONTSYD deneme 0: ReadTimeout(ReadTimeoutError("HTTPSConnectionPool(host='fred.stlouisfed.org', port=443): Read timed out. (read timeout=120)"))
+fred RRPONTSYD deneme 1: ReadTimeout(ReadTimeoutError("HTTPSConnectionPool(host='fred.stlouisfed.org', port=443): Read timed out. (read timeout=120)"))
+fred RRPONTSYD deneme 2: ReadTimeout(ReadTimeoutError("HTTPSConnectionPool(host='fred.stlouisfed.org', port=443): Read timed out. (read timeout=120)"))
+fred WTREGEN deneme 0: ReadTimeout(ReadTimeoutError("HTTPSConnectionPool(host='fred.stlouisfed.org', port=443): Read timed out. (read timeout=120)"))
+fred WTREGEN deneme 1: ReadTimeout(ReadTimeoutError("HTTPSConnectionPool(host='fred.stlouisfed.org', port=443): Read timed out. (read timeout=120)"))
+fred WTREGEN deneme 2: ReadTimeout(ReadTimeoutError("HTTPSConnectionPool(host='fred.stlouisfed.org', port=443): Read timed out. (read timeout=120)"))
+fred M2SL deneme 0: ReadTimeout(ReadTimeoutError("HTTPSConnectionPool(host='fred.stlouisfed.org', port=443): Read timed out. (read timeout=120)"))
+fred M2SL deneme 1: ReadTimeout(ReadTimeoutError("HTTPSConnectionPool(host='fred.stlouisfed.org', port=443): Read timed out. (read timeout=120)"))
+fred M2SL deneme 2: ReadTimeout(ReadTimeoutError("HTTPSConnectionPool(host='fred.stlouisfed.org', port=443): Read timed out. (read timeout=120)"))
+fred DEXJPUS deneme 0: ReadTimeout(ReadTimeoutError("HTTPSConnectionPool(host='fred.stlouisfed.org', port=443): Read timed out. (read timeout=120)"))
+fred DEXJPUS deneme 1: ReadTimeout(ReadTimeoutError("HTTPSConnectionPool(host='fred.stlouisfed.org', port=443): Read timed out. (read timeout=120)"))
+fred DEXJPUS deneme 2: ReadTimeout(ReadTimeoutError("HTTPSConnectionPool(host='fred.stlouisfed.org', port=443): Read timed out. (read timeout=120)"))
+fred BAMLH0A0HYM2 deneme 0: ReadTimeout(ReadTimeoutError("HTTPSConnectionPool(host='fred.stlouisfed.org', port=443): Read timed out. (read timeout=120)"))
+fred BAMLH0A0HYM2 deneme 1: ReadTimeout(ReadTimeoutError("HTTPSConnectionPool(host='fred.stlouisfed.org', port=443): Read timed out. (read timeout=120)"))
+fred BAMLH0A0HYM2 deneme 2: ReadTimeout(ReadTimeoutError("HTTPSConnectionPool(host='fred.stlouisfed.org', port=443): Read timed out. (read timeout=120)"))
+fred T5YIE deneme 0: ReadTimeout(ReadTimeoutError("HTTPSConnectionPool(host='fred.stlouisfed.org', port=443): Read timed out. (read timeout=120)"))
+fred T5YIE deneme 1: ReadTimeout(ReadTimeoutError("HTTPSConnectionPool(host='fred.stlouisfed.org', port=443): Read timed out. (read timeout=120)"))
+fred T5YIE deneme 2: ReadTimeout(ReadTimeoutError("HTTPSConnectionPool(host='fred.stlouisfed.org', port=443): Read timed out. (read timeout=120)"))
+yahoo JPY=X 2609
+yahoo ^TNX 2513
+yahoo ^N225 2462
+yahoo ^IXIC 2513
+yahoo ^VIX 2609
+yahoo IBIT 708
+kaydedildi yahoo2: 2914 satir, 2016-11-07 00:00:00 -> 2026-11-05 00:00:00
+gpr https://www.matteoiacoviello.com/gpr_files/data_gpr_daily_recent.xls 200 3276288
+kaydedildi jeopolitik: 3593 satir, 2017-01-01 00:00:00 -> 2026-11-02 00:00:00
+kaydedildi emir_defteri: 33397 satir, 2023-01-01 00:00:00 -> 2026-11-04 23:00:00
