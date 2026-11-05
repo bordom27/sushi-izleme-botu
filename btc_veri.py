@@ -183,6 +183,50 @@ def petrol():
     kaydet(out.sort_values("t"), "petrol")
 
 
+def eski():
+    """2015-2019: Coinbase BTC-USD saatlik + BitMEX XBTUSD funding (2016+)."""
+    rows = []
+    bas = pd.Timestamp("2015-07-20")
+    son = pd.Timestamp("2019-10-01")
+    while bas < son:
+        bit = min(bas + pd.Timedelta(hours=300), son)
+        for _ in range(4):
+            try:
+                r = requests.get("https://api.exchange.coinbase.com/products/BTC-USD/candles",
+                                 params={"granularity": 3600, "start": bas.isoformat(), "end": bit.isoformat()}, headers=H, timeout=30)
+                if r.status_code == 429:
+                    time.sleep(3)
+                    continue
+                r.raise_for_status()
+                rows.extend(r.json())
+                break
+            except Exception:
+                time.sleep(2)
+        bas = bit
+        time.sleep(0.35)
+    df = pd.DataFrame(rows, columns=["t", "l", "h", "o", "c", "v"]).drop_duplicates("t")
+    df["t"] = pd.to_datetime(df["t"], unit="s")
+    kaydet(df.sort_values("t")[["t", "o", "h", "l", "c", "v"]], "coinbase_1h_eski")
+    fr, start = [], "2016-05-01"
+    while True:
+        r = requests.get("https://www.bitmex.com/api/v1/funding", params={"symbol": "XBTUSD", "count": 500, "startTime": start,
+                                                                          "reverse": "false"}, headers=H, timeout=60)
+        if r.status_code == 429:
+            time.sleep(10)
+            continue
+        r.raise_for_status()
+        d = r.json()
+        if not d:
+            break
+        fr.extend(d)
+        if len(d) < 500:
+            break
+        start = (pd.Timestamp(d[-1]["timestamp"]) + pd.Timedelta("1s")).isoformat()
+        time.sleep(1.2)
+    df = pd.DataFrame(fr)
+    kaydet(pd.DataFrame({"t": pd.to_datetime(df.timestamp).dt.tz_localize(None), "fr": df.fundingRate.astype(float)}), "bitmex_funding")
+
+
 def adim(ad, f):
     try:
         f()
@@ -322,7 +366,7 @@ if __name__ == "__main__":
     import sys
     secim = sys.argv[1] if len(sys.argv) > 1 else "hepsi"
     isler = {"fiyat": fiyatlar, "funding": funding, "metrics": metrics, "fng": fng, "coinbase": coinbase,
-             "stable": stablecoin, "fred": fred, "haber": haber, "uzun": uzun, "dvol": dvol, "zincir": zincir, "kimchi": kimchi, "piyasa": piyasalar, "petrol": petrol}
+             "stable": stablecoin, "fred": fred, "haber": haber, "uzun": uzun, "dvol": dvol, "zincir": zincir, "kimchi": kimchi, "piyasa": piyasalar, "petrol": petrol, "eski": eski}
     for ad, f in isler.items():
         if (secim in ("hepsi", ad) or (secim == "hizli" and ad in ("fiyat", "funding", "fng", "stable", "fred"))
                 or (secim == "ek" and ad in ("dvol", "zincir", "kimchi", "piyasa"))):
