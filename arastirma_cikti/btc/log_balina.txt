@@ -1,0 +1,19 @@
+cftc 133741: 447
+cftc 133742: 734
+kaydedildi cftc: 734 satir
+hl liderlik: 48254 cuzdan
+kaydedildi hl_cuzdan: 250 satir
+hl 0/250 cuzdan, toplam btc fill 0 (+0)
+hl 20/250 cuzdan, toplam btc fill 4912 (+45)
+hl 40/250 cuzdan, toplam btc fill 21756 (+0)
+hl 60/250 cuzdan, toplam btc fill 35907 (+0)
+hl 80/250 cuzdan, toplam btc fill 46024 (+330)
+hl 100/250 cuzdan, toplam btc fill 56664 (+0)
+hl 120/250 cuzdan, toplam btc fill 68472 (+86)
+hl 140/250 cuzdan, toplam btc fill 71992 (+0)
+hl 160/250 cuzdan, toplam btc fill 75470 (+0)
+hl 180/250 cuzdan, toplam btc fill 80797 (+217)
+hl 200/250 cuzdan, toplam btc fill 96344 (+6)
+hl 220/250 cuzdan, toplam btc fill 120843 (+92)
+hl 240/250 cuzdan, toplam btc fill 146813 (+0)
+kaydedildi hl_fills: 151180 satir
