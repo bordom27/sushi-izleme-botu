@@ -1,0 +1,4 @@
+/home/runner/work/sushi-izleme-botu/sushi-izleme-botu/btc_ek2.py:150: Pandas4Warning: Timestamp.utcnow is deprecated and will be removed in a future version. Use Timestamp.now('UTC') instead.
+  f"20150701/{pd.Timestamp.utcnow():%Y%m%d}")
+kaydedildi wikipedia: 4145 satir, 2015-07-01 00:00:00 -> 2026-11-04 00:00:00
+kaydedildi mstr_8k: 237 satir, 2020-08-11 00:00:00 -> 2026-11-02 00:00:00
