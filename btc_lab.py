@@ -107,6 +107,19 @@ def tablo() -> pd.DataFrame:
         if on == "m15":
             f = f[[c for c in f.columns if any(k in c for k in ("_r1", "_r3", "_rsi", "_hacim_or", "_taker_al", "_bb_z"))]]
         X.append(htf_hizala(f, sure, karar))
+    # haftalik ve aylik: en uzun gunluk gecmisten (spot 2017+), mum kapandiktan sonra kullanilir
+    uz = oku("spot_1d_uzun")
+    if uz is not None:
+        uz = uz.set_index("t")[["o", "h", "l", "c", "v"]]
+        agg = {"o": "first", "h": "max", "l": "min", "c": "last", "v": "sum"}
+        w = uz.resample("W-MON", label="left", closed="left").agg(agg).dropna()
+        fw = tf_ozellik(w, "w1")
+        fw.index = fw.index + pd.Timedelta("7D")
+        X.append(fw.reindex(karar.union(fw.index)).sort_index().ffill().reindex(karar))
+        mo = uz.resample("MS").agg(agg).dropna()
+        fm = tf_ozellik(mo, "mo1")
+        fm.index = fm.index + pd.offsets.MonthBegin(1)
+        X.append(fm.reindex(karar.union(fm.index)).sort_index().ffill().reindex(karar))
     F = pd.concat(X, axis=1)
     # spot-vadeli farki, ETH
     sp = oku("spot_1h")
