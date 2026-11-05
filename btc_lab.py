@@ -89,19 +89,28 @@ def htf_hizala(f_htf: pd.DataFrame, sure: str, idx: pd.DatetimeIndex) -> pd.Data
     return k.reindex(idx.union(k.index)).sort_index().ffill().reindex(idx)
 
 
-def tablo() -> pd.DataFrame:
-    g1 = oku("perp_1h").set_index("t")
+def tablo(bas: str | None = None) -> pd.DataFrame:
+    g1 = fiyat_1h()
+    if bas:
+        g1 = g1[g1.index >= pd.Timestamp(bas) - pd.Timedelta("400D")]
     idx = g1.index
     X = [tf_ozellik(g1, "h1")]
     # 1s ozellikler mum kapanisinda bilinir: 1s mumun acilisi t, kapanisi t+1h -> karar zamani t+1h
     X[0].index = X[0].index + pd.Timedelta("1h")
     karar = idx + pd.Timedelta("1h")
     X = [X[0].reindex(karar)]
+    agg = {"o": "first", "h": "max", "l": "min", "c": "last", "v": "sum", "tb": "sum", "n": "sum"}
+    ust = {"perp_4h": g1.resample("4h").agg(agg).dropna(subset=["c"]), "perp_1d": g1.resample("1D").agg(agg).dropna(subset=["c"])}
     for ad, sure in (("perp_15m", "15min"), ("perp_4h", "4h"), ("perp_1d", "1D")):
-        g = oku(ad)
+        g = ust.get(ad)
         if g is None:
-            continue
-        g = g.set_index("t")
+            g = oku(ad)
+            if g is None:
+                continue
+            g = g.set_index("t")
+        for k_ in ("tb", "n"):
+            if k_ in g:
+                g.loc[g.index < PERP_BAS, k_] = np.nan          # Coinbase donemi: agresif alici / islem sayisi yok
         on = {"perp_15m": "m15", "perp_4h": "h4", "perp_1d": "d1"}[ad]
         f = tf_ozellik(g, on)
         if on == "m15":
@@ -146,6 +155,9 @@ def tablo() -> pd.DataFrame:
             F["cb_prem_d"] = prem - prem.rolling(168).mean()
     # funding
     fu = oku("funding")
+    bm = oku("bitmex_funding")
+    if fu is not None and bm is not None:
+        fu = pd.concat([bm[bm.t < fu.t.min()], fu], ignore_index=True)
     if fu is not None:
         fr = fu.set_index("t").fr
         F["fund"] = fr.reindex(karar.union(fr.index)).sort_index().ffill().reindex(karar)
@@ -510,8 +522,24 @@ def tablo() -> pd.DataFrame:
     return F
 
 
+PERP_BAS = pd.Timestamp("2019-09-09")
+
+
 def fiyat_1h():
+    """2019-09'a kadar Coinbase BTC-USD saatlik, sonrasi Binance BTCUSDT vadeli saatlik."""
     g = oku("perp_1h").set_index("t")
+    g = g[g.index >= PERP_BAS]
+    e = oku("coinbase_1h_eski")
+    if e is not None:
+        e = e.set_index("t")
+        e = e[e.index < PERP_BAS]
+        g = pd.concat([e, g]).sort_index()
+        g = g[~g.index.duplicated(keep="last")]
+        g = g.asfreq("1h")
+        g["c"] = g.c.ffill()
+        for k_ in ("o", "h", "l"):
+            g[k_] = g[k_].fillna(g.c)
+        g["v"] = g.v.fillna(0)
     return g
 
 
@@ -540,5 +568,6 @@ def sonuc(g: pd.DataFrame, yon: int, stop_atr: float, hedef_r: float, maks: int)
         if sonucR is None:
             j = min(n - 1, i + maks)
             sonucR = yon * (c[j] - e) / r
-        R[i] = sonucR - MALIYET * e / r
+        maliyet = MALIYET if g.index[i] >= PERP_BAS else 2 * MALIYET      # 2015-2019: siga piyasa, cift maliyet
+        R[i] = sonucR - maliyet * e / r
     return pd.Series(R, index=g.index + pd.Timedelta("1h"))
