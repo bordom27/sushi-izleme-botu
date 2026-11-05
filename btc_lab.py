@@ -343,6 +343,113 @@ def tablo() -> pd.DataFrame:
     F["son_secim_baskanlik"] = [secim.get(max([s for s in st_ if s <= t], default=st_[0]), 0) for t in karar]
     halv = [pd.Timestamp("2020-05-11"), pd.Timestamp("2024-04-20")]
     F["halving_gun"] = [(t - max([h for h in halv if h <= t], default=pd.Timestamp("2016-07-09"))).days for t in karar]
+    # Bitfinex marjin long/short (bilinen balina gostergesi)
+    bf = oku("bitfinex_marjin")
+    if bf is not None:
+        bf = bf.set_index("t").sort_index()
+        bf.index = bf.index + pd.Timedelta("1h")
+        bf = bf[~bf.index.duplicated()].reindex(karar).ffill(limit=6)
+        F["bfx_long_d7"] = bf.bfx_long.pct_change(168)
+        F["bfx_short_d7"] = bf.bfx_short.pct_change(168)
+        F["bfx_ls"] = bf.bfx_long / bf.bfx_short.replace(0, np.nan)
+        F["bfx_ls_d"] = F.bfx_ls / F.bfx_ls.rolling(24 * 30).mean() - 1
+    # dolar likiditesi: net likidite = Fed bilancosu - ters repo - Hazine hesabi (milyar $)
+    lk = oku("likidite")
+    if lk is not None:
+        lk = lk.set_index("t").sort_index()
+        net = (lk.WALCL.ffill() / 1000 - lk.RRPONTSYD.ffill().fillna(0) - lk.WTREGEN.ffill() / 1000) if {"WALCL", "RRPONTSYD", "WTREGEN"} <= set(lk) else None
+        if net is not None:
+            F["net_likidite_d4h"] = gunluk_ekle(net.pct_change(20), "2D")
+            F["net_likidite_d13h"] = gunluk_ekle(net.pct_change(65), "2D")
+        if "M2SL" in lk:
+            m2 = lk.M2SL.dropna()
+            F["m2_yillik"] = gunluk_ekle(m2.pct_change(12), "40D")              # aylik, ~6 hafta gecikmeli yayinlanir
+        for c in ("DEXJPUS", "BAMLH0A0HYM2", "T5YIE"):
+            if c in lk:
+                s = lk[c].dropna()
+                F[f"lk_{c}_d5"] = gunluk_ekle(s.diff(5) if c != "DEXJPUS" else s.pct_change(5), "1D21h")
+    y2 = oku("yahoo2")
+    if y2 is not None:
+        y2 = y2.set_index("t").sort_index()
+        y2 = y2[~y2.index.duplicated(keep="last")]
+        for c in ("usdjpy", "nikkei", "nasdaq_y", "us10y", "vix_y"):
+            if c in y2:
+                s = y2[c].dropna()
+                F[f"y2_{c}_r5"] = gunluk_ekle(s.pct_change(5), "1D21h")
+        if "nasdaq_y" in y2:
+            nq = y2.nasdaq_y.dropna().pct_change()
+            bg = g1.c.resample("1D").last().pct_change()
+            F["btc_nasdaq_kor60"] = gunluk_ekle(bg.rolling(90, min_periods=40).corr(nq.reindex(bg.index)), "1D21h")
+        if "ibit_v" in y2:
+            iv = y2.ibit_v.dropna()
+            F["ibit_hacim_or"] = gunluk_ekle(iv / iv.rolling(20).mean(), "1D21h")
+    gp = oku("jeopolitik")
+    if gp is not None:
+        gp = gp.set_index("t").sort_index()
+        for c in gp.columns:
+            s = pd.to_numeric(gp[c], errors="coerce")
+            F[f"gpr_{c}"] = gunluk_ekle(s / s.rolling(90, min_periods=30).mean(), "1D")
+    ed = oku("emir_defteri")
+    if ed is not None:
+        ed = ed.set_index("t").sort_index()
+        ed.index = ed.index + pd.Timedelta("1h")
+        ed = ed[~ed.index.duplicated()].reindex(karar)
+        for p in (1, 2, 5):
+            a_, s_ = f"derinlik_{-p}", f"derinlik_{p}"
+            a_ = a_ if a_ in ed else f"derinlik_{-float(p)}"
+            s_ = s_ if s_ in ed else f"derinlik_{float(p)}"
+            if a_ in ed and s_ in ed:
+                F[f"defter_dengesi_{p}"] = (ed[a_] - ed[s_]) / (ed[a_] + ed[s_])
+    # vade gunleri: CME aylik (ayin son cumasi), Deribit ceyreklik (Mar/Haz/Eyl/Ara son cuma), opsiyon haftalik (cuma 08:00 UTC)
+    son_cuma = {}
+    for y in range(2019, 2028):
+        for m in range(1, 13):
+            d = pd.Timestamp(y, m, 1) + pd.offsets.MonthEnd(0)
+            while d.dayofweek != 4:
+                d -= pd.Timedelta("1D")
+            son_cuma[(y, m)] = d
+    vade = pd.Series([son_cuma[(t.year, t.month)] for t in karar], index=karar)
+    F["vade_gun_kaldi"] = (vade - karar.normalize()).days.where((vade - karar.normalize()).days >= 0)
+    F["ceyrek_vade_ay"] = karar.month.isin([3, 6, 9, 12]).astype(int)
+    F["cuma_opsiyon_oncesi"] = ((karar.dayofweek == 4) & (karar.hour <= 8)).astype(int)
+    # kritik seviyeler: yuvarlak sayi, zirve, onceki haftalik/aylik tepe-dip
+    cz = g1.c.set_axis(karar)
+    adim = 10 ** np.floor(np.log10(cz)) / 2                                   # 50k-100k arasi 5000'lik adimlar
+    F["yuvarlak_uzak"] = ((cz / adim).round() * adim / cz - 1).abs()
+    F["zirveden_uzak"] = cz / cz.cummax() - 1
+    gd = g1.resample("1D").agg({"h": "max", "l": "min"})
+    hf_ = g1.resample("W-MON", label="left", closed="left").agg({"h": "max", "l": "min"})
+    mf_ = g1.resample("MS").agg({"h": "max", "l": "min"})
+    for ad, tbl, kay in (("gun", gd, "1D"), ("hafta", hf_, "7D"), ("ay", mf_, None)):
+        tb = tbl.copy()
+        tb.index = tb.index + (pd.Timedelta(kay) if kay else pd.offsets.MonthBegin(1))
+        tb = tb.reindex(karar.union(tb.index)).sort_index().ffill().reindex(karar)
+        F[f"onceki_{ad}_tepe_uzak"] = cz / tb.h - 1
+        F[f"onceki_{ad}_dip_uzak"] = cz / tb.l - 1
+    # mevsimsellik ve seans
+    F["ay_no"] = karar.month
+    F["ayin_gunu"] = karar.day
+    F["seans"] = np.select([karar.hour < 7, karar.hour < 13, karar.hour < 21], [0, 1, 2], 3)   # Asya/Avrupa/ABD/gece
+    tatil = pd.to_datetime(["2020-01-01", "2020-07-03", "2020-11-26", "2020-12-25", "2021-01-01", "2021-07-05", "2021-11-25",
+                            "2021-12-24", "2022-07-04", "2022-11-24", "2022-12-26", "2023-01-02", "2023-07-04", "2023-11-23",
+                            "2023-12-25", "2024-01-01", "2024-07-04", "2024-11-28", "2024-12-25", "2025-01-01", "2025-07-04",
+                            "2025-11-27", "2025-12-25", "2026-01-01", "2026-07-03", "2026-11-26", "2026-12-25"])
+    F["abd_tatil"] = karar.normalize().isin(tatil).astype(int)
+    # altcoin genisligi (vadeli dokum: 4s, <= 2026-10-22; sonrasi bos kalir)
+    try:
+        import glob
+        K = pd.concat([pd.read_csv(f) for f in sorted(glob.glob("arastirma_cikti/dok/k4h_*.csv.gz"))], ignore_index=True)
+        K["t"] = pd.to_datetime(K["t"], unit="s")
+        C = K.pivot_table(index="t", columns="symbol", values="c")
+        V = K.pivot_table(index="t", columns="symbol", values="v")
+        likit = (C * V).rolling(180, min_periods=60).median() * 6 >= 20e6
+        ust = (C > C.ewm(span=300, adjust=False).mean()).where(likit)
+        gen = ust.mean(axis=1)
+        gen.index = gen.index + pd.Timedelta("4h")
+        F["alt_genislik"] = gen.reindex(karar.union(gen.index)).sort_index().ffill(limit=6).reindex(karar)
+        F["alt_genislik_d"] = F.alt_genislik - F.alt_genislik.shift(168)
+    except Exception as exc:
+        print("alt genislik yok", exc)
     F.index.name = "karar"
     return F
 
