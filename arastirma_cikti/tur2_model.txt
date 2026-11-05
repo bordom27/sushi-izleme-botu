@@ -1,0 +1,37 @@
+EGITIM BASLANGICI 2015-01-01
+L_kisa tahmin dolu 30648
+S_kisa tahmin dolu 30648
+L_orta tahmin dolu 30648
+S_orta tahmin dolu 30648
+L_yuk tahmin dolu 30648
+S_yuk tahmin dolu 30648
+
+### L_kisa (yon 1, stop 1.5 ATR, hedef 1.0R, en fazla 24 saat) secilen esik 0.7
+  2022-23 (esik secimi): n=54 isabet=%55.6 R/islem=+0.014 toplam=+0.7 | 2022:47/%53/-1.3 2023:7/%71/+2.1
+  2024-25H1 (dogrulama): n=37 isabet=%67.6 R/islem=+0.255 toplam=+9.5 | 2024:12/%75/+4.5 2025:25/%64/+4.9
+    karsilastirma: filtresiz her firsat (dogrulama): n=547 isabet=%50.8 R/islem=-0.069 toplam=-37.5 | 2024:366/%52/-19.7 2025:181/%49/-17.8
+
+### S_kisa (yon -1, stop 1.5 ATR, hedef 1.0R, en fazla 24 saat) secilen esik 0.6
+  2022-23 (esik secimi): n=164 isabet=%57.3 R/islem=+0.036 toplam=+5.9 | 2022:65/%55/+0.8 2023:99/%59/+5.1
+  2024-25H1 (dogrulama): n=58 isabet=%48.3 R/islem=-0.114 toplam=-6.6 | 2024:49/%43/-10.3 2025:9/%78/+3.7
+    karsilastirma: filtresiz her firsat (dogrulama): n=547 isabet=%46.6 R/islem=-0.145 toplam=-79.5 | 2024:366/%46/-53.9 2025:181/%48/-25.5
+
+### L_orta (yon 1, stop 3.0 ATR, hedef 1.0R, en fazla 72 saat) secilen esik 0.8
+  2022-23 (esik secimi): n=43 isabet=%51.2 R/islem=-0.002 toplam=-0.1 | 2022:43/%51/-0.1
+  2024-25H1 (dogrulama): n=11 isabet=%27.3 R/islem=-0.504 toplam=-5.5 | 2024:10/%30/-4.5 2025:1/%0/-1.1
+    karsilastirma: filtresiz her firsat (dogrulama): n=183 isabet=%56.8 R/islem=+0.070 toplam=+12.9 | 2024:122/%59/+13.4 2025:61/%52/-0.5
+
+### S_orta (yon -1, stop 3.0 ATR, hedef 1.0R, en fazla 72 saat) secilen esik 0.5
+  2022-23 (esik secimi): n=133 isabet=%51.9 R/islem=-0.057 toplam=-7.6 | 2022:34/%50/-1.9 2023:99/%53/-5.8
+  2024-25H1 (dogrulama): n=118 isabet=%42.4 R/islem=-0.192 toplam=-22.7 | 2024:79/%41/-17.6 2025:39/%46/-5.1
+    karsilastirma: filtresiz her firsat (dogrulama): n=183 isabet=%43.2 R/islem=-0.171 toplam=-31.3 | 2024:122/%41/-25.2 2025:61/%48/-6.1
+
+### L_yuk (yon 1, stop 3.0 ATR, hedef 0.5R, en fazla 72 saat) secilen esik 0.8
+  2022-23 (esik secimi): n=88 isabet=%75.0 R/islem=+0.098 toplam=+8.6 | 2022:77/%74/+6.7 2023:11/%82/+1.9
+  2024-25H1 (dogrulama): n=59 isabet=%66.1 R/islem=-0.052 toplam=-3.1 | 2024:32/%69/-0.4 2025:27/%63/-2.7
+    karsilastirma: filtresiz her firsat (dogrulama): n=183 isabet=%73.8 R/islem=+0.058 toplam=+10.7 | 2024:122/%75/+9.0 2025:61/%72/+1.7
+
+### S_yuk (yon -1, stop 3.0 ATR, hedef 0.5R, en fazla 72 saat) secilen esik 0.6
+  2022-23 (esik secimi): n=219 isabet=%68.9 R/islem=-0.013 toplam=-2.8 | 2022:99/%79/+13.9 2023:120/%61/-16.7
+  2024-25H1 (dogrulama): n=166 isabet=%65.7 R/islem=-0.065 toplam=-10.8 | 2024:114/%63/-11.8 2025:52/%71/+1.0
+    karsilastirma: filtresiz her firsat (dogrulama): n=183 isabet=%60.1 R/islem=-0.133 toplam=-24.3 | 2024:122/%57/-21.6 2025:61/%67/-2.7
