@@ -458,6 +458,54 @@ def tablo() -> pd.DataFrame:
         F["alt_genislik_d"] = F.alt_genislik - F.alt_genislik.shift(168)
     except Exception as exc:
         print("alt genislik yok", exc)
+    # Wikipedia ilgisi (bireysel yatirimci dikkati)
+    wk = oku("wikipedia")
+    if wk is not None:
+        s = wk.set_index("t").wiki_btc
+        F["wiki_or"] = gunluk_ekle(s.rolling(3).mean() / s.rolling(60).mean())
+    # MicroStrategy 8-K bildirimleri (BTC alim duyurulari)
+    m8 = oku("mstr_8k")
+    if m8 is not None:
+        ds = sorted(set(m8.t.dt.normalize()))
+        F["mstr_8k_gun"] = [min(((t.normalize() - d).days for d in ds if d < t.normalize()), default=999) for t in karar]
+        F["mstr_8k_30g"] = [sum(1 for d in ds if 0 < (t.normalize() - d).days <= 30) for t in karar]
+    # arz baskisi donemleri (hukumet satislari, Mt.Gox geri odemeleri)
+    baski = [("2024-06-19", "2024-07-12"), ("2024-07-05", "2024-07-31")]
+    F["arz_baskisi"] = 0
+    for a, b in baski:
+        F.loc[(F.index >= a) & (F.index <= b), "arz_baskisi"] = 1
+    # spot / vadeli hacim orani (spot kaynakli hareket mi)
+    spv = oku("spot_1h")
+    if spv is not None:
+        sv = spv.set_index("t").qv
+        sv.index = sv.index + pd.Timedelta("1h")
+        pv = g1.qv.set_axis(karar)
+        oran = sv.reindex(karar) / pv
+        F["spot_vadeli_hacim"] = oran.rolling(24).mean()
+        F["spot_vadeli_hacim_d"] = F.spot_vadeli_hacim / F.spot_vadeli_hacim.rolling(24 * 30).mean() - 1
+    # tahmini kaldirac: open interest / piyasa degeri
+    if "oi_d24" in F and me is not None:
+        oiv = me.get("sum_open_interest_value")
+        if oiv is not None:
+            oiv = oiv.resample("1h", label="right", closed="right").last().reindex(karar).ffill(limit=3)
+            arz = 19.0e6 + (karar - pd.Timestamp("2022-01-01")).days * 900 * (karar < pd.Timestamp("2024-04-20")) \
+                + ((pd.Timestamp("2024-04-20") - pd.Timestamp("2022-01-01")).days * 900 + (karar - pd.Timestamp("2024-04-20")).days * 450) * (karar >= pd.Timestamp("2024-04-20"))
+            F["kaldirac_orani"] = oiv / (g1.c.set_axis(karar) * arz)
+            F["kaldirac_orani_d"] = F.kaldirac_orani / F.kaldirac_orani.rolling(24 * 30).mean() - 1
+    # FOMC kararinin yonu (efektif faizin FOMC sonrasi degisimi)
+    if fo is not None and mk is not None and "mk_DFF" in F:
+        dff = oku("makro").set_index("t").DFF.dropna()
+        yon = {}
+        for d in sorted(fo.t):
+            once, sonra = dff.asof(d - pd.Timedelta("1D")), dff.asof(d + pd.Timedelta("3D"))
+            if pd.notna(once) and pd.notna(sonra) and d + pd.Timedelta("3D") <= dff.index.max():
+                yon[d + pd.Timedelta("2D")] = np.sign(round(sonra - once, 2))
+        s = pd.Series(yon).sort_index()
+        F["fomc_son_karar"] = s.reindex(karar.union(s.index)).sort_index().ffill().reindex(karar)
+    # plasebo: rastgele seri (model bunu onemli bulursa sonuca guvenme)
+    rng = np.random.default_rng(42)
+    F["PLASEBO_rastgele"] = rng.normal(size=len(F))
+    F["PLASEBO_rastgele_yuruyus"] = np.cumsum(rng.normal(size=len(F)))
     F.index.name = "karar"
     return F
 

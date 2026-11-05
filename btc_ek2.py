@@ -143,11 +143,50 @@ def emir_defteri():
     kaydet(df.reset_index().rename(columns={"index": "t"}), "emir_defteri")
 
 
+def wikipedia():
+    rows = []
+    for proje in ("en.wikipedia",):
+        u = (f"https://wikimedia.org/api/rest_v1/metrics/pageviews/per-article/{proje}/all-access/user/Bitcoin/daily/"
+             f"20150701/{pd.Timestamp.utcnow():%Y%m%d}")
+        r = requests.get(u, headers={"User-Agent": "k69-arastirma/1.0 (research)"}, timeout=60)
+        r.raise_for_status()
+        for it in r.json()["items"]:
+            rows.append({"t": pd.to_datetime(it["timestamp"][:8]), "wiki_btc": it["views"]})
+    kaydet(pd.DataFrame(rows), "wikipedia")
+
+
+def mstr_8k():
+    """SEC EDGAR: MicroStrategy (CIK 1050446) 8-K bildirim tarihleri (BTC alim duyurulari cogunlukla 8-K ile)."""
+    r = requests.get("https://data.sec.gov/submissions/CIK0001050446.json",
+                     headers={"User-Agent": "k69 arastirma research@example.com"}, timeout=60)
+    r.raise_for_status()
+    j = r.json()
+    rows = []
+    def ekle(f):
+        for form, d, item in zip(f["form"], f["filingDate"], f.get("items", [""] * len(f["form"]))):
+            if form == "8-K":
+                rows.append({"t": pd.to_datetime(d), "items": item})
+    ekle(j["filings"]["recent"])
+    for dosya in j["filings"].get("files", []):
+        try:
+            rr = requests.get(f"https://data.sec.gov/submissions/{dosya['name']}",
+                              headers={"User-Agent": "k69 arastirma research@example.com"}, timeout=60)
+            ekle(rr.json())
+        except Exception as exc:
+            log(f"mstr ek dosya {exc!r}")
+    df = pd.DataFrame(rows)
+    kaydet(df[df.t >= "2020-08-01"].sort_values("t"), "mstr_8k")
+
+
 if __name__ == "__main__":
+    import sys
+    sadece = sys.argv[1].split(",") if len(sys.argv) > 1 else None
     for ad, f in (("bitfinex", bitfinex), ("likidite", fred_likidite), ("yahoo", yahoo), ("jeopolitik", jeopolitik),
-                  ("emir_defteri", emir_defteri)):
+                  ("emir_defteri", emir_defteri), ("wikipedia", wikipedia), ("mstr_8k", mstr_8k)):
+        if sadece and ad not in sadece:
+            continue
         try:
             f()
         except Exception as exc:
             log(f"HATA {ad}: {exc!r}")
-    open(f"{OUT}/log_ek2.txt", "w").write("\n".join(LOG))
+    import sys as _s; open(f"{OUT}/log_ek2{'_'+_s.argv[1] if len(_s.argv)>1 else ''}.txt", "w").write("\n".join(LOG))
