@@ -1,0 +1,2 @@
+kaydedildi spot_1d_uzun: 3367 satir, 2017-08-17 00:00:00 -> 2026-11-04 00:00:00
+kaydedildi coinbase_1d_uzun: 4127 satir, 2015-07-20 00:00:00 -> 2026-11-05 00:00:00

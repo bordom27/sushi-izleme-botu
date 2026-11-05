@@ -1,0 +1,6 @@
+/home/runner/work/sushi-izleme-botu/sushi-izleme-botu/btc_veri.py:57: Pandas4Warning: Timestamp.utcnow is deprecated and will be removed in a future version. Use Timestamp.now('UTC') instead.
+  return df[df.t < pd.Timestamp.utcnow().tz_localize(None) - pd.Timedelta(ms, "ms")]
+kaydedildi spot_1d_uzun: 3367 satir, 2017-08-17 00:00:00 -> 2026-11-04 00:00:00
+/home/runner/work/sushi-izleme-botu/sushi-izleme-botu/btc_veri.py:64: Pandas4Warning: Timestamp.utcnow is deprecated and will be removed in a future version. Use Timestamp.now('UTC') instead.
+  son = pd.Timestamp.utcnow().tz_localize(None)
+kaydedildi coinbase_1d_uzun: 4127 satir, 2015-07-20 00:00:00 -> 2026-11-05 00:00:00
