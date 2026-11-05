@@ -1,0 +1,18 @@
+kaydedildi dvol: 49266 satir, 2021-03-24 00:00:00 -> 2026-11-05 17:00:00
+zincir hash-rate 6505
+zincir n-transactions 6491
+zincir n-unique-addresses 6477
+zincir transaction-fees-usd 6494
+zincir miners-revenue 6494
+zincir estimated-transaction-volume-usd 5884
+zincir mempool-size 3790
+zincir difficulty 6505
+kaydedildi zincir: 10298 satir, 2009-01-03 00:00:00 -> 2026-10-29 17:15:00
+HATA kimchi: ReadTimeout(ReadTimeoutError("HTTPSConnectionPool(host='fred.stlouisfed.org', port=443): Read timed out. (read timeout=60)"))
+kaydedildi btcdom_1h: 47126 satir, 2021-06-21 03:00:00 -> 2026-11-05 16:00:00
+yahoo BTC=F 2238
+yahoo GC=F 2517
+yahoo DX-Y.NYB 3038
+yahoo MSTR 2513
+yahoo ^GSPC 2513
+kaydedildi piyasalar: 3039 satir, 2016-11-07 00:00:00 -> 2026-11-05 00:00:00
