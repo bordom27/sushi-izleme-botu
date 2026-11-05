@@ -169,6 +169,20 @@ def piyasalar():
         kaydet(out.sort_values("t"), "piyasalar")
 
 
+def petrol():
+    out = None
+    for sym, ad in (("CL=F", "wti"), ("BZ=F", "brent")):
+        r = requests.get(f"https://query1.finance.yahoo.com/v8/finance/chart/{sym}", params={"interval": "1d", "range": "max"},
+                         headers=H, timeout=60)
+        r.raise_for_status()
+        j = r.json()["chart"]["result"][0]
+        q = j["indicators"]["quote"][0]
+        df = pd.DataFrame({"t": pd.to_datetime(j["timestamp"], unit="s").normalize(), ad: q["close"]})
+        out = df if out is None else out.merge(df, on="t", how="outer")
+        log(f"yahoo {sym} {len(df)}")
+    kaydet(out.sort_values("t"), "petrol")
+
+
 def adim(ad, f):
     try:
         f()
@@ -308,7 +322,7 @@ if __name__ == "__main__":
     import sys
     secim = sys.argv[1] if len(sys.argv) > 1 else "hepsi"
     isler = {"fiyat": fiyatlar, "funding": funding, "metrics": metrics, "fng": fng, "coinbase": coinbase,
-             "stable": stablecoin, "fred": fred, "haber": haber, "uzun": uzun, "dvol": dvol, "zincir": zincir, "kimchi": kimchi, "piyasa": piyasalar}
+             "stable": stablecoin, "fred": fred, "haber": haber, "uzun": uzun, "dvol": dvol, "zincir": zincir, "kimchi": kimchi, "piyasa": piyasalar, "petrol": petrol}
     for ad, f in isler.items():
         if (secim in ("hepsi", ad) or (secim == "hizli" and ad in ("fiyat", "funding", "fng", "stable", "fred"))
                 or (secim == "ek" and ad in ("dvol", "zincir", "kimchi", "piyasa"))):
