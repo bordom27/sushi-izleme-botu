@@ -1,0 +1,3 @@
+/home/runner/work/sushi-izleme-botu/sushi-izleme-botu/btc_veri.py:125: Pandas4Warning: Timestamp.utcnow is deprecated and will be removed in a future version. Use Timestamp.now('UTC') instead.
+  son = pd.Timestamp.utcnow().tz_localize(None)
+kaydedildi coinbase_1h: 62929 satir, 2019-09-01 00:00:00 -> 2026-11-05 17:00:00
