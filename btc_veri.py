@@ -75,6 +75,100 @@ def uzun():
     kaydet(df.sort_values("t")[["t", "o", "h", "l", "c", "v"]], "coinbase_1d_uzun")
 
 
+def dvol():
+    """Deribit BTC volatilite endeksi (opsiyon beklenen oynaklik), saatlik, 2021-03'ten."""
+    rows = []
+    bas = int(pd.Timestamp("2021-03-01", tz="UTC").timestamp() * 1000)
+    son = int(pd.Timestamp.utcnow().timestamp() * 1000)
+    while bas < son:
+        bit = min(bas + 1000 * 3600 * 1000, son)
+        r = requests.get("https://www.deribit.com/api/v2/public/get_volatility_index_data",
+                         params={"currency": "BTC", "start_timestamp": bas, "end_timestamp": bit, "resolution": "3600"},
+                         headers=H, timeout=30)
+        r.raise_for_status()
+        d = r.json()["result"]["data"]
+        rows.extend(d)
+        bas = bit
+        time.sleep(0.3)
+    df = pd.DataFrame(rows, columns=["t", "o", "h", "l", "c"]).drop_duplicates("t")
+    df["t"] = pd.to_datetime(df["t"], unit="ms")
+    kaydet(df.sort_values("t")[["t", "c"]].rename(columns={"c": "dvol"}), "dvol")
+
+
+def zincir():
+    """blockchain.com zincir ustu gunluk seriler."""
+    out = None
+    for ad in ("hash-rate", "n-transactions", "n-unique-addresses", "transaction-fees-usd", "miners-revenue",
+               "estimated-transaction-volume-usd", "mempool-size", "difficulty"):
+        try:
+            r = requests.get(f"https://api.blockchain.info/charts/{ad}", params={"timespan": "all", "format": "json", "sampled": "false"},
+                             headers=H, timeout=60)
+            r.raise_for_status()
+            v = r.json()["values"]
+            df = pd.DataFrame(v)
+            df = pd.DataFrame({"t": pd.to_datetime(df.x, unit="s"), ad.replace("-", "_"): df.y})
+            df = df.groupby(df.t.dt.floor("1D")).last().reset_index(drop=True)
+            out = df if out is None else out.merge(df, on="t", how="outer")
+            log(f"zincir {ad} {len(df)}")
+        except Exception as exc:
+            log(f"HATA zincir {ad}: {exc!r}")
+        time.sleep(1)
+    kaydet(out.sort_values("t"), "zincir")
+
+
+def kimchi():
+    """Upbit KRW-BTC gunluk + FRED USD/KRW -> Kore primi."""
+    rows, to = [], None
+    for _ in range(20):
+        prm = {"market": "KRW-BTC", "count": 200}
+        if to:
+            prm["to"] = to
+        r = requests.get("https://api.upbit.com/v1/candles/days", params=prm, headers=H, timeout=30)
+        r.raise_for_status()
+        d = r.json()
+        if not d:
+            break
+        rows.extend(d)
+        to = d[-1]["candle_date_time_utc"].replace("T", " ")
+        if pd.Timestamp(to) < pd.Timestamp("2019-06-01"):
+            break
+        time.sleep(0.3)
+    df = pd.DataFrame(rows)
+    df = pd.DataFrame({"t": pd.to_datetime(df.candle_date_time_utc), "krw_btc": df.trade_price.astype(float)}).drop_duplicates("t")
+    r = requests.get("https://fred.stlouisfed.org/graph/fredgraph.csv?id=DEXKOUS", headers=H, timeout=60)
+    fx = pd.read_csv(io.StringIO(r.text))
+    fx.columns = ["t", "usdkrw"]
+    fx["t"] = pd.to_datetime(fx.t)
+    fx["usdkrw"] = pd.to_numeric(fx.usdkrw, errors="coerce")
+    df = df.sort_values("t").merge(fx, on="t", how="left")
+    df["usdkrw"] = df.usdkrw.ffill()
+    kaydet(df, "kimchi")
+
+
+def piyasalar():
+    """Binance BTCDOM vadeli (BTC dominansi) + Yahoo: CME BTC vadeli, altin, dolar endeksi, MSTR."""
+    try:
+        kaydet(klines("BTCDOMUSDT", "1h", "2021-01-01"), "btcdom_1h")
+    except Exception as exc:
+        log(f"HATA btcdom: {exc!r}")
+    out = None
+    for sym, ad in (("BTC=F", "cme"), ("GC=F", "altin"), ("DX-Y.NYB", "dxy"), ("MSTR", "mstr"), ("^GSPC", "spx_y")):
+        try:
+            r = requests.get(f"https://query1.finance.yahoo.com/v8/finance/chart/{sym}",
+                             params={"interval": "1d", "range": "10y"}, headers=H, timeout=60)
+            r.raise_for_status()
+            j = r.json()["chart"]["result"][0]
+            q = j["indicators"]["quote"][0]
+            df = pd.DataFrame({"t": pd.to_datetime(j["timestamp"], unit="s").normalize(), f"{ad}_o": q["open"], f"{ad}_c": q["close"]})
+            out = df if out is None else out.merge(df, on="t", how="outer")
+            log(f"yahoo {sym} {len(df)}")
+        except Exception as exc:
+            log(f"HATA yahoo {sym}: {exc!r}")
+        time.sleep(1)
+    if out is not None:
+        kaydet(out.sort_values("t"), "piyasalar")
+
+
 def adim(ad, f):
     try:
         f()
@@ -214,8 +308,9 @@ if __name__ == "__main__":
     import sys
     secim = sys.argv[1] if len(sys.argv) > 1 else "hepsi"
     isler = {"fiyat": fiyatlar, "funding": funding, "metrics": metrics, "fng": fng, "coinbase": coinbase,
-             "stable": stablecoin, "fred": fred, "haber": haber, "uzun": uzun}
+             "stable": stablecoin, "fred": fred, "haber": haber, "uzun": uzun, "dvol": dvol, "zincir": zincir, "kimchi": kimchi, "piyasa": piyasalar}
     for ad, f in isler.items():
-        if secim in ("hepsi", ad) or (secim == "hizli" and ad not in ("metrics", "haber", "coinbase", "uzun")):
+        if (secim in ("hepsi", ad) or (secim == "hizli" and ad in ("fiyat", "funding", "fng", "stable", "fred"))
+                or (secim == "ek" and ad in ("dvol", "zincir", "kimchi", "piyasa"))):
             adim(ad, f)
     open(f"{OUT}/log_{secim}.txt", "w").write("\n".join(LOG))
