@@ -1,0 +1,3 @@
+yahoo CL=F 269
+yahoo BZ=F 199
+kaydedildi petrol: 269 satir, 2000-09-01 00:00:00 -> 2026-11-05 00:00:00
