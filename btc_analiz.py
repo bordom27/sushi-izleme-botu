@@ -99,8 +99,9 @@ def model(kilit=False, egit_bas="2015-01-01"):
                 continue
             m = HistGradientBoostingClassifier(max_depth=4, learning_rate=0.04, max_iter=300, min_samples_leaf=200,
                                                l2_regularization=1.0, random_state=0)
-            m.fit(F[egit], (y[egit] > 0).astype(int))
-            p[test] = m.predict_proba(F[test])[:, 1]
+            kol = [c for c in F.columns if F.loc[egit, c].notna().sum() >= 500 and F.loc[egit, c].nunique() > 1]
+            m.fit(F.loc[egit, kol], (y[egit] > 0).astype(int))
+            p[test] = m.predict_proba(F.loc[test, kol])[:, 1]
         sonuc[k] = p
         print(k, "tahmin dolu", p.notna().sum(), flush=True)
     P = pd.DataFrame(sonuc)
