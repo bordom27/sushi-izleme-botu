@@ -1,0 +1,35 @@
+farside https://farside.co.uk/bitcoin-etf-flow-all-data/ -> 200 852464
+kaydedildi etf_akis: 724 satir, 2024-01-11 00:00:00 -> 2026-11-05 00:00:00
+coinmetrics katalog 400
+coinmetrics gunluk metrik sayisi 0: 
+kaydedildi coinmetrics: 3595 satir, 2017-01-01 00:00:00 -> 2026-11-04 00:00:00
+likidasyon kolonlar ['time', 'side', 'order_type', 'time_in_force', 'original_quantity', 'price', 'average_price', 'order_status', 'last_fill_quantity', 'accumulated_fill_quantity']
+kaydedildi likidasyon_cm: 7067 satir, 2023-06-25 01:00:00 -> 2024-10-14 05:00:00
+fomc https://www.federalreserve.gov/monetarypolicy/fomccalendars.htm 200
+fomc https://www.federalreserve.gov/monetarypolicy/fomchistorical2017.htm 200
+fomc https://www.federalreserve.gov/monetarypolicy/fomchistorical2018.htm 200
+fomc https://www.federalreserve.gov/monetarypolicy/fomchistorical2019.htm 200
+fomc https://www.federalreserve.gov/monetarypolicy/fomchistorical2020.htm 200
+kaydedildi fomc: 103 satir, 2021-01-05 00:00:00 -> 2027-12-08 00:00:00
+bls cpi arsivi 403 1325
+/home/runner/work/sushi-izleme-botu/sushi-izleme-botu/btc_ara.py:193: Pandas4Warning: Timestamp.utcnow is deprecated and will be removed in a future version. Use Timestamp.now('UTC') instead.
+  while bas < pd.Timestamp.utcnow().tz_localize(None):
+/home/runner/work/sushi-izleme-botu/sushi-izleme-botu/btc_ara.py:193: Pandas4Warning: Timestamp.utcnow is deprecated and will be removed in a future version. Use Timestamp.now('UTC') instead.
+  while bas < pd.Timestamp.utcnow().tz_localize(None):
+/home/runner/work/sushi-izleme-botu/sushi-izleme-botu/btc_ara.py:193: Pandas4Warning: Timestamp.utcnow is deprecated and will be removed in a future version. Use Timestamp.now('UTC') instead.
+  while bas < pd.Timestamp.utcnow().tz_localize(None):
+/home/runner/work/sushi-izleme-botu/sushi-izleme-botu/btc_ara.py:193: Pandas4Warning: Timestamp.utcnow is deprecated and will be removed in a future version. Use Timestamp.now('UTC') instead.
+  while bas < pd.Timestamp.utcnow().tz_localize(None):
+/home/runner/work/sushi-izleme-botu/sushi-izleme-botu/btc_ara.py:193: Pandas4Warning: Timestamp.utcnow is deprecated and will be removed in a future version. Use Timestamp.now('UTC') instead.
+  while bas < pd.Timestamp.utcnow().tz_localize(None):
+/home/runner/work/sushi-izleme-botu/sushi-izleme-botu/btc_ara.py:193: Pandas4Warning: Timestamp.utcnow is deprecated and will be removed in a future version. Use Timestamp.now('UTC') instead.
+  while bas < pd.Timestamp.utcnow().tz_localize(None):
+/home/runner/work/sushi-izleme-botu/sushi-izleme-botu/btc_ara.py:193: Pandas4Warning: Timestamp.utcnow is deprecated and will be removed in a future version. Use Timestamp.now('UTC') instead.
+  while bas < pd.Timestamp.utcnow().tz_localize(None):
+/home/runner/work/sushi-izleme-botu/sushi-izleme-botu/btc_ara.py:193: Pandas4Warning: Timestamp.utcnow is deprecated and will be removed in a future version. Use Timestamp.now('UTC') instead.
+  while bas < pd.Timestamp.utcnow().tz_localize(None):
+/home/runner/work/sushi-izleme-botu/sushi-izleme-botu/btc_ara.py:193: Pandas4Warning: Timestamp.utcnow is deprecated and will be removed in a future version. Use Timestamp.now('UTC') instead.
+  while bas < pd.Timestamp.utcnow().tz_localize(None):
+/home/runner/work/sushi-izleme-botu/sushi-izleme-botu/btc_ara.py:193: Pandas4Warning: Timestamp.utcnow is deprecated and will be removed in a future version. Use Timestamp.now('UTC') instead.
+  while bas < pd.Timestamp.utcnow().tz_localize(None):
+HATA trends TooManyRequestsError('The request failed: Google returned a response with code 429')
