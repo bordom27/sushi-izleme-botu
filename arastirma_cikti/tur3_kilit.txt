@@ -1,0 +1,14 @@
+ADAY (kilitten once secildi): kompakt L_orta esik 0.65
+ozellikler: dvol, w1_yutan, h1_atrp, count_long_short_ratio, d1_bb_w_ort, h4_poz20, cm_AdrActCnt_d, mo1_bb_w, h1_poz100, h4_atrp, h4_bb_w, btcdom_r24, count_long_short_ratio_d24, h1_bb_w, dvol_d7, h1_poz50, count_toptrader_long_short_ratio_d24, cb_prem, d1_yutan, count_toptrader_long_short_ratio, h4_bb_w_ort, h1_taker_al_ort, dvol_rv, h1_poz20, ethbtc_r24
+KILITLI L_kisa esik 0.6: n=35 isabet=%42.9 R/islem=-0.234 toplam=-8.2 | 2025:30/%47/-4.7 2026:5/%20/-3.5
+   filtresiz: n=493 isabet=%48.3 R/islem=-0.148 toplam=-72.9 | 2025:184/%47/-32.7 2026:309/%49/-40.3
+KILITLI S_kisa esik 0.55: n=37 isabet=%43.2 R/islem=-0.141 toplam=-5.2 | 2025:12/%58/+3.4 2026:25/%36/-8.6
+   filtresiz: n=493 isabet=%49.3 R/islem=-0.110 toplam=-54.4 | 2025:184/%49/-16.4 2026:309/%49/-38.0
+KILITLI L_orta esik 0.65: n=18 isabet=%38.9 R/islem=-0.287 toplam=-5.2 | 2025:8/%25/-4.6 2026:10/%50/-0.6
+   filtresiz: n=165 isabet=%54.5 R/islem=+0.030 toplam=+4.9 | 2025:62/%55/+1.9 2026:103/%54/+3.1
+KILITLI S_orta esik 0.5: n=77 isabet=%41.6 R/islem=-0.214 toplam=-16.5 | 2025:22/%32/-8.6 2026:55/%45/-7.8
+   filtresiz: n=165 isabet=%44.8 R/islem=-0.158 toplam=-26.0 | 2025:62/%45/-10.0 2026:103/%45/-16.0
+KILITLI L_yuk esik 0.7: n=101 isabet=%72.3 R/islem=+0.024 toplam=+2.4 | 2025:44/%73/+1.1 2026:57/%72/+1.3
+   filtresiz: n=165 isabet=%68.5 R/islem=-0.035 toplam=-5.7 | 2025:62/%65/-5.4 2026:103/%71/-0.3
+KILITLI S_yuk esik 0.5: n=164 isabet=%66.5 R/islem=-0.063 toplam=-10.4 | 2025:62/%71/-0.8 2026:102/%64/-9.5
+   filtresiz: n=165 isabet=%64.8 R/islem=-0.090 toplam=-14.8 | 2025:62/%66/-4.3 2026:103/%64/-10.5

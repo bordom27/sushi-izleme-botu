@@ -20,6 +20,8 @@ def oku(ad, **kw):
     if not os.path.exists(p):
         return None
     df = pd.read_csv(p, **kw)
+    if "t" not in df.columns:
+        df = df.rename(columns={df.columns[0]: "t"})
     df["t"] = pd.to_datetime(df["t"])
     return df
 
@@ -207,10 +209,9 @@ def tablo(bas: str | None = None) -> pd.DataFrame:
     hb = oku("haber_gdelt")
     if hb is not None and len(hb):
         try:
-            tc = [c for c in hb.columns if c.lower().startswith("date")][0]
-            hb["t"] = pd.to_datetime(hb[tc])
             ton = hb[hb["mod"] == "timelinetone"].groupby("t").Value.mean()
-            hac = hb[hb["mod"] == "timelinevolraw"].groupby("t").Value.sum()
+            v = hb[hb["mod"] == "timelinevolraw"].pivot_table(index="t", columns="Series", values="Value")
+            hac = v["Article Count"] / v["Total Monitored Articles"] * 1e4
             for ad, s in (("haber_ton", ton), ("haber_hacim", hac)):
                 s.index = s.index + pd.Timedelta("1D")
                 s = s.reindex(karar.union(s.index)).sort_index().ffill().reindex(karar)

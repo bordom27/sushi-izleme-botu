@@ -1,0 +1,31 @@
+ozellikler: dvol, w1_yutan, h1_atrp, count_long_short_ratio, d1_bb_w_ort, h4_poz20, cm_AdrActCnt_d, mo1_bb_w, h1_poz100, h4_atrp, h4_bb_w, btcdom_r24, count_long_short_ratio_d24, h1_bb_w, dvol_d7, h1_poz50, count_toptrader_long_short_ratio_d24, cb_prem, d1_yutan, count_toptrader_long_short_ratio, h4_bb_w_ort, h1_taker_al_ort, dvol_rv, h1_poz20, ethbtc_r24
+
+### L_kisa (yon 1, stop 1.5 ATR, hedef 1.0R, en fazla 24 saat) secilen esik 0.6
+  2022-23 (esik secimi): n=59 isabet=%61.0 R/islem=+0.107 toplam=+6.3 | 2022:18/%67/+4.1 2023:41/%59/+2.2
+  2024-25H1 (dogrulama): n=115 isabet=%52.2 R/islem=-0.048 toplam=-5.5 | 2024:59/%58/+3.0 2025:56/%46/-8.5
+    karsilastirma: filtresiz her firsat (dogrulama): n=547 isabet=%50.8 R/islem=-0.069 toplam=-37.5 | 2024:366/%52/-19.7 2025:181/%49/-17.8
+
+### S_kisa (yon -1, stop 1.5 ATR, hedef 1.0R, en fazla 24 saat) secilen esik 0.55
+  2022-23 (esik secimi): n=240 isabet=%50.8 R/islem=-0.083 toplam=-20.0 | 2022:100/%49/-7.8 2023:140/%52/-12.1
+  2024-25H1 (dogrulama): n=117 isabet=%53.8 R/islem=+0.030 toplam=+3.5 | 2024:84/%57/+7.7 2025:33/%45/-4.2
+    karsilastirma: filtresiz her firsat (dogrulama): n=547 isabet=%46.6 R/islem=-0.145 toplam=-79.5 | 2024:366/%46/-53.9 2025:181/%48/-25.5
+
+### L_orta (yon 1, stop 3.0 ATR, hedef 1.0R, en fazla 72 saat) secilen esik 0.65
+  2022-23 (esik secimi): n=40 isabet=%55.0 R/islem=+0.097 toplam=+3.9 | 2022:35/%54/+3.3 2023:5/%60/+0.5
+  2024-25H1 (dogrulama): n=36 isabet=%72.2 R/islem=+0.354 toplam=+12.7 | 2024:21/%76/+8.7 2025:15/%67/+4.0
+    karsilastirma: filtresiz her firsat (dogrulama): n=183 isabet=%56.8 R/islem=+0.070 toplam=+12.9 | 2024:122/%59/+13.4 2025:61/%52/-0.5
+
+### S_orta (yon -1, stop 3.0 ATR, hedef 1.0R, en fazla 72 saat) secilen esik 0.5
+  2022-23 (esik secimi): n=174 isabet=%47.1 R/islem=-0.084 toplam=-14.6 | 2022:62/%53/+3.1 2023:112/%44/-17.7
+  2024-25H1 (dogrulama): n=120 isabet=%55.0 R/islem=+0.047 toplam=+5.7 | 2024:83/%52/-2.2 2025:37/%62/+7.8
+    karsilastirma: filtresiz her firsat (dogrulama): n=183 isabet=%43.2 R/islem=-0.171 toplam=-31.3 | 2024:122/%41/-25.2 2025:61/%48/-6.1
+
+### L_yuk (yon 1, stop 3.0 ATR, hedef 0.5R, en fazla 72 saat) secilen esik 0.7
+  2022-23 (esik secimi): n=152 isabet=%71.1 R/islem=+0.032 toplam=+4.9 | 2022:108/%74/+8.9 2023:44/%64/-4.0
+  2024-25H1 (dogrulama): n=142 isabet=%66.9 R/islem=-0.036 toplam=-5.2 | 2024:95/%76/+8.4 2025:47/%49/-13.6
+    karsilastirma: filtresiz her firsat (dogrulama): n=183 isabet=%73.8 R/islem=+0.058 toplam=+10.7 | 2024:122/%75/+9.0 2025:61/%72/+1.7
+
+### S_yuk (yon -1, stop 3.0 ATR, hedef 0.5R, en fazla 72 saat) secilen esik 0.5
+  2022-23 (esik secimi): n=244 isabet=%68.0 R/islem=-0.020 toplam=-4.9 | 2022:122/%68/-1.2 2023:122/%68/-3.6
+  2024-25H1 (dogrulama): n=182 isabet=%66.5 R/islem=-0.052 toplam=-9.4 | 2024:122/%63/-12.7 2025:60/%73/+3.3
+    karsilastirma: filtresiz her firsat (dogrulama): n=183 isabet=%60.1 R/islem=-0.133 toplam=-24.3 | 2024:122/%57/-21.6 2025:61/%67/-2.7
