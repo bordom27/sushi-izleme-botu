@@ -1,0 +1,9 @@
+binance spot: 3767 dizin, bu parcada 316 sembol
+0/316 1000CHEEMSUSDT: donemde dosya yok
+50/316 BLURBTC: donemde dosya yok
+100/316 ESPUSDT: donemde dosya yok
+150/316 KLAYUSDT: donemde dosya yok
+200/316 ORDIUSDT: donemde dosya yok
+250/316 SOXSBUSDT: donemde dosya yok
+300/316 WUSDT: donemde dosya yok
+kaydedildi binance_2: 393495 satir, 137 sembol
