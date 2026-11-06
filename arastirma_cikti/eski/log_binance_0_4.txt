@@ -1,0 +1,9 @@
+binance spot: 3767 dizin, bu parcada 317 sembol
+0/317 0GUSDT: donemde dosya yok
+50/317 BIOUSDT: donemde dosya yok
+100/317 ERDUSDT: 2541 mum
+150/317 KITEUSDT: donemde dosya yok
+200/317 ORCLBUSDT: donemde dosya yok
+250/317 SOPHUSDT: donemde dosya yok
+300/317 WTCBTC: 7320 mum
+kaydedildi binance_0: 409133 satir, 132 sembol
