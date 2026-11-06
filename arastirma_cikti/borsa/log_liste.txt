@@ -1,0 +1,6 @@
+isyatirim 200 629
+kap 200 282
+wikipedia bist hata ImportError('`Import beautifulsoup4` failed.  Use pip, conda, or your preferred package management tool to install the beautifulsoup4 package.')
+List_of_S%26P_500_companies -> 503
+Nasdaq-100 -> 503
+liste: BIST 850, ABD 503
