@@ -142,6 +142,10 @@ if __name__ == "__main__":
     try:
         if mod == "liste":
             liste()
+        elif mod == "kur":
+            d = yahoo("TRY=X", "1d", 946684800, int(time.time()))
+            d.to_csv(f"{OUT}/usdtry.csv.gz", index=False, compression="gzip")
+            log(f"usdtry {len(d)} {pd.to_datetime(d.t.min(), unit='s')}")
         elif mod == "gunluk":
             if not os.path.exists(f"{OUT}/liste.csv"):
                 liste()
