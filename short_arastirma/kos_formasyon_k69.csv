@@ -1,0 +1,28 @@
+grup,n,isabet%,islem basi %,kazanc ort %,<2025 n/isb%,2025+ n/isb%
+K69 ham (filtresiz): HEPSI,935,81.5,0.81,2.15,349/89,586/77
+K69 ham (filtresiz): + ayi formasyonu VAR,352,83.2,0.82,2.02,108/88,244/81
+K69 ham (filtresiz): formasyon YOK,583,80.4,0.8,2.23,241/90,342/74
+K69 ham (filtresiz): + hacimli formasyon (>=1.5x),223,83.4,0.79,1.92,81/86,142/82
+K69 ham (filtresiz):   sadece CIFT TEPE,131,83.2,0.68,1.97,35/97,96/78
+K69 ham (filtresiz):   sadece OBO,36,86.1,1.03,1.97,11/91,25/84
+K69 ham (filtresiz):   sadece TREND KIRILIMI,86,82.6,0.9,2.18,14/86,72/82
+K69 ham (filtresiz):   sadece UCGEN,26,88.5,0.89,1.63,8/88,18/89
+K69 ham (filtresiz):   sadece AYI BAYRAGI,128,82.8,0.95,2.04,57/81,71/85
+CANLI kural: HEPSI,697,85.9,1.17,2.19,289/93,408/81
+CANLI kural: + ayi formasyonu VAR,266,88.3,1.28,2.09,90/92,176/86
+CANLI kural: formasyon YOK,431,84.5,1.1,2.25,199/93,232/77
+CANLI kural: + hacimli formasyon (>=1.5x),162,89.5,1.29,1.99,66/91,96/89
+CANLI kural:   sadece CIFT TEPE,103,88.3,1.17,2.06,32/100,71/83
+CANLI kural:   sadece OBO,27,92.6,1.55,1.98,9/100,18/89
+CANLI kural:   sadece TREND KIRILIMI,64,84.4,1.13,2.31,7/86,57/84
+CANLI kural:   sadece UCGEN,19,89.5,0.98,1.7,6/100,13/85
+CANLI kural:   sadece AYI BAYRAGI,97,89.7,1.47,2.06,49/86,48/94
+YENI kural: HEPSI,656,88.0,1.36,2.25,242/91,414/86
+YENI kural: + ayi formasyonu VAR,269,90.0,1.44,2.18,76/87,193/91
+YENI kural: formasyon YOK,388,86.6,1.31,2.31,167/93,221/82
+YENI kural: + hacimli formasyon (>=1.5x),162,88.9,1.2,1.96,59/85,103/91
+YENI kural:   sadece CIFT TEPE,103,89.3,1.36,2.2,27/93,76/88
+YENI kural:   sadece OBO,26,92.3,1.36,1.84,8/88,18/94
+YENI kural:   sadece TREND KIRILIMI,73,90.4,1.75,2.54,1/100,72/90
+YENI kural:   sadece UCGEN,16,87.5,1.01,1.88,3/100,13/85
+YENI kural:   sadece AYI BAYRAGI,99,90.9,1.44,2.02,48/85,51/96
