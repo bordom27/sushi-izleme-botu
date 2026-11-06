@@ -1,0 +1,32 @@
+bitfinex 50 parite
+bitfinex ADAUSD: 886 mum, 2020-08-06 08:00:00 ->
+bitfinex ALGUSD: 2390 mum, 2019-06-21 08:00:00 ->
+bitfinex BTCUSD: 17397 mum, 2013-01-14 16:00:00 ->
+bitfinex CHZUSD: 487 mum, 2019-11-15 08:00:00 ->
+bitfinex DOTUSD: 794 mum, 2020-08-21 20:00:00 ->
+bitfinex DSHUSD: 8395 mum, 2017-03-03 16:00:00 ->
+bitfinex EDOUSD: 6767 mum, 2017-10-20 16:00:00 ->
+bitfinex ETCUSD: 9663 mum, 2016-07-26 20:00:00 ->
+bitfinex ETHUSD: 10494 mum, 2016-03-09 16:00:00 ->
+bitfinex ETPUSD: 7171 mum, 2017-09-20 12:00:00 ->
+bitfinex FILUSD: 465 mum, 2020-10-15 16:00:00 ->
+bitfinex IOTUSD: 7787 mum, 2017-06-12 16:00:00 ->
+bitfinex LEOUSD: 3550 mum, 2019-05-20 08:00:00 ->
+bitfinex LTCUSD: 16213 mum, 2013-05-19 12:00:00 ->
+bitfinex OMGUSD: 7598 mum, 2017-07-14 12:00:00 ->
+bitfinex PNKUSD: 1236 mum, 2018-11-01 12:00:00 ->
+bitfinex QTMUSD: 6814 mum, 2017-10-10 20:00:00 ->
+bitfinex RRTUSD: 5922 mum, 2016-10-10 16:00:00 ->
+bitfinex SANUSD: 7051 mum, 2017-07-12 12:00:00 ->
+bitfinex SUNUSD: 131 mum, 2020-12-10 08:00:00 ->
+bitfinex TRXUSD: 6434 mum, 2018-01-24 12:00:00 ->
+bitfinex UDCUSD: 2424 mum, 2018-12-04 12:00:00 ->
+bitfinex UNIUSD: 623 mum, 2020-09-19 08:00:00 ->
+bitfinex USTUSD: 4592 mum, 2018-11-27 12:00:00 ->
+bitfinex WBTUSD: 423 mum, 2019-05-03 16:00:00 ->
+bitfinex XDCUSD: 257 mum, 2020-11-19 08:00:00 ->
+bitfinex XLMUSD: 5847 mum, 2018-05-01 08:00:00 ->
+bitfinex XMRUSD: 8940 mum, 2016-11-30 16:00:00 ->
+bitfinex XRPUSD: 7934 mum, 2017-05-19 16:00:00 ->
+bitfinex ZECUSD: 9147 mum, 2016-10-29 04:00:00 ->
+kaydedildi bitfinex: 167832 satir, 30 sembol
