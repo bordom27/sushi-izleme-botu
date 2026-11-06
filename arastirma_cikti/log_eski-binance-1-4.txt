@@ -1,0 +1,9 @@
+binance spot: 3767 dizin, bu parcada 316 sembol
+0/316 1000CATUSDT: donemde dosya yok
+50/316 BKRWUSDT: 192 mum
+100/316 ERNUSDT: donemde dosya yok
+150/316 KLAYBTC: donemde dosya yok
+200/316 ORDIBTC: donemde dosya yok
+250/316 SOXLBUSDT: donemde dosya yok
+300/316 WTCUSDT: 1611 mum
+kaydedildi binance_1: 363638 satir, 129 sembol
