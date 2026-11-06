@@ -1,0 +1,101 @@
+poloniex eski ticker 403 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<HTML><HEAD><META HTTP-EQUIV="Content-Type" CON
+poloniex yeni markets 200
+poloniex DASH_BTC: 15110 mum, 2014-02-07 20:00:00 ->
+poloniex DOGE_BTC: 15212 mum, 2014-01-21 20:00:00 ->
+poloniex LTC_BTC: 15234 mum, 2014-01-18 04:00:00 ->
+poloniex XLM_BTC: 14001 mum, 2014-08-11 16:00:00 ->
+poloniex XMR_BTC: 14508 mum, 2014-05-19 04:00:00 ->
+poloniex XRP_BTC: 13987 mum, 2014-08-14 00:00:00 ->
+poloniex BTC_USDT: 12849 mum, 2015-02-19 16:00:00 ->
+poloniex DASH_USDT: 12865 mum, 2015-02-17 00:00:00 ->
+poloniex LTC_USDT: 12752 mum, 2015-03-07 20:00:00 ->
+poloniex XLM_USDT: 12728 mum, 2015-03-11 20:00:00 ->
+poloniex XMR_USDT: 12865 mum, 2015-02-17 00:00:00 ->
+poloniex XRP_USDT: 12842 mum, 2015-02-20 20:00:00 ->
+poloniex ETH_BTC: 11832 mum, 2015-08-08 04:00:00 ->
+poloniex ETH_USDT: 11832 mum, 2015-08-08 04:00:00 ->
+poloniex ETC_BTC: 9726 mum, 2016-07-24 04:00:00 ->
+poloniex ETC_USDT: 9703 mum, 2016-07-28 00:00:00 ->
+poloniex ZEC_BTC: 9147 mum, 2016-10-28 16:00:00 ->
+poloniex ZEC_USDT: 9147 mum, 2016-10-28 16:00:00 ->
+poloniex A_USDT: 5296 mum, 2018-08-01 12:00:00 ->
+poloniex BAT_USDT: 5169 mum, 2018-08-22 16:00:00 ->
+poloniex DOGE_USDT: 5115 mum, 2018-08-31 16:00:00 ->
+poloniex LSK_USDT: 5115 mum, 2018-08-31 16:00:00 ->
+poloniex SC_USDT: 5115 mum, 2018-08-31 16:00:00 ->
+poloniex ZRX_USDT: 5115 mum, 2018-08-31 16:00:00 ->
+poloniex QTUM_USDT: 5073 mum, 2018-09-07 16:00:00 ->
+poloniex MANA_USDT: 4863 mum, 2018-10-12 16:00:00 ->
+poloniex ATOM_USDT: 3711 mum, 2019-04-22 16:00:00 ->
+poloniex BCHSV_USDT: 3234 mum, 2019-07-11 04:00:00 ->
+poloniex TRX_BTC: 2487 mum, 2019-11-12 16:00:00 ->
+poloniex TRX_USDT: 2487 mum, 2019-11-12 16:00:00 ->
+poloniex BTT_USDT: 1970 mum, 2020-02-06 20:00:00 ->
+poloniex WIN_USDT: 1928 mum, 2020-02-13 20:00:00 ->
+poloniex XTZ_USDT: 1689 mum, 2020-03-24 16:00:00 ->
+poloniex SNX_USDT: 1635 mum, 2020-04-02 16:00:00 ->
+poloniex POL_USDT: 1587 mum, 2020-04-10 16:00:00 ->
+poloniex SKY_USDT: 1545 mum, 2020-04-17 16:00:00 ->
+poloniex NEO_USDT: 1460 mum, 2020-05-01 20:00:00 ->
+poloniex SWFTC_USDT: 1435 mum, 2020-05-06 00:00:00 ->
+poloniex JST_USDT: 1426 mum, 2020-05-07 12:00:00 ->
+poloniex STEEM_USDT: 1416 mum, 2020-05-09 04:00:00 ->
+poloniex LINK_USDT: 1416 mum, 2020-05-09 04:00:00 ->
+poloniex AVA_USDT: 1393 mum, 2020-05-13 00:00:00 ->
+poloniex XRPBULL_USDT: 1377 mum, 2020-05-15 16:00:00 ->
+poloniex CHR_USDT: 1335 mum, 2020-05-22 16:00:00 ->
+poloniex BNB_USDT: 1250 mum, 2020-06-05 20:00:00 ->
+poloniex MDT_BTC: 1251 mum, 2020-06-05 16:00:00 ->
+poloniex MDT_USDT: 1251 mum, 2020-06-05 16:00:00 ->
+poloniex COMP_USDT: 1179 mum, 2020-06-17 16:00:00 ->
+poloniex REN_USDT: 1136 mum, 2020-06-24 20:00:00 ->
+poloniex LRC_USDT: 1137 mum, 2020-06-24 16:00:00 ->
+poloniex BAL_USDT: 1137 mum, 2020-06-24 16:00:00 ->
+poloniex SXP_USDT: 999 mum, 2020-07-17 16:00:00 ->
+poloniex YFI_USDT: 975 mum, 2020-07-21 16:00:00 ->
+poloniex AWE_USDT: 967 mum, 2020-07-23 00:00:00 ->
+poloniex UMA_USDT: 921 mum, 2020-07-30 16:00:00 ->
+poloniex SWAP_USDT: 909 mum, 2020-08-01 16:00:00 ->
+poloniex BAND_USDT: 854 mum, 2020-08-10 20:00:00 ->
+poloniex DOSOLD_USDT: 850 mum, 2020-08-11 12:00:00 ->
+poloniex DIA_USDT: 849 mum, 2020-08-11 16:00:00 ->
+poloniex TRB_USDT: 842 mum, 2020-08-12 20:00:00 ->
+poloniex CRV_USDT: 835 mum, 2020-08-14 00:00:00 ->
+poloniex OM_USDT: 811 mum, 2020-08-18 00:00:00 ->
+poloniex OCEAN_USDT: 807 mum, 2020-08-18 16:00:00 ->
+poloniex DOT_USDT: 838 mum, 2020-08-13 12:00:00 ->
+poloniex RSR_USDT: 759 mum, 2020-08-26 16:00:00 ->
+poloniex WNXM_USDT: 758 mum, 2020-08-26 20:00:00 ->
+poloniex FCT2_USDT: 721 mum, 2020-09-02 00:00:00 ->
+poloniex SUSHI_USDT: 721 mum, 2020-09-02 00:00:00 ->
+poloniex UNI_USDT: 628 mum, 2020-09-17 12:00:00 ->
+poloniex GHST_USDT: 597 mum, 2020-09-22 16:00:00 ->
+poloniex RARI_USDT: 590 mum, 2020-09-23 20:00:00 ->
+poloniex AMP_USDT: 560 mum, 2020-09-28 20:00:00 ->
+poloniex SAND_USDT: 578 mum, 2020-09-25 20:00:00 ->
+poloniex POLS_USDT: 555 mum, 2020-09-29 16:00:00 ->
+poloniex AAVE_USDT: 496 mum, 2020-10-09 12:00:00 ->
+poloniex CVT_USDT: 396 mum, 2020-10-26 04:00:00 ->
+poloniex INJ_USDT: 374 mum, 2020-10-29 20:00:00 ->
+poloniex BCH_USDT: 7411 mum, 2017-08-14 00:00:00 ->
+poloniex GLM_USDT: 176 mum, 2020-12-01 20:00:00 ->
+poloniex ZLOT_USDT: 214 mum, 2020-11-25 12:00:00 ->
+poloniex API3_USDT: 159 mum, 2020-12-04 16:00:00 ->
+poloniex BADGER_USDT: 133 mum, 2020-12-09 00:00:00 ->
+poloniex FARM_USDT: 88 mum, 2020-12-16 12:00:00 ->
+poloniex DOT_BTC: 80 mum, 2020-12-17 20:00:00 ->
+poloniex GRT_USDT: 73 mum, 2020-12-19 00:00:00 ->
+poloniex ESD_USDT: 55 mum, 2020-12-22 00:00:00 ->
+poloniex ONEINCH_USDT: 37 mum, 2020-12-25 00:00:00 ->
+poloniex REEF_USDT: 1 mum, 2020-12-31 00:00:00 ->
+poloniex ADA_BTC hata ConnectionError(ProtocolError('Connection aborted.', ConnectionResetError(104, 'Connection reset by peer')))
+poloniex BNT_USDT: 1803 mum, 2018-10-19 16:00:00 ->
+poloniex KNC_USDT: 2189 mum, 2018-08-15 16:00:00 ->
+poloniex SNT_USDT: 2197 mum, 2018-08-15 16:00:00 ->
+poloniex LUNA_USDT hata ConnectionError(ProtocolError('Connection aborted.', ConnectionResetError(104, 'Connection reset by peer')))
+poloniex COOL_USDT hata JSONDecodeError('Expecting value: line 1 column 1 (char 0)')
+poloniex TRUMPWIF_USDT hata JSONDecodeError('Expecting value: line 1 column 1 (char 0)')
+poloniex TUCKER_USDT hata JSONDecodeError('Expecting value: line 1 column 1 (char 0)')
+poloniex GASSOL_USDT hata JSONDecodeError('Expecting value: line 1 column 1 (char 0)')
+kaydedildi poloniex: 342879 satir, 79 sembol
