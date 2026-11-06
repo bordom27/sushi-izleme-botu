@@ -36,6 +36,9 @@ def yukle(on):
     D = {}
     for (s, p), g in K.groupby(["symbol", "piyasa"]):
         g = g.drop_duplicates("t").sort_values("t").set_index("t")[["o", "h", "l", "c", "v"]].astype(float).dropna()
+        if on == "gun":
+            g.index = g.index.normalize()
+            g = g[~g.index.duplicated(keep="last")]
         if on == "saat":
             # 1s -> 4s: her gun icinde ilk 4 saat / sonraki saatler
             gun = g.index.normalize()
@@ -48,7 +51,7 @@ def yukle(on):
         if p == "BIST":
             if kur is None:
                 continue
-            k = kur.reindex(g.index.normalize(), method="ffill").to_numpy()
+            k = pd.Series(kur.reindex(g.index.normalize(), method="ffill").to_numpy()).bfill().fillna(kur.iloc[0]).to_numpy()
             g["v"] = g.v / k                       # hacmi dolar karsiligina cevir (fiyat TL kalir, q = c*v dolar olur)
         # short_retest gunluk hacmi 4s mum x 6 diye hesaplar: gunluk mumda /6, borsa 4s'inde (gunde ~2 blok) /3
         g["v"] = g.v / (6 if on == "gun" else 3)
