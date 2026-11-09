@@ -27,6 +27,10 @@ on:
         description: "true: Telegram yok, gelistirme verisini (veri.npz) ucgen-veri dalina kaydet"
         type: boolean
         default: false
+      karne:
+        description: "true: Telegram yok, gonderilen kirilim sinyallerinin sonucunu ucgen-karne dalina yaz"
+        type: boolean
+        default: false
 
 permissions:
   contents: write
@@ -86,6 +90,18 @@ jobs:
           mv /tmp/veri.npz veri.npz
           git add veri.npz && git commit -qm "veri [skip ci]" && git push -qf origin ucgen-veri
 
+      - name: Karne
+        if: ${{ github.event.inputs.karne == 'true' }}
+        run: |
+          python sinyal_karne.py
+          git config user.name "izleme-bot"
+          git config user.email "izleme-bot@users.noreply.github.com"
+          mv karne.json /tmp/karne.json
+          git checkout -q --orphan ucgen-karne
+          git rm -rq --cached . && rm -rf ./*
+          mv /tmp/karne.json karne.json
+          git add karne.json && git commit -qm "karne [skip ci]" && git push -qf origin ucgen-karne
+
       - name: Onizleme
         if: ${{ github.event.inputs.onizleme == 'true' }}
         run: |
@@ -99,7 +115,7 @@ jobs:
           git add *.png *.npz && git commit -qm "onizleme [skip ci]" && git push -qf origin ucgen-onizleme
 
       - name: Tara + Telegram
-        if: ${{ github.event.inputs.onizleme != 'true' && github.event.inputs.istatistik != 'true' && github.event.inputs.veri != 'true' }}
+        if: ${{ github.event.inputs.onizleme != 'true' && github.event.inputs.istatistik != 'true' && github.event.inputs.veri != 'true' && github.event.inputs.karne != 'true' }}
         env:
           TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
           TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
